@@ -27,20 +27,36 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun DinNoteApp() {
     var selectedTab by remember { mutableIntStateOf(0) }
-    val greenScheme = lightColorScheme(
-        primary = Color(0xFF1B5E20),
+    val islamicScheme = lightColorScheme(
+        primary = Color(0xFF145A45),
         onPrimary = Color.White,
-        primaryContainer = Color(0xFFC8E6C9),
-        onPrimaryContainer = Color(0xFF103B16),
-        secondary = Color(0xFF4E6B50),
-        background = Color(0xFFF7FAF5),
-        surface = Color(0xFFFFFFFF),
-        surfaceVariant = Color(0xFFE8F0E5)
+        primaryContainer = Color(0xFFD7E9DF),
+        onPrimaryContainer = Color(0xFF103D30),
+        secondary = Color(0xFF9A7845),
+        onSecondary = Color.White,
+        secondaryContainer = Color(0xFFF0E4CB),
+        onSecondaryContainer = Color(0xFF493719),
+        tertiary = Color(0xFF526B78),
+        background = Color(0xFFF6F4ED),
+        surface = Color(0xFFFFFEFA),
+        surfaceVariant = Color(0xFFE9EEE8),
+        outline = Color(0xFFD6D2C5)
     )
-    MaterialTheme(colorScheme = greenScheme) {
+    MaterialTheme(colorScheme = islamicScheme) {
         Scaffold(
+            containerColor = MaterialTheme.colorScheme.background,
             topBar = {
-                TopAppBar(title = { Text("DinNote", fontWeight = FontWeight.Bold) })
+                TopAppBar(
+                    title = {
+                        Column(verticalArrangement = Arrangement.spacedBy(1.dp)) {
+                            Text("DinNote", fontWeight = FontWeight.Bold)
+                            Text("دفتر العلم والذكر", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    )
+                )
             },
             bottomBar = {
                 NavigationBar {
@@ -77,24 +93,65 @@ fun DinNoteApp() {
 @Composable
 fun HomeScreen(modifier: Modifier = Modifier) {
     Column(
-        modifier = modifier.fillMaxSize().padding(20.dp),
+        modifier = modifier.fillMaxSize().padding(18.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text("السلام عليكم", fontSize = 28.sp, fontWeight = FontWeight.Bold)
-        Text("Selamat datang ke DinNote")
-        Text("دفتر الملاحظات والمعرفة الإسلامية", fontSize = 19.sp)
-        Card(Modifier.fillMaxWidth()) {
-            Column(Modifier.padding(18.dp)) {
-                Text("Nota Saya", fontWeight = FontWeight.Bold)
-                Text("Simpan, cari dan susun catatan peribadi anda.")
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
+            shape = MaterialTheme.shapes.extraLarge
+        ) {
+            Column(
+                Modifier.fillMaxWidth().padding(22.dp),
+                verticalArrangement = Arrangement.spacedBy(9.dp)
+            ) {
+                Text("بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ", color = Color(0xFFF3E6C8), fontSize = 20.sp)
+                Text("Assalamualaikum", color = Color.White, fontSize = 25.sp, fontWeight = FontWeight.Bold)
+                Text(
+                    "Ruang mencatat, mengingati dan menghimpunkan ilmu.",
+                    color = Color(0xFFE4EFE8),
+                    fontSize = 14.sp
+                )
+                Text("دَفْتَرُ الْعِلْمِ وَالذِّكْرِ", color = Color(0xFFF3E6C8), fontSize = 17.sp)
             }
         }
-        Card(Modifier.fillMaxWidth()) {
-            Column(Modifier.padding(18.dp)) {
-                Text("Perpustakaan Ilmu", fontWeight = FontWeight.Bold)
-                Text("Himpunan ilmu, kitab dan rujukan.")
+        Text(
+            "Ruang DinNote",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary
+        )
+        Card(
+            Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            shape = MaterialTheme.shapes.large
+        ) {
+            Row(Modifier.fillMaxWidth().padding(18.dp), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+                Text("✎", fontSize = 27.sp, color = MaterialTheme.colorScheme.primary)
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text("Nota Peribadi", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                    Text("Catat idea, susun tugasan dan simpan nota penting.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
             }
         }
+        Card(
+            Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            shape = MaterialTheme.shapes.large
+        ) {
+            Row(Modifier.fillMaxWidth().padding(18.dp), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+                Text("۞", fontSize = 27.sp, color = MaterialTheme.colorScheme.secondary)
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text("Perpustakaan Ilmu", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                    Text("Kalimah Tayyibah, kitab-kitab dan Kalam Hikmah.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        }
+        Text(
+            "Ilmu yang dicatat, mudah-mudahan menjadi manfaat.",
+            color = MaterialTheme.colorScheme.secondary,
+            fontSize = 13.sp
+        )
     }
 }
 
