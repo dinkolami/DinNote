@@ -110,6 +110,7 @@ fun NotesScreen(modifier: Modifier = Modifier) {
     var editingId by remember { mutableStateOf<Long?>(null) }
     var title by remember { mutableStateOf("") }
     var body by remember { mutableStateOf("") }
+    var showArchived by remember { mutableStateOf(false) }
 
     fun refreshNotes() {
         notes.clear()
@@ -119,8 +120,8 @@ fun NotesScreen(modifier: Modifier = Modifier) {
     LaunchedEffect(Unit) { refreshNotes() }
 
     val visibleNotes = notes.filter {
-        it.title.contains(search, ignoreCase = true) ||
-            it.body.contains(search, ignoreCase = true)
+        it.archived == showArchived && (it.title.contains(search, ignoreCase = true) ||
+            it.body.contains(search, ignoreCase = true))
     }
 
     Column(
@@ -131,13 +132,16 @@ fun NotesScreen(modifier: Modifier = Modifier) {
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text("Nota Saya", fontSize = 24.sp, fontWeight = FontWeight.Bold)
-            Button(onClick = {
+            Text(if (showArchived) "Arkib Nota" else "Nota Saya", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                TextButton(onClick = { showArchived = !showArchived }) { Text(if (showArchived) "Nota" else "Arkib") }
+                Button(onClick = {
                 editingId = null
                 title = ""
                 body = ""
                 showEditor = true
-            }) { Text("+ Nota") }
+                }) { Text("+ Nota") }
+            }
         }
 
         OutlinedTextField(
@@ -159,7 +163,7 @@ fun NotesScreen(modifier: Modifier = Modifier) {
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(visibleNotes, key = { it.id }) { item ->
-                    Card(Modifier.fillMaxWidth()) {
+                    Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = noteColor(item.colorTag))) {
                         Column(
                             Modifier.fillMaxWidth().clickable {
                                 editingId = item.id
@@ -181,6 +185,14 @@ fun NotesScreen(modifier: Modifier = Modifier) {
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.End
                             ) {
+                                TextButton(onClick = {
+                                    database.setPinned(item.id, !item.pinned)
+                                    refreshNotes()
+                                }) { Text(if (item.pinned) "Lepas pin" else "Pin") }
+                                TextButton(onClick = {
+                                    database.setArchived(item.id, !item.archived)
+                                    refreshNotes()
+                                }) { Text(if (item.archived) "Pulihkan" else "Arkib") }
                                 TextButton(onClick = {
                                     database.delete(item.id)
                                     refreshNotes()
@@ -235,6 +247,15 @@ fun NotesScreen(modifier: Modifier = Modifier) {
             }
         )
     }
+}
+
+@Composable
+fun noteColor(tag: String): Color = when (tag) {
+    "yellow" -> Color(0xFFFFF4CC)
+    "blue" -> Color(0xFFDCEEFF)
+    "pink" -> Color(0xFFFFE1E8)
+    "purple" -> Color(0xFFEDE2FF)
+    else -> Color(0xFFE5F2E3)
 }
 
 @Composable
