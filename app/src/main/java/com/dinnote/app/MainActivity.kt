@@ -260,6 +260,7 @@ fun noteColor(tag: String): Color = when (tag) {
 
 @Composable
 fun LibraryScreen(modifier: Modifier = Modifier) {
+    var selectedCategory by remember { mutableStateOf("Kalimah Tayyibah") }
     var selectedEntry by remember { mutableStateOf<KalimahEntry?>(null) }
     var search by remember { mutableStateOf("") }
 
@@ -274,44 +275,87 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
         modifier = modifier.fillMaxSize().padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Text("Koleksi Kalimah Tayyibah", fontSize = 23.sp, fontWeight = FontWeight.Bold)
-        Text("الكلمات الطيبة", fontSize = 22.sp)
-        Text("Zikir dan ungkapan yang baik — bersama bacaan, maksud dan rujukan ringkas.")
+        Text("Perpustakaan DinNote 🌿", fontSize = 23.sp, fontWeight = FontWeight.Bold)
+        Text("Koleksi ilmu dan amalan yang boleh dibaca secara offline.")
 
-        OutlinedTextField(
-            value = search,
-            onValueChange = { search = it },
-            label = { Text("Cari kalimah atau maksud") },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Text("${filteredEntries.size} kalimah tersedia", color = MaterialTheme.colorScheme.primary)
-
-        LazyColumn(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(9.dp)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            items(filteredEntries, key = { it.title }) { entry ->
-                Card(
-                    modifier = Modifier.fillMaxWidth().clickable { selectedEntry = entry },
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    )
+            listOf("Kalimah Tayyibah", "Kitab-Kitab", "Kalam Hikmah").forEach { category ->
+                FilterChip(
+                    selected = selectedCategory == category,
+                    onClick = { selectedCategory = category; search = "" },
+                    label = { Text(category, fontSize = 11.sp) }
+                )
+            }
+        }
+
+        when (selectedCategory) {
+            "Kalimah Tayyibah" -> {
+                Text("الكلمات الطيبة", fontSize = 22.sp)
+                OutlinedTextField(
+                    value = search,
+                    onValueChange = { search = it },
+                    label = { Text("Cari kalimah atau maksud") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Text("${filteredEntries.size} kalimah tersedia", color = MaterialTheme.colorScheme.primary)
+                LazyColumn(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(9.dp)
                 ) {
-                    Column(
-                        modifier = Modifier.fillMaxWidth().padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(7.dp)
-                    ) {
-                        Text(entry.title, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                        Text(
-                            entry.arabic,
-                            modifier = Modifier.fillMaxWidth(),
-                            fontSize = 25.sp
-                        )
-                        Text(entry.transliteration, fontWeight = FontWeight.Medium)
-                        Text(entry.meaning, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Text("Tekan untuk maklumat lanjut", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
+                    items(filteredEntries, key = { it.title }) { entry ->
+                        Card(
+                            modifier = Modifier.fillMaxWidth().clickable { selectedEntry = entry },
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                        ) {
+                            Column(
+                                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(7.dp)
+                            ) {
+                                Text(entry.title, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                                Text(entry.arabic, modifier = Modifier.fillMaxWidth(), fontSize = 25.sp)
+                                Text(entry.transliteration, fontWeight = FontWeight.Medium)
+                                Text(entry.meaning, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text("Tekan untuk maklumat lanjut", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
+                            }
+                        }
+                    }
+                }
+            }
+            "Kitab-Kitab" -> {
+                Text("📚 Perpustakaan Kitab", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                OutlinedTextField(
+                    value = search,
+                    onValueChange = { search = it },
+                    label = { Text("Cari nama kitab atau tajuk") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Card(Modifier.fillMaxWidth()) {
+                    Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text("Ruang koleksi kitab", fontWeight = FontWeight.Bold)
+                        Text("Tempat menghimpunkan petikan teks Arab, terjemahan, syarah, takhrij dan nota pengajian.")
+                        Text("Kandungan kitab akan dimasukkan secara berperingkat dengan nama kitab dan rujukan yang jelas.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+            }
+            else -> {
+                Text("✨ Kalam Hikmah", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                OutlinedTextField(
+                    value = search,
+                    onValueChange = { search = it },
+                    label = { Text("Cari kata hikmah atau ulama") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Card(Modifier.fillMaxWidth()) {
+                    Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text("Himpunan Kalam Hikmah", fontWeight = FontWeight.Bold)
+                        Text("Koleksi nasihat ulama, mutiara ilmu, peringatan dan kata-kata hikmah.")
+                        Text("Setiap petikan akan disertakan sumber apabila diketahui, supaya tidak tersalah sandar kata-kata kepada ulama.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             }
