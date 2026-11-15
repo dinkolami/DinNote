@@ -1,13 +1,12 @@
-
 package com.dinnote.app
 
-import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -27,15 +26,10 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun DinNoteApp() {
     var selectedTab by remember { mutableIntStateOf(0) }
-
     MaterialTheme {
         Scaffold(
             topBar = {
-                TopAppBar(
-                    title = {
-                        Text("DinNote", fontWeight = FontWeight.Bold)
-                    }
-                )
+                TopAppBar(title = { Text("DinNote", fontWeight = FontWeight.Bold) })
             },
             bottomBar = {
                 NavigationBar {
@@ -72,28 +66,21 @@ fun DinNoteApp() {
 @Composable
 fun HomeScreen(modifier: Modifier = Modifier) {
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(20.dp),
+        modifier = modifier.fillMaxSize().padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text("السلام عليكم", fontSize = 28.sp,
-            fontWeight = FontWeight.Bold)
+        Text("السلام عليكم", fontSize = 28.sp, fontWeight = FontWeight.Bold)
         Text("Selamat datang ke DinNote")
-        Text("دفتر الملاحظات والمعرفة الإسلامية",
-            fontSize = 19.sp)
-
+        Text("دفتر الملاحظات والمعرفة الإسلامية", fontSize = 19.sp)
         Card(Modifier.fillMaxWidth()) {
             Column(Modifier.padding(18.dp)) {
                 Text("Nota Saya", fontWeight = FontWeight.Bold)
-                Text("Simpan dan susun catatan peribadi.")
+                Text("Simpan, cari dan susun catatan peribadi anda.")
             }
         }
-
         Card(Modifier.fillMaxWidth()) {
             Column(Modifier.padding(18.dp)) {
-                Text("Perpustakaan Ilmu",
-                    fontWeight = FontWeight.Bold)
+                Text("Perpustakaan Ilmu", fontWeight = FontWeight.Bold)
                 Text("Himpunan ilmu, kitab dan rujukan.")
             }
         }
@@ -103,75 +90,150 @@ fun HomeScreen(modifier: Modifier = Modifier) {
 @Composable
 fun NotesScreen(modifier: Modifier = Modifier) {
     val context = LocalContext.current
-    val prefs = remember {
-        context.getSharedPreferences("dinnote",
-            Context.MODE_PRIVATE)
+    val database = remember {
+        NoteDatabase(context).also { it.migrateOldSingleNote(context) }
+    }
+    val notes = remember { mutableStateListOf<DinNote>() }
+    var search by remember { mutableStateOf("") }
+    var showEditor by remember { mutableStateOf(false) }
+    var editingId by remember { mutableStateOf<Long?>(null) }
+    var title by remember { mutableStateOf("") }
+    var body by remember { mutableStateOf("") }
+
+    fun refreshNotes() {
+        notes.clear()
+        notes.addAll(database.allNotes())
     }
 
-    var title by remember {
-        mutableStateOf(prefs.getString("title", "") ?: "")
+    LaunchedEffect(Unit) { refreshNotes() }
+
+    val visibleNotes = notes.filter {
+        it.title.contains(search, ignoreCase = true) ||
+            it.body.contains(search, ignoreCase = true)
     }
-    var note by remember {
-        mutableStateOf(prefs.getString("note", "") ?: "")
-    }
-    var saved by remember { mutableStateOf(false) }
 
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState()),
+        modifier = modifier.fillMaxSize().padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Text("Nota Saya", fontSize = 24.sp,
-            fontWeight = FontWeight.Bold)
-
-        OutlinedTextField(
-            value = title,
-            onValueChange = { title = it; saved = false },
-            label = { Text("Tajuk nota") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        OutlinedTextField(
-            value = note,
-            onValueChange = { note = it; saved = false },
-            label = { Text("Tulis dalam Arab atau Rumi") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(min = 250.dp)
-        )
-
-        Button(
-            onClick = {
-                prefs.edit()
-                    .putString("title", title)
-                    .putString("note", note)
-                    .apply()
-                saved = true
-            },
-            modifier = Modifier.fillMaxWidth()
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text("Simpan Nota")
+            Text("Nota Saya", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+            Button(onClick = {
+                editingId = null
+                title = ""
+                body = ""
+                showEditor = true
+            }) { Text("+ Nota") }
         }
 
-        if (saved) Text("Nota berjaya disimpan ✓")
+        OutlinedTextField(
+            value = search,
+            onValueChange = { search = it },
+            label = { Text("Cari nota") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        if (visibleNotes.isEmpty()) {
+            Text(
+                if (search.isBlank()) "Belum ada nota. Tekan + Nota untuk mula menulis."
+                else "Tiada nota yang sepadan dengan carian."
+            )
+        } else {
+            LazyColumn(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(visibleNotes, key = { it.id }) { item ->
+                    Card(Modifier.fillMaxWidth()) {
+                        Column(
+                            Modifier.fillMaxWidth().clickable {
+                                editingId = item.id
+                                title = item.title
+                                body = item.body
+                                showEditor = true
+                            }.padding(14.dp),
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Text(
+                                item.title.ifBlank { "Tanpa tajuk" },
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                item.body,
+                                maxLines = 3
+                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.End
+                            ) {
+                                TextButton(onClick = {
+                                    database.delete(item.id)
+                                    refreshNotes()
+                                }) { Text("Padam") }
+                                TextButton(onClick = {
+                                    editingId = item.id
+                                    title = item.title
+                                    body = item.body
+                                    showEditor = true
+                                }) { Text("Edit") }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if (showEditor) {
+        AlertDialog(
+            onDismissRequest = { showEditor = false },
+            title = { Text(if (editingId == null) "Nota Baharu" else "Edit Nota") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    OutlinedTextField(
+                        value = title,
+                        onValueChange = { title = it },
+                        label = { Text("Tajuk nota") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = body,
+                        onValueChange = { body = it },
+                        label = { Text("Kandungan (Arab atau Rumi)") },
+                        minLines = 5,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    if (title.isNotBlank() || body.isNotBlank()) {
+                        database.save(title.trim(), body, editingId)
+                        refreshNotes()
+                        showEditor = false
+                    }
+                }) { Text("Simpan") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showEditor = false }) { Text("Batal") }
+            }
+        )
     }
 }
 
 @Composable
 fun LibraryScreen(modifier: Modifier = Modifier) {
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(20.dp),
+        modifier = modifier.fillMaxSize().padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        Text("Perpustakaan Ilmu",
-            fontSize = 24.sp, fontWeight = FontWeight.Bold)
-
+        Text("Perpustakaan Ilmu", fontSize = 24.sp, fontWeight = FontWeight.Bold)
         Text("مكتبة العلوم")
-
         listOf(
             "Al-Quran dan Tafsir",
             "Hadis dan Takhrij",
