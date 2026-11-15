@@ -11,6 +11,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -26,7 +27,17 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun DinNoteApp() {
     var selectedTab by remember { mutableIntStateOf(0) }
-    MaterialTheme {
+    val greenScheme = lightColorScheme(
+        primary = Color(0xFF1B5E20),
+        onPrimary = Color.White,
+        primaryContainer = Color(0xFFC8E6C9),
+        onPrimaryContainer = Color(0xFF103B16),
+        secondary = Color(0xFF4E6B50),
+        background = Color(0xFFF7FAF5),
+        surface = Color(0xFFFFFFFF),
+        surfaceVariant = Color(0xFFE8F0E5)
+    )
+    MaterialTheme(colorScheme = greenScheme) {
         Scaffold(
             topBar = {
                 TopAppBar(title = { Text("DinNote", fontWeight = FontWeight.Bold) })
