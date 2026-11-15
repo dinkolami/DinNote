@@ -239,23 +239,80 @@ fun NotesScreen(modifier: Modifier = Modifier) {
 
 @Composable
 fun LibraryScreen(modifier: Modifier = Modifier) {
+    var selectedEntry by remember { mutableStateOf<KalimahEntry?>(null) }
+    var search by remember { mutableStateOf("") }
+
+    val filteredEntries = kalimahEntries.filter { entry ->
+        entry.title.contains(search, ignoreCase = true) ||
+            entry.transliteration.contains(search, ignoreCase = true) ||
+            entry.meaning.contains(search, ignoreCase = true) ||
+            entry.arabic.contains(search)
+    }
+
     Column(
-        modifier = modifier.fillMaxSize().padding(20.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp)
+        modifier = modifier.fillMaxSize().padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Text("Perpustakaan Ilmu", fontSize = 24.sp, fontWeight = FontWeight.Bold)
-        Text("مكتبة العلوم")
-        listOf(
-            "Al-Quran dan Tafsir",
-            "Hadis dan Takhrij",
-            "Kitab Arab",
-            "Terjemahan Melayu",
-            "Koleksi Kalimah Tayyibah",
-            "Penanda dan Rujukan"
-        ).forEach { item ->
-            Card(Modifier.fillMaxWidth()) {
-                Text(item, Modifier.padding(18.dp))
+        Text("Koleksi Kalimah Tayyibah", fontSize = 23.sp, fontWeight = FontWeight.Bold)
+        Text("الكلمات الطيبة", fontSize = 22.sp)
+        Text("Zikir dan ungkapan yang baik — bersama bacaan, maksud dan rujukan ringkas.")
+
+        OutlinedTextField(
+            value = search,
+            onValueChange = { search = it },
+            label = { Text("Cari kalimah atau maksud") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Text("${filteredEntries.size} kalimah tersedia", color = MaterialTheme.colorScheme.primary)
+
+        LazyColumn(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(9.dp)
+        ) {
+            items(filteredEntries, key = { it.title }) { entry ->
+                Card(
+                    modifier = Modifier.fillMaxWidth().clickable { selectedEntry = entry },
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    )
+                ) {
+                    Column(
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(7.dp)
+                    ) {
+                        Text(entry.title, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                        Text(
+                            entry.arabic,
+                            modifier = Modifier.fillMaxWidth(),
+                            fontSize = 25.sp
+                        )
+                        Text(entry.transliteration, fontWeight = FontWeight.Medium)
+                        Text(entry.meaning, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text("Tekan untuk maklumat lanjut", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
+                    }
+                }
             }
         }
+    }
+
+    selectedEntry?.let { entry ->
+        AlertDialog(
+            onDismissRequest = { selectedEntry = null },
+            title = { Text(entry.title) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text(entry.arabic, fontSize = 27.sp)
+                    Text(entry.transliteration, fontWeight = FontWeight.Bold)
+                    Text(entry.meaning)
+                    Text("Rujukan: ${entry.reference}", fontSize = 13.sp)
+                    Text(entry.note, fontSize = 13.sp)
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { selectedEntry = null }) { Text("Tutup") }
+            }
+        )
     }
 }
