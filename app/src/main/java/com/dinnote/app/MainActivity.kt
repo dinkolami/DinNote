@@ -167,6 +167,7 @@ fun NotesScreen(modifier: Modifier = Modifier) {
     var editingId by remember { mutableStateOf<Long?>(null) }
     var title by remember { mutableStateOf("") }
     var body by remember { mutableStateOf("") }
+    var selectedColor by remember { mutableStateOf("green") }
     var showArchived by remember { mutableStateOf(false) }
 
     fun refreshNotes() {
@@ -196,6 +197,7 @@ fun NotesScreen(modifier: Modifier = Modifier) {
                 editingId = null
                 title = ""
                 body = ""
+                selectedColor = "green"
                 showEditor = true
                 }) { Text("+ Nota") }
             }
@@ -226,6 +228,7 @@ fun NotesScreen(modifier: Modifier = Modifier) {
                                 editingId = item.id
                                 title = item.title
                                 body = item.body
+                                selectedColor = item.colorTag
                                 showEditor = true
                             }.padding(14.dp),
                             verticalArrangement = Arrangement.spacedBy(6.dp)
@@ -258,6 +261,7 @@ fun NotesScreen(modifier: Modifier = Modifier) {
                                     editingId = item.id
                                     title = item.title
                                     body = item.body
+                                    selectedColor = item.colorTag
                                     showEditor = true
                                 }) { Text("Edit") }
                             }
@@ -281,6 +285,22 @@ fun NotesScreen(modifier: Modifier = Modifier) {
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
+                    Text("Warna nota", fontWeight = FontWeight.SemiBold)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        listOf("green", "yellow", "blue", "pink", "purple").forEach { tag ->
+                            Surface(
+                                modifier = Modifier.size(34.dp).clickable { selectedColor = tag },
+                                shape = MaterialTheme.shapes.small,
+                                color = noteColor(tag),
+                                border = if (selectedColor == tag)
+                                    androidx.compose.foundation.BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
+                                else null
+                            ) {}
+                        }
+                    }
                     OutlinedTextField(
                         value = body,
                         onValueChange = { body = it },
@@ -293,7 +313,8 @@ fun NotesScreen(modifier: Modifier = Modifier) {
             confirmButton = {
                 TextButton(onClick = {
                     if (title.isNotBlank() || body.isNotBlank()) {
-                        database.save(title.trim(), body, editingId)
+                        val savedId = database.save(title.trim(), body, editingId)
+                        database.setColor(savedId, selectedColor)
                         refreshNotes()
                         showEditor = false
                     }
