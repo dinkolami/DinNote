@@ -212,6 +212,14 @@ fun NotesScreen(modifier: Modifier = Modifier) {
             backupMessage = runCatching {
                 val result = NoteBackup.import(context, uri, database)
                 refreshNotes()
+                val restoredCustomCategories = notes.map { it.category }
+                    .filter { it !in builtInCategories }
+                    .distinct()
+                restoredCustomCategories.forEach { category ->
+                    if (category !in customCategories) customCategories.add(category)
+                }
+                context.getSharedPreferences("dinnote_categories", android.content.Context.MODE_PRIVATE)
+                    .edit().putStringSet("custom", customCategories.toSet()).apply()
                 buildString {
                     append("${result.imported} nota dipulihkan.")
                     if (result.skippedDuplicates > 0) {
