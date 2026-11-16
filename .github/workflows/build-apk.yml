@@ -82,7 +82,7 @@ jobs:
           mkdir -p "$HOME/.android"
           cp app/dinnote-debug.keystore "$HOME/.android/debug.keystore"
           chmod 600 "$HOME/.android/debug.keystore"
-          rm app/dinnote-debug.keystore
+          # Keep app/dinnote-debug.keystore until Gradle has signed the APK.
 
       - name: Build clean APK
         run: |
