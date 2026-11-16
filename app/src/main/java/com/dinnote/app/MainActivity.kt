@@ -878,6 +878,7 @@ fun NotesScreen(
                                 Spacer(Modifier.height(12.dp))
                                 androidx.compose.foundation.text.BasicTextField(
                                     value = body,
+                                    visualTransformation = MarkdownWysiwygTransformation(),
                                     onValueChange = { next ->
                                         if (next.text != body.text) {
                                             undoStack.add(body)
@@ -918,6 +919,67 @@ fun NotesScreen(
                 }
             }
         }
+    }
+}
+
+// Show existing Markdown emphasis as formatted text while preserving the stored source.
+// Offset mapping keeps selection and cursor positions valid when markers are hidden.
+private class MarkdownWysiwygTransformation : androidx.compose.ui.text.input.VisualTransformation {
+    override fun filter(text: AnnotatedString): androidx.compose.ui.text.input.TransformedText {
+        val source = text.text
+        val pattern = Regex("""\\*\\*(.+?)\\*\\*|_(.+?)_""")
+        val output = StringBuilder()
+        val originalToVisual = IntArray(source.length + 1)
+        val visualToOriginal = mutableListOf(0)
+        val styles = mutableListOf<Triple<Int, Int, SpanStyle>>()
+        var cursor = 0
+
+        fun appendPlain(end: Int) {
+            while (cursor < end) {
+                originalToVisual[cursor] = output.length
+                output.append(source[cursor])
+                cursor++
+                originalToVisual[cursor] = output.length
+                visualToOriginal.add(cursor)
+            }
+        }
+
+        pattern.findAll(source).forEach { match ->
+            appendPlain(match.range.first)
+            val bold = match.groups[1] != null
+            val opening = if (bold) 2 else 1
+            val closing = opening
+            val contentStart = match.range.first + opening
+            val contentEnd = match.range.last + 1 - closing
+            while (cursor < contentStart) {
+                originalToVisual[cursor] = output.length
+                cursor++
+                originalToVisual[cursor] = output.length
+            }
+            val start = output.length
+            appendPlain(contentEnd)
+            val end = output.length
+            styles.add(Triple(start, end, if (bold) SpanStyle(fontWeight = FontWeight.Bold)
+                else SpanStyle(fontStyle = FontStyle.Italic)))
+            while (cursor <= match.range.last) {
+                originalToVisual[cursor] = output.length
+                cursor++
+                originalToVisual[cursor] = output.length
+            }
+            visualToOriginal[output.length] = cursor
+        }
+        appendPlain(source.length)
+        val rendered = buildAnnotatedString {
+            append(output.toString())
+            styles.forEach { (start, end, style) -> addStyle(style, start, end) }
+        }
+        val mapping = object : androidx.compose.ui.text.input.OffsetMapping {
+            override fun originalToTransformed(offset: Int): Int =
+                originalToVisual[offset.coerceIn(0, source.length)]
+            override fun transformedToOriginal(offset: Int): Int =
+                visualToOriginal[offset.coerceIn(0, output.length)]
+        }
+        return androidx.compose.ui.text.input.TransformedText(rendered, mapping)
     }
 }
 
@@ -1276,6 +1338,7 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                                 Spacer(Modifier.height(12.dp))
                                 androidx.compose.foundation.text.BasicTextField(
                                     value = libraryBody, onValueChange = { libraryBody = it },
+                                    visualTransformation = MarkdownWysiwygTransformation(),
                                     modifier = Modifier.weight(1f).fillMaxWidth()
                                         .border(BorderStroke(1.dp, Color(0xFFE0E7E6)), RoundedCornerShape(10.dp))
                                         .padding(horizontal = 14.dp, vertical = 12.dp),
