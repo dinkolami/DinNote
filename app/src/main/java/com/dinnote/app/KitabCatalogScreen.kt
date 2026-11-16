@@ -37,6 +37,11 @@ private fun normalizedKitabText(value: String): String =
         .replace(Regex("[أإآٱ]"), "ا")
         .replace('ى', 'ي').replace('ؤ', 'و').replace('ئ', 'ي')
 
+private fun kitabParagraphIsArabic(value: String): Boolean {
+    val firstLetter = value.firstOrNull { it.isLetter() } ?: return false
+    return firstLetter in '\u0621'..'\u064A' || firstLetter in '\u066E'..'\u06D3'
+}
+
 private fun kitabMatches(value: String, query: String): Boolean =
     normalizedKitabText(value).contains(normalizedKitabText(query.trim()))
 
@@ -230,7 +235,7 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
                                     color = if (highlighted) Color(0xFF263B3E) else readerInk,
                                     style = TextStyle(textDirection = TextDirection.ContentOrRtl),
                                     modifier = Modifier.fillMaxWidth().padding(4.dp),
-                                    textAlign = if (paragraphs[index].any { it in '\u0600'..'\u06FF' }) TextAlign.Right else readerTextAlignment)
+                                    textAlign = if (kitabParagraphIsArabic(paragraphs[index])) TextAlign.Right else readerTextAlignment)
                             }
                         }
                     }
