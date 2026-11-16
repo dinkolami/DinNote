@@ -27,6 +27,10 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.style.TextDirection
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -222,6 +226,9 @@ fun NotesScreen(
     var title by remember { mutableStateOf("") }
     var body by remember { mutableStateOf(TextFieldValue("")) }
     var selectedColor by remember { mutableStateOf("green") }
+    var editorBackground by remember { mutableStateOf(displayPrefs.getString("background", "white") ?: "white") }
+    var editorFontSize by remember { mutableFloatStateOf(displayPrefs.getInt("font_size", 19).toFloat()) }
+    var symbolMenu by remember { mutableStateOf(false) }
     var showArchived by remember { mutableStateOf(false) }
     var selectedCategory by remember { mutableStateOf("Semua") }
     var showAddCategory by remember { mutableStateOf(false) }
@@ -653,7 +660,7 @@ fun NotesScreen(
                 decorFitsSystemWindows = false
             )
         ) {
-            Surface(modifier = Modifier.fillMaxSize(), color = if (readingMode) readingBackground(displayPrefs.getString("background", "white") ?: "white") else Color.White) {
+            Surface(modifier = Modifier.fillMaxSize().padding(6.dp), shape = RoundedCornerShape(18.dp), border = BorderStroke(1.dp, Color(0xFFCED4D8)), color = readingBackground(editorBackground)) {
                 Column(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding()) {
                     if (readingMode) {
                         Row(Modifier.fillMaxWidth().padding(12.dp), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -664,24 +671,32 @@ fun NotesScreen(
                         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp)) {
                             Text(title.ifBlank { "Tanpa tajuk" }, fontSize = 27.sp, fontWeight = FontWeight.Bold)
                             Spacer(Modifier.height(16.dp))
-                            Text(formattedNoteText(body.text), fontSize = displayPrefs.getInt("font_size", 19).sp, lineHeight = (displayPrefs.getInt("font_size", 19) * displayPrefs.getFloat("line_spacing", 1.6f)).sp, color = if (displayPrefs.getString("background", "white") == "dark") Color.White else Color(0xFF263B3E))
+                            Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                                body.text.split("\\n").forEach { line ->
+                                    val arabic = line.any { it in '\\u0600'..'\\u06FF' }
+                                    Text(formattedNoteText(line), modifier = Modifier.fillMaxWidth(), textAlign = if (arabic) TextAlign.Right else TextAlign.Left,
+                                        style = androidx.compose.ui.text.TextStyle(textDirection = if (arabic) TextDirection.Rtl else TextDirection.Ltr),
+                                        fontSize = editorFontSize.sp, lineHeight = (editorFontSize * displayPrefs.getFloat("line_spacing", 1.6f)).sp,
+                                        color = if (editorBackground == "dark") Color.White else Color(0xFF263B3E))
+                                }
+                            }
                         }
                     } else {
-                    Surface(color = Color(0xFF08747A)) {
+                    Surface(color = Color.White) {
                     Row(
                         Modifier.fillMaxWidth().height(48.dp).padding(horizontal = 8.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
                     ) {
-                        TextButton(onClick = { persistNote(); showEditor = false }) { Text("←", color = Color.White, fontSize = 27.sp) }
-                        Text(if (editingId == null) "Nota Baharu" else "Edit Nota", modifier = Modifier.weight(1f), color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
+                        TextButton(onClick = { persistNote(); showEditor = false }) { Text("←", color = Color(0xFF08747A), fontSize = 27.sp) }
+                        Text(if (editingId == null) "Nota Baharu" else "Edit Nota", modifier = Modifier.weight(1f), color = Color(0xFF08747A), fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
                         Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                             TextButton(enabled = undoStack.isNotEmpty(), onClick = {
                                 if (undoStack.isNotEmpty()) { redoStack.add(body); body = undoStack.removeAt(undoStack.lastIndex) }
-                            }) { Text("↶", color = Color.White, fontSize = 23.sp) }
+                            }) { Text("↶", color = Color(0xFF08747A), fontSize = 23.sp) }
                             TextButton(enabled = redoStack.isNotEmpty(), onClick = {
                                 if (redoStack.isNotEmpty()) { undoStack.add(body); body = redoStack.removeAt(redoStack.lastIndex) }
-                            }) { Text("↷", color = Color.White, fontSize = 23.sp) }
+                            }) { Text("↷", color = Color(0xFF08747A), fontSize = 23.sp) }
                         }
                         TextButton(onClick = {
                             persistNote()
@@ -690,7 +705,7 @@ fun NotesScreen(
                                 putExtra(Intent.EXTRA_TEXT, title + "\n\n" + body.text)
                             }
                             context.startActivity(Intent.createChooser(intent, "Kongsi nota"))
-                        }) { Text("↗", color = Color.White, fontSize = 23.sp) }
+                        }) { Text("↗", color = Color(0xFF08747A), fontSize = 23.sp) }
                     }
                     }
                     HorizontalDivider(color = Color(0xFFF0F0F0))
@@ -739,7 +754,7 @@ fun NotesScreen(
                             body = next
                         },
                         modifier = Modifier.weight(1f).fillMaxWidth().padding(horizontal = 24.dp, vertical = 8.dp),
-                        textStyle = androidx.compose.ui.text.TextStyle(fontSize = 19.sp, color = Color(0xFF263B3E), lineHeight = 28.sp),
+                        textStyle = androidx.compose.ui.text.TextStyle(fontSize = editorFontSize.sp, color = Color(0xFF263B3E), lineHeight = (editorFontSize * 1.5f).sp, textDirection = TextDirection.ContentOrLtr),
                         decorationBox = { inner ->
                             Box {
                                 if (body.text.isEmpty()) Text("Tulis nota di sini", fontSize = 19.sp, color = Color.LightGray)
