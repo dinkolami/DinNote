@@ -3,6 +3,7 @@ package com.dinnote.app
 import android.content.Context
 import org.json.JSONArray
 import org.json.JSONObject
+import androidx.compose.foundation.border
 import androidx.compose.foundation.background
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -392,6 +393,7 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
                         value = content, onValueChange = { content = it },
                         modifier = Modifier.fillMaxWidth().weight(1f)
                             .padding(horizontal = 16.dp, vertical = 12.dp)
+                            .border(BorderStroke(1.dp, readerBorder), RoundedCornerShape(10.dp))
                             .background(editorBackground, RoundedCornerShape(10.dp))
                             .padding(10.dp),
                         textStyle = TextStyle(fontSize = readerFontSize.sp,
@@ -400,7 +402,7 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
                         decorationBox = { inner ->
                             Box {
                                 if (content.text.isEmpty()) Text("Tulis kandungan Arab atau Melayu...",
-                                    color = Color.Gray)
+                                    color = if (readerBackground == "dark") Color(0xFFB8CECB) else Color(0xFF667A7B))
                                 inner()
                             }
                         }
