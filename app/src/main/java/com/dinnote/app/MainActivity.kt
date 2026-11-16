@@ -774,14 +774,15 @@ fun NotesScreen(
                             .horizontalScroll(rememberScrollState()),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        val tools = listOf("Tᵀ" to "", "${editorFontSize.toInt()}" to "", "B" to "**", "I" to "_", "U" to "__", "A" to "**", "✎" to "✍ ", "☰" to "• ", "⋯" to "1. ", "☑" to "☐ ", "▧" to "▧ ", "📎" to "📎 ")
+                        val tools = listOf("A−" to "", "A+" to "", "B" to "**", "I" to "_", "U" to "__", "A" to "**", "✎" to "✍ ", "☰" to "• ", "⋯" to "1. ", "☑" to "☐ ", "▧" to "▧ ", "📎" to "📎 ")
+                        Text("${editorFontSize.toInt()} sp", modifier = Modifier.padding(top = 12.dp), color = Color(0xFF075B59), fontSize = 12.sp)
                         tools.forEach { (label, insertion) ->
                             TextButton(onClick = {
-                                if (label == editorFontSize.toInt().toString()) {
-                                    editorFontSize = if (editorFontSize >= 30f) 14f else editorFontSize + 2f
+                                if (label == "A+") {
+                                    editorFontSize = (editorFontSize + 2f).coerceAtMost(30f)
                                     displayPrefs.edit().putInt("font_size", editorFontSize.toInt()).apply()
-                                } else if (label == "Tᵀ") {
-                                    editorFontSize = if (editorFontSize <= 14f) 24f else editorFontSize - 2f
+                                } else if (label == "A−") {
+                                    editorFontSize = (editorFontSize - 2f).coerceAtLeast(14f)
                                     displayPrefs.edit().putInt("font_size", editorFontSize.toInt()).apply()
                                 } else if (insertion.isNotEmpty()) {
                                     val a = body.selection.min
