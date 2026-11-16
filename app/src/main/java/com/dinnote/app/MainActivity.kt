@@ -765,10 +765,16 @@ fun NotesScreen(
                             .horizontalScroll(rememberScrollState()),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        val tools = listOf("Tᵀ" to "**", "16" to "", "B" to "**", "I" to "_", "U" to "__", "A" to "**", "✎" to "✍ ", "☰" to "• ", "⋯" to "1. ", "☑" to "☐ ", "▧" to "▧ ", "📎" to "📎 ")
+                        val tools = listOf("Tᵀ" to "", "16" to "", "B" to "**", "I" to "_", "U" to "__", "A" to "**", "✎" to "✍ ", "☰" to "• ", "⋯" to "1. ", "☑" to "☐ ", "▧" to "▧ ", "📎" to "📎 ")
                         tools.forEach { (label, insertion) ->
                             TextButton(onClick = {
-                                if (insertion.isNotEmpty()) {
+                                if (label == "16") {
+                                    editorFontSize = if (editorFontSize >= 30f) 14f else editorFontSize + 2f
+                                    displayPrefs.edit().putInt("font_size", editorFontSize.toInt()).apply()
+                                } else if (label == "Tᵀ") {
+                                    editorFontSize = if (editorFontSize <= 14f) 24f else editorFontSize - 2f
+                                    displayPrefs.edit().putInt("font_size", editorFontSize.toInt()).apply()
+                                } else if (insertion.isNotEmpty()) {
                                     val a = body.selection.min
                                     val b = body.selection.max
                                     val selected = body.text.substring(a, b)
