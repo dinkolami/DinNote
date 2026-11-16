@@ -932,15 +932,39 @@ fun NotesScreen(
                 }
                 Column(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding()) {
                     if (readingMode) {
-                        Row(
-                            Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 2.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                        Box(
+                            Modifier.fillMaxWidth().height(56.dp).background(Color(0xFFF5FCFA))
                         ) {
-                            TextButton(onClick = { showEditor = false }, contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp)) { Text("← Kembali", fontSize = 13.sp) }
-                            TextButton(onClick = { readingMode = false }, contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp)) { Text("✎ Edit", fontSize = 13.sp) }
+                            androidx.compose.foundation.Image(
+                                painter = androidx.compose.ui.res.painterResource(R.drawable.dinnote_mosque_ornament),
+                                contentDescription = null,
+                                modifier = Modifier.align(androidx.compose.ui.Alignment.BottomCenter).width(150.dp).height(55.dp),
+                                contentScale = ContentScale.Fit
+                            )
+                            Row(
+                                Modifier.fillMaxSize().padding(horizontal = 8.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                            ) {
+                                OutlinedButton(
+                                    onClick = { showEditor = false },
+                                    modifier = Modifier.height(36.dp),
+                                    shape = RoundedCornerShape(22.dp),
+                                    border = BorderStroke(1.dp, Color(0xFF00999A)),
+                                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp),
+                                    colors = ButtonDefaults.outlinedButtonColors(containerColor = Color.White)
+                                ) { Text("← Kembali", fontSize = 13.sp, color = Color(0xFF007C80)) }
+                                OutlinedButton(
+                                    onClick = { readingMode = false },
+                                    modifier = Modifier.height(36.dp),
+                                    shape = RoundedCornerShape(22.dp),
+                                    border = BorderStroke(1.dp, Color(0xFF00999A)),
+                                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp),
+                                    colors = ButtonDefaults.outlinedButtonColors(containerColor = Color.White)
+                                ) { Text("✎ Edit", fontSize = 13.sp, color = Color(0xFF007C80)) }
+                            }
                         }
-                        HorizontalDivider()
+                        HorizontalDivider(thickness = 1.dp, color = Color(0xFF00999A))
                         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 5.dp, vertical = 12.dp).combinedClickable(onClick = {}, onDoubleClick = { readingMode = false })) {
                             Text(title.ifBlank { "Tanpa tajuk" }, fontSize = 23.sp, lineHeight = 28.sp, fontWeight = FontWeight.Bold)
                             Spacer(Modifier.height(10.dp))
