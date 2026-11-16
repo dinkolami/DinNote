@@ -69,6 +69,13 @@ jobs:
       - name: Build clean APK
         run: gradle --no-build-cache clean assembleDebug -PdinnoteVersionCode=${{ github.run_number }} -PdinnoteVersionName=2.3.${{ github.run_number }} --stacktrace --console=plain
 
+      - name: Verify APK signing certificate
+        run: |
+          APK=app/build/outputs/apk/debug/app-debug.apk
+          test -s "$APK"
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$APK"
+          echo "APK signature verification passed. Compare the printed SHA-256 signer fingerprint with the previously installed DinNote APK before claiming in-place update compatibility."
+
       - name: Verify and identify APK
         run: |
           test -s app/build/outputs/apk/debug/app-debug.apk
