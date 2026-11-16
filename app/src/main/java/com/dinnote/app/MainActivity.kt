@@ -78,31 +78,13 @@ fun DinNoteApp() {
             },
             bottomBar = {
                 Surface(
-                    modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = 10.dp, vertical = 4.dp),
-                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = 10.dp, vertical = 3.dp),
+                    shape = RoundedCornerShape(10.dp),
                     color = Color.White,
                     border = BorderStroke(1.dp, Color(0xFFD8DEE3)),
                     shadowElevation = 2.dp
                 ) {
-                    Box(Modifier.fillMaxWidth().height(54.dp)) {
-                        androidx.compose.foundation.Canvas(Modifier.matchParentSize()) {
-                            val w = size.width
-                            val h = size.height
-                            // Delicate Islamic arcade motif behind the navigation controls.
-                            val archStroke = androidx.compose.ui.graphics.drawscope.Stroke(width = 1.dp.toPx())
-                            for (i in 0..7) {
-                                val cx = w * (i + 0.5f) / 8f
-                                val half = w / 16f
-                                val arch = androidx.compose.ui.graphics.Path().apply {
-                                    moveTo(cx - half, h)
-                                    lineTo(cx - half, h * 0.56f)
-                                    quadraticBezierTo(cx - half, h * 0.25f, cx, h * 0.12f)
-                                    quadraticBezierTo(cx + half, h * 0.25f, cx + half, h * 0.56f)
-                                    lineTo(cx + half, h)
-                                }
-                                drawPath(arch, Color(0xFF55B7B4).copy(alpha = 0.13f), style = archStroke)
-                            }
-                        }
+                    Box(Modifier.fillMaxWidth().height(48.dp)) {
                         Row(
                             modifier = Modifier.fillMaxSize().padding(3.dp),
                             verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
