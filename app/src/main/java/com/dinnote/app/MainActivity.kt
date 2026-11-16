@@ -660,7 +660,7 @@ fun NotesScreen(
                 decorFitsSystemWindows = false
             )
         ) {
-            Surface(modifier = Modifier.fillMaxSize().padding(6.dp), shape = RoundedCornerShape(18.dp), border = BorderStroke(1.dp, Color(0xFFCED4D8)), color = readingBackground(editorBackground)) {
+            Surface(modifier = Modifier.fillMaxSize().padding(4.dp), shape = RoundedCornerShape(14.dp), border = BorderStroke(1.dp, Color(0xFFD8DEE3)), color = readingBackground(editorBackground)) {
                 Column(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding()) {
                     if (readingMode) {
                         Row(Modifier.fillMaxWidth().padding(12.dp), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -734,6 +734,26 @@ fun NotesScreen(
                             }
                         }
                     }
+                    HorizontalDivider(color = Color(0xFFF0F0F0))
+                    Row(
+                        Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(10.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        val tools = listOf("Aa" to "**", "B" to "**", "I" to "_", "U" to "__", "S" to "~~", "A" to "**", "✎" to "✍ ", "☷" to "• ", "☰" to "1. ", "☑" to "☐ ", "▧" to "▧ ", "📎" to "📎 ")
+                        tools.forEach { (label, insertion) ->
+                            TextButton(onClick = {
+                                if (insertion.isNotEmpty()) {
+                                    val a = body.selection.min
+                                    val b = body.selection.max
+                                    val selected = body.text.substring(a, b)
+                                    val newText = if (insertion == "**" || insertion == "_" || insertion == "__") insertion + selected + insertion else insertion + selected
+                                    val result = body.text.replaceRange(a, b, newText)
+                                    undoStack.add(body); redoStack.clear()
+                                    body = TextFieldValue(result, selection = TextRange(a + newText.length))
+                                }
+                            }) { Text(label, color = Color(0xFF4F9BC9), fontSize = 21.sp) }
+                        }
+                    }
                     androidx.compose.foundation.text.BasicTextField(
                         value = title,
                         onValueChange = { title = it },
@@ -762,26 +782,7 @@ fun NotesScreen(
                             }
                         }
                     )
-                    HorizontalDivider(color = Color(0xFFF0F0F0))
-                    Row(
-                        Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(10.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        val tools = listOf("Aa" to "**", "B" to "**", "I" to "_", "U" to "__", "S" to "~~", "A" to "**", "✎" to "✍ ", "☷" to "• ", "☰" to "1. ", "☑" to "☐ ", "▧" to "▧ ", "📎" to "📎 ")
-                        tools.forEach { (label, insertion) ->
-                            TextButton(onClick = {
-                                if (insertion.isNotEmpty()) {
-                                    val a = body.selection.min
-                                    val b = body.selection.max
-                                    val selected = body.text.substring(a, b)
-                                    val newText = if (insertion == "**" || insertion == "_" || insertion == "__") insertion + selected + insertion else insertion + selected
-                                    val result = body.text.replaceRange(a, b, newText)
-                                    undoStack.add(body); redoStack.clear()
-                                    body = TextFieldValue(result, selection = TextRange(a + newText.length))
-                                }
-                            }) { Text(label, color = Color(0xFF4F9BC9), fontSize = 21.sp) }
-                        }
-                    }
+
                     }
                 }
             }
