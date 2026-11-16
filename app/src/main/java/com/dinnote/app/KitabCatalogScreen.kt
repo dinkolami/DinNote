@@ -170,8 +170,10 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
             }
             val readerListState = rememberLazyListState()
             val readerScope = rememberCoroutineScope()
-            val savedParagraph = prefs.getInt("reading_position_${item.id}", 0)
-                .coerceIn(0, (paragraphs.size - 1).coerceAtLeast(0))
+            var savedParagraph by remember(item.id) {
+                mutableIntStateOf(prefs.getInt("reading_position_${item.id}", 0)
+                    .coerceIn(0, (paragraphs.size - 1).coerceAtLeast(0)))
+            }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text("Perenggan: ${paragraphs.size}", fontSize = 12.sp, color = Color(0xFF075B59))
                 TextButton(onClick = { readerScope.launch { readerListState.animateScrollToItem(savedParagraph) } },
@@ -191,7 +193,8 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
                             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                                 TextButton(onClick = {
                                     prefs.edit().putInt("reading_position_${item.id}", index).apply()
-                                }) { Text("Simpan tempat baca #${index + 1}", fontSize = 12.sp) }
+                                    savedParagraph = index
+                                }) { Text(if (savedParagraph == index) "✓ Tempat bacaan #${index + 1}" else "Simpan tempat baca #${index + 1}", fontSize = 12.sp) }
                                 TextButton(onClick = { toggleHighlight(item.id, index) }) {
                                     Text(if (highlighted) "★ Buang highlight" else "☆ Highlight perenggan",
                                         fontSize = 12.sp)
