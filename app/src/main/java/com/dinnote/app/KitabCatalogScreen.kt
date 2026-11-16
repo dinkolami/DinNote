@@ -35,7 +35,7 @@ private fun normalizedKitabText(value: String): String =
 private fun kitabMatches(value: String, query: String): Boolean =
     normalizedKitabText(value).contains(normalizedKitabText(query.trim()))
 
-private data class KitabItem(val id: Long, val title: String, val author: String, val content: String, val category: String, val favorite: Boolean)
+private data class KitabItem(val id: Long, val title: String, val author: String, val content: String, val category: String, val favorite: Boolean, val volume: String = "", val page: String = "", val chapter: String = "")
 
 @Composable
 fun KitabCatalogScreen(modifier: Modifier = Modifier) {
@@ -54,7 +54,8 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
                 for (i in 0 until array.length()) {
                     val o = array.getJSONObject(i)
                     add(KitabItem(o.getLong("id"), o.optString("title"), o.optString("author"),
-                        o.optString("content"), o.optString("category", "Umum"), o.optBoolean("favorite")))
+                        o.optString("content"), o.optString("category", "Umum"), o.optBoolean("favorite"),
+                        o.optString("volume"), o.optString("page"), o.optString("chapter")))
                 }
             }
         }
@@ -63,7 +64,8 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
         val array = JSONArray()
         books.forEach { b ->
             array.put(JSONObject().put("id", b.id).put("title", b.title).put("author", b.author)
-                .put("content", b.content).put("category", b.category).put("favorite", b.favorite))
+                .put("content", b.content).put("category", b.category).put("favorite", b.favorite)
+                .put("volume", b.volume).put("page", b.page).put("chapter", b.chapter))
         }
         prefs.edit().putString("books", array.toString()).apply()
     }
@@ -76,6 +78,9 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
     var author by remember { mutableStateOf("") }
     var content by remember { mutableStateOf(TextFieldValue("")) }
     var category by remember { mutableStateOf("Umum") }
+    var volume by remember { mutableStateOf("") }
+    var page by remember { mutableStateOf("") }
+    var chapter by remember { mutableStateOf("") }
     var ascending by remember { mutableStateOf(true) }
     fun startEdit(item: KitabItem?) {
         editing = item
@@ -83,6 +88,9 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
         author = item?.author.orEmpty()
         content = TextFieldValue(item?.content.orEmpty())
         category = item?.category ?: "Umum"
+        volume = item?.volume.orEmpty()
+        page = item?.page.orEmpty()
+        chapter = item?.chapter.orEmpty()
         editorVisible = true
     }
     if (opened != null) {
@@ -95,6 +103,12 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
             Text(item.title, fontSize = 27.sp, fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Right, modifier = Modifier.fillMaxWidth())
             Text(item.author, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Right)
+            if (item.volume.isNotBlank() || item.page.isNotBlank() || item.chapter.isNotBlank()) {
+                Text(listOfNotNull(item.chapter.takeIf { it.isNotBlank() }?.let { "Bab: $it" },
+                    item.volume.takeIf { it.isNotBlank() }?.let { "Jilid: $it" },
+                    item.page.takeIf { it.isNotBlank() }?.let { "Halaman: $it" }).joinToString(" • "),
+                    fontSize = 13.sp, color = Color(0xFF075B59))
+            }
             HorizontalDivider(Modifier.padding(vertical = 14.dp))
             LazyColumn {
                 item {
@@ -184,7 +198,8 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
                             if (title.isNotBlank()) {
                                 val old = editing
                                 val saved = KitabItem(old?.id ?: System.currentTimeMillis(),
-                                    title, author, content.text, category, old?.favorite ?: false)
+                                    title, author, content.text, category, old?.favorite ?: false,
+                                    volume.trim(), page.trim(), chapter.trim())
                                 val index = books.indexOfFirst { it.id == saved.id }
                                 if (index < 0) books.add(saved) else books[index] = saved
                                 persist()
@@ -220,6 +235,14 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
                         OutlinedTextField(category, { category = it }, modifier = Modifier.weight(1f),
                             label = { Text("Kategori") }, singleLine = true)
                     }
+                    Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        OutlinedTextField(volume, { volume = it }, modifier = Modifier.weight(1f),
+                            label = { Text("Jilid") }, singleLine = true)
+                        OutlinedTextField(page, { page = it }, modifier = Modifier.weight(1f),
+                            label = { Text("Halaman") }, singleLine = true)
+                    }
+                    OutlinedTextField(chapter, { chapter = it }, modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
+                        label = { Text("Bab / fasal") }, singleLine = true)
                     BasicTextField(
                         value = content, onValueChange = { content = it },
                         modifier = Modifier.fillMaxWidth().weight(1f)
