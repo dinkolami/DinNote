@@ -180,6 +180,7 @@ fun NotesScreen(modifier: Modifier = Modifier) {
     var categoryToRename by remember { mutableStateOf<String?>(null) }
     var renamedCategory by remember { mutableStateOf("") }
     var categoryToDelete by remember { mutableStateOf<String?>(null) }
+    var noteToDelete by remember { mutableStateOf<DinNote?>(null) }
     val builtInCategories = listOf("Agama", "Pengajian", "Peribadi", "Kerja", "Idea", "Lain-lain")
     val customCategories = remember {
         mutableStateListOf<String>().apply {
@@ -344,10 +345,7 @@ fun NotesScreen(modifier: Modifier = Modifier) {
                                     database.setArchived(item.id, !item.archived)
                                     refreshNotes()
                                 }) { Text(if (item.archived) "Pulihkan" else "Arkib") }
-                                TextButton(onClick = {
-                                    database.delete(item.id)
-                                    refreshNotes()
-                                }) { Text("Padam") }
+                                TextButton(onClick = { noteToDelete = item }) { Text("Padam") }
                                 TextButton(onClick = {
                                     editingId = item.id
                                     title = item.title
@@ -395,6 +393,23 @@ fun NotesScreen(modifier: Modifier = Modifier) {
         )
     }
 
+    noteToDelete?.let { note ->
+        AlertDialog(
+            onDismissRequest = { noteToDelete = null },
+            title = { Text("Padam nota?") },
+            text = { Text("Nota \"${note.title.ifBlank { "Tanpa tajuk" }}\" akan dipadam. Tindakan ini tidak boleh dibatalkan.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    database.delete(note.id)
+                    noteToDelete = null
+                    refreshNotes()
+                }) { Text("Ya, padam") }
+            },
+            dismissButton = {
+                TextButton(onClick = { noteToDelete = null }) { Text("Batal") }
+            }
+        )
+    }
     if (showManageCategories) {
         AlertDialog(
             onDismissRequest = { showManageCategories = false },
