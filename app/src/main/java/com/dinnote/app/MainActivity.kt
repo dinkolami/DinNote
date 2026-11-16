@@ -1126,16 +1126,9 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
             onDismissRequest = { saveLibraryEditor(); editingLibraryKey = null },
             properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)
         ) {
-            Surface(Modifier.fillMaxSize().padding(6.dp), shape = RoundedCornerShape(14.dp), border = BorderStroke(1.5.dp, Color(0xFFD8B66A)), color = Color.White) {
+            Surface(Modifier.fillMaxSize().padding(6.dp), shape = RoundedCornerShape(18.dp), border = BorderStroke(2.dp, Color(0xFFD5AD55)), color = Color.White) {
                 Column(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding()) {
-                    Surface(color = Color(0xFF006E70), shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)) {
-                    Row(Modifier.fillMaxWidth().height(52.dp).padding(horizontal = 8.dp),
-                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                        TextButton(onClick = { saveLibraryEditor(); editingLibraryKey = null }) { Text("←", color = Color.White, fontSize = 24.sp) }
-                        Text("✎ Catatan Maktabah", modifier = Modifier.weight(1f), fontSize = 15.sp, color = Color.White, fontWeight = FontWeight.SemiBold)
-                        TextButton(onClick = { saveLibraryEditor(); editingLibraryKey = null }) { Text("✓", color = Color(0xFFFFD56A), fontSize = 23.sp) }
-                    }
-                    }
+                    UnifiedEditorHeading("Catatan Maktabah", onBack = { saveLibraryEditor(); editingLibraryKey = null }, onSave = { saveLibraryEditor(); editingLibraryKey = null })
                     HorizontalDivider(color = Color(0xFFD8B66A))
                     Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(5.dp)) {
                         listOf("B" to "**", "I" to "_", "U" to "__", "S" to "~~", "•" to "• ", "1." to "1. ", "☑" to "☐ ").forEach { (label, marker) ->
@@ -1154,13 +1147,9 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                         modifier = Modifier.fillMaxWidth().padding(16.dp),
                         singleLine = true,
                         textStyle = androidx.compose.ui.text.TextStyle(fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF087F83), textDirection = TextDirection.ContentOrRtl),
-                        decorationBox = { inner -> Box { if (libraryTitle.isEmpty()) Text("✒  Tajuk", color = Color(0xFF087F83), fontSize = 18.sp); inner() } }
+                        decorationBox = { inner -> Box { if (libraryTitle.isEmpty()) Text("🪶  Tajuk", color = Color(0xFF087F83), fontSize = 18.sp); inner() } }
                     )
-                    Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                        HorizontalDivider(Modifier.weight(1f), color = Color(0xFFD8B66A))
-                        Text(" ❖ ", color = Color(0xFFC9A24A))
-                        HorizontalDivider(Modifier.weight(1f), color = Color(0xFFD8B66A))
-                    }
+                    UnifiedEditorDivider()
                     androidx.compose.foundation.text.BasicTextField(
                         value = libraryBody, onValueChange = { libraryBody = it },
                         modifier = Modifier.weight(1f).fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
@@ -1191,6 +1180,30 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                 TextButton(onClick = { selectedEntry = null }) { Text("Tutup") }
             }
         )
+    }
+}
+
+@Composable
+private fun UnifiedEditorHeading(title: String, onBack: () -> Unit, onSave: () -> Unit) {
+    Surface(color = Color(0xFF006E70), shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp),
+        border = BorderStroke(1.dp, Color(0xFFD5AD55))) {
+        Row(Modifier.fillMaxWidth().height(52.dp).padding(horizontal = 8.dp),
+            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+            TextButton(onClick = onBack) { Text("←", color = Color.White, fontSize = 24.sp) }
+            Text("✎  " + title, modifier = Modifier.weight(1f), fontSize = 15.sp,
+                color = Color.White, fontWeight = FontWeight.SemiBold)
+            TextButton(onClick = onSave) { Text("✓", color = Color(0xFFFFD56A), fontSize = 27.sp) }
+        }
+    }
+}
+
+@Composable
+private fun UnifiedEditorDivider() {
+    Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+        HorizontalDivider(Modifier.weight(1f), color = Color(0xFFD8B66A), thickness = 1.dp)
+        Text(" ۞ ", color = Color(0xFFC9A24A), fontSize = 21.sp)
+        HorizontalDivider(Modifier.weight(1f), color = Color(0xFFD8B66A), thickness = 1.dp)
     }
 }
 
