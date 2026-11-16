@@ -672,8 +672,8 @@ fun NotesScreen(
                             Text(title.ifBlank { "Tanpa tajuk" }, fontSize = 27.sp, fontWeight = FontWeight.Bold)
                             Spacer(Modifier.height(16.dp))
                             Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                                body.text.split("\\n").forEach { line ->
-                                    val arabic = line.any { it in '\\u0600'..'\\u06FF' }
+                                body.text.split("\n").forEach { line ->
+                                    val arabic = line.any { it in '\u0600'..'\u06FF' }
                                     Text(formattedNoteText(line), modifier = Modifier.fillMaxWidth(), textAlign = if (arabic) TextAlign.Right else TextAlign.Left,
                                         style = androidx.compose.ui.text.TextStyle(textDirection = if (arabic) TextDirection.Rtl else TextDirection.Ltr),
                                         fontSize = editorFontSize.sp, lineHeight = (editorFontSize * displayPrefs.getFloat("line_spacing", 1.6f)).sp,
