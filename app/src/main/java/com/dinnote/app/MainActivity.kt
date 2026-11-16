@@ -708,7 +708,7 @@ fun NotesScreen(
                             }
                         }
                     } else {
-                    Surface(color = Color(0xFF006E70), shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)) {
+                    Surface(color = Color(0xFF006E70), shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp), border = BorderStroke(1.dp, Color(0xFFD5AD55))) {
                         Row(
                             Modifier.fillMaxWidth().height(52.dp).padding(horizontal = 4.dp),
                             verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
@@ -717,7 +717,7 @@ fun NotesScreen(
                                 Text("←", color = Color.White, fontSize = 25.sp)
                             }
                             Text(
-                                if (editingId == null) "✎ Catatan Baharu" else "✎ Edit Catatan",
+                                if (editingId == null) "✎  Catatan Baharu" else "✎  Edit Catatan",
                                 modifier = Modifier.weight(1f),
                                 color = Color.White, fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold, maxLines = 1
@@ -729,7 +729,7 @@ fun NotesScreen(
                                 if (redoStack.isNotEmpty()) { undoStack.add(body); body = redoStack.removeAt(redoStack.lastIndex) }
                             }) { Text("↷", color = Color.White, fontSize = 22.sp) }
                             TextButton(onClick = { persistNote(); readingMode = true }) {
-                                Text("✓", color = Color(0xFFFFD56A), fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                                Text("✓", color = Color(0xFFFFD56A), fontSize = 27.sp, fontWeight = FontWeight.Bold)
                             }
                         }
                     }
@@ -740,14 +740,14 @@ fun NotesScreen(
                         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
                     ) {
                         Text(
-                            java.text.SimpleDateFormat("dd/MM, h:mm a", java.util.Locale("ms", "MY"))
+                            java.text.SimpleDateFormat("dd MMM yyyy • h:mm a", java.util.Locale("ms", "MY"))
                                 .format(java.util.Date()),
                             color = Color.Gray, fontSize = 13.sp
                         )
                         var categoryExpanded by remember { mutableStateOf(false) }
                         Box {
                             TextButton(onClick = { categoryExpanded = true }) {
-                                Text("▣  $selectedCategory  ▾", color = Color(0xFF536A70))
+                                Text("◇  Kategori: $selectedCategory  ▾", color = Color(0xFF006E70), fontSize = 13.sp)
                             }
                             DropdownMenu(expanded = categoryExpanded, onDismissRequest = { categoryExpanded = false }) {
                                 allCategories.forEach { category ->
@@ -764,7 +764,7 @@ fun NotesScreen(
                         Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal = 6.dp, vertical = 2.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        val tools = listOf("Aa" to "**", "B" to "**", "I" to "_", "U" to "__", "S" to "~~", "A" to "**", "✎" to "✍ ", "☷" to "• ", "☰" to "1. ", "☑" to "☐ ", "▧" to "▧ ", "📎" to "📎 ")
+                        val tools = listOf("Tᵀ" to "**", "16" to "", "B" to "**", "I" to "_", "U" to "__", "S" to "~~", "A" to "**", "✎" to "✍ ", "☷" to "• ", "☰" to "1. ", "☑" to "☐ ", "▧" to "▧ ", "📎" to "📎 ")
                         tools.forEach { (label, insertion) ->
                             TextButton(onClick = {
                                 if (insertion.isNotEmpty()) {
@@ -782,9 +782,9 @@ fun NotesScreen(
 
                     Surface(
                         modifier = Modifier.fillMaxWidth().weight(1f).padding(horizontal = 10.dp, vertical = 8.dp),
-                        shape = RoundedCornerShape(10.dp),
+                        shape = RoundedCornerShape(18.dp),
                         color = Color.White,
-                        border = BorderStroke(1.dp, Color(0xFF008F91))
+                        border = BorderStroke(2.dp, Color(0xFFD5AD55))
                     ) {
                         Box(Modifier.fillMaxSize()) {
                             // Decorative mosque arcade stays behind the text, at the bottom.
@@ -826,7 +826,7 @@ fun NotesScreen(
                                     ),
                                     decorationBox = { inner ->
                                         Box {
-                                            if (title.isEmpty()) Text("✒  Tajuk", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF087F83))
+                                            if (title.isEmpty()) Text("🪶  Tajuk", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF087F83))
                                             inner()
                                         }
                                     }
@@ -834,7 +834,7 @@ fun NotesScreen(
                                 Spacer(Modifier.height(12.dp))
                                 Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                                     HorizontalDivider(modifier = Modifier.weight(1f), color = Color(0xFFD8B66A), thickness = 1.dp)
-                                    Text(" ❖ ", color = Color(0xFFC9A24A), fontSize = 15.sp)
+                                    Text(" ۞ ", color = Color(0xFFC9A24A), fontSize = 21.sp)
                                     HorizontalDivider(modifier = Modifier.weight(1f), color = Color(0xFFD8B66A), thickness = 1.dp)
                                 }
                                 Spacer(Modifier.height(12.dp))
