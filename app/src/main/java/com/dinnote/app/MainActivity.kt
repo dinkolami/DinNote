@@ -823,6 +823,14 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val libraryPrefs = remember { context.getSharedPreferences("dinnote_library_edits", android.content.Context.MODE_PRIVATE) }
     var libraryRevision by remember { mutableIntStateOf(0) }
+    var showAddCategory by remember { mutableStateOf(false) }
+    var newCategoryName by remember { mutableStateOf("") }
+    var categoryToRename by remember { mutableStateOf<String?>(null) }
+    val builtinLibraryCategories = listOf("Kalimah Tayyibah", "Kitab-Kitab", "Kalam Hikmah")
+    val customLibraryCategories = remember(libraryRevision) {
+        libraryPrefs.getString("custom_categories", "")!!.split("\\n").filter { it.isNotBlank() }
+    }
+    val allLibraryCategories = builtinLibraryCategories + customLibraryCategories
     var editingLibraryKey by remember { mutableStateOf<String?>(null) }
     var libraryTitle by remember { mutableStateOf("") }
     var libraryBody by remember { mutableStateOf(TextFieldValue("")) }
@@ -856,16 +864,22 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
         Text("Perpustakaan", fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
 
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(6.dp)
-        ) {
-            listOf("Kalimah Tayyibah", "Kitab-Kitab", "Kalam Hikmah").forEach { category ->
-                FilterChip(
-                    selected = selectedCategory == category,
-                    onClick = { selectedCategory = category; search = "" },
-                    label = { Text(category, fontSize = 11.sp) }
-                )
+        Row(Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+            Row(Modifier.weight(1f).horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                allLibraryCategories.forEach { category ->
+                    FilterChip(
+                        selected = selectedCategory == category,
+                        onClick = { selectedCategory = category; search = "" },
+                        label = { Text(category, fontSize = 11.sp) }
+                    )
+                }
+            }
+            TextButton(onClick = { newCategoryName = ""; showAddCategory = true }) { Text("+ Kategori") }
+        }
+        if (selectedCategory in customLibraryCategories) {
+            TextButton(onClick = { categoryToRename = selectedCategory; newCategoryName = selectedCategory }) {
+                Text("✎ Ubah nama kategori")
             }
         }
 
@@ -932,7 +946,7 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
-                Button(onClick = { openLibraryEditor("entry_Kalam Hikmah_" + System.currentTimeMillis()) }) { Text("+ Tambah Kalam Hikmah") }
+                Button(onClick = { openLibraryEditor("entry_" + selectedCategory + "_" + System.currentTimeMillis()) }) { Text("+ Tambah Kandungan") }
                 libraryItems.filter { (libraryPrefs.getString(it + "_title", "") ?: "").contains(search, true) ||
                     (libraryPrefs.getString(it + "_body", "") ?: "").contains(search, true) }.forEach { key ->
                     Card(Modifier.fillMaxWidth().clickable { openLibraryEditor(key) }) {
@@ -944,6 +958,41 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                 }
             }
         }
+    }
+
+    if (showAddCategory || categoryToRename != null) {
+        AlertDialog(
+            onDismissRequest = { showAddCategory = false; categoryToRename = null },
+            title = { Text(if (categoryToRename == null) "Tambah kategori" else "Ubah nama kategori") },
+            text = {
+                OutlinedTextField(value = newCategoryName, onValueChange = { newCategoryName = it },
+                    label = { Text("Nama kategori") }, singleLine = true)
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    val name = newCategoryName.trim()
+                    val old = categoryToRename
+                    if (name.isNotEmpty() && (name == old || name !in allLibraryCategories)) {
+                        val updated = if (old == null) customLibraryCategories + name
+                            else customLibraryCategories.map { if (it == old) name else it }
+                        if (old != null && old != name) {
+                            libraryPrefs.all.keys.filter { it.startsWith("entry_" + old + "_") }.forEach { key ->
+                                val newKey = "entry_" + name + "_" + key.removePrefix("entry_" + old + "_")
+                                libraryPrefs.edit().putString(newKey, libraryPrefs.getString(key, "")).remove(key).apply()
+                            }
+                        }
+                        libraryPrefs.edit().putString("custom_categories", updated.joinToString("\\n")).apply()
+                        selectedCategory = name
+                        libraryRevision++
+                        showAddCategory = false
+                        categoryToRename = null
+                    }
+                }) { Text("Simpan") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showAddCategory = false; categoryToRename = null }) { Text("Batal") }
+            }
+        )
     }
 
     if (editingLibraryKey != null) {
