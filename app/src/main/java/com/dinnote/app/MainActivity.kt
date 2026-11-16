@@ -1280,7 +1280,8 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                                         .border(BorderStroke(1.dp, Color(0xFFE0E7E6)), RoundedCornerShape(10.dp))
                                         .padding(horizontal = 14.dp, vertical = 12.dp),
                                     textStyle = androidx.compose.ui.text.TextStyle(fontSize = libraryFontSize.sp,
-                                        lineHeight = (libraryFontSize * libraryDisplayPrefs.getFloat("line_spacing", 1.6f)).sp, color = Color(0xFF263B3E),
+                                        lineHeight = (libraryFontSize * libraryDisplayPrefs.getFloat("line_spacing", 1.6f).coerceIn(1.2f, 2.2f)).sp,
+                                        color = Color(0xFF263B3E),
                                         textDirection = TextDirection.ContentOrRtl),
                                     decorationBox = { inner ->
                                         Box {
