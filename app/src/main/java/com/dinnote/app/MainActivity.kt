@@ -1154,15 +1154,17 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
             onDismissRequest = { saveLibraryEditor(); editingLibraryKey = null },
             properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)
         ) {
-            Surface(Modifier.fillMaxSize().padding(6.dp), shape = RoundedCornerShape(18.dp), border = BorderStroke(1.dp, Color(0xFFCED4D8)), color = Color.White) {
+            Surface(Modifier.fillMaxSize().padding(6.dp), shape = RoundedCornerShape(14.dp), border = BorderStroke(1.5.dp, Color(0xFFD8B66A)), color = Color.White) {
                 Column(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding()) {
-                    Row(Modifier.fillMaxWidth().height(48.dp).padding(horizontal = 8.dp),
+                    Surface(color = Color(0xFF006E70), shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)) {
+                    Row(Modifier.fillMaxWidth().height(52.dp).padding(horizontal = 8.dp),
                         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                        TextButton(onClick = { saveLibraryEditor(); editingLibraryKey = null }) { Text("← Selesai") }
-                        Text("Editor Maktabah", fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
+                        TextButton(onClick = { saveLibraryEditor(); editingLibraryKey = null }) { Text("←", color = Color.White, fontSize = 24.sp) }
+                        Text("✎ Catatan Maktabah", modifier = Modifier.weight(1f), fontSize = 15.sp, color = Color.White, fontWeight = FontWeight.SemiBold)
+                        TextButton(onClick = { saveLibraryEditor(); editingLibraryKey = null }) { Text("✓", color = Color(0xFFFFD56A), fontSize = 23.sp) }
                     }
-                    HorizontalDivider()
-                    HorizontalDivider()
+                    }
+                    HorizontalDivider(color = Color(0xFFD8B66A))
                     Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(5.dp)) {
                         listOf("B" to "**", "I" to "_", "U" to "__", "S" to "~~", "•" to "• ", "1." to "1. ", "☑" to "☐ ").forEach { (label, marker) ->
                             TextButton(onClick = {
@@ -1179,13 +1181,18 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                         value = libraryTitle, onValueChange = { libraryTitle = it },
                         modifier = Modifier.fillMaxWidth().padding(16.dp),
                         singleLine = true,
-                        textStyle = androidx.compose.ui.text.TextStyle(fontSize = 25.sp, color = Color(0xFF263B3E)),
-                        decorationBox = { inner -> Box { if (libraryTitle.isEmpty()) Text("Tajuk kitab / hikmah", color = Color.Gray); inner() } }
+                        textStyle = androidx.compose.ui.text.TextStyle(fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF087F83), textDirection = TextDirection.ContentOrRtl),
+                        decorationBox = { inner -> Box { if (libraryTitle.isEmpty()) Text("✒  Tajuk", color = Color(0xFF087F83), fontSize = 18.sp); inner() } }
                     )
+                    Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                        HorizontalDivider(Modifier.weight(1f), color = Color(0xFFD8B66A))
+                        Text(" ❖ ", color = Color(0xFFC9A24A))
+                        HorizontalDivider(Modifier.weight(1f), color = Color(0xFFD8B66A))
+                    }
                     androidx.compose.foundation.text.BasicTextField(
                         value = libraryBody, onValueChange = { libraryBody = it },
                         modifier = Modifier.weight(1f).fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
-                        textStyle = androidx.compose.ui.text.TextStyle(fontSize = 19.sp, lineHeight = 29.sp, color = Color(0xFF263B3E), textDirection = TextDirection.ContentOrRtl),
+                        textStyle = androidx.compose.ui.text.TextStyle(fontSize = 16.sp, lineHeight = 26.sp, color = Color(0xFF263B3E), textDirection = TextDirection.ContentOrRtl),
                         decorationBox = { inner -> Box { if (libraryBody.text.isEmpty()) Text("Tulis kandungan Arab atau Rumi...", color = Color.Gray); inner() } }
                     )
 
