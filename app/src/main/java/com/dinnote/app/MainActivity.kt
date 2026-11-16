@@ -599,8 +599,8 @@ fun NotesScreen(
             LazyVerticalGrid(
                 columns = GridCells.Fixed(1),
                 modifier = Modifier.weight(1f).fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
                 contentPadding = PaddingValues(bottom = 8.dp)
             ) {
                 items(orderedNotes.size) { index ->
@@ -612,9 +612,16 @@ fun NotesScreen(
                         shape = RoundedCornerShape(10.dp),
                         border = BorderStroke(1.dp, Color(0xFFB7DCD7))
                     ) {
-                        Column(Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                        Column(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 7.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                                 Text(item.category, color = MaterialTheme.colorScheme.primary, fontSize = 10.sp, maxLines = 1)
+                                Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                            Text(
+                                java.text.SimpleDateFormat("dd MMM", java.util.Locale("ms", "MY"))
+                                    .format(java.util.Date(item.updatedAt)),
+                                fontSize = 10.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                                 Box {
                                     Text("⋮", modifier = Modifier.clickable { menuExpanded = true }, fontSize = 20.sp)
                                     DropdownMenu(expanded = menuExpanded, onDismissRequest = { menuExpanded = false }) {
@@ -644,6 +651,7 @@ fun NotesScreen(
                                         DropdownMenuItem(text = { Text("Padam") }, onClick = { noteToDelete = item; menuExpanded = false })
                                     }
                                 }
+                                }
                             }
                             Column(
                                 Modifier.fillMaxWidth().combinedClickable(
@@ -671,14 +679,7 @@ fun NotesScreen(
                                 verticalArrangement = Arrangement.spacedBy(6.dp)
                             ) {
                                 Text(item.title.ifBlank { "Tanpa tajuk" }, fontWeight = FontWeight.Bold, maxLines = 2)
-                                Text(formattedNoteText(item.body), maxLines = 2, fontSize = 13.sp)
                             }
-                            Text(
-                                java.text.SimpleDateFormat("dd MMM", java.util.Locale("ms", "MY"))
-                                    .format(java.util.Date(item.updatedAt)),
-                                fontSize = 10.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
                         }
                     }
                 }
