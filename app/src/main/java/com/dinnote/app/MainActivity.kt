@@ -79,9 +79,9 @@ fun DinNoteApp() {
             bottomBar = {
                 Surface(
                     modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = 10.dp, vertical = 4.dp),
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedCornerShape(12.dp),
                     color = Color.White,
-                    border = BorderStroke(1.dp, Color(0xFF88C9C8)),
+                    border = BorderStroke(1.dp, Color(0xFFD8DEE3)),
                     shadowElevation = 2.dp
                 ) {
                     Box(Modifier.fillMaxWidth().height(54.dp)) {
@@ -111,7 +111,6 @@ fun DinNoteApp() {
                                 Triple("Utama", "⌂", 0),
                                 Triple("Nota", "✎", 1),
                                 Triple("Maktabah", "▤", 2),
-                                Triple("Carian", "⌕", 3),
                                 Triple("Tetapan", "⚙", 4)
                             )
                             tabs.forEachIndexed { index, tab ->
