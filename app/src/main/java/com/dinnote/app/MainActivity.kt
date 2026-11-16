@@ -736,31 +736,30 @@ fun NotesScreen(
                             }
                         }
                     } else {
-                    Surface(color = Color(0xFF006E70)) {
-                    Row(
-                        Modifier.fillMaxWidth().height(48.dp).padding(horizontal = 8.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
-                    ) {
-                        TextButton(onClick = { persistNote(); showEditor = false }) { Text("←", color = Color(0xFF08747A), fontSize = 27.sp) }
-                        Text(if (editingId == null) "Catatan Baharu" else "Edit Catatan", modifier = Modifier.weight(1f), color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
-                        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                    Surface(color = Color(0xFF006E70), shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)) {
+                        Row(
+                            Modifier.fillMaxWidth().height(52.dp).padding(horizontal = 4.dp),
+                            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                        ) {
+                            TextButton(onClick = { persistNote(); showEditor = false }) {
+                                Text("←", color = Color.White, fontSize = 25.sp)
+                            }
+                            Text(
+                                if (editingId == null) "✎ Catatan Baharu" else "✎ Edit Catatan",
+                                modifier = Modifier.weight(1f),
+                                color = Color.White, fontSize = 15.sp,
+                                fontWeight = FontWeight.SemiBold, maxLines = 1
+                            )
                             TextButton(enabled = undoStack.isNotEmpty(), onClick = {
                                 if (undoStack.isNotEmpty()) { redoStack.add(body); body = undoStack.removeAt(undoStack.lastIndex) }
-                            }) { Text("↶", color = Color(0xFF08747A), fontSize = 23.sp) }
+                            }) { Text("↶", color = Color.White, fontSize = 22.sp) }
                             TextButton(enabled = redoStack.isNotEmpty(), onClick = {
                                 if (redoStack.isNotEmpty()) { undoStack.add(body); body = redoStack.removeAt(redoStack.lastIndex) }
-                            }) { Text("↷", color = Color(0xFF08747A), fontSize = 23.sp) }
-                        }
-                        TextButton(onClick = {
-                            persistNote()
-                            val intent = Intent(Intent.ACTION_SEND).apply {
-                                type = "text/plain"
-                                putExtra(Intent.EXTRA_TEXT, title + "\n\n" + body.text)
+                            }) { Text("↷", color = Color.White, fontSize = 22.sp) }
+                            TextButton(onClick = { persistNote(); readingMode = true }) {
+                                Text("✓", color = Color(0xFFFFD56A), fontSize = 24.sp, fontWeight = FontWeight.Bold)
                             }
-                            context.startActivity(Intent.createChooser(intent, "Kongsi nota"))
-                        }) { Text("↗", color = Color(0xFF08747A), fontSize = 23.sp) }
-                    }
+                        }
                     }
                     HorizontalDivider(color = Color(0xFFF0F0F0))
                     Row(
@@ -861,7 +860,11 @@ fun NotesScreen(
                                     }
                                 )
                                 Spacer(Modifier.height(12.dp))
-                                HorizontalDivider(color = Color(0xFFD8B66A), thickness = 1.dp)
+                                Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                                    HorizontalDivider(modifier = Modifier.weight(1f), color = Color(0xFFD8B66A), thickness = 1.dp)
+                                    Text(" ❖ ", color = Color(0xFFC9A24A), fontSize = 15.sp)
+                                    HorizontalDivider(modifier = Modifier.weight(1f), color = Color(0xFFD8B66A), thickness = 1.dp)
+                                }
                                 Spacer(Modifier.height(12.dp))
                                 androidx.compose.foundation.text.BasicTextField(
                                     value = body,
