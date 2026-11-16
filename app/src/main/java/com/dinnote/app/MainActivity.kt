@@ -1142,6 +1142,12 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                             }) { Text(label) }
                         }
                     }
+                    Surface(Modifier.fillMaxWidth().weight(1f).padding(horizontal = 10.dp, vertical = 8.dp),
+                        shape = RoundedCornerShape(18.dp), color = Color.White,
+                        border = BorderStroke(2.dp, Color(0xFFD5AD55))) {
+                      Box(Modifier.fillMaxSize()) {
+                        UnifiedEditorMosqueFooter(Modifier.align(androidx.compose.ui.Alignment.BottomCenter))
+                        Column(Modifier.fillMaxSize().padding(horizontal = 8.dp, vertical = 6.dp)) {
                     androidx.compose.foundation.text.BasicTextField(
                         value = libraryTitle, onValueChange = { libraryTitle = it },
                         modifier = Modifier.fillMaxWidth().padding(16.dp),
@@ -1154,9 +1160,11 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                         value = libraryBody, onValueChange = { libraryBody = it },
                         modifier = Modifier.weight(1f).fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
                         textStyle = androidx.compose.ui.text.TextStyle(fontSize = 16.sp, lineHeight = 26.sp, color = Color(0xFF263B3E), textDirection = TextDirection.ContentOrRtl),
-                        decorationBox = { inner -> Box { if (libraryBody.text.isEmpty()) Text("Tulis kandungan Arab atau Rumi...", color = Color.Gray); inner() } }
+                        decorationBox = { inner -> Box { if (libraryBody.text.isEmpty()) Text("✎  Tulis catatan anda di sini...", color = Color.Gray); inner() } }
                     )
-
+                        }
+                      }
+                    }
                 }
             }
         }
@@ -1194,6 +1202,41 @@ private fun UnifiedEditorHeading(title: String, onBack: () -> Unit, onSave: () -
                 color = Color.White, fontWeight = FontWeight.SemiBold)
             TextButton(onClick = onSave) { Text("✓", color = Color(0xFFFFD56A), fontSize = 27.sp) }
         }
+    }
+}
+
+@Composable
+private fun UnifiedEditorMosqueFooter(modifier: Modifier = Modifier) {
+    androidx.compose.foundation.Canvas(modifier.fillMaxWidth().height(82.dp)) {
+        val w = size.width
+        val h = size.height
+        val teal = Color(0xFF008F93)
+        val gold = Color(0xFFD5AD55)
+        val stroke = androidx.compose.ui.graphics.drawscope.Stroke(width = 1.2.dp.toPx())
+        drawRect(Color(0xFFEAF8F7).copy(alpha = 0.65f))
+        for (i in 0..10) {
+            val cx = w * (i + 0.5f) / 11f
+            val half = w / 25f
+            val peak = if (i % 3 == 0) h * 0.13f else h * 0.33f
+            val arch = androidx.compose.ui.graphics.Path().apply {
+                moveTo(cx - half, h)
+                lineTo(cx - half, h * 0.57f)
+                quadraticBezierTo(cx - half, peak + h * 0.08f, cx, peak)
+                quadraticBezierTo(cx + half, peak + h * 0.08f, cx + half, h * 0.57f)
+                lineTo(cx + half, h)
+            }
+            drawPath(arch, teal.copy(alpha = 0.26f), style = stroke)
+        }
+        val wave = androidx.compose.ui.graphics.Path().apply {
+            moveTo(0f, h * 0.84f)
+            quadraticBezierTo(w * 0.23f, h * 0.57f, w * 0.48f, h * 0.83f)
+            quadraticBezierTo(w * 0.72f, h * 1.02f, w, h * 0.68f)
+            lineTo(w, h)
+            lineTo(0f, h)
+            close()
+        }
+        drawPath(wave, teal.copy(alpha = 0.68f))
+        drawPath(wave, gold.copy(alpha = 0.85f), style = androidx.compose.ui.graphics.drawscope.Stroke(width = 2.dp.toPx()))
     }
 }
 
