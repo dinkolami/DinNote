@@ -94,7 +94,7 @@ fun DinNoteApp() {
                         selected = selectedTab == 2,
                         onClick = { selectedTab = 2 },
                         icon = { Text("۞") },
-                        label = { Text("Perpustakaan") }
+                        label = { Text("Maktabah") }
                     )
                     NavigationBarItem(
                         selected = selectedTab == 3,
@@ -194,7 +194,7 @@ fun HomeScreen(
         Text("Ruang anda", fontSize = 17.sp, fontWeight = FontWeight.Bold, color = Color(0xFF00664C))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             HomeShortcut("Nota Peribadi", "✎", Modifier.weight(1f), onOpenNotes)
-            HomeShortcut("Perpustakaan", "۞", Modifier.weight(1f), onOpenLibrary)
+            HomeShortcut("Maktabah", "۞", Modifier.weight(1f), onOpenLibrary)
         }
         Text("Kandungan DinNote", fontSize = 17.sp, fontWeight = FontWeight.Bold, color = Color(0xFF00664C))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -812,7 +812,7 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
         modifier = modifier.fillMaxSize().padding(horizontal = 12.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        Text("Perpustakaan", fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
+        Text("Maktabah", fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
 
 
         Row(Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
@@ -883,7 +883,7 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                 }
             }
             "Kitab-Kitab" -> {
-                Text("📚 Perpustakaan Kitab", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                Text("📚 Maktabah Kitab", fontSize = 20.sp, fontWeight = FontWeight.Bold)
 
                 Button(onClick = { openLibraryEditor("entry_Kitab-Kitab_" + System.currentTimeMillis()) }) { Text("+ Tambah Kitab") }
                 libraryItems.filter { (libraryPrefs.getString(it + "_title", "") ?: "").contains(search, true) ||
@@ -962,7 +962,7 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                     Row(Modifier.fillMaxWidth().height(48.dp).padding(horizontal = 8.dp),
                         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                         TextButton(onClick = { saveLibraryEditor(); editingLibraryKey = null }) { Text("← Selesai") }
-                        Text("Editor Perpustakaan", fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
+                        Text("Editor Maktabah", fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
                     }
                     HorizontalDivider()
                     HorizontalDivider()
