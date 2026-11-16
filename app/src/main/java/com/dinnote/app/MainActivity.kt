@@ -1060,8 +1060,8 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                         Card(
                             modifier = Modifier.fillMaxWidth().clickable { selectedEntry = entry },
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                            border = BorderStroke(1.dp, Color(0xFF0C9699)),
-                            shape = RoundedCornerShape(6.dp)
+                            border = BorderStroke(1.dp, Color(0xFFB7DCD7)),
+                            shape = RoundedCornerShape(10.dp)
                         ) {
                             Column(
                                 modifier = Modifier.fillMaxWidth().padding(16.dp),
@@ -1084,7 +1084,7 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                 Button(onClick = { openLibraryEditor("entry_Kitab-Kitab_" + System.currentTimeMillis()) }) { Text("+ Tambah Kitab") }
                 libraryItems.filter { (libraryPrefs.getString(it + "_title", "") ?: "").contains(search, true) ||
                     (libraryPrefs.getString(it + "_body", "") ?: "").contains(search, true) }.forEach { key ->
-                    Card(modifier = Modifier.fillMaxWidth().clickable { openLibraryEditor(key) }, border = BorderStroke(1.dp, Color(0xFF0C9699)), shape = RoundedCornerShape(6.dp), colors = CardDefaults.cardColors(containerColor = Color.White)) {
+                    Card(modifier = Modifier.fillMaxWidth().clickable { openLibraryEditor(key) }, border = BorderStroke(1.dp, Color(0xFFB7DCD7)), shape = RoundedCornerShape(10.dp), colors = CardDefaults.cardColors(containerColor = Color.White)) {
                         Column(Modifier.padding(16.dp)) {
                             Text(libraryPrefs.getString(key + "_title", "Tanpa tajuk") ?: "Tanpa tajuk", fontWeight = FontWeight.Bold)
                             Text((libraryPrefs.getString(key + "_body", "") ?: "").take(130), modifier = Modifier.fillMaxWidth(), style = androidx.compose.ui.text.TextStyle(textDirection = TextDirection.ContentOrLtr), maxLines = 3)
@@ -1099,7 +1099,7 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                 Button(onClick = { openLibraryEditor("entry_" + selectedCategory + "_" + System.currentTimeMillis()) }) { Text("+ Tambah Kandungan") }
                 libraryItems.filter { (libraryPrefs.getString(it + "_title", "") ?: "").contains(search, true) ||
                     (libraryPrefs.getString(it + "_body", "") ?: "").contains(search, true) }.forEach { key ->
-                    Card(modifier = Modifier.fillMaxWidth().clickable { openLibraryEditor(key) }, border = BorderStroke(1.dp, Color(0xFF0C9699)), shape = RoundedCornerShape(6.dp), colors = CardDefaults.cardColors(containerColor = Color.White)) {
+                    Card(modifier = Modifier.fillMaxWidth().clickable { openLibraryEditor(key) }, border = BorderStroke(1.dp, Color(0xFFB7DCD7)), shape = RoundedCornerShape(10.dp), colors = CardDefaults.cardColors(containerColor = Color.White)) {
                         Column(Modifier.padding(16.dp)) {
                             Text(libraryPrefs.getString(key + "_title", "Tanpa tajuk") ?: "Tanpa tajuk", fontWeight = FontWeight.Bold)
                             Text((libraryPrefs.getString(key + "_body", "") ?: "").take(130), modifier = Modifier.fillMaxWidth(), style = androidx.compose.ui.text.TextStyle(textDirection = TextDirection.ContentOrLtr), maxLines = 3)
@@ -1155,8 +1155,8 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
             onDismissRequest = { saveLibraryEditor(); editingLibraryKey = null },
             properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)
         ) {
-            Surface(Modifier.fillMaxSize().padding(2.dp), shape = RoundedCornerShape(12.dp),
-                border = BorderStroke(1.dp, Color(0xFF0C9699)), color = Color.White) {
+            Surface(Modifier.fillMaxSize().padding(3.dp), shape = RoundedCornerShape(10.dp),
+                border = BorderStroke(1.dp, Color(0xFFB7DCD7)), color = Color.White) {
                 Column(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding()) {
                     UnifiedEditorHeading("Catatan Maktabah",
                         onBack = { saveLibraryEditor(); editingLibraryKey = null },
@@ -1176,9 +1176,9 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                             }) { Text(label, color = Color(0xFF087F83), fontSize = 17.sp) }
                         }
                     }
-                    Surface(Modifier.fillMaxWidth().weight(1f).padding(horizontal = 10.dp, vertical = 8.dp),
-                        shape = RoundedCornerShape(12.dp), color = Color.White,
-                        border = BorderStroke(1.dp, Color(0xFF0C9699))) {
+                    Surface(Modifier.fillMaxWidth().weight(1f).padding(horizontal = 12.dp, vertical = 8.dp),
+                        shape = RoundedCornerShape(10.dp), color = Color.White,
+                        border = BorderStroke(1.dp, Color(0xFFB7DCD7))) {
                         Box(Modifier.fillMaxSize()) {
                             UnifiedEditorMosqueFooter(Modifier.align(androidx.compose.ui.Alignment.BottomCenter))
                             Column(Modifier.fillMaxSize().padding(horizontal = 18.dp, vertical = 16.dp)) {
@@ -1226,9 +1226,14 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
     selectedEntry?.let { entry ->
         AlertDialog(
             onDismissRequest = { selectedEntry = null },
+            shape = RoundedCornerShape(10.dp),
+            containerColor = Color.White,
+            tonalElevation = 0.dp,
+            titleContentColor = Color(0xFF075B59),
+            textContentColor = Color(0xFF263B3E),
             title = { Text(entry.title) },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(entry.arabic, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Right, style = androidx.compose.ui.text.TextStyle(textDirection = TextDirection.Rtl), fontSize = 27.sp)
                     Text(entry.transliteration, fontWeight = FontWeight.Bold)
                     Text(entry.meaning)
@@ -1238,7 +1243,8 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                 }
             },
             confirmButton = {
-                TextButton(onClick = { selectedEntry = null }) { Text("Tutup") }
+                OutlinedButton(onClick = { selectedEntry = null }, shape = RoundedCornerShape(8.dp),
+                    border = BorderStroke(1.dp, Color(0xFFB7DCD7))) { Text("Tutup", color = Color(0xFF087F83)) }
             }
         )
     }
