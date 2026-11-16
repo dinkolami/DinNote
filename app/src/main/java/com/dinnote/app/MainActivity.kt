@@ -214,20 +214,20 @@ private fun DinNoteDashboardTile(
     modifier: Modifier = Modifier, onClick: () -> Unit
 ) {
     Surface(
-        modifier = modifier.height(124.dp).clickable(onClick = onClick),
-        shape = RoundedCornerShape(14.dp),
+        modifier = modifier.height(112.dp).clickable(onClick = onClick),
+        shape = RoundedCornerShape(12.dp),
         color = Color.White,
-        border = BorderStroke(1.dp, Color(0xFFB7DCD7)),
-        shadowElevation = 2.dp
+        border = BorderStroke(1.dp, Color(0xFFD5E5E4)),
+        shadowElevation = 1.dp
     ) {
         Column(
-            modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp, vertical = 12.dp),
+            modifier = Modifier.fillMaxSize().padding(horizontal = 5.dp, vertical = 8.dp),
             horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Text(symbol, fontSize = 29.sp, color = Color(0xFF087F8C))
+            Text(symbol, fontSize = 27.sp, color = Color(0xFF087F8C))
             Spacer(Modifier.height(5.dp))
-            Text(title, fontSize = 14.sp, fontWeight = FontWeight.Bold,
+            Text(title, fontSize = 13.sp, fontWeight = FontWeight.Bold,
                 color = Color(0xFF183A30), maxLines = 2, textAlign = TextAlign.Center)
             Text(subtitle, fontSize = 10.sp, color = Color(0xFF53736F),
                 maxLines = 2, textAlign = TextAlign.Center)
@@ -255,13 +255,16 @@ fun HomeScreen(
             border = BorderStroke(1.dp, Color(0xFFB7DCD7))
         ) {
             Column(Modifier.fillMaxWidth().padding(18.dp)) {
-                Text("۞  ﷽  ۞", fontSize = 22.sp, color = Color(0xFFF3D59A))
+                Text("۞     ﷽     ۞", fontSize = 24.sp, color = Color(0xFFF3D59A),
+                    modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
                 Text("Assalamualaikum", fontSize = 20.sp,
                     fontWeight = FontWeight.Bold, color = Color.White)
                 Text("DinNote • Maktabah Arab–Melayu", fontSize = 13.sp,
                     color = Color(0xFFE1F5F3))
-                Text("⌒  ۞  ⌒  ۞  ⌒", fontSize = 16.sp,
-                    color = Color(0xFFF3D59A), modifier = Modifier.padding(top = 8.dp))
+                Text("⌒  ۞  ⌒  ۞  ⌒  ۞  ⌒", fontSize = 17.sp,
+                    color = Color(0xFFF3D59A),
+                    modifier = Modifier.fillMaxWidth().padding(top = 9.dp),
+                    textAlign = TextAlign.Center)
             }
         }
         Surface(
@@ -273,6 +276,8 @@ fun HomeScreen(
                 modifier = Modifier.padding(horizontal = 14.dp, vertical = 13.dp),
                 fontSize = 14.sp, color = Color(0xFF52716E))
         }
+        Text("Teroka DinNote", fontSize = 16.sp, fontWeight = FontWeight.Bold,
+            color = Color(0xFF075B59))
         Row(horizontalArrangement = Arrangement.spacedBy(9.dp)) {
             DinNoteDashboardTile("Maktabah", "Kitab & rujukan", "▣",
                 Modifier.weight(1f), onOpenLibrary)
@@ -286,7 +291,7 @@ fun HomeScreen(
                 Modifier.weight(1f), onOpenLibrary)
             DinNoteDashboardTile("Mazhab Syafi‘i", "Kitab & hukum", "۞",
                 Modifier.weight(1f), onOpenLibrary)
-            DinNoteDashboardTile("Sandaran", "Tetapan & pemulihan", "☁",
+            DinNoteDashboardTile("Tetapan", "Paparan & data", "⚙",
                 Modifier.weight(1f), onOpenSettings)
         }
         Surface(
