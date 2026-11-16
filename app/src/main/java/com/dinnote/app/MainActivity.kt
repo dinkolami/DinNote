@@ -3,6 +3,8 @@ package com.dinnote.app
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -175,6 +177,29 @@ fun NotesScreen(modifier: Modifier = Modifier) {
         notes.addAll(database.allNotes())
     }
 
+    var backupMessage by remember { mutableStateOf<String?>(null) }
+    val exportLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("application/json")
+    ) { uri ->
+        if (uri != null) {
+            backupMessage = runCatching {
+                NoteBackup.export(context, uri, database.allNotes())
+                "Fail sandaran berjaya disimpan."
+            }.getOrElse { "Sandaran gagal: ${it.message ?: "ralat"}" }
+        }
+    }
+    val importLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        if (uri != null) {
+            backupMessage = runCatching {
+                val count = NoteBackup.import(context, uri, database)
+                refreshNotes()
+                "${count} nota berjaya dipulihkan."
+            }.getOrElse { "Pemulihan gagal: ${it.message ?: "ralat"}" }
+        }
+    }
+
     LaunchedEffect(Unit) { refreshNotes() }
 
     val visibleNotes = notes.filter {
@@ -201,6 +226,23 @@ fun NotesScreen(modifier: Modifier = Modifier) {
                 showEditor = true
                 }) { Text("+ Nota") }
             }
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            OutlinedButton(onClick = { exportLauncher.launch("DinNote-Backup.json") }) {
+                Text("Eksport sandaran")
+            }
+            OutlinedButton(onClick = {
+                importLauncher.launch(arrayOf("application/json", "text/json", "*/*"))
+            }) {
+                Text("Pulihkan sandaran")
+            }
+        }
+        backupMessage?.let {
+            Text(it, color = MaterialTheme.colorScheme.primary, fontSize = 12.sp)
         }
 
         OutlinedTextField(
