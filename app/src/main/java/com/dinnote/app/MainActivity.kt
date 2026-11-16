@@ -222,74 +222,38 @@ fun HomeScreen(
     onOpenSearch: () -> Unit
 ) {
     Column(
-        modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(14.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 14.dp, vertical = 10.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         Surface(
-            shape = androidx.compose.foundation.shape.RoundedCornerShape(6.dp),
-            border = BorderStroke(1.dp, Color(0xFF0C9699)),
-            color = Color(0xFF075C43)
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(10.dp),
+            color = Color(0xFFF2FAF8),
+            border = BorderStroke(1.dp, Color(0xFFB7DCD7))
         ) {
-            Box(Modifier.fillMaxWidth()) {
-                androidx.compose.foundation.Canvas(Modifier.matchParentSize()) {
-                    val w = size.width
-                    val h = size.height
-                    drawRect(brush = androidx.compose.ui.graphics.Brush.horizontalGradient(
-                        listOf(Color(0xFF348F84), Color(0xFF086044))))
-                    // Islamic architectural arches and domes replace the old landscape.
-                    val archColor = Color(0xFF78C6B8).copy(alpha = 0.45f)
-                    val gold = Color(0xFFE5C78A).copy(alpha = 0.65f)
-                    for (index in 0..5) {
-                        val centerX = w * (index + 0.5f) / 6f
-                        val halfWidth = w / 12f
-                        val arch = androidx.compose.ui.graphics.Path().apply {
-                            moveTo(centerX - halfWidth, h)
-                            lineTo(centerX - halfWidth, h * 0.55f)
-                            quadraticBezierTo(centerX - halfWidth, h * 0.28f, centerX, h * 0.14f)
-                            quadraticBezierTo(centerX + halfWidth, h * 0.28f, centerX + halfWidth, h * 0.55f)
-                            lineTo(centerX + halfWidth, h)
-                            close()
-                        }
-                        drawPath(arch, archColor)
-                        drawPath(arch, gold, style = androidx.compose.ui.graphics.drawscope.Stroke(width = 1.dp.toPx()))
-                    }
-                    val dome = androidx.compose.ui.graphics.Path().apply {
-                        moveTo(w * 0.72f, h)
-                        lineTo(w * 0.72f, h * 0.52f)
-                        quadraticBezierTo(w * 0.72f, h * 0.25f, w * 0.83f, h * 0.18f)
-                        quadraticBezierTo(w * 0.94f, h * 0.25f, w * 0.94f, h * 0.52f)
-                        lineTo(w * 0.94f, h)
-                        close()
-                    }
-                    drawPath(dome, Color(0xFF0A665B).copy(alpha = 0.58f))
-                    drawRect(Color(0xFF063D39).copy(alpha = 0.30f))
-                    drawRect(Color(0xFF064E3B).copy(alpha = 0.25f))
+            Row(
+                Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 10.dp),
+                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+            ) {
+                Column(Modifier.weight(1f)) {
+                    Text("Assalamualaikum", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF075B59))
+                    Text("Selamat datang ke DinNote", fontSize = 11.sp, color = Color(0xFF53736F))
                 }
-                Row(
-                    Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp),
-                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
-                ) {
-                    Column(Modifier.weight(1f)) {
-                        Text("Assalamualaikum", fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold, color = Color.White)
-                        Text("Selamat datang ke DinNote", fontSize = 11.sp, color = Color.White)
-                    }
-                    Surface(
-                        modifier = Modifier.clickable(onClick = onOpenNotes),
-                        color = Color.White,
-                        shape = androidx.compose.foundation.shape.RoundedCornerShape(14.dp)
-                    ) {
-                        Text("+ Nota", modifier = Modifier.padding(horizontal = 13.dp, vertical = 10.dp),
-                            color = Color(0xFF006B46), fontSize = 13.sp, fontWeight = FontWeight.Bold)
-                    }
+                OutlinedButton(onClick = onOpenNotes, shape = RoundedCornerShape(8.dp),
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 2.dp)) {
+                    Text("+ Nota", fontSize = 12.sp)
                 }
             }
         }
-        Surface(modifier = Modifier.fillMaxWidth().clickable(onClick = onOpenSearch),
-            shape = RoundedCornerShape(9.dp), color = Color.White,
-            border = BorderStroke(1.dp, Color(0xFFB6D7D7))) {
-            Text("⌕  Cari seluruh DinNote & Kegemaran",
-                modifier = Modifier.padding(12.dp), color = Color(0xFF075A60))
+        Surface(
+            modifier = Modifier.fillMaxWidth().clickable(onClick = onOpenSearch),
+            shape = RoundedCornerShape(8.dp),
+            color = Color.White,
+            border = BorderStroke(1.dp, Color(0xFFD5DDDC))
+        ) {
+            Text("⌕  Cari nota, kitab dan kegemaran",
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                fontSize = 13.sp, color = Color(0xFF52716E))
         }
         PremiumSectionHeading("Ruang anda", "✦")
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
