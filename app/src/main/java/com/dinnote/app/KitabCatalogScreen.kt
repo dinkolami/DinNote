@@ -322,6 +322,14 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
                         Spacer(Modifier.height(5.dp))
                         Text("${b.author}  •  ${b.category}", color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Right)
+                        Text(
+                            if (b.content.isBlank()) "Rekod kitab • Teks belum dimasukkan"
+                            else "Teks kitab tersedia untuk dibaca",
+                            fontSize = 11.sp,
+                            color = if (b.content.isBlank()) Color(0xFF987333) else Color(0xFF087F8C),
+                            modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+                            textAlign = TextAlign.Right
+                        )
                         Row {
                             TextButton(onClick = { startEdit(b) }) { Text("✎ Edit") }
                             TextButton(onClick = {
