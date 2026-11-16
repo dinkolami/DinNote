@@ -400,7 +400,8 @@ fun NotesScreen(
                     Card(
                         modifier = Modifier.fillMaxWidth().heightIn(min = 142.dp),
                         colors = CardDefaults.cardColors(containerColor = noteColor(item.colorTag)),
-                        shape = MaterialTheme.shapes.large
+                        shape = RoundedCornerShape(10.dp),
+                        border = BorderStroke(1.dp, Color(0xFF0C9699))
                     ) {
                         Column(Modifier.fillMaxWidth().padding(12.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
                             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -897,7 +898,9 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                     items(filteredEntries, key = { it.title }) { entry ->
                         Card(
                             modifier = Modifier.fillMaxWidth().clickable { selectedEntry = entry },
-                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                            border = BorderStroke(1.dp, Color(0xFF0C9699)),
+                            shape = RoundedCornerShape(10.dp)
                         ) {
                             Column(
                                 modifier = Modifier.fillMaxWidth().padding(16.dp),
@@ -908,6 +911,7 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                                 Text(entry.transliteration, fontWeight = FontWeight.Medium)
                                 Text(entry.meaning, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 Text("Tekan untuk maklumat lanjut", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
+                                IslamicCardFooter()
                             }
                         }
                     }
@@ -919,10 +923,11 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                 Button(onClick = { openLibraryEditor("entry_Kitab-Kitab_" + System.currentTimeMillis()) }) { Text("+ Tambah Kitab") }
                 libraryItems.filter { (libraryPrefs.getString(it + "_title", "") ?: "").contains(search, true) ||
                     (libraryPrefs.getString(it + "_body", "") ?: "").contains(search, true) }.forEach { key ->
-                    Card(Modifier.fillMaxWidth().clickable { openLibraryEditor(key) }) {
+                    Card(modifier = Modifier.fillMaxWidth().clickable { openLibraryEditor(key) }, border = BorderStroke(1.dp, Color(0xFF0C9699)), shape = RoundedCornerShape(10.dp), colors = CardDefaults.cardColors(containerColor = Color.White)) {
                         Column(Modifier.padding(16.dp)) {
                             Text(libraryPrefs.getString(key + "_title", "Tanpa tajuk") ?: "Tanpa tajuk", fontWeight = FontWeight.Bold)
                             Text((libraryPrefs.getString(key + "_body", "") ?: "").take(130), modifier = Modifier.fillMaxWidth(), style = androidx.compose.ui.text.TextStyle(textDirection = TextDirection.ContentOrLtr), maxLines = 3)
+                            IslamicCardFooter()
                         }
                     }
                 }
@@ -933,10 +938,11 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                 Button(onClick = { openLibraryEditor("entry_" + selectedCategory + "_" + System.currentTimeMillis()) }) { Text("+ Tambah Kandungan") }
                 libraryItems.filter { (libraryPrefs.getString(it + "_title", "") ?: "").contains(search, true) ||
                     (libraryPrefs.getString(it + "_body", "") ?: "").contains(search, true) }.forEach { key ->
-                    Card(Modifier.fillMaxWidth().clickable { openLibraryEditor(key) }) {
+                    Card(modifier = Modifier.fillMaxWidth().clickable { openLibraryEditor(key) }, border = BorderStroke(1.dp, Color(0xFF0C9699)), shape = RoundedCornerShape(10.dp), colors = CardDefaults.cardColors(containerColor = Color.White)) {
                         Column(Modifier.padding(16.dp)) {
                             Text(libraryPrefs.getString(key + "_title", "Tanpa tajuk") ?: "Tanpa tajuk", fontWeight = FontWeight.Bold)
                             Text((libraryPrefs.getString(key + "_body", "") ?: "").take(130), modifier = Modifier.fillMaxWidth(), style = androidx.compose.ui.text.TextStyle(textDirection = TextDirection.ContentOrLtr), maxLines = 3)
+                            IslamicCardFooter()
                         }
                     }
                 }
@@ -1039,11 +1045,46 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                     Text(entry.meaning)
                     Text("Rujukan: ${entry.reference}", fontSize = 13.sp)
                     Text(entry.note, fontSize = 13.sp)
+                    IslamicCardFooter()
                 }
             },
             confirmButton = {
                 TextButton(onClick = { selectedEntry = null }) { Text("Tutup") }
             }
         )
+    }
+}
+
+@Composable
+private fun IslamicCardFooter() {
+    androidx.compose.foundation.Canvas(
+        modifier = Modifier.fillMaxWidth().height(44.dp)
+    ) {
+        val w = size.width
+        val h = size.height
+        val teal = Color(0xFFB7DDDA)
+        val gold = Color(0xFFD8B46A)
+        val path = androidx.compose.ui.graphics.Path().apply {
+            moveTo(0f, h * 0.88f)
+            quadraticBezierTo(w * 0.18f, h * 0.88f, w * 0.32f, h * 0.72f)
+            quadraticBezierTo(w * 0.43f, h * 0.70f, w * 0.5f, h * 0.08f)
+            quadraticBezierTo(w * 0.57f, h * 0.70f, w * 0.68f, h * 0.72f)
+            quadraticBezierTo(w * 0.82f, h * 0.88f, w, h * 0.88f)
+            lineTo(w, h)
+            lineTo(0f, h)
+            close()
+        }
+        drawPath(path, teal.copy(alpha = 0.42f))
+        drawPath(path, gold, style = androidx.compose.ui.graphics.drawscope.Stroke(width = 2.dp.toPx()))
+        val dome = androidx.compose.ui.graphics.Path().apply {
+            moveTo(w * 0.43f, h * 0.9f)
+            quadraticBezierTo(w * 0.42f, h * 0.51f, w * 0.5f, h * 0.45f)
+            quadraticBezierTo(w * 0.58f, h * 0.51f, w * 0.57f, h * 0.9f)
+            close()
+        }
+        drawPath(dome, Color(0xFF77B8B2))
+        for (x in listOf(0.34f, 0.38f, 0.62f, 0.66f)) {
+            drawRect(Color(0xFF77B8B2), topLeft = androidx.compose.ui.geometry.Offset(w*x, h*0.62f), size = androidx.compose.ui.geometry.Size(w*0.012f, h*0.28f))
+        }
     }
 }
