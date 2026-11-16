@@ -112,6 +112,20 @@ class NoteDatabase(context: Context) :
         )
     }
 
+    fun renameCategory(oldName: String, newName: String) {
+        writableDatabase.execSQL(
+            "UPDATE notes SET category = ?, updated_at = ? WHERE category = ?",
+            arrayOf(newName, System.currentTimeMillis(), oldName)
+        )
+    }
+
+    fun moveCategoryToDefault(category: String) {
+        writableDatabase.execSQL(
+            "UPDATE notes SET category = ?, updated_at = ? WHERE category = ?",
+            arrayOf("Lain-lain", System.currentTimeMillis(), category)
+        )
+    }
+
     fun delete(id: Long) {
         writableDatabase.delete("notes", "id = ?", arrayOf(id.toString()))
     }
