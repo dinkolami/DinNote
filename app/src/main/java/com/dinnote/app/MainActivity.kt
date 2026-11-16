@@ -8,6 +8,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -517,7 +518,10 @@ fun NotesScreen(modifier: Modifier = Modifier) {
             onDismissRequest = { showEditor = false },
             title = { Text(if (editingId == null) "Nota Baharu" else "Edit Nota") },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Column(
+                    modifier = Modifier.verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
                     OutlinedTextField(
                         value = title,
                         onValueChange = { title = it },
@@ -568,6 +572,18 @@ fun NotesScreen(modifier: Modifier = Modifier) {
                         label = { Text("Kandungan (Arab atau Rumi)") },
                         minLines = 5,
                         modifier = Modifier.fillMaxWidth()
+                    )
+                    val wordCount = body.trim().split(Regex("\\s+")).count { it.isNotBlank() }
+                    Text(
+                        "${body.length} aksara  •  $wordCount perkataan",
+                        modifier = Modifier.fillMaxWidth(),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontSize = 12.sp
+                    )
+                    Text(
+                        "Petua: Asingkan tajuk, petikan Arab, terjemahan dan rujukan pada baris berbeza supaya nota lebih kemas.",
+                        color = MaterialTheme.colorScheme.secondary,
+                        fontSize = 12.sp
                     )
                 }
             },
