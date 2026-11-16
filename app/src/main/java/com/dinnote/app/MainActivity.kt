@@ -13,6 +13,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -365,68 +367,100 @@ fun NotesScreen(modifier: Modifier = Modifier) {
             modifier = Modifier.fillMaxWidth()
         )
 
+        Text(
+            "${visibleNotes.size} nota" + if (showArchived) " dalam arkib" else " tersimpan",
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            fontSize = 12.sp
+        )
+
         if (visibleNotes.isEmpty()) {
-            Text(
-                if (search.isBlank()) "Belum ada nota. Tekan + Nota untuk mula menulis."
-                else "Tiada nota yang sepadan dengan carian."
-            )
-        } else {
-            LazyColumn(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
             ) {
-                items(visibleNotes, key = { it.id }) { item ->
-                    Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = noteColor(item.colorTag))) {
-                        Column(
-                            Modifier.fillMaxWidth().clickable {
-                                editingId = item.id
-                                title = item.title
-                                body = TextFieldValue(item.body, selection = TextRange(item.body.length))
-                                selectedColor = item.colorTag
-                                selectedCategory = item.category
-                                showEditor = true
-                            }.padding(14.dp),
-                            verticalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            Text(
-                                item.title.ifBlank { "Tanpa tajuk" },
-                                fontWeight = FontWeight.Bold
-                            )
-                            Text(item.category, color = MaterialTheme.colorScheme.primary, fontSize = 11.sp)
-                            Text(formattedNoteText(item.body), maxLines = 3)
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.End
-                            ) {
-                                TextButton(onClick = {
-                                    val shareText = buildString {
-                                        if (item.title.isNotBlank()) append(item.title).append("\n\n")
-                                        append(formattedNoteText(item.body).text)
+                Column(Modifier.fillMaxWidth().padding(24.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("✎", fontSize = 30.sp, color = MaterialTheme.colorScheme.secondary)
+                    Text(if (search.isBlank()) "Ruang nota anda masih kosong" else "Tiada nota ditemui", fontWeight = FontWeight.Bold)
+                    Text(
+                        if (search.isBlank()) "Mulakan dengan menulis nota pertama anda."
+                        else "Cuba kata carian atau kategori yang lain.",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontSize = 13.sp
+                    )
+                }
+            }
+        } else {
+            val orderedNotes = visibleNotes.sortedWith(
+                compareByDescending<DinNote> { it.pinned }.thenByDescending { it.timestamp }
+            )
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                modifier = Modifier.weight(1f).fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                contentPadding = PaddingValues(bottom = 8.dp)
+            ) {
+                items(orderedNotes.size) { index ->
+                    val item = orderedNotes[index]
+                    var menuExpanded by remember(item.id) { mutableStateOf(false) }
+                    Card(
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 142.dp),
+                        colors = CardDefaults.cardColors(containerColor = noteColor(item.colorTag)),
+                        shape = MaterialTheme.shapes.large
+                    ) {
+                        Column(Modifier.fillMaxWidth().padding(12.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
+                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                Text(item.category, color = MaterialTheme.colorScheme.primary, fontSize = 10.sp, maxLines = 1)
+                                Box {
+                                    Text("⋮", modifier = Modifier.clickable { menuExpanded = true }, fontSize = 20.sp)
+                                    DropdownMenu(expanded = menuExpanded, onDismissRequest = { menuExpanded = false }) {
+                                        DropdownMenuItem(
+                                            text = { Text(if (item.pinned) "Lepas pin" else "Pin nota") },
+                                            onClick = { database.setPinned(item.id, !item.pinned); menuExpanded = false; refreshNotes() }
+                                        )
+                                        DropdownMenuItem(
+                                            text = { Text("Kongsi") },
+                                            onClick = {
+                                                val shareText = buildString {
+                                                    if (item.title.isNotBlank()) append(item.title).append("\n\n")
+                                                    append(formattedNoteText(item.body).text)
+                                                }
+                                                val intent = Intent(Intent.ACTION_SEND).apply {
+                                                    type = "text/plain"
+                                                    putExtra(Intent.EXTRA_TEXT, shareText)
+                                                }
+                                                context.startActivity(Intent.createChooser(intent, "Kongsi nota"))
+                                                menuExpanded = false
+                                            }
+                                        )
+                                        DropdownMenuItem(
+                                            text = { Text(if (showArchived) "Pulihkan" else "Arkib") },
+                                            onClick = { database.setArchived(item.id, !item.archived); menuExpanded = false; refreshNotes() }
+                                        )
+                                        DropdownMenuItem(text = { Text("Padam") }, onClick = { noteToDelete = item; menuExpanded = false })
                                     }
-                                    val intent = Intent(Intent.ACTION_SEND).apply {
-                                        type = "text/plain"
-                                        putExtra(Intent.EXTRA_TEXT, shareText)
-                                    }
-                                    context.startActivity(Intent.createChooser(intent, "Kongsi nota"))
-                                }) { Text("Kongsi") }
-                                TextButton(onClick = {
-                                    database.setPinned(item.id, !item.pinned)
-                                    refreshNotes()
-                                }) { Text(if (item.pinned) "Lepas pin" else "Pin") }
-                                TextButton(onClick = {
-                                    database.setArchived(item.id, !item.archived)
-                                    refreshNotes()
-                                }) { Text(if (item.archived) "Pulihkan" else "Arkib") }
-                                TextButton(onClick = { noteToDelete = item }) { Text("Padam") }
-                                TextButton(onClick = {
+                                }
+                            }
+                            Column(
+                                Modifier.fillMaxWidth().weight(1f).clickable {
                                     editingId = item.id
                                     title = item.title
                                     body = TextFieldValue(item.body, selection = TextRange(item.body.length))
                                     selectedColor = item.colorTag
                                     selectedCategory = item.category
                                     showEditor = true
-                                }) { Text("Edit") }
+                                },
+                                verticalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Text(item.title.ifBlank { "Tanpa tajuk" }, fontWeight = FontWeight.Bold, maxLines = 2)
+                                Text(formattedNoteText(item.body), maxLines = 4, fontSize = 13.sp)
                             }
+                            Text(
+                                java.text.SimpleDateFormat("dd MMM", java.util.Locale("ms", "MY"))
+                                    .format(java.util.Date(item.timestamp)),
+                                fontSize = 10.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
                     }
                 }
