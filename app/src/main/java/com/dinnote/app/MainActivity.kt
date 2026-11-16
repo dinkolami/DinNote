@@ -78,57 +78,78 @@ fun DinNoteApp() {
             },
             bottomBar = {
                 Surface(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 5.dp),
-                    shape = RoundedCornerShape(22.dp),
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 4.dp),
+                    shape = RoundedCornerShape(16.dp),
                     color = Color.White,
-                    border = BorderStroke(1.dp, Color(0xFFD1D5DB)),
+                    border = BorderStroke(1.dp, Color(0xFF88C9C8)),
                     shadowElevation = 2.dp
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().height(62.dp).padding(4.dp),
-                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
-                    ) {
-                        val tabs = listOf(
-                            Triple("Utama", "⌂", 0),
-                            Triple("Nota", "✎", 1),
-                            Triple("Maktabah", "▤", 2),
-                            Triple("Tetapan", "⚙", 3)
-                        )
-                        tabs.forEachIndexed { index, tab ->
-                            if (index > 0) {
-                                androidx.compose.material3.VerticalDivider(
-                                    modifier = Modifier.height(30.dp),
-                                    thickness = 1.dp,
-                                    color = Color(0xFFE3E5E8)
-                                )
+                    Box(Modifier.fillMaxWidth().height(54.dp)) {
+                        androidx.compose.foundation.Canvas(Modifier.matchParentSize()) {
+                            val w = size.width
+                            val h = size.height
+                            // Delicate Islamic arcade motif behind the navigation controls.
+                            val archStroke = androidx.compose.ui.graphics.drawscope.Stroke(width = 1.dp.toPx())
+                            for (i in 0..7) {
+                                val cx = w * (i + 0.5f) / 8f
+                                val half = w / 16f
+                                val arch = androidx.compose.ui.graphics.Path().apply {
+                                    moveTo(cx - half, h)
+                                    lineTo(cx - half, h * 0.56f)
+                                    quadraticBezierTo(cx - half, h * 0.25f, cx, h * 0.12f)
+                                    quadraticBezierTo(cx + half, h * 0.25f, cx + half, h * 0.56f)
+                                    lineTo(cx + half, h)
+                                }
+                                drawPath(arch, Color(0xFF55B7B4).copy(alpha = 0.13f), style = archStroke)
                             }
-                            val active = selectedTab == tab.third
-                            Surface(
-                                modifier = Modifier.weight(1f).fillMaxHeight().clickable {
-                                    selectedTab = tab.third
-                                },
-                                shape = RoundedCornerShape(17.dp),
-                                color = if (active) Color(0xFFE2F5F5) else Color.Transparent
-                            ) {
-                                Column(
-                                    modifier = Modifier.fillMaxSize(),
-                                    verticalArrangement = Arrangement.Center,
-                                    horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
+                        }
+                        Row(
+                            modifier = Modifier.fillMaxSize().padding(3.dp),
+                            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                        ) {
+                            val tabs = listOf(
+                                Triple("Utama", "⌂", 0),
+                                Triple("Nota", "✎", 1),
+                                Triple("Maktabah", "▤", 2),
+                                Triple("Tetapan", "⚙", 3)
+                            )
+                            tabs.forEachIndexed { index, tab ->
+                                if (index > 0) {
+                                    VerticalDivider(
+                                        modifier = Modifier.height(24.dp),
+                                        thickness = 1.dp,
+                                        color = Color(0xFFE3ECEC)
+                                    )
+                                }
+                                val active = selectedTab == tab.third
+                                Surface(
+                                    modifier = Modifier.weight(1f).fillMaxHeight().clickable {
+                                        selectedTab = tab.third
+                                    },
+                                    shape = RoundedCornerShape(12.dp),
+                                    color = if (active) Color(0xFFDDF4F2).copy(alpha = 0.92f)
+                                            else Color.Transparent
                                 ) {
-                                    Text(
-                                        tab.second,
-                                        fontSize = 21.sp,
-                                        lineHeight = 23.sp,
-                                        color = if (active) Color(0xFF007C83) else Color(0xFF45464F)
-                                    )
-                                    Text(
-                                        tab.first,
-                                        fontSize = 11.sp,
-                                        lineHeight = 14.sp,
-                                        maxLines = 1,
-                                        fontWeight = if (active) FontWeight.SemiBold else FontWeight.Normal,
-                                        color = if (active) Color(0xFF007C83) else Color(0xFF45464F)
-                                    )
+                                    Column(
+                                        modifier = Modifier.fillMaxSize(),
+                                        verticalArrangement = Arrangement.Center,
+                                        horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
+                                    ) {
+                                        Text(
+                                            tab.second,
+                                            fontSize = 19.sp,
+                                            lineHeight = 21.sp,
+                                            color = if (active) Color(0xFF007F83) else Color(0xFF52666A)
+                                        )
+                                        Text(
+                                            tab.first,
+                                            fontSize = 10.sp,
+                                            lineHeight = 12.sp,
+                                            maxLines = 1,
+                                            fontWeight = if (active) FontWeight.SemiBold else FontWeight.Normal,
+                                            color = if (active) Color(0xFF007F83) else Color(0xFF52666A)
+                                        )
+                                    }
                                 }
                             }
                         }
