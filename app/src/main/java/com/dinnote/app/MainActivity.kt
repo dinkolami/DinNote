@@ -38,6 +38,14 @@ import androidx.compose.ui.unit.sp
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Keep the Android system navigation area white with a subtle divider.
+        window.navigationBarColor = android.graphics.Color.WHITE
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+            window.navigationBarDividerColor = android.graphics.Color.rgb(216, 222, 227)
+        }
+        @Suppress("DEPRECATION")
+        window.decorView.systemUiVisibility = window.decorView.systemUiVisibility or
+            android.view.View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
         setContent { DinNoteApp() }
     }
 }
@@ -822,7 +830,7 @@ fun NotesScreen(
                     )
 
                     Surface(
-                        modifier = Modifier.fillMaxWidth().weight(1f).padding(horizontal = 10.dp, vertical = 8.dp),
+                        modifier = Modifier.fillMaxWidth().weight(1f).padding(start = 10.dp, end = 10.dp, top = 2.dp, bottom = 8.dp),
                         shape = RoundedCornerShape(12.dp),
                         color = readingBackground(editorBackground),
                         border = BorderStroke(1.dp, Color(0xFFD5DADD))
