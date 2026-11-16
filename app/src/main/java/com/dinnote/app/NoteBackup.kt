@@ -87,7 +87,7 @@ object NoteBackup {
     }
 
     private val backupPreferenceFiles = listOf(
-        "dinnote_categories", "dinnote_library_edits", "dinnote_kitab_catalog", "dinnote_display"
+        "dinnote_categories", "dinnote_library_edits", "dinnote_kitab_catalog", "dinnote_display", "dinnote_bookmarks"
     )
 
     private fun exportPreferences(context: Context): JSONObject = JSONObject().apply {
