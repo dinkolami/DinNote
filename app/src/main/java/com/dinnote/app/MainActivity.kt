@@ -497,6 +497,11 @@ fun NotesScreen(
 
     if (showAddCategory) {
         AlertDialog(
+            shape = RoundedCornerShape(10.dp),
+            containerColor = Color.White,
+            tonalElevation = 0.dp,
+            titleContentColor = Color(0xFF075B59),
+            textContentColor = Color(0xFF263B3E),
             onDismissRequest = { showAddCategory = false; newCategoryName = ""; newCategoryDescription = "" },
             title = { Text("Tambah kategori") },
             text = {
@@ -532,6 +537,11 @@ fun NotesScreen(
 
     noteToDelete?.let { note ->
         AlertDialog(
+            shape = RoundedCornerShape(10.dp),
+            containerColor = Color.White,
+            tonalElevation = 0.dp,
+            titleContentColor = Color(0xFF075B59),
+            textContentColor = Color(0xFF263B3E),
             onDismissRequest = { noteToDelete = null },
             title = { Text("Padam nota?") },
             text = { Text("Nota \"${note.title.ifBlank { "Tanpa tajuk" }}\" akan dipadam. Tindakan ini tidak boleh dibatalkan.") },
@@ -549,6 +559,11 @@ fun NotesScreen(
     }
     if (showManageCategories) {
         AlertDialog(
+            shape = RoundedCornerShape(10.dp),
+            containerColor = Color.White,
+            tonalElevation = 0.dp,
+            titleContentColor = Color(0xFF075B59),
+            textContentColor = Color(0xFF263B3E),
             onDismissRequest = { showManageCategories = false },
             title = { Text("Urus kategori nota") },
             text = {
@@ -582,11 +597,16 @@ fun NotesScreen(
     }
 
     categoryToDescribe?.let { name ->
-        AlertDialog(onDismissRequest = { categoryToDescribe = null }, title = { Text("Deskripsi: $name") }, text = { OutlinedTextField(value = editedCategoryDescription, onValueChange = { editedCategoryDescription = it }, label = { Text("Deskripsi sendiri (pilihan)") }, minLines = 3, modifier = Modifier.fillMaxWidth()) }, confirmButton = { TextButton(onClick = { categoryPrefs.edit().putString("description_$name", editedCategoryDescription.trim()).apply(); categoryToDescribe = null }) { Text("Simpan") } }, dismissButton = { TextButton(onClick = { categoryToDescribe = null }) { Text("Batal") } })
+        AlertDialog(shape = RoundedCornerShape(10.dp), containerColor = Color.White, tonalElevation = 0.dp, titleContentColor = Color(0xFF075B59), textContentColor = Color(0xFF263B3E), onDismissRequest = { categoryToDescribe = null }, title = { Text("Deskripsi: $name") }, text = { OutlinedTextField(value = editedCategoryDescription, onValueChange = { editedCategoryDescription = it }, label = { Text("Deskripsi sendiri (pilihan)") }, minLines = 3, modifier = Modifier.fillMaxWidth()) }, confirmButton = { TextButton(onClick = { categoryPrefs.edit().putString("description_$name", editedCategoryDescription.trim()).apply(); categoryToDescribe = null }) { Text("Simpan") } }, dismissButton = { TextButton(onClick = { categoryToDescribe = null }) { Text("Batal") } })
     }
 
     categoryToRename?.let { oldName ->
         AlertDialog(
+            shape = RoundedCornerShape(10.dp),
+            containerColor = Color.White,
+            tonalElevation = 0.dp,
+            titleContentColor = Color(0xFF075B59),
+            textContentColor = Color(0xFF263B3E),
             onDismissRequest = { categoryToRename = null },
             title = { Text("Tukar nama kategori") },
             text = {
@@ -626,6 +646,11 @@ fun NotesScreen(
 
     categoryToDelete?.let { category ->
         AlertDialog(
+            shape = RoundedCornerShape(10.dp),
+            containerColor = Color.White,
+            tonalElevation = 0.dp,
+            titleContentColor = Color(0xFF075B59),
+            textContentColor = Color(0xFF263B3E),
             onDismissRequest = { categoryToDelete = null },
             title = { Text("Padam kategori?") },
             text = {
@@ -1113,6 +1138,11 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
 
     if (showAddCategory || categoryToRename != null) {
         AlertDialog(
+            shape = RoundedCornerShape(10.dp),
+            containerColor = Color.White,
+            tonalElevation = 0.dp,
+            titleContentColor = Color(0xFF075B59),
+            textContentColor = Color(0xFF263B3E),
             onDismissRequest = { showAddCategory = false; categoryToRename = null },
             title = { Text(if (categoryToRename == null) "Tambah kategori" else "Ubah nama kategori") },
             text = {
