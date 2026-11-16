@@ -219,6 +219,7 @@ fun HomeScreen(
                 Column(Modifier.weight(1f)) {
                     Text("Assalamualaikum", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF075B59))
                     Text("Selamat datang ke DinNote", fontSize = 11.sp, color = Color(0xFF53736F))
+                    Text("۞  ﷽  ۞", fontSize = 17.sp, color = Color(0xFFB48B39), modifier = Modifier.padding(top = 5.dp))
                 }
                 OutlinedButton(onClick = onOpenNotes, shape = RoundedCornerShape(8.dp),
                     contentPadding = PaddingValues(horizontal = 12.dp, vertical = 2.dp)) {
