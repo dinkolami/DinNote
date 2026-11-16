@@ -30,6 +30,7 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.border
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -915,7 +916,9 @@ fun NotesScreen(
                                         }
                                         body = next
                                     },
-                                    modifier = Modifier.weight(1f).fillMaxWidth(),
+                                    modifier = Modifier.weight(1f).fillMaxWidth()
+                                        .border(BorderStroke(1.dp, if (editorBackground == "dark") Color(0xFF507875) else Color(0xFFB7DCD7)), RoundedCornerShape(10.dp))
+                                        .padding(12.dp),
                                     textStyle = androidx.compose.ui.text.TextStyle(
                                         fontSize = editorFontSize.sp,
                                         color = if (editorBackground == "dark") Color(0xFFF3F7F6) else Color(0xFF263B3E),
