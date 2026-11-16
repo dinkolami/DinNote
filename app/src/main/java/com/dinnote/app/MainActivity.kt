@@ -368,7 +368,7 @@ fun NotesScreen(modifier: Modifier = Modifier) {
                                 TextButton(onClick = {
                                     editingId = item.id
                                     title = item.title
-                                    body = item.body
+                                    body = TextFieldValue(item.body, selection = TextRange(item.body.length))
                                     selectedColor = item.colorTag
                                     selectedCategory = item.category
                                     showEditor = true
@@ -587,7 +587,7 @@ fun NotesScreen(modifier: Modifier = Modifier) {
                             val start = body.selection.min
                             val end = body.selection.max
                             val selected = body.text.substring(start, end)
-                            val updated = body.text.replaceRange(start, end, "_$selected_")
+                            val updated = body.text.replaceRange(start, end, "_${selected}_")
                             body = TextFieldValue(updated, selection = TextRange(start + 1, end + 1))
                         }) { Text("I  Condong") }
                     }
