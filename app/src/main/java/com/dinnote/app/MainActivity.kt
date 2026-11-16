@@ -252,11 +252,11 @@ private fun DinNoteDashboardTile(
     modifier: Modifier = Modifier, onClick: () -> Unit
 ) {
     Surface(
-        modifier = modifier.height(108.dp).clickable(onClick = onClick),
-        shape = RoundedCornerShape(15.dp),
+        modifier = modifier.height(112.dp).clickable(onClick = onClick),
+        shape = RoundedCornerShape(12.dp),
         color = Color.White,
-        border = BorderStroke(1.dp, Color(0xFF83C9C5)),
-        shadowElevation = 2.dp
+        border = BorderStroke(1.dp, Color(0xFFD5E5E4)),
+        shadowElevation = 1.dp
     ) {
         Column(
             modifier = Modifier.fillMaxSize().padding(horizontal = 5.dp, vertical = 8.dp),
@@ -345,31 +345,16 @@ fun HomeScreen(
         IslamicGeometricBackground(Modifier.matchParentSize())
     Column(
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())
-            .padding(horizontal = 14.dp, vertical = 6.dp),
-        verticalArrangement = Arrangement.spacedBy(11.dp)
+            .padding(horizontal = 14.dp, vertical = 4.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // Premium mosque header: use the bundled drawable so the ornament works offline.
-        Row(
-            modifier = Modifier.fillMaxWidth().height(68.dp),
-            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text("DinNote", fontSize = 27.sp, fontWeight = FontWeight.Bold,
-                fontStyle = FontStyle.Italic, color = Color(0xFF075B59))
-            androidx.compose.foundation.Image(
-                painter = androidx.compose.ui.res.painterResource(R.drawable.dinnote_mosque_ornament),
-                contentDescription = null,
-                modifier = Modifier.width(150.dp).height(58.dp),
-                contentScale = ContentScale.Fit
-            )
-        }
         Surface(
             modifier = Modifier.fillMaxWidth().clickable(onClick = onOpenSearch),
-            shape = RoundedCornerShape(16.dp), color = Color.White,
-            border = BorderStroke(1.dp, Color(0xFF83C9C5)), shadowElevation = 2.dp
+            shape = RoundedCornerShape(12.dp), color = Color.White,
+            border = BorderStroke(1.dp, Color(0xFFB7DCD7))
         ) {
             Text("⌕   Cari nota, kitab dan rujukan",
-                modifier = Modifier.padding(horizontal = 15.dp, vertical = 11.dp),
+                modifier = Modifier.padding(horizontal = 14.dp, vertical = 13.dp),
                 fontSize = 14.sp, color = Color(0xFF52716E))
         }
         if (pinnedNotes.isNotEmpty()) {
@@ -378,8 +363,8 @@ fun HomeScreen(
                 Surface(
                     modifier = Modifier.fillMaxWidth().clickable { onOpenPinnedNote(note.id) },
                     color = Color.White,
-                    shape = RoundedCornerShape(14.dp),
-                    border = BorderStroke(1.dp, Color(0xFF83C9C5)), shadowElevation = 2.dp
+                    shape = RoundedCornerShape(10.dp),
+                    border = BorderStroke(1.dp, Color(0xFFB7DCD7))
                 ) {
                     Column(Modifier.padding(13.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text("📌  " + note.title.ifBlank { "Tanpa tajuk" },
@@ -391,7 +376,8 @@ fun HomeScreen(
                 }
             }
         }
-        PremiumSectionHeading("Teroka DinNote", "✦")
+        Text("Teroka DinNote", fontSize = 16.sp, fontWeight = FontWeight.Bold,
+            color = Color(0xFF075B59))
         Row(horizontalArrangement = Arrangement.spacedBy(9.dp)) {
             DinNoteDashboardTile("Maktabah", "Kitab & rujukan", "▣",
                 Modifier.weight(1f), onOpenLibrary)
@@ -410,8 +396,8 @@ fun HomeScreen(
         }
         Surface(
             modifier = Modifier.fillMaxWidth().clickable(onClick = onOpenLibrary),
-            shape = RoundedCornerShape(16.dp), color = Color(0xFFEAF8F6),
-            border = BorderStroke(1.dp, Color(0xFF83C9C5)), shadowElevation = 2.dp
+            shape = RoundedCornerShape(14.dp), color = Color(0xFFF2FAF8),
+            border = BorderStroke(1.dp, Color(0xFFB7DCD7))
         ) {
             Row(Modifier.fillMaxWidth().padding(14.dp),
                 verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
