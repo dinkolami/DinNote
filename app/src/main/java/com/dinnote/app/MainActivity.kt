@@ -167,6 +167,30 @@ fun DinNoteApp() {
     }
 }
 
+
+@Composable
+private fun PremiumSectionHeading(title: String, ornament: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(top = 3.dp, bottom = 2.dp),
+        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(9.dp)
+    ) {
+        Text(ornament, fontSize = 17.sp, color = Color(0xFFC69A3C))
+        Text(
+            title,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.SemiBold,
+            fontStyle = FontStyle.Italic,
+            color = Color(0xFF087F83)
+        )
+        androidx.compose.material3.HorizontalDivider(
+            modifier = Modifier.weight(1f),
+            thickness = 1.dp,
+            color = Color(0xFFD9B86B)
+        )
+    }
+}
+
 @Composable
 private fun HomeShortcut(label: String, symbol: String, modifier: Modifier = Modifier, onClick: () -> Unit) {
     Surface(
@@ -258,12 +282,12 @@ fun HomeScreen(
                 }
             }
         }
-        Text("Ruang anda", fontSize = 17.sp, fontWeight = FontWeight.Bold, color = Color(0xFF00664C))
+        PremiumSectionHeading("Ruang anda", "✦")
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             HomeShortcut("Nota Peribadi", "✎", Modifier.weight(1f), onOpenNotes)
             HomeShortcut("Maktabah", "۞", Modifier.weight(1f), onOpenLibrary)
         }
-        Text("Kandungan DinNote", fontSize = 17.sp, fontWeight = FontWeight.Bold, color = Color(0xFF00664C))
+        PremiumSectionHeading("Kandungan DinNote", "۞")
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             HomeShortcut("Kitab-Kitab", "▣", Modifier.weight(1f), onOpenLibrary)
             HomeShortcut("Kalam Hikmah", "✧", Modifier.weight(1f), onOpenLibrary)
