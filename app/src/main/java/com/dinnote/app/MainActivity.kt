@@ -597,7 +597,7 @@ fun NotesScreen(
                 compareByDescending<DinNote> { it.pinned }.thenByDescending { it.updatedAt }
             )
             LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
+                columns = GridCells.Fixed(1),
                 modifier = Modifier.weight(1f).fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -607,12 +607,12 @@ fun NotesScreen(
                     val item = orderedNotes[index]
                     var menuExpanded by remember(item.id) { mutableStateOf(false) }
                     Card(
-                        modifier = Modifier.fillMaxWidth().heightIn(min = 142.dp),
+                        modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(containerColor = Color.White),
                         shape = RoundedCornerShape(10.dp),
                         border = BorderStroke(1.dp, Color(0xFFB7DCD7))
                     ) {
-                        Column(Modifier.fillMaxWidth().padding(12.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
+                        Column(Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
                             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                                 Text(item.category, color = MaterialTheme.colorScheme.primary, fontSize = 10.sp, maxLines = 1)
                                 Box {
@@ -646,7 +646,7 @@ fun NotesScreen(
                                 }
                             }
                             Column(
-                                Modifier.fillMaxWidth().weight(1f).combinedClickable(
+                                Modifier.fillMaxWidth().combinedClickable(
                                     onClick = {
                                         editingId = item.id
                                         title = item.title
@@ -671,7 +671,7 @@ fun NotesScreen(
                                 verticalArrangement = Arrangement.spacedBy(6.dp)
                             ) {
                                 Text(item.title.ifBlank { "Tanpa tajuk" }, fontWeight = FontWeight.Bold, maxLines = 2)
-                                Text(formattedNoteText(item.body), maxLines = 4, fontSize = 13.sp)
+                                Text(formattedNoteText(item.body), maxLines = 2, fontSize = 13.sp)
                             }
                             Text(
                                 java.text.SimpleDateFormat("dd MMM", java.util.Locale("ms", "MY"))
