@@ -832,33 +832,13 @@ fun NotesScreen(
                         }
                     }
                     HorizontalDivider(color = Color(0xFFF0F0F0))
-                    Row(
-                        Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 6.dp)
-                            .horizontalScroll(rememberScrollState()),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        val tools = listOf("A−" to "", "A+" to "", "B" to "**", "I" to "_", "U" to "__", "A" to "**", "✎" to "✍ ", "☰" to "• ", "⋯" to "1. ", "☑" to "☐ ", "▧" to "▧ ", "📎" to "📎 ")
-                        Text("Fon ${editorFontSize.toInt()} sp", modifier = Modifier.padding(top = 12.dp), color = Color(0xFF075B59), fontSize = 12.sp)
-                        tools.forEach { (label, insertion) ->
-                            TextButton(onClick = {
-                                if (label == "A+") {
-                                    editorFontSize = (editorFontSize + 2f).coerceAtMost(30f)
-                                    displayPrefs.edit().putInt("font_size", editorFontSize.toInt()).apply()
-                                } else if (label == "A−") {
-                                    editorFontSize = (editorFontSize - 2f).coerceAtLeast(14f)
-                                    displayPrefs.edit().putInt("font_size", editorFontSize.toInt()).apply()
-                                } else if (insertion.isNotEmpty()) {
-                                    val a = body.selection.min
-                                    val b = body.selection.max
-                                    val selected = body.text.substring(a, b)
-                                    val newText = if (insertion == "**" || insertion == "_" || insertion == "__") insertion + selected + insertion else insertion + selected
-                                    val result = body.text.replaceRange(a, b, newText)
-                                    undoStack.add(body); redoStack.clear()
-                                    body = TextFieldValue(result, selection = TextRange(a + newText.length))
-                                }
-                            }) { Text(label, color = Color(0xFF087F83), fontSize = 19.sp) }
+                    DefaultEditorFontControls(
+                        fontSize = editorFontSize,
+                        onChange = { size ->
+                            editorFontSize = size
+                            displayPrefs.edit().putInt("font_size", size.toInt()).apply()
                         }
-                    }
+                    )
 
                     Surface(
                         modifier = Modifier.fillMaxWidth().weight(1f).padding(horizontal = 10.dp, vertical = 8.dp),
@@ -1255,20 +1235,13 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                     UnifiedEditorHeading("Catatan Maktabah",
                         onBack = { saveLibraryEditor(); editingLibraryKey = null },
                         onSave = { saveLibraryEditor(); editingLibraryKey = null })
-                    // Formatting uses Android's native selection menu; no raw Markdown markers.
-                    Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp),
-                        horizontalArrangement = Arrangement.End) {
-                        TextButton(onClick = {
-                            libraryFontSize = (libraryFontSize - 2f).coerceAtLeast(14f)
-                            libraryDisplayPrefs.edit().putInt("font_size", libraryFontSize.toInt()).apply()
-                        }) { Text("A−", color = Color(0xFF087F83), fontSize = 15.sp) }
-                        Text("${libraryFontSize.toInt()} sp", modifier = Modifier.padding(top = 12.dp),
-                            color = Color(0xFF075B59), fontSize = 12.sp)
-                        TextButton(onClick = {
-                            libraryFontSize = (libraryFontSize + 2f).coerceAtMost(30f)
-                            libraryDisplayPrefs.edit().putInt("font_size", libraryFontSize.toInt()).apply()
-                        }) { Text("A+", color = Color(0xFF087F83), fontSize = 15.sp) }
-                    }
+                    DefaultEditorFontControls(
+                        fontSize = libraryFontSize,
+                        onChange = { size ->
+                            libraryFontSize = size
+                            libraryDisplayPrefs.edit().putInt("font_size", size.toInt()).apply()
+                        }
+                    )
                     Surface(Modifier.fillMaxWidth().weight(1f).padding(horizontal = 12.dp, vertical = 8.dp),
                         shape = RoundedCornerShape(10.dp), color = Color.White,
                         border = BorderStroke(1.dp, Color(0xFFB7DCD7))) {
@@ -1399,6 +1372,24 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                     border = BorderStroke(1.dp, Color(0xFFB7DCD7))) { Text("Tutup", color = Color(0xFF087F83)) }
             }
         )
+    }
+}
+
+// Shared default editor controls: formatting markers are never inserted into content.
+@Composable
+private fun DefaultEditorFontControls(fontSize: Float, onChange: (Float) -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp),
+        horizontalArrangement = Arrangement.End,
+        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+    ) {
+        TextButton(onClick = { onChange((fontSize - 2f).coerceAtLeast(14f)) }) {
+            Text("A−", color = Color(0xFF087F83), fontSize = 15.sp)
+        }
+        Text("${fontSize.toInt()} sp", color = Color(0xFF075B59), fontSize = 12.sp)
+        TextButton(onClick = { onChange((fontSize + 2f).coerceAtMost(30f)) }) {
+            Text("A+", color = Color(0xFF087F83), fontSize = 15.sp)
+        }
     }
 }
 
