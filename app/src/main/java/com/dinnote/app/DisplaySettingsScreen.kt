@@ -1,6 +1,8 @@
 package com.dinnote.app
 
 import android.content.Context
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -35,6 +37,28 @@ fun readingBackground(value: String): Color = when (value) {
 fun DisplaySettingsScreen(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val prefs = remember { context.getSharedPreferences("dinnote_display", Context.MODE_PRIVATE) }
+    val noteDatabase = remember { NoteDatabase(context).also { it.migrateOldSingleNote(context) } }
+    var backupStatus by remember { mutableStateOf("") }
+    val saveDataLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("application/json")
+    ) { uri ->
+        if (uri != null) {
+            backupStatus = runCatching {
+                NoteBackup.export(context, uri, noteDatabase.allNotes())
+                "Data berjaya disimpan ke folder pilihan."
+            }.getOrElse { "Gagal menyimpan data: ${it.message}" }
+        }
+    }
+    val restoreDataLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        if (uri != null) {
+            backupStatus = runCatching {
+                val result = NoteBackup.import(context, uri, noteDatabase)
+                "${result.imported} nota dipulihkan; ${result.skippedDuplicates} pendua dilangkau."
+            }.getOrElse { "Gagal memulihkan data: ${it.message}" }
+        }
+    }
     var background by remember { mutableStateOf(prefs.getString("background", "white") ?: "white") }
     var fontSize by remember { mutableFloatStateOf(prefs.getInt("font_size", 19).toFloat()) }
     var spacing by remember { mutableStateOf(prefs.getFloat("line_spacing", 1.6f)) }
@@ -155,6 +179,21 @@ fun DisplaySettingsScreen(modifier: Modifier = Modifier) {
                 Spacer(Modifier.height(12.dp))
                 Text("$selectedSymbol Contoh paparan nota dengan tetapan yang dipilih.", fontSize = fontSize.sp, lineHeight = (fontSize * spacing).sp, color = if (background == "dark") Color.White else Color.DarkGray)
             }
+        }
+        HorizontalDivider(color = Color(0xFFE1E3E5))
+        Text("Simpan & Pulihkan Data", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+        Text("Simpan fail data DinNote dalam folder khas pilihan anda, contohnya Dokumen/DinNote Backup. Fail ini boleh diimport semula apabila diperlukan.", fontSize = 13.sp)
+        Button(onClick = {
+            val filename = "DinNote-Data-" +
+                java.text.SimpleDateFormat("yyyyMMdd-HHmm", java.util.Locale.US)
+                    .format(java.util.Date()) + ".json"
+            saveDataLauncher.launch(filename)
+        }, modifier = Modifier.fillMaxWidth()) { Text("Simpan data ke telefon") }
+        OutlinedButton(onClick = {
+            restoreDataLauncher.launch(arrayOf("application/json", "text/json", "*/*"))
+        }, modifier = Modifier.fillMaxWidth()) { Text("Import data untuk pemulihan") }
+        if (backupStatus.isNotBlank()) {
+            Text(backupStatus, fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
         }
         Text("Pilihan disimpan secara automatik pada telefon ini.", fontSize = 12.sp, color = Color.Gray)
     }
