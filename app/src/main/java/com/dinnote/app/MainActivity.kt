@@ -77,31 +77,62 @@ fun DinNoteApp() {
                 }
             },
             bottomBar = {
-                NavigationBar {
-                    NavigationBarItem(
-                        selected = selectedTab == 0,
-                        onClick = { selectedTab = 0 },
-                        icon = { Text("⌂") },
-                        label = { Text("Utama") }
-                    )
-                    NavigationBarItem(
-                        selected = selectedTab == 1,
-                        onClick = { selectedTab = 1 },
-                        icon = { Text("✎") },
-                        label = { Text("Nota") }
-                    )
-                    NavigationBarItem(
-                        selected = selectedTab == 2,
-                        onClick = { selectedTab = 2 },
-                        icon = { Text("۞") },
-                        label = { Text("Maktabah") }
-                    )
-                    NavigationBarItem(
-                        selected = selectedTab == 3,
-                        onClick = { selectedTab = 3 },
-                        icon = { Text("⚙") },
-                        label = { Text("Tetapan") }
-                    )
+                Surface(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 5.dp),
+                    shape = RoundedCornerShape(22.dp),
+                    color = Color.White,
+                    border = BorderStroke(1.dp, Color(0xFFD1D5DB)),
+                    shadowElevation = 2.dp
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().height(62.dp).padding(4.dp),
+                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                    ) {
+                        val tabs = listOf(
+                            Triple("Utama", "⌂", 0),
+                            Triple("Nota", "✎", 1),
+                            Triple("Maktabah", "▤", 2),
+                            Triple("Tetapan", "⚙", 3)
+                        )
+                        tabs.forEachIndexed { index, tab ->
+                            if (index > 0) {
+                                androidx.compose.material3.VerticalDivider(
+                                    modifier = Modifier.height(30.dp),
+                                    thickness = 1.dp,
+                                    color = Color(0xFFE3E5E8)
+                                )
+                            }
+                            val active = selectedTab == tab.third
+                            Surface(
+                                modifier = Modifier.weight(1f).fillMaxHeight().clickable {
+                                    selectedTab = tab.third
+                                },
+                                shape = RoundedCornerShape(17.dp),
+                                color = if (active) Color(0xFFE2F5F5) else Color.Transparent
+                            ) {
+                                Column(
+                                    modifier = Modifier.fillMaxSize(),
+                                    verticalArrangement = Arrangement.Center,
+                                    horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
+                                ) {
+                                    Text(
+                                        tab.second,
+                                        fontSize = 21.sp,
+                                        lineHeight = 23.sp,
+                                        color = if (active) Color(0xFF007C83) else Color(0xFF45464F)
+                                    )
+                                    Text(
+                                        tab.first,
+                                        fontSize = 11.sp,
+                                        lineHeight = 14.sp,
+                                        maxLines = 1,
+                                        fontWeight = if (active) FontWeight.SemiBold else FontWeight.Normal,
+                                        color = if (active) Color(0xFF007C83) else Color(0xFF45464F)
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
             }
         ) { padding ->
