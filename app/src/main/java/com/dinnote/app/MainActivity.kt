@@ -1027,7 +1027,7 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                     androidx.compose.foundation.text.BasicTextField(
                         value = libraryBody, onValueChange = { libraryBody = it },
                         modifier = Modifier.weight(1f).fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
-                        textStyle = androidx.compose.ui.text.TextStyle(fontSize = 19.sp, lineHeight = 29.sp, color = Color(0xFF263B3E)),
+                        textStyle = androidx.compose.ui.text.TextStyle(fontSize = 19.sp, lineHeight = 29.sp, color = Color(0xFF263B3E), textDirection = TextDirection.ContentOrLtr),
                         decorationBox = { inner -> Box { if (libraryBody.text.isEmpty()) Text("Tulis kandungan Arab atau Rumi...", color = Color.Gray); inner() } }
                     )
                     HorizontalDivider()
@@ -1054,7 +1054,7 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
             title = { Text(entry.title) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text(entry.arabic, fontSize = 27.sp)
+                    Text(entry.arabic, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Right, style = androidx.compose.ui.text.TextStyle(textDirection = TextDirection.Rtl), fontSize = 27.sp)
                     Text(entry.transliteration, fontWeight = FontWeight.Bold)
                     Text(entry.meaning)
                     Text("Rujukan: ${entry.reference}", fontSize = 13.sp)
