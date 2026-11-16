@@ -315,9 +315,8 @@ fun NotesScreen(modifier: Modifier = Modifier) {
                                 item.title.ifBlank { "Tanpa tajuk" },
                                 fontWeight = FontWeight.Bold
                             )
-                            Text(
-                                Text(item.category, color = MaterialTheme.colorScheme.primary, fontSize = 11.sp)
-                                Text(item.body, maxLines = 3)
+                            Text(item.category, color = MaterialTheme.colorScheme.primary, fontSize = 11.sp)
+                            Text(item.body, maxLines = 3)
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.End
