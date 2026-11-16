@@ -262,42 +262,6 @@ fun NotesScreen(
         notes.addAll(database.allNotes())
     }
 
-    var backupMessage by remember { mutableStateOf<String?>(null) }
-    val exportLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.CreateDocument("application/json")
-    ) { uri ->
-        if (uri != null) {
-            backupMessage = runCatching {
-                NoteBackup.export(context, uri, database.allNotes())
-                "Fail sandaran berjaya disimpan."
-            }.getOrElse { "Sandaran gagal: ${it.message ?: "ralat"}" }
-        }
-    }
-    val importLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.OpenDocument()
-    ) { uri ->
-        if (uri != null) {
-            backupMessage = runCatching {
-                val result = NoteBackup.import(context, uri, database)
-                refreshNotes()
-                val restoredCustomCategories = notes.map { it.category }
-                    .filter { it !in builtInCategories }
-                    .distinct()
-                restoredCustomCategories.forEach { category ->
-                    if (category !in customCategories) customCategories.add(category)
-                }
-                context.getSharedPreferences("dinnote_categories", android.content.Context.MODE_PRIVATE)
-                    .edit().putStringSet("custom", customCategories.toSet()).apply()
-                buildString {
-                    append("${result.imported} nota dipulihkan.")
-                    if (result.skippedDuplicates > 0) {
-                        append(" ${result.skippedDuplicates} nota pendua sedia ada dilangkau.")
-                    }
-                }
-            }.getOrElse { "Pemulihan gagal: ${it.message ?: "ralat"}" }
-        }
-    }
-
     LaunchedEffect(Unit) { refreshNotes() }
 
     LaunchedEffect(openNewNote) {
@@ -341,23 +305,6 @@ fun NotesScreen(
                 readingMode = false; showEditor = true
                 }) { Text("+ Nota") }
             }
-        }
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            OutlinedButton(onClick = { exportLauncher.launch("DinNote-Backup.json") }) {
-                Text("Eksport sandaran")
-            }
-            OutlinedButton(onClick = {
-                importLauncher.launch(arrayOf("application/json", "text/json", "*/*"))
-            }) {
-                Text("Pulihkan sandaran")
-            }
-        }
-        backupMessage?.let {
-            Text(it, color = MaterialTheme.colorScheme.primary, fontSize = 12.sp)
         }
 
         Row(
