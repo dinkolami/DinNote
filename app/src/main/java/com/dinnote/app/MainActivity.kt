@@ -820,6 +820,27 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
     var selectedCategory by remember { mutableStateOf("Kalimah Tayyibah") }
     var selectedEntry by remember { mutableStateOf<KalimahEntry?>(null) }
     var search by remember { mutableStateOf("") }
+    val context = LocalContext.current
+    val libraryPrefs = remember { context.getSharedPreferences("dinnote_library_edits", android.content.Context.MODE_PRIVATE) }
+    var libraryRevision by remember { mutableIntStateOf(0) }
+    var editingLibraryKey by remember { mutableStateOf<String?>(null) }
+    var libraryTitle by remember { mutableStateOf("") }
+    var libraryBody by remember { mutableStateOf(TextFieldValue("")) }
+    fun openLibraryEditor(key: String, defaultTitle: String = "", defaultBody: String = "") {
+        editingLibraryKey = key
+        libraryTitle = libraryPrefs.getString(key + "_title", defaultTitle) ?: defaultTitle
+        libraryBody = TextFieldValue(libraryPrefs.getString(key + "_body", defaultBody) ?: defaultBody)
+    }
+    fun saveLibraryEditor() {
+        editingLibraryKey?.let { key ->
+            libraryPrefs.edit().putString(key + "_title", libraryTitle).putString(key + "_body", libraryBody.text).apply()
+            libraryRevision++
+        }
+    }
+    val libraryItems = remember(libraryRevision, selectedCategory) {
+        libraryPrefs.all.keys.filter { it.startsWith("entry_" + selectedCategory + "_") && it.endsWith("_title") }
+            .map { it.removeSuffix("_title") }.sorted()
+    }
 
     val filteredEntries = kalimahEntries.filter { entry ->
         entry.title.contains(search, ignoreCase = true) ||
@@ -832,8 +853,8 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
         modifier = modifier.fillMaxSize().padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Text("Perpustakaan DinNote 🌿", fontSize = 23.sp, fontWeight = FontWeight.Bold)
-        Text("Koleksi ilmu dan amalan yang boleh dibaca secara offline.")
+        Text("Perpustakaan", fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
+
 
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -891,11 +912,14 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
-                Card(Modifier.fillMaxWidth()) {
-                    Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text("Ruang koleksi kitab", fontWeight = FontWeight.Bold)
-                        Text("Tempat menghimpunkan petikan teks Arab, terjemahan, syarah, takhrij dan nota pengajian.")
-                        Text("Kandungan kitab akan dimasukkan secara berperingkat dengan nama kitab dan rujukan yang jelas.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Button(onClick = { openLibraryEditor("entry_Kitab-Kitab_" + System.currentTimeMillis()) }) { Text("+ Tambah Kitab") }
+                libraryItems.filter { (libraryPrefs.getString(it + "_title", "") ?: "").contains(search, true) ||
+                    (libraryPrefs.getString(it + "_body", "") ?: "").contains(search, true) }.forEach { key ->
+                    Card(Modifier.fillMaxWidth().clickable { openLibraryEditor(key) }) {
+                        Column(Modifier.padding(16.dp)) {
+                            Text(libraryPrefs.getString(key + "_title", "Tanpa tajuk") ?: "Tanpa tajuk", fontWeight = FontWeight.Bold)
+                            Text((libraryPrefs.getString(key + "_body", "") ?: "").take(130), maxLines = 3)
+                        }
                     }
                 }
             }
@@ -908,11 +932,62 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
-                Card(Modifier.fillMaxWidth()) {
-                    Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text("Himpunan Kalam Hikmah", fontWeight = FontWeight.Bold)
-                        Text("Koleksi nasihat ulama, mutiara ilmu, peringatan dan kata-kata hikmah.")
-                        Text("Setiap petikan akan disertakan sumber apabila diketahui, supaya tidak tersalah sandar kata-kata kepada ulama.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Button(onClick = { openLibraryEditor("entry_Kalam Hikmah_" + System.currentTimeMillis()) }) { Text("+ Tambah Kalam Hikmah") }
+                libraryItems.filter { (libraryPrefs.getString(it + "_title", "") ?: "").contains(search, true) ||
+                    (libraryPrefs.getString(it + "_body", "") ?: "").contains(search, true) }.forEach { key ->
+                    Card(Modifier.fillMaxWidth().clickable { openLibraryEditor(key) }) {
+                        Column(Modifier.padding(16.dp)) {
+                            Text(libraryPrefs.getString(key + "_title", "Tanpa tajuk") ?: "Tanpa tajuk", fontWeight = FontWeight.Bold)
+                            Text((libraryPrefs.getString(key + "_body", "") ?: "").take(130), maxLines = 3)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if (editingLibraryKey != null) {
+        LaunchedEffect(libraryTitle, libraryBody.text) {
+            kotlinx.coroutines.delay(650)
+            if (libraryTitle.isNotBlank() || libraryBody.text.isNotBlank()) saveLibraryEditor()
+        }
+        androidx.compose.ui.window.Dialog(
+            onDismissRequest = { saveLibraryEditor(); editingLibraryKey = null },
+            properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)
+        ) {
+            Surface(Modifier.fillMaxSize(), color = Color.White) {
+                Column(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding()) {
+                    Row(Modifier.fillMaxWidth().height(48.dp).padding(horizontal = 8.dp),
+                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                        TextButton(onClick = { saveLibraryEditor(); editingLibraryKey = null }) { Text("← Selesai") }
+                        Text("Editor Perpustakaan", fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
+                    }
+                    HorizontalDivider()
+                    androidx.compose.foundation.text.BasicTextField(
+                        value = libraryTitle, onValueChange = { libraryTitle = it },
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        singleLine = true,
+                        textStyle = androidx.compose.ui.text.TextStyle(fontSize = 25.sp, color = Color(0xFF263B3E)),
+                        decorationBox = { inner -> Box { if (libraryTitle.isEmpty()) Text("Tajuk kitab / hikmah", color = Color.Gray); inner() } }
+                    )
+                    androidx.compose.foundation.text.BasicTextField(
+                        value = libraryBody, onValueChange = { libraryBody = it },
+                        modifier = Modifier.weight(1f).fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
+                        textStyle = androidx.compose.ui.text.TextStyle(fontSize = 19.sp, lineHeight = 29.sp, color = Color(0xFF263B3E)),
+                        decorationBox = { inner -> Box { if (libraryBody.text.isEmpty()) Text("Tulis kandungan Arab atau Rumi...", color = Color.Gray); inner() } }
+                    )
+                    HorizontalDivider()
+                    Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(5.dp)) {
+                        listOf("B" to "**", "I" to "_", "U" to "__", "S" to "~~", "•" to "• ", "1." to "1. ", "☑" to "☐ ").forEach { (label, marker) ->
+                            TextButton(onClick = {
+                                val a = libraryBody.selection.min
+                                val b = libraryBody.selection.max
+                                val selected = libraryBody.text.substring(a, b)
+                                val insertion = if (marker in listOf("**", "_", "__", "~~")) marker + selected + marker else marker + selected
+                                libraryBody = TextFieldValue(libraryBody.text.replaceRange(a, b, insertion),
+                                    selection = TextRange(a + insertion.length))
+                            }) { Text(label) }
+                        }
                     }
                 }
             }
