@@ -40,6 +40,7 @@ fun DisplaySettingsScreen(modifier: Modifier = Modifier) {
     val prefs = remember { context.getSharedPreferences("dinnote_display", Context.MODE_PRIVATE) }
     val noteDatabase = remember { NoteDatabase(context).also { it.migrateOldSingleNote(context) } }
     var backupStatus by remember { mutableStateOf("") }
+    var settingsStatus by remember { mutableStateOf("") }
     val saveDataLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.CreateDocument("application/json")
     ) { uri ->
@@ -84,7 +85,7 @@ fun DisplaySettingsScreen(modifier: Modifier = Modifier) {
             listOf("Arab & Melayu", "Arab", "Melayu").forEach { option ->
                 FilterChip(selected = primaryLanguage == option, onClick = {
                     primaryLanguage = option
-                    prefs.edit().putString("primary_language", option).apply()
+                    settingsStatus = "Perubahan belum disimpan"
                 }, label = { Text(option) })
             }
         }
@@ -93,7 +94,7 @@ fun DisplaySettingsScreen(modifier: Modifier = Modifier) {
             listOf("Syafi‘i", "Hanafi", "Maliki", "Hanbali", "Umum").forEach { option ->
                 FilterChip(selected = referenceMadhhab == option, onClick = {
                     referenceMadhhab = option
-                    prefs.edit().putString("reference_madhhab", option).apply()
+                    settingsStatus = "Perubahan belum disimpan"
                 }, label = { Text(option) })
             }
         }
@@ -102,7 +103,7 @@ fun DisplaySettingsScreen(modifier: Modifier = Modifier) {
             listOf("Arab di atas, Melayu di bawah", "Melayu di atas, Arab di bawah", "Arab sahaja", "Melayu sahaja").forEach { option ->
                 FilterChip(selected = bookLayout == option, onClick = {
                     bookLayout = option
-                    prefs.edit().putString("book_layout", option).apply()
+                    settingsStatus = "Perubahan belum disimpan"
                 }, label = { Text(option) })
             }
         }
@@ -115,7 +116,7 @@ fun DisplaySettingsScreen(modifier: Modifier = Modifier) {
                     Surface(
                         modifier = Modifier.weight(1f).height(76.dp).clickable {
                             background = key
-                            prefs.edit().putString("background", key).apply()
+                            settingsStatus = "Perubahan belum disimpan"
                         },
                         color = readingBackground(key),
                         shape = RoundedCornerShape(10.dp),
@@ -133,7 +134,7 @@ fun DisplaySettingsScreen(modifier: Modifier = Modifier) {
         Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             listOf("rounded" to "Bucu bulat", "pill" to "Pill", "square" to "Petak", "dashed" to "Putus").forEach { (key, label) ->
                 FilterChip(selected = borderShape == key, onClick = {
-                    borderShape = key; prefs.edit().putString("border_shape", key).apply()
+                    borderShape = key; settingsStatus = "Perubahan belum disimpan"
                 }, label = { Text(label) })
             }
         }
@@ -141,12 +142,12 @@ fun DisplaySettingsScreen(modifier: Modifier = Modifier) {
         Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             listOf("teal" to "Turquoise", "blue" to "Biru", "purple" to "Ungu", "pink" to "Merah jambu", "red" to "Merah", "orange" to "Oren", "gray" to "Kelabu").forEach { (key, label) ->
                 FilterChip(selected = borderColor == key, onClick = {
-                    borderColor = key; prefs.edit().putString("border_color", key).apply()
+                    borderColor = key; settingsStatus = "Perubahan belum disimpan"
                 }, label = { Text(label) })
             }
         }
         Text("Ketebalan border: ${borderWidth.toInt()} dp", fontWeight = FontWeight.Bold)
-        Slider(value = borderWidth, onValueChange = { borderWidth = it; prefs.edit().putFloat("border_width", it).apply() }, valueRange = 1f..4f, steps = 2)
+        Slider(value = borderWidth, onValueChange = { borderWidth = it; settingsStatus = "Perubahan belum disimpan" }, valueRange = 1f..4f, steps = 2)
         Text("Ikon dan simbol pilihan", fontWeight = FontWeight.Bold)
         Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             listOf("✦", "★", "✓", "☑", "❖", "۞", "☪", "﷽", "•", "→").forEach { symbol ->
@@ -154,7 +155,7 @@ fun DisplaySettingsScreen(modifier: Modifier = Modifier) {
                     selected = selectedSymbol == symbol,
                     onClick = {
                         selectedSymbol = symbol
-                        prefs.edit().putString("selected_symbol", symbol).apply()
+                        settingsStatus = "Perubahan belum disimpan"
                     },
                     label = { Text(symbol, fontSize = 18.sp) }
                 )
@@ -163,14 +164,14 @@ fun DisplaySettingsScreen(modifier: Modifier = Modifier) {
         Text("Saiz Tulisan: ${fontSize.toInt()} sp", fontWeight = FontWeight.Bold)
         Slider(value = fontSize, onValueChange = {
             fontSize = it
-            prefs.edit().putInt("font_size", it.toInt()).apply()
+            settingsStatus = "Perubahan belum disimpan"
         }, valueRange = 14f..30f)
         Text("Jenis Fon", fontWeight = FontWeight.Bold)
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             listOf("Standard", "Serif", "Arab & Rumi").forEach { option ->
                 FilterChip(selected = fontChoice == option, onClick = {
                     fontChoice = option
-                    prefs.edit().putString("font", option).apply()
+                    settingsStatus = "Perubahan belum disimpan"
                 }, label = { Text(option, fontSize = 11.sp) })
             }
         }
@@ -179,7 +180,7 @@ fun DisplaySettingsScreen(modifier: Modifier = Modifier) {
             listOf(1.3f to "Rapat", 1.6f to "Sederhana", 2.0f to "Lapang").forEach { (value, label) ->
                 FilterChip(selected = spacing == value, onClick = {
                     spacing = value
-                    prefs.edit().putFloat("line_spacing", value).apply()
+                    settingsStatus = "Perubahan belum disimpan"
                 }, label = { Text(label) })
             }
         }
@@ -187,7 +188,7 @@ fun DisplaySettingsScreen(modifier: Modifier = Modifier) {
             Text("Mod Bacaan Penuh", fontWeight = FontWeight.Medium)
             Switch(checked = fullScreen, onCheckedChange = {
                 fullScreen = it
-                prefs.edit().putBoolean("full_screen", it).apply()
+                settingsStatus = "Perubahan belum disimpan"
             })
         }
         Text("Pratonton", fontWeight = FontWeight.Bold)
@@ -218,6 +219,29 @@ fun DisplaySettingsScreen(modifier: Modifier = Modifier) {
                 Text("$selectedSymbol Contoh terjemahan dan nota kajian kitab mazhab Syafi‘i.", fontSize = fontSize.sp, lineHeight = (fontSize * spacing).sp, color = if (background == "dark") Color.White else Color.DarkGray)
             }
         }
+        Button(
+            onClick = {
+                val saved = prefs.edit()
+                    .putString("background", background)
+                    .putInt("font_size", fontSize.toInt())
+                    .putFloat("line_spacing", spacing)
+                    .putBoolean("full_screen", fullScreen)
+                    .putString("border_shape", borderShape)
+                    .putString("border_color", borderColor)
+                    .putFloat("border_width", borderWidth)
+                    .putString("selected_symbol", selectedSymbol)
+                    .putString("font", fontChoice)
+                    .putString("primary_language", primaryLanguage)
+                    .putString("reference_madhhab", referenceMadhhab)
+                    .putString("book_layout", bookLayout)
+                    .commit()
+                settingsStatus = if (saved) "Tetapan berjaya disimpan" else "Gagal menyimpan tetapan"
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) { Text("Simpan Tetapan") }
+        if (settingsStatus.isNotBlank()) {
+            Text(settingsStatus, fontSize = 13.sp, color = Color(0xFF075B59))
+        }
         HorizontalDivider(color = Color(0xFFE1E3E5))
         Text("Simpan & Pulihkan Data", fontWeight = FontWeight.Bold, fontSize = 18.sp)
         Text("Simpan fail data DinNote dalam folder khas pilihan anda, contohnya Dokumen/DinNote Backup. Fail ini boleh diimport semula apabila diperlukan.", fontSize = 13.sp)
@@ -233,6 +257,6 @@ fun DisplaySettingsScreen(modifier: Modifier = Modifier) {
         if (backupStatus.isNotBlank()) {
             Text(backupStatus, fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
         }
-        Text("Pilihan disimpan secara automatik pada telefon ini.", fontSize = 12.sp, color = Color.Gray)
+        Text("Tekan Simpan Tetapan untuk menyimpan perubahan pada telefon ini.", fontSize = 12.sp, color = Color.Gray)
     }
 }
