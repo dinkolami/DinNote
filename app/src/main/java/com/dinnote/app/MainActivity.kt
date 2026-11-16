@@ -847,6 +847,7 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
     var selectedCategory by remember { mutableStateOf("Kalimah Tayyibah") }
     var selectedEntry by remember { mutableStateOf<KalimahEntry?>(null) }
     var search by remember { mutableStateOf("") }
+    var searchExpanded by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val libraryPrefs = remember { context.getSharedPreferences("dinnote_library_edits", android.content.Context.MODE_PRIVATE) }
     var libraryRevision by remember { mutableIntStateOf(0) }
@@ -885,8 +886,8 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
     }
 
     Column(
-        modifier = modifier.fillMaxSize().padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        modifier = modifier.fillMaxSize().padding(horizontal = 12.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
         Text("Perpustakaan", fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
 
@@ -910,16 +911,30 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
             }
         }
 
+        Row(Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween) {
+            Text("Carian", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            TextButton(onClick = { searchExpanded = !searchExpanded }) {
+                Text(if (searchExpanded) "⌃ Tutup carian" else "⌕ Buka carian", fontSize = 13.sp)
+            }
+        }
+        if (searchExpanded) {
+            OutlinedTextField(
+                value = search,
+                onValueChange = { search = it },
+                placeholder = { Text("Cari dalam " + selectedCategory, fontSize = 13.sp) },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth().height(54.dp),
+                trailingIcon = {
+                    if (search.isNotEmpty()) TextButton(onClick = { search = "" }) { Text("✕") }
+                }
+            )
+        }
+
         when (selectedCategory) {
             "Kalimah Tayyibah" -> {
                 Text("الكلمات الطيبة", fontSize = 22.sp)
-                OutlinedTextField(
-                    value = search,
-                    onValueChange = { search = it },
-                    label = { Text("Cari kalimah atau maksud") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
+
                 Text("${filteredEntries.size} kalimah tersedia", color = MaterialTheme.colorScheme.primary)
                 LazyColumn(
                     modifier = Modifier.weight(1f),
@@ -946,13 +961,7 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
             }
             "Kitab-Kitab" -> {
                 Text("📚 Perpustakaan Kitab", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                OutlinedTextField(
-                    value = search,
-                    onValueChange = { search = it },
-                    label = { Text("Cari nama kitab atau tajuk") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
+
                 Button(onClick = { openLibraryEditor("entry_Kitab-Kitab_" + System.currentTimeMillis()) }) { Text("+ Tambah Kitab") }
                 libraryItems.filter { (libraryPrefs.getString(it + "_title", "") ?: "").contains(search, true) ||
                     (libraryPrefs.getString(it + "_body", "") ?: "").contains(search, true) }.forEach { key ->
@@ -966,13 +975,7 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
             }
             else -> {
                 Text("✨ Kalam Hikmah", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                OutlinedTextField(
-                    value = search,
-                    onValueChange = { search = it },
-                    label = { Text("Cari kata hikmah atau ulama") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
+
                 Button(onClick = { openLibraryEditor("entry_" + selectedCategory + "_" + System.currentTimeMillis()) }) { Text("+ Tambah Kandungan") }
                 libraryItems.filter { (libraryPrefs.getString(it + "_title", "") ?: "").contains(search, true) ||
                     (libraryPrefs.getString(it + "_body", "") ?: "").contains(search, true) }.forEach { key ->
