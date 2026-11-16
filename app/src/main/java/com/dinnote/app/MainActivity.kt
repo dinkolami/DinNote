@@ -670,7 +670,7 @@ fun NotesScreen(
                 decorFitsSystemWindows = false
             )
         ) {
-            Surface(modifier = Modifier.fillMaxSize().padding(2.dp), shape = RoundedCornerShape(12.dp), border = BorderStroke(1.dp, Color(0xFFD8DEE3)), color = readingBackground(editorBackground)) {
+            Surface(modifier = Modifier.fillMaxSize().padding(3.dp), shape = RoundedCornerShape(10.dp), border = BorderStroke(1.dp, Color(0xFFB7DCD7)), color = readingBackground(editorBackground)) {
                 Column(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding()) {
                     if (readingMode) {
                         Row(Modifier.fillMaxWidth().padding(12.dp), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -692,9 +692,9 @@ fun NotesScreen(
                             }
                         }
                     } else {
-                    Surface(color = Color(0xFF006E70), shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp), border = BorderStroke(2.dp, Color(0xFFD5AD55))) {
+                    Surface(color = Color(0xFF006E70), shape = RoundedCornerShape(topStart = 10.dp, topEnd = 10.dp), border = BorderStroke(1.dp, Color(0xFFB7DCD7))) {
                         Row(
-                            Modifier.fillMaxWidth().height(58.dp).padding(horizontal = 5.dp),
+                            Modifier.fillMaxWidth().height(52.dp).padding(horizontal = 5.dp),
                             verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
                         ) {
                             TextButton(onClick = { persistNote(); showEditor = false }) {
@@ -703,7 +703,7 @@ fun NotesScreen(
                             Text(
                                 if (editingId == null) "✎  Catatan Baharu" else "✎  Edit Catatan",
                                 modifier = Modifier.weight(1f),
-                                color = Color.White, fontSize = 19.sp,
+                                color = Color.White, fontSize = 16.sp,
                                 fontWeight = FontWeight.SemiBold, maxLines = 1
                             )
                             TextButton(enabled = undoStack.isNotEmpty(), onClick = {
@@ -772,10 +772,10 @@ fun NotesScreen(
                     }
 
                     Surface(
-                        modifier = Modifier.fillMaxWidth().weight(1f).padding(horizontal = 10.dp, vertical = 8.dp),
-                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth().weight(1f).padding(horizontal = 12.dp, vertical = 8.dp),
+                        shape = RoundedCornerShape(10.dp),
                         color = Color.White,
-                        border = BorderStroke(1.dp, Color(0xFF0C9699))
+                        border = BorderStroke(1.dp, Color(0xFFB7DCD7))
                     ) {
                         Box(Modifier.fillMaxSize()) {
                             // Islamic ornamental frame, turquoise waves and mosque skyline.
@@ -982,16 +982,16 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
         modifier = modifier.fillMaxSize().padding(horizontal = 12.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        Text("Maktabah", fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
+        Text("Maktabah", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF075B59))
 
 
         var libraryCategoryExpanded by remember { mutableStateOf(false) }
         Box(Modifier.fillMaxWidth()) {
             Surface(
                 modifier = Modifier.fillMaxWidth().clickable { libraryCategoryExpanded = true },
-                shape = RoundedCornerShape(6.dp),
+                shape = RoundedCornerShape(10.dp),
                 color = Color.White,
-                border = BorderStroke(1.dp, Color(0xFFB7D7D6))
+                border = BorderStroke(1.dp, Color(0xFFB7DCD7))
             ) {
                 Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 9.dp),
                     verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
@@ -1246,8 +1246,8 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
 
 @Composable
 private fun UnifiedEditorHeading(title: String, onBack: () -> Unit, onSave: () -> Unit) {
-    Surface(color = Color(0xFF006E70), shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp),
-        border = BorderStroke(1.dp, Color(0xFFD5AD55))) {
+    Surface(color = Color(0xFF006E70), shape = RoundedCornerShape(topStart = 10.dp, topEnd = 10.dp),
+        border = BorderStroke(1.dp, Color(0xFFB7DCD7))) {
         Row(Modifier.fillMaxWidth().height(52.dp).padding(horizontal = 8.dp),
             verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
             TextButton(onClick = onBack) { Text("←", color = Color.White, fontSize = 24.sp) }
