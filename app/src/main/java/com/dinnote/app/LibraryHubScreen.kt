@@ -26,7 +26,7 @@ fun LibraryHubScreen(modifier: Modifier = Modifier) {
             FilterChip(
                 selected = section == "Kitab",
                 onClick = { section = "Kitab" },
-                label = { Text("Perpustakaan Kitab") }
+                label = { Text("Maktabah Kitab") }
             )
         }
         HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
