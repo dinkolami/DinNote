@@ -86,7 +86,7 @@ fun DisplaySettingsScreen(modifier: Modifier = Modifier) {
     var selectedSymbol by remember { mutableStateOf(prefs.getString("selected_symbol", "✦") ?: "✦") }
     var fontChoice by remember { mutableStateOf(prefs.getString("font", "Standard") ?: "Standard") }
     var primaryLanguage by remember { mutableStateOf(prefs.getString("primary_language", "Arab & Melayu") ?: "Arab & Melayu") }
-    var referenceMadhhab by remember { mutableStateOf(prefs.getString("reference_madhhab", "Syafi‘i") ?: "Syafi‘i") }
+    val referenceMadhhab = "Syafi‘i"
     var bookLayout by remember { mutableStateOf(prefs.getString("book_layout", "Arab di atas, Melayu di bawah") ?: "Arab di atas, Melayu di bawah") }
     Column(modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 14.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text("Tetapan DinNote", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF075B59))
@@ -104,15 +104,8 @@ fun DisplaySettingsScreen(modifier: Modifier = Modifier) {
                 }, label = { Text(option) })
             }
         }
-        Text("Mazhab rujukan utama", fontWeight = FontWeight.Medium)
-        Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            listOf("Syafi‘i", "Hanafi", "Maliki", "Hanbali", "Umum").forEach { option ->
-                FilterChip(selected = referenceMadhhab == option, onClick = {
-                    referenceMadhhab = option
-                    settingsStatus = "Perubahan belum disimpan"
-                }, label = { Text(option) })
-            }
-        }
+        Text("Mazhab rujukan utama: Syafi‘i", fontWeight = FontWeight.Medium)
+        Text("DinNote memfokuskan rujukan mazhab Syafi‘i.", fontSize = 12.sp, color = Color.Gray)
         Text("Susunan bacaan kitab", fontWeight = FontWeight.Medium)
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             listOf("Arab di atas, Melayu di bawah", "Melayu di atas, Arab di bawah", "Arab sahaja", "Melayu sahaja").forEach { option ->
