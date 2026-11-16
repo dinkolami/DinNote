@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CutCornerShape
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -40,6 +42,7 @@ fun DisplaySettingsScreen(modifier: Modifier = Modifier) {
     var borderShape by remember { mutableStateOf(prefs.getString("border_shape", "rounded") ?: "rounded") }
     var borderColor by remember { mutableStateOf(prefs.getString("border_color", "teal") ?: "teal") }
     var borderWidth by remember { mutableFloatStateOf(prefs.getFloat("border_width", 1f)) }
+    var selectedSymbol by remember { mutableStateOf(prefs.getString("selected_symbol", "✦") ?: "✦") }
     var fontChoice by remember { mutableStateOf(prefs.getString("font", "Standard") ?: "Standard") }
     Column(modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(18.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
         Text("⚙ Tetapan Paparan", fontSize = 25.sp, fontWeight = FontWeight.Bold, color = Color(0xFF075A40))
@@ -83,7 +86,19 @@ fun DisplaySettingsScreen(modifier: Modifier = Modifier) {
         }
         Text("Ketebalan border: ${borderWidth.toInt()} dp", fontWeight = FontWeight.Bold)
         Slider(value = borderWidth, onValueChange = { borderWidth = it; prefs.edit().putFloat("border_width", it).apply() }, valueRange = 1f..4f, steps = 2)
-        Text("Ikon dan simbol pilihan: ✦ ★ ✓ ☑ ❖ ۞ ☪ ﷽ • →", fontSize = 15.sp)
+        Text("Ikon dan simbol pilihan", fontWeight = FontWeight.Bold)
+        Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            listOf("✦", "★", "✓", "☑", "❖", "۞", "☪", "﷽", "•", "→").forEach { symbol ->
+                FilterChip(
+                    selected = selectedSymbol == symbol,
+                    onClick = {
+                        selectedSymbol = symbol
+                        prefs.edit().putString("selected_symbol", symbol).apply()
+                    },
+                    label = { Text(symbol, fontSize = 18.sp) }
+                )
+            }
+        }
         Text("Saiz Tulisan: ${fontSize.toInt()}", fontWeight = FontWeight.Bold)
         Slider(value = fontSize, onValueChange = {
             fontSize = it
@@ -115,11 +130,30 @@ fun DisplaySettingsScreen(modifier: Modifier = Modifier) {
             })
         }
         Text("Pratonton", fontWeight = FontWeight.Bold)
-        Surface(color = readingBackground(background), shape = RoundedCornerShape(16.dp)) {
+        val previewShape = when (borderShape) {
+            "square" -> RoundedCornerShape(0.dp)
+            "pill" -> RoundedCornerShape(36.dp)
+            "dashed" -> CutCornerShape(12.dp)
+            else -> RoundedCornerShape(16.dp)
+        }
+        val previewBorderColor = when (borderColor) {
+            "blue" -> Color(0xFF3478B9)
+            "purple" -> Color(0xFF8855B8)
+            "pink" -> Color(0xFFD46B91)
+            "red" -> Color(0xFFC84A4A)
+            "orange" -> Color(0xFFCE7A32)
+            "gray" -> Color(0xFF8A949A)
+            else -> Color(0xFF087F8C)
+        }
+        Surface(
+            color = readingBackground(background),
+            shape = previewShape,
+            border = androidx.compose.foundation.BorderStroke(borderWidth.dp, previewBorderColor)
+        ) {
             Column(Modifier.fillMaxWidth().padding(18.dp)) {
                 Text("بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ", fontSize = (fontSize + 5).sp, color = if (background == "dark") Color.White else Color(0xFF075A40))
                 Spacer(Modifier.height(12.dp))
-                Text("Contoh paparan nota dengan tetapan yang dipilih.", fontSize = fontSize.sp, lineHeight = (fontSize * spacing).sp, color = if (background == "dark") Color.White else Color.DarkGray)
+                Text("$selectedSymbol Contoh paparan nota dengan tetapan yang dipilih.", fontSize = fontSize.sp, lineHeight = (fontSize * spacing).sp, color = if (background == "dark") Color.White else Color.DarkGray)
             }
         }
         Text("Pilihan disimpan secara automatik pada telefon ini.", fontSize = 12.sp, color = Color.Gray)
