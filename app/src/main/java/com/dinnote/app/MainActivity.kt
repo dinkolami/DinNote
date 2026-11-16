@@ -1274,7 +1274,7 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                                     decorationBox = { inner ->
                                         Box {
                                             if (libraryBody.text.isEmpty()) Text(
-                                                "✎  Tulis catatan anda di sini...",
+                                                "Sentuh di sini untuk menulis...",
                                                 color = Color.Gray, fontSize = 16.sp)
                                             inner()
                                         }
@@ -1295,11 +1295,11 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
             title = { Text("Edit · " + entry.title) },
             text = {
                 Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedTextField(value = kalimahArabic, onValueChange = { kalimahArabic = it }, label = { Text("Teks Arab") }, modifier = Modifier.fillMaxWidth())
-                    OutlinedTextField(value = kalimahMeaning, onValueChange = { kalimahMeaning = it }, label = { Text("Terjemahan Melayu") }, modifier = Modifier.fillMaxWidth())
-                    OutlinedTextField(value = kalimahTransliteration, onValueChange = { kalimahTransliteration = it }, label = { Text("Transliterasi") }, modifier = Modifier.fillMaxWidth())
-                    OutlinedTextField(value = kalimahReference, onValueChange = { kalimahReference = it }, label = { Text("Rujukan") }, modifier = Modifier.fillMaxWidth())
-                    OutlinedTextField(value = kalimahNote, onValueChange = { kalimahNote = it }, label = { Text("Nota") }, modifier = Modifier.fillMaxWidth())
+                    DefaultEditorTextField(value = kalimahArabic, onValueChange = { kalimahArabic = it }, label = "Teks Arab", arabic = true)
+                    DefaultEditorTextField(value = kalimahMeaning, onValueChange = { kalimahMeaning = it }, label = "Terjemahan Melayu", arabic = false)
+                    DefaultEditorTextField(value = kalimahTransliteration, onValueChange = { kalimahTransliteration = it }, label = "Transliterasi", arabic = false)
+                    DefaultEditorTextField(value = kalimahReference, onValueChange = { kalimahReference = it }, label = "Rujukan", arabic = false)
+                    DefaultEditorTextField(value = kalimahNote, onValueChange = { kalimahNote = it }, label = "Nota", arabic = false)
                 }
             },
             confirmButton = {
@@ -1373,6 +1373,35 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
             }
         )
     }
+}
+
+// Default content field for all structured Kalimah editors.
+@Composable
+private fun DefaultEditorTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    arabic: Boolean = false
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = { Text(label) },
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(10.dp),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = Color(0xFF087F83),
+            unfocusedBorderColor = Color(0xFFD5DADD),
+            focusedContainerColor = Color.White,
+            unfocusedContainerColor = Color.White
+        ),
+        textStyle = androidx.compose.ui.text.TextStyle(
+            fontSize = (if (arabic) 21 else 16).sp,
+            color = Color(0xFF263B3E),
+            textDirection = if (arabic) TextDirection.Rtl else TextDirection.ContentOrLtr,
+            textAlign = if (arabic) TextAlign.Right else TextAlign.Start
+        )
+    )
 }
 
 // Shared default editor controls: formatting markers are never inserted into content.
