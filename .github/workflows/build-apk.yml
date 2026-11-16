@@ -99,6 +99,28 @@ jobs:
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$APK"
           echo "APK signature verification passed. Compare the printed SHA-256 signer fingerprint with the previously installed DinNote APK before claiming in-place update compatibility."
 
+      - name: Check signing certificate against pinned fingerprint
+        env:
+          EXPECTED_SIGNER_SHA256: ${{ vars.DINNOTE_SIGNER_SHA256 }}
+        run: |
+          APK=app/build/outputs/apk/debug/app-debug.apk
+          ACTUAL=$("$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --print-certs "$APK" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' | head -n 1 | tr '[:lower:]' '[:upper:]' | tr -d ':[:space:]')
+          if [ -z "$ACTUAL" ]; then
+            echo "::error::Cannot determine APK signer certificate fingerprint."
+            exit 1
+          fi
+          echo "APK signer SHA-256: $ACTUAL"
+          if [ -z "$EXPECTED_SIGNER_SHA256" ]; then
+            echo "::warning::Set repository variable DINNOTE_SIGNER_SHA256 to the certificate fingerprint of the APK currently installed on the phone. Update compatibility is NOT verified."
+          else
+            EXPECTED=$(printf '%s' "$EXPECTED_SIGNER_SHA256" | tr '[:lower:]' '[:upper:]' | tr -d ':[:space:]')
+            if [ "$ACTUAL" != "$EXPECTED" ]; then
+              echo "::error::APK signing certificate differs from the pinned installed-app certificate. In-place updates will fail. Restore the matching original keystore."
+              exit 1
+            fi
+            echo "APK signing certificate matches pinned fingerprint."
+          fi
+
       - name: Verify and identify APK
         run: |
           test -s app/build/outputs/apk/debug/app-debug.apk
