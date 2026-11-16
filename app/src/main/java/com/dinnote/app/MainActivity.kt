@@ -723,7 +723,7 @@ fun NotesScreen(
                 decorFitsSystemWindows = false
             )
         ) {
-            Surface(modifier = Modifier.fillMaxSize().padding(4.dp), shape = RoundedCornerShape(14.dp), border = BorderStroke(1.dp, Color(0xFFD8DEE3)), color = readingBackground(editorBackground)) {
+            Surface(modifier = Modifier.fillMaxSize().padding(2.dp), shape = RoundedCornerShape(12.dp), border = BorderStroke(1.dp, Color(0xFFD8DEE3)), color = readingBackground(editorBackground)) {
                 Column(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding()) {
                     if (readingMode) {
                         Row(Modifier.fillMaxWidth().padding(12.dp), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -798,7 +798,7 @@ fun NotesScreen(
                     }
                     HorizontalDivider(color = Color(0xFFF0F0F0))
                     Row(
-                        Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal = 8.dp, vertical = 6.dp),
+                        Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal = 6.dp, vertical = 2.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         val tools = listOf("Aa" to "**", "B" to "**", "I" to "_", "U" to "__", "S" to "~~", "A" to "**", "✎" to "✍ ", "☷" to "• ", "☰" to "1. ", "☑" to "☐ ", "▧" to "▧ ", "📎" to "📎 ")
@@ -819,9 +819,9 @@ fun NotesScreen(
 
                     Surface(
                         modifier = Modifier.fillMaxWidth().weight(1f).padding(horizontal = 10.dp, vertical = 8.dp),
-                        shape = RoundedCornerShape(14.dp),
+                        shape = RoundedCornerShape(10.dp),
                         color = Color.White,
-                        border = BorderStroke(1.5.dp, Color(0xFFC9A24A))
+                        border = BorderStroke(1.dp, Color(0xFF008F91))
                     ) {
                         Box(Modifier.fillMaxSize()) {
                             // Decorative mosque arcade stays behind the text, at the bottom.
