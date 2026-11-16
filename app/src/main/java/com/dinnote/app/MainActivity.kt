@@ -76,16 +76,16 @@ fun DinNoteApp() {
         Scaffold(
             containerColor = MaterialTheme.colorScheme.background,
             topBar = {
-                Surface(color = Color(0xFF153B50)) {
+                Surface(color = Color.White) {
                     Row(
-                        modifier = Modifier.fillMaxWidth().height(46.dp).padding(horizontal = 14.dp),
+                        modifier = Modifier.fillMaxWidth().statusBarsPadding().height(56.dp).padding(horizontal = 16.dp),
                         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        Text("۞", fontSize = 20.sp, color = Color(0xFFF3D59A))
-                        Text("DinNote", fontSize = 17.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                        Text("▣", fontSize = 24.sp, color = Color(0xFF087F8C))
+                        Text("DinNote", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color(0xFF153B50))
                         Spacer(Modifier.weight(1f))
-                        Text("v$installedVersion", fontSize = 10.sp, color = Color(0xFFE1F5F3), maxLines = 1)
+                        Text("v$installedVersion", fontSize = 10.sp, color = Color(0xFF52716E), maxLines = 1)
                     }
                 }
             },
@@ -248,25 +248,6 @@ fun HomeScreen(
             .padding(horizontal = 14.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(10.dp),
-            color = Color(0xFF153B50),
-            border = BorderStroke(1.dp, Color(0xFFB7DCD7))
-        ) {
-            Column(Modifier.fillMaxWidth().padding(18.dp)) {
-                Text("۞     ﷽     ۞", fontSize = 24.sp, color = Color(0xFFF3D59A),
-                    modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
-                Text("Assalamualaikum", fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold, color = Color.White)
-                Text("DinNote • Maktabah Arab–Melayu", fontSize = 13.sp,
-                    color = Color(0xFFE1F5F3))
-                Text("⌒  ۞  ⌒  ۞  ⌒  ۞  ⌒", fontSize = 17.sp,
-                    color = Color(0xFFF3D59A),
-                    modifier = Modifier.fillMaxWidth().padding(top = 9.dp),
-                    textAlign = TextAlign.Center)
-            }
-        }
         Surface(
             modifier = Modifier.fillMaxWidth().clickable(onClick = onOpenSearch),
             shape = RoundedCornerShape(12.dp), color = Color.White,
