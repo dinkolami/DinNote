@@ -69,11 +69,45 @@ fun DisplaySettingsScreen(modifier: Modifier = Modifier) {
     var borderWidth by remember { mutableFloatStateOf(prefs.getFloat("border_width", 1f)) }
     var selectedSymbol by remember { mutableStateOf(prefs.getString("selected_symbol", "✦") ?: "✦") }
     var fontChoice by remember { mutableStateOf(prefs.getString("font", "Standard") ?: "Standard") }
+    var primaryLanguage by remember { mutableStateOf(prefs.getString("primary_language", "Arab & Melayu") ?: "Arab & Melayu") }
+    var referenceMadhhab by remember { mutableStateOf(prefs.getString("reference_madhhab", "Syafi‘i") ?: "Syafi‘i") }
+    var bookLayout by remember { mutableStateOf(prefs.getString("book_layout", "Arab di atas, Melayu di bawah") ?: "Arab di atas, Melayu di bawah") }
     Column(modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 14.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text("Tetapan DinNote", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF075B59))
         Text("Sesuaikan paparan nota dan Maktabah Arab–Melayu.", fontSize = 13.sp, color = Color(0xFF526B78))
         Text("Tema Bacaan", fontWeight = FontWeight.SemiBold, color = Color(0xFF075B59))
         Text("Pilih gaya putih, turquoise, krim atau malam untuk bacaan.", fontSize = 12.sp)
+        HorizontalDivider(color = Color(0xFFE1E3E5))
+        Text("Keutamaan Maktabah", fontWeight = FontWeight.SemiBold, color = Color(0xFF075B59), fontSize = 17.sp)
+        Text("Bahasa utama", fontWeight = FontWeight.Medium)
+        Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            listOf("Arab & Melayu", "Arab", "Melayu").forEach { option ->
+                FilterChip(selected = primaryLanguage == option, onClick = {
+                    primaryLanguage = option
+                    prefs.edit().putString("primary_language", option).apply()
+                }, label = { Text(option) })
+            }
+        }
+        Text("Mazhab rujukan utama", fontWeight = FontWeight.Medium)
+        Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            listOf("Syafi‘i", "Hanafi", "Maliki", "Hanbali", "Umum").forEach { option ->
+                FilterChip(selected = referenceMadhhab == option, onClick = {
+                    referenceMadhhab = option
+                    prefs.edit().putString("reference_madhhab", option).apply()
+                }, label = { Text(option) })
+            }
+        }
+        Text("Susunan bacaan kitab", fontWeight = FontWeight.Medium)
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            listOf("Arab di atas, Melayu di bawah", "Melayu di atas, Arab di bawah", "Arab sahaja", "Melayu sahaja").forEach { option ->
+                FilterChip(selected = bookLayout == option, onClick = {
+                    bookLayout = option
+                    prefs.edit().putString("book_layout", option).apply()
+                }, label = { Text(option) })
+            }
+        }
+        Text("Pilihan ini disimpan sebagai keutamaan Maktabah. Paparan kitab yang menyokong susunan ini akan disepadukan secara berperingkat.", fontSize = 12.sp, color = Color.Gray)
+        HorizontalDivider(color = Color(0xFFE1E3E5))
         Text("Latar Belakang Bacaan", fontWeight = FontWeight.Bold)
         listOf("white" to "Putih", "turquoise" to "Turquoise Premium", "cream" to "Krim", "green" to "Hijau lembut", "sepia" to "Sepia", "dark" to "Gelap", "pink" to "Merah jambu", "blue" to "Biru lembut", "purple" to "Ungu", "nature" to "Alam").chunked(2).forEach { pair ->
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
