@@ -54,6 +54,22 @@ private fun formatKitabCitation(title: String, author: String, volume: String, p
         chapter.trim().takeIf { it.isNotEmpty() }?.let { "Bab: $it" }
     ).joinToString(" | ")
 
+private data class SuggestedKitab(val title: String, val author: String, val category: String)
+
+// Bibliographic suggestions only: no book text is bundled or claimed to be verified.
+private val syafiiKitabSuggestions = listOf(
+    SuggestedKitab("متن أبي شجاع", "أبو شجاع الأصفهاني", "Fiqh Syafi‘i"),
+    SuggestedKitab("فتح القريب المجيب", "محمد بن قاسم الغزي", "Fiqh Syafi‘i"),
+    SuggestedKitab("منهاج الطالبين", "يحيى بن شرف النووي", "Fiqh Syafi‘i"),
+    SuggestedKitab("المجموع شرح المهذب", "يحيى بن شرف النووي", "Fiqh Syafi‘i"),
+    SuggestedKitab("فتح المعين", "زين الدين المليباري", "Fiqh Syafi‘i"),
+    SuggestedKitab("إعانة الطالبين", "أبو بكر شطا الدمياطي", "Fiqh Syafi‘i"),
+    SuggestedKitab("تحفة المحتاج", "ابن حجر الهيتمي", "Fiqh Syafi‘i"),
+    SuggestedKitab("نهاية المحتاج", "شمس الدين الرملي", "Fiqh Syafi‘i"),
+    SuggestedKitab("رياض الصالحين", "يحيى بن شرف النووي", "Hadis"),
+    SuggestedKitab("الأربعون النووية", "يحيى بن شرف النووي", "Hadis")
+)
+
 private data class KitabItem(val id: Long, val title: String, val author: String, val content: String, val category: String, val favorite: Boolean, val volume: String = "", val page: String = "", val chapter: String = "")
 
 @Composable
@@ -98,6 +114,7 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
     }
     var query by remember { mutableStateOf("") }
     var filter by remember { mutableStateOf("Semua") }
+    var showSuggestions by remember { mutableStateOf(false) }
     var opened by remember { mutableStateOf<KitabItem?>(null) }
     var editing by remember { mutableStateOf<KitabItem?>(null) }
     var editorVisible by remember { mutableStateOf(false) }
@@ -273,7 +290,10 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
                 TextButton(onClick = { ascending = !ascending }) { Text(if (ascending) "↑↓" else "↓↑") }
             }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                TextButton(onClick = { startEdit(null) }) { Text("＋ Tambah kitab") }
+                Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                    TextButton(onClick = { startEdit(null) }) { Text("＋ Tambah kitab") }
+                    TextButton(onClick = { showSuggestions = true }) { Text("Cadangan kitab") }
+                }
                 Text("${books.size} kitab", modifier = Modifier.padding(12.dp))
             }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
@@ -318,6 +338,45 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
                 }
             }
         }
+    }
+    if (showSuggestions) {
+        AlertDialog(
+            onDismissRequest = { showSuggestions = false },
+            title = { Text("Cadangan Kitab Turath", color = Color(0xFF075B59)) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Pilih judul untuk menyediakan rekod kitab. Teks penuh tidak disertakan; masukkan kandungan daripada sumber yang sah dan disemak.",
+                        fontSize = 12.sp)
+                    LazyColumn(modifier = Modifier.heightIn(max = 380.dp)) {
+                        items(syafiiKitabSuggestions) { suggestion ->
+                            Surface(
+                                modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp)
+                                    .clickable {
+                                        startEdit(null)
+                                        title = suggestion.title
+                                        author = suggestion.author
+                                        category = suggestion.category
+                                        showSuggestions = false
+                                    },
+                                shape = RoundedCornerShape(9.dp),
+                                border = BorderStroke(1.dp, Color(0xFFB7DCD7)),
+                                color = Color(0xFFF2FAF8)
+                            ) {
+                                Column(Modifier.padding(10.dp)) {
+                                    Text(suggestion.title, fontSize = 16.sp,
+                                        textAlign = TextAlign.Right, modifier = Modifier.fillMaxWidth())
+                                    Text(suggestion.author + " • " + suggestion.category,
+                                        fontSize = 11.sp, color = Color(0xFF53736F))
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showSuggestions = false }) { Text("Tutup") }
+            }
+        )
     }
     excerptDialog?.let { source ->
         AlertDialog(
