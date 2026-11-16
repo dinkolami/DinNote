@@ -234,13 +234,24 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
                                         fontSize = 12.sp)
                                 }
                             }
+                            val arabicParagraph = kitabParagraphIsArabic(paragraphs[index])
+                            Text(
+                                if (arabicParagraph) "النص العربي" else "Teks Rumi",
+                                modifier = Modifier.fillMaxWidth().padding(start = 4.dp, end = 4.dp, bottom = 5.dp),
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = if (highlighted) Color(0xFF735923)
+                                    else if (readerBackground == "dark") Color(0xFFB9E7E1)
+                                    else Color(0xFF087F8C),
+                                textAlign = if (arabicParagraph) TextAlign.Right else TextAlign.Start
+                            )
                             SelectionContainer {
                                 Text(paragraphs[index], fontSize = readerFontSize.sp,
                                     lineHeight = (readerFontSize * readerLineSpacing).sp,
                                     color = if (highlighted) Color(0xFF263B3E) else readerInk,
                                     style = TextStyle(textDirection = TextDirection.ContentOrRtl),
                                     modifier = Modifier.fillMaxWidth().padding(4.dp),
-                                    textAlign = if (kitabParagraphIsArabic(paragraphs[index])) TextAlign.Right else readerTextAlignment)
+                                    textAlign = if (arabicParagraph) TextAlign.Right else readerTextAlignment)
                             }
                             if (readerBackground != "dark") {
                                 Text("⌒  ۞  ⌒   DinNote   ⌒  ۞  ⌒",
