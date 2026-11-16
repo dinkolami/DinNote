@@ -1003,8 +1003,7 @@ fun NotesScreen(
                     Surface(
                         modifier = Modifier.fillMaxWidth().weight(1f).padding(start = 10.dp, end = 10.dp, top = 2.dp, bottom = 8.dp),
                         shape = RoundedCornerShape(10.dp),
-                        color = readingBackground(editorBackground),
-                        border = BorderStroke(1.dp, Color(0xFFB7DCD7))
+                        color = readingBackground(editorBackground)
                     ) {
                         Box(Modifier.fillMaxSize()) {
                             Column(
@@ -1043,12 +1042,7 @@ fun NotesScreen(
                                         body = next
                                     },
                                     visualTransformation = remember { NoteFormattingTransformation() },
-                                    modifier = Modifier.weight(1f).fillMaxWidth()
-                                        .border(
-                                            BorderStroke(1.dp, if (editorBackground == "dark") Color(0xFF4F7774) else Color(0xFFE0E7E6)),
-                                            RoundedCornerShape(10.dp)
-                                        )
-                                        .padding(horizontal = 14.dp, vertical = 12.dp),
+                                    modifier = Modifier.weight(1f).fillMaxWidth(),
                                     textStyle = androidx.compose.ui.text.TextStyle(
                                         fontSize = editorFontSize.sp,
                                         color = if (editorBackground == "dark") Color(0xFFF3F7F6) else Color(0xFF263B3E),
