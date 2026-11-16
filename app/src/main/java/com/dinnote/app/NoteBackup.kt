@@ -5,6 +5,11 @@ import android.net.Uri
 import org.json.JSONArray
 import org.json.JSONObject
 
+data class NoteImportResult(
+    val imported: Int,
+    val skippedDuplicates: Int
+)
+
 object NoteBackup {
     fun export(context: Context, uri: Uri, notes: List<DinNote>) {
         val root = JSONObject()
@@ -29,7 +34,7 @@ object NoteBackup {
         output.bufferedWriter(Charsets.UTF_8).use { it.write(root.toString(2)) }
     }
 
-    fun import(context: Context, uri: Uri, database: NoteDatabase): Int {
+    fun import(context: Context, uri: Uri, database: NoteDatabase): NoteImportResult {
         val input = context.contentResolver.openInputStream(uri)
             ?: throw IllegalStateException("Fail sandaran tidak dapat dibaca.")
         val raw = input.bufferedReader(Charsets.UTF_8).use { it.readText() }
@@ -37,8 +42,16 @@ object NoteBackup {
         require(root.optString("format") == "DinNoteBackup") {
             "Fail ini bukan sandaran DinNote."
         }
+        require(root.optInt("version", 0) in 1..1) {
+            "Versi sandaran ini tidak disokong."
+        }
+
+        val existing = database.allNotes().map { note ->
+            noteSignature(note.title, note.body, note.colorTag, note.pinned, note.archived)
+        }.toMutableSet()
         val entries = root.optJSONArray("notes") ?: JSONArray()
         var imported = 0
+        var skipped = 0
 
         for (index in 0 until entries.length()) {
             val item = entries.optJSONObject(index) ?: continue
@@ -46,12 +59,33 @@ object NoteBackup {
             val body = item.optString("body")
             if (title.isBlank() && body.isBlank()) continue
 
+            val color = item.optString("colorTag", "green")
+                .takeIf { it in setOf("green", "yellow", "blue", "pink", "purple") }
+                ?: "green"
+            val pinned = item.optBoolean("pinned", false)
+            val archived = item.optBoolean("archived", false)
+            val signature = noteSignature(title, body, color, pinned, archived)
+
+            if (signature in existing) {
+                skipped++
+                continue
+            }
+
             val id = database.save(title, body)
-            database.setColor(id, item.optString("colorTag", "green"))
-            database.setPinned(id, item.optBoolean("pinned", false))
-            database.setArchived(id, item.optBoolean("archived", false))
+            database.setColor(id, color)
+            database.setPinned(id, pinned)
+            database.setArchived(id, archived)
             imported++
         }
-        return imported
+        return NoteImportResult(imported, skipped)
     }
+
+    private fun noteSignature(
+        title: String,
+        body: String,
+        colorTag: String,
+        pinned: Boolean,
+        archived: Boolean
+    ): String = listOf(title, body, colorTag, pinned.toString(), archived.toString())
+        .joinToString(separator = "\u001F")
 }
