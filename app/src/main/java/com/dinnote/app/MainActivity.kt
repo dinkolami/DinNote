@@ -76,16 +76,16 @@ fun DinNoteApp() {
         Scaffold(
             containerColor = MaterialTheme.colorScheme.background,
             topBar = {
-                Surface(color = MaterialTheme.colorScheme.surface) {
+                Surface(color = Color(0xFF087F8C)) {
                     Row(
-                        modifier = Modifier.fillMaxWidth().height(40.dp).padding(horizontal = 14.dp),
+                        modifier = Modifier.fillMaxWidth().height(48.dp).padding(horizontal = 14.dp),
                         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        Text("◈", fontSize = 17.sp, color = Color(0xFF008F91))
-                        Text("DinNote", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color(0xFF006B70))
+                        Text("۞", fontSize = 20.sp, color = Color(0xFFF3D59A))
+                        Text("DinNote", fontSize = 17.sp, fontWeight = FontWeight.Bold, color = Color.White)
                         Spacer(Modifier.weight(1f))
-                        Text("v$installedVersion", fontSize = 10.sp, color = Color(0xFF52716E), maxLines = 1)
+                        Text("v$installedVersion", fontSize = 10.sp, color = Color(0xFFE1F5F3), maxLines = 1)
                     }
                 }
             },
@@ -153,7 +153,7 @@ fun DinNoteApp() {
             }
         ) { padding ->
             when (selectedTab) {
-                0 -> HomeScreen(Modifier.padding(padding), onOpenNotes = { openNewNote = true; selectedTab = 1 }, onOpenLibrary = { selectedTab = 2 }, onOpenSearch = { selectedTab = 3 })
+                0 -> HomeScreen(Modifier.padding(padding), onOpenNotes = { openNewNote = true; selectedTab = 1 }, onOpenLibrary = { selectedTab = 2 }, onOpenSearch = { selectedTab = 3 }, onOpenSettings = { selectedTab = 4 })
                 1 -> NotesScreen(Modifier.padding(padding), openNewNote = openNewNote, onNewNoteOpened = { openNewNote = false })
                 2 -> LibraryHubScreen(Modifier.padding(padding))
                 3 -> GlobalSearchScreen(Modifier.padding(padding))
@@ -240,7 +240,8 @@ fun HomeScreen(
     modifier: Modifier = Modifier,
     onOpenNotes: () -> Unit,
     onOpenLibrary: () -> Unit,
-    onOpenSearch: () -> Unit
+    onOpenSearch: () -> Unit,
+    onOpenSettings: () -> Unit
 ) {
     Column(
         modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState())
@@ -285,8 +286,8 @@ fun HomeScreen(
                 Modifier.weight(1f), onOpenLibrary)
             DinNoteDashboardTile("Mazhab Syafi‘i", "Kitab & hukum", "۞",
                 Modifier.weight(1f), onOpenLibrary)
-            DinNoteDashboardTile("Sandaran", "Simpan & pulih", "☁",
-                Modifier.weight(1f), onOpenLibrary)
+            DinNoteDashboardTile("Sandaran", "Tetapan & pemulihan", "☁",
+                Modifier.weight(1f), onOpenSettings)
         }
         Surface(
             modifier = Modifier.fillMaxWidth().clickable(onClick = onOpenLibrary),
