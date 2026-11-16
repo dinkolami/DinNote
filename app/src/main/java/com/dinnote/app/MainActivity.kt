@@ -236,6 +236,8 @@ fun NotesScreen(
     val notes = remember { mutableStateListOf<DinNote>() }
     var search by remember { mutableStateOf("") }
     var showEditor by remember { mutableStateOf(false) }
+    val undoStack = remember { mutableStateListOf<TextFieldValue>() }
+    val redoStack = remember { mutableStateListOf<TextFieldValue>() }
     var editingId by remember { mutableStateOf<Long?>(null) }
     var title by remember { mutableStateOf("") }
     var body by remember { mutableStateOf(TextFieldValue("")) }
@@ -312,6 +314,7 @@ fun NotesScreen(
             editingId = null
             title = ""
             body = TextFieldValue("")
+            undoStack.clear(); redoStack.clear()
             selectedColor = "green"
             if (selectedCategory == "Semua" || selectedCategory !in allCategories) selectedCategory = "Lain-lain"
             showEditor = true
@@ -341,6 +344,7 @@ fun NotesScreen(
                 editingId = null
                 title = ""
                 body = TextFieldValue("")
+                undoStack.clear(); redoStack.clear()
                 selectedColor = "green"
                 selectedCategory = if (selectedCategory == "Semua") "Lain-lain" else selectedCategory
                 showEditor = true
@@ -467,6 +471,7 @@ fun NotesScreen(
                                     editingId = item.id
                                     title = item.title
                                     body = TextFieldValue(item.body, selection = TextRange(item.body.length))
+                                    undoStack.clear(); redoStack.clear()
                                     selectedColor = item.colorTag
                                     selectedCategory = item.category
                                     showEditor = true
@@ -661,7 +666,14 @@ fun NotesScreen(
                         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
                     ) {
                         TextButton(onClick = { persistNote(); showEditor = false }) { Text("✓", fontSize = 27.sp) }
-                        Text("DinNote", color = Color(0xFF168D91), fontWeight = FontWeight.SemiBold)
+                        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                            TextButton(enabled = undoStack.isNotEmpty(), onClick = {
+                                if (undoStack.isNotEmpty()) { redoStack.add(body); body = undoStack.removeAt(undoStack.lastIndex) }
+                            }) { Text("↶", fontSize = 26.sp) }
+                            TextButton(enabled = redoStack.isNotEmpty(), onClick = {
+                                if (redoStack.isNotEmpty()) { undoStack.add(body); body = redoStack.removeAt(redoStack.lastIndex) }
+                            }) { Text("↷", fontSize = 26.sp) }
+                        }
                         TextButton(onClick = {
                             persistNote()
                             val intent = Intent(Intent.ACTION_SEND).apply {
@@ -705,19 +717,22 @@ fun NotesScreen(
                         textStyle = androidx.compose.ui.text.TextStyle(fontSize = 28.sp, color = Color(0xFF263B3E)),
                         decorationBox = { inner ->
                             Box {
-                                if (title.isEmpty()) Text("Title", fontSize = 28.sp, color = Color.LightGray)
+                                if (title.isEmpty()) Text("Tajuk", fontSize = 28.sp, color = Color.LightGray)
                                 inner()
                             }
                         }
                     )
                     androidx.compose.foundation.text.BasicTextField(
                         value = body,
-                        onValueChange = { body = it },
+                        onValueChange = { next ->
+                            if (next.text != body.text) { undoStack.add(body); if (undoStack.size > 60) undoStack.removeAt(0); redoStack.clear() }
+                            body = next
+                        },
                         modifier = Modifier.weight(1f).fillMaxWidth().padding(horizontal = 24.dp, vertical = 8.dp),
                         textStyle = androidx.compose.ui.text.TextStyle(fontSize = 19.sp, color = Color(0xFF263B3E), lineHeight = 28.sp),
                         decorationBox = { inner ->
                             Box {
-                                if (body.text.isEmpty()) Text("Note here", fontSize = 19.sp, color = Color.LightGray)
+                                if (body.text.isEmpty()) Text("Tulis nota di sini", fontSize = 19.sp, color = Color.LightGray)
                                 inner()
                             }
                         }
@@ -727,15 +742,16 @@ fun NotesScreen(
                         Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(10.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        val tools = listOf("Aa" to "", "☷" to "• ", "☰" to "1. ", "☑" to "☐ ", "✎" to "_", "B" to "**", "I" to "_")
+                        val tools = listOf("Aa" to "**", "☷" to "• ", "☰" to "1. ", "☑" to "☐ ", "B" to "**", "I" to "_", "U" to "__", "ع" to "بِسْمِ اللَّهِ ", "✎" to "✍ ")
                         tools.forEach { (label, insertion) ->
                             TextButton(onClick = {
                                 if (insertion.isNotEmpty()) {
                                     val a = body.selection.min
                                     val b = body.selection.max
                                     val selected = body.text.substring(a, b)
-                                    val newText = if (insertion == "**" || insertion == "_") insertion + selected + insertion else insertion + selected
+                                    val newText = if (insertion == "**" || insertion == "_" || insertion == "__") insertion + selected + insertion else insertion + selected
                                     val result = body.text.replaceRange(a, b, newText)
+                                    undoStack.add(body); redoStack.clear()
                                     body = TextFieldValue(result, selection = TextRange(a + newText.length))
                                 }
                             }) { Text(label, color = Color(0xFF4F9BC9), fontSize = 21.sp) }
