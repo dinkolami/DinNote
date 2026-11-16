@@ -7,6 +7,11 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.TextRange
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -54,14 +59,14 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
     var editorVisible by remember { mutableStateOf(false) }
     var title by remember { mutableStateOf("") }
     var author by remember { mutableStateOf("") }
-    var content by remember { mutableStateOf("") }
+    var content by remember { mutableStateOf(TextFieldValue("")) }
     var category by remember { mutableStateOf("Umum") }
     var ascending by remember { mutableStateOf(true) }
     fun startEdit(item: KitabItem?) {
         editing = item
         title = item?.title.orEmpty()
         author = item?.author.orEmpty()
-        content = item?.content.orEmpty()
+        content = TextFieldValue(item?.content.orEmpty())
         category = item?.category ?: "Umum"
         editorVisible = true
     }
@@ -130,30 +135,80 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
         }
     }
     if (editorVisible) {
-        AlertDialog(onDismissRequest = { editorVisible = false },
-            title = { Text(if (editing == null) "Tambah kitab" else "Edit kitab") },
-            text = {
-                Column {
-                    OutlinedTextField(title, { title = it }, label = { Text("Nama kitab") })
-                    OutlinedTextField(author, { author = it }, label = { Text("Pengarang") })
-                    OutlinedTextField(category, { category = it }, label = { Text("Kategori") })
-                    OutlinedTextField(content, { content = it }, label = { Text("Kandungan Arab / Melayu") }, minLines = 4, textStyle = TextStyle(textDirection = TextDirection.ContentOrRtl))
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = {
-                    if (title.isNotBlank()) {
-                        val old = editing
-                        val saved = KitabItem(old?.id ?: System.currentTimeMillis(), title, author, content,
-                            category, old?.favorite ?: false)
-                        val index = books.indexOfFirst { it.id == saved.id }
-                        if (index < 0) books.add(saved) else books[index] = saved
-                        persist()
-                        if (opened?.id == saved.id) opened = saved
-                        editorVisible = false
+        androidx.compose.ui.window.Dialog(
+            onDismissRequest = { editorVisible = false },
+            properties = androidx.compose.ui.window.DialogProperties(
+                usePlatformDefaultWidth = false, decorFitsSystemWindows = false
+            )
+        ) {
+            Surface(
+                modifier = Modifier.fillMaxSize().padding(4.dp),
+                color = Color.White,
+                shape = RoundedCornerShape(14.dp),
+                border = BorderStroke(1.dp, Color(0xFFD8DEE3))
+            ) {
+                Column(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding()) {
+                    Row(Modifier.fillMaxWidth().height(48.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween) {
+                        TextButton(onClick = { editorVisible = false }) { Text("← Kembali") }
+                        Text(if (editing == null) "Tambah Kitab" else "Edit Kitab",
+                            modifier = Modifier.padding(top = 12.dp), fontWeight = FontWeight.SemiBold)
+                        TextButton(onClick = {
+                            if (title.isNotBlank()) {
+                                val old = editing
+                                val saved = KitabItem(old?.id ?: System.currentTimeMillis(),
+                                    title, author, content.text, category, old?.favorite ?: false)
+                                val index = books.indexOfFirst { it.id == saved.id }
+                                if (index < 0) books.add(saved) else books[index] = saved
+                                persist()
+                                if (opened?.id == saved.id) opened = saved
+                                editorVisible = false
+                            }
+                        }) { Text("Simpan") }
                     }
-                }) { Text("Simpan") }
-            },
-            dismissButton = { TextButton(onClick = { editorVisible = false }) { Text("Batal") } })
+                    HorizontalDivider(color = Color(0xFFE1E3E5))
+                    Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState())
+                        .padding(horizontal = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+                        listOf("B" to "**", "I" to "_", "U" to "__",
+                            "S" to "~~", "•" to "• ", "1." to "1. ", "☑" to "☐ ").forEach { (label, marker) ->
+                            TextButton(onClick = {
+                                val a = content.selection.min
+                                val b = content.selection.max
+                                val chosen = content.text.substring(a, b)
+                                val insertion = if (marker in listOf("**", "_", "__", "~~"))
+                                    marker + chosen + marker else marker + chosen
+                                content = TextFieldValue(content.text.replaceRange(a, b, insertion),
+                                    selection = TextRange(a + insertion.length))
+                            }) { Text(label) }
+                        }
+                    }
+                    HorizontalDivider(color = Color(0xFFE1E3E5))
+                    OutlinedTextField(title, { title = it }, modifier = Modifier.fillMaxWidth()
+                        .padding(horizontal = 12.dp), label = { Text("Nama kitab") }, singleLine = true)
+                    Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedTextField(author, { author = it }, modifier = Modifier.weight(1f),
+                            label = { Text("Pengarang") }, singleLine = true)
+                        OutlinedTextField(category, { category = it }, modifier = Modifier.weight(1f),
+                            label = { Text("Kategori") }, singleLine = true)
+                    }
+                    BasicTextField(
+                        value = content, onValueChange = { content = it },
+                        modifier = Modifier.fillMaxWidth().weight(1f)
+                            .padding(horizontal = 20.dp, vertical = 12.dp),
+                        textStyle = TextStyle(fontSize = 19.sp, lineHeight = 29.sp,
+                            color = Color(0xFF263B3E), textDirection = TextDirection.ContentOrRtl),
+                        decorationBox = { inner ->
+                            Box {
+                                if (content.text.isEmpty()) Text("Tulis kandungan Arab atau Melayu...",
+                                    color = Color.Gray)
+                                inner()
+                            }
+                        }
+                    )
+                }
+            }
+        }
     }
 }
