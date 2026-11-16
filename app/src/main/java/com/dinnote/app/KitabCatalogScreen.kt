@@ -66,6 +66,7 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
     val readerFontSize = displayPrefs.getInt("font_size", 19).coerceIn(14, 30)
     val readerLineSpacing = displayPrefs.getFloat("line_spacing", 1.6f).coerceIn(1.2f, 2.2f)
     val readerInk = if (readerBackground == "dark") Color.White else Color(0xFF263B3E)
+    val readerTextAlignment = TextAlign.Start
     val readerBorder = if (readerBackground == "dark") Color(0xFF507875) else Color(0xFFB7DCD7)
 
     val books = remember {
@@ -229,7 +230,7 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
                                     color = if (highlighted) Color(0xFF263B3E) else readerInk,
                                     style = TextStyle(textDirection = TextDirection.ContentOrRtl),
                                     modifier = Modifier.fillMaxWidth().padding(4.dp),
-                                    textAlign = TextAlign.Start)
+                                    textAlign = if (paragraphs[index].any { it in '\u0600'..'\u06FF' }) TextAlign.Right else readerTextAlignment)
                             }
                         }
                     }
