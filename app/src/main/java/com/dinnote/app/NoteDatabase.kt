@@ -12,11 +12,12 @@ data class DinNote(
     val updatedAt: Long,
     val colorTag: String = "green",
     val pinned: Boolean = false,
-    val archived: Boolean = false
+    val archived: Boolean = false,
+    val category: String = "Lain-lain"
 )
 
 class NoteDatabase(context: Context) :
-    SQLiteOpenHelper(context, "dinnote_notes.db", null, 2) {
+    SQLiteOpenHelper(context, "dinnote_notes.db", null, 3) {
 
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL(
@@ -40,13 +41,16 @@ class NoteDatabase(context: Context) :
             db.execSQL("ALTER TABLE notes ADD COLUMN is_pinned INTEGER NOT NULL DEFAULT 0")
             db.execSQL("ALTER TABLE notes ADD COLUMN is_archived INTEGER NOT NULL DEFAULT 0")
         }
+        if (oldVersion < 3) {
+            db.execSQL("ALTER TABLE notes ADD COLUMN category TEXT NOT NULL DEFAULT 'Lain-lain'")
+        }
     }
 
     fun allNotes(): List<DinNote> {
         val notes = mutableListOf<DinNote>()
         readableDatabase.query(
             "notes",
-            arrayOf("id", "title", "body", "updated_at", "color_tag", "is_pinned", "is_archived"),
+            arrayOf("id", "title", "body", "updated_at", "color_tag", "is_pinned", "is_archived", "category"),
             null, null, null, null,
             "is_pinned DESC, updated_at DESC, id DESC"
         ).use { cursor ->
@@ -58,7 +62,8 @@ class NoteDatabase(context: Context) :
                     updatedAt = cursor.getLong(3),
                     colorTag = cursor.getString(4),
                     pinned = cursor.getInt(5) == 1,
-                    archived = cursor.getInt(6) == 1
+                    archived = cursor.getInt(6) == 1,
+                    category = cursor.getString(7)
                 )
             }
         }
@@ -97,6 +102,13 @@ class NoteDatabase(context: Context) :
         writableDatabase.execSQL(
             "UPDATE notes SET is_archived = ?, updated_at = ? WHERE id = ?",
             arrayOf(if (archived) 1 else 0, System.currentTimeMillis(), id)
+        )
+    }
+
+    fun setCategory(id: Long, category: String) {
+        writableDatabase.execSQL(
+            "UPDATE notes SET category = ?, updated_at = ? WHERE id = ?",
+            arrayOf(category, System.currentTimeMillis(), id)
         )
     }
 
