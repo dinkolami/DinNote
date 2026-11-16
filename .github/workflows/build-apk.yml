@@ -34,7 +34,7 @@ jobs:
           gradle-version: '8.11.1'
 
       - name: Build APK
-        run: gradle assembleDebug --stacktrace
+        run: gradle clean assembleDebug --stacktrace --console=plain
 
       - name: Verify generated APK
         run: |
@@ -49,4 +49,4 @@ jobs:
           retention-days: 30
           if-no-files-found: error
 
-# Build current main commit with detailed Kotlin/Gradle diagnostics
+# Build current main commit with clean Kotlin/Gradle diagnostics
