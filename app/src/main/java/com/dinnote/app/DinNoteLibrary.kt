@@ -158,7 +158,7 @@ fun LibraryScreen2(modifier: Modifier = Modifier) {
             onDismissRequest = { selected = null },
             title = { Text(entry.title) },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp).then(Arrangement.spacedBy(0.dp))) {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text(entry.arabic, fontSize = 23.sp)
                     if (entry.transliteration.isNotBlank()) Text(entry.transliteration)
                     if (entry.author.isNotBlank()) Text(entry.author, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.secondary)
