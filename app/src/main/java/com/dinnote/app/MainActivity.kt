@@ -1018,19 +1018,6 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                         Text("Editor Perpustakaan", fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
                     }
                     HorizontalDivider()
-                    androidx.compose.foundation.text.BasicTextField(
-                        value = libraryTitle, onValueChange = { libraryTitle = it },
-                        modifier = Modifier.fillMaxWidth().padding(16.dp),
-                        singleLine = true,
-                        textStyle = androidx.compose.ui.text.TextStyle(fontSize = 25.sp, color = Color(0xFF263B3E)),
-                        decorationBox = { inner -> Box { if (libraryTitle.isEmpty()) Text("Tajuk kitab / hikmah", color = Color.Gray); inner() } }
-                    )
-                    androidx.compose.foundation.text.BasicTextField(
-                        value = libraryBody, onValueChange = { libraryBody = it },
-                        modifier = Modifier.weight(1f).fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
-                        textStyle = androidx.compose.ui.text.TextStyle(fontSize = 19.sp, lineHeight = 29.sp, color = Color(0xFF263B3E), textDirection = TextDirection.ContentOrLtr),
-                        decorationBox = { inner -> Box { if (libraryBody.text.isEmpty()) Text("Tulis kandungan Arab atau Rumi...", color = Color.Gray); inner() } }
-                    )
                     HorizontalDivider()
                     Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(5.dp)) {
                         listOf("B" to "**", "I" to "_", "U" to "__", "S" to "~~", "•" to "• ", "1." to "1. ", "☑" to "☐ ").forEach { (label, marker) ->
@@ -1044,6 +1031,20 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                             }) { Text(label) }
                         }
                     }
+                    androidx.compose.foundation.text.BasicTextField(
+                        value = libraryTitle, onValueChange = { libraryTitle = it },
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        singleLine = true,
+                        textStyle = androidx.compose.ui.text.TextStyle(fontSize = 25.sp, color = Color(0xFF263B3E)),
+                        decorationBox = { inner -> Box { if (libraryTitle.isEmpty()) Text("Tajuk kitab / hikmah", color = Color.Gray); inner() } }
+                    )
+                    androidx.compose.foundation.text.BasicTextField(
+                        value = libraryBody, onValueChange = { libraryBody = it },
+                        modifier = Modifier.weight(1f).fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
+                        textStyle = androidx.compose.ui.text.TextStyle(fontSize = 19.sp, lineHeight = 29.sp, color = Color(0xFF263B3E), textDirection = TextDirection.ContentOrRtl),
+                        decorationBox = { inner -> Box { if (libraryBody.text.isEmpty()) Text("Tulis kandungan Arab atau Rumi...", color = Color.Gray); inner() } }
+                    )
+
                 }
             }
         }
