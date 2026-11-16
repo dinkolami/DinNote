@@ -208,7 +208,7 @@ fun HomeScreen(
     ) {
         Surface(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(10.dp),
+            shape = RoundedCornerShape(12.dp),
             color = Color(0xFFF2FAF8),
             border = BorderStroke(1.dp, Color(0xFFB7DCD7))
         ) {
@@ -220,6 +220,7 @@ fun HomeScreen(
                     Text("Assalamualaikum", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF075B59))
                     Text("Selamat datang ke DinNote", fontSize = 11.sp, color = Color(0xFF53736F))
                     Text("۞  ﷽  ۞", fontSize = 17.sp, color = Color(0xFFB48B39), modifier = Modifier.padding(top = 5.dp))
+                    Text("⌒  ۞  ⌒  ۞  ⌒", fontSize = 13.sp, color = Color(0xFF087F8C), modifier = Modifier.padding(top = 2.dp))
                 }
                 OutlinedButton(onClick = onOpenNotes, shape = RoundedCornerShape(8.dp),
                     contentPadding = PaddingValues(horizontal = 12.dp, vertical = 2.dp)) {
@@ -331,14 +332,14 @@ fun NotesScreen(
     }
 
     Column(
-        modifier = modifier.fillMaxSize().padding(16.dp),
+        modifier = modifier.fillMaxSize().padding(horizontal = 14.dp, vertical = 10.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(if (showArchived) "Arkib Nota" else "Nota Saya", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+            Text(if (showArchived) "Arkib Nota" else "Nota Saya", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF075B59))
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 TextButton(onClick = { showArchived = !showArchived }) { Text(if (showArchived) "Nota" else "Arkib") }
                 Button(onClick = {
@@ -356,8 +357,8 @@ fun NotesScreen(
         var notesCategoryExpanded by remember { mutableStateOf(false) }
         Box(Modifier.fillMaxWidth()) {
             Surface(modifier = Modifier.fillMaxWidth().clickable { notesCategoryExpanded = true },
-                shape = RoundedCornerShape(6.dp), color = Color.White,
-                border = BorderStroke(1.dp, Color(0xFFB7D7D6))) {
+                shape = RoundedCornerShape(10.dp), color = Color.White,
+                border = BorderStroke(1.dp, Color(0xFFB7DCD7))) {
                 Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 9.dp),
                     verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                     Text("Kategori: $selectedCategory", modifier = Modifier.weight(1f), fontSize = 13.sp)
@@ -429,9 +430,9 @@ fun NotesScreen(
                     var menuExpanded by remember(item.id) { mutableStateOf(false) }
                     Card(
                         modifier = Modifier.fillMaxWidth().heightIn(min = 142.dp),
-                        colors = CardDefaults.cardColors(containerColor = noteColor(item.colorTag)),
-                        shape = RoundedCornerShape(6.dp),
-                        border = BorderStroke(1.dp, Color(0xFF0C9699))
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        shape = RoundedCornerShape(10.dp),
+                        border = BorderStroke(1.dp, Color(0xFFB7DCD7))
                     ) {
                         Column(Modifier.fillMaxWidth().padding(12.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
                             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
