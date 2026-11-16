@@ -758,7 +758,7 @@ fun NotesScreen(
                 decorFitsSystemWindows = false
             )
         ) {
-            Surface(modifier = Modifier.fillMaxSize().padding(3.dp), shape = RoundedCornerShape(10.dp), border = BorderStroke(1.dp, Color(0xFFB7DCD7)), color = readingBackground(editorBackground)) {
+            Surface(modifier = Modifier.fillMaxSize(), color = readingBackground(editorBackground)) {
                 Column(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding()) {
                     if (readingMode) {
                         Row(Modifier.fillMaxWidth().padding(12.dp), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -780,7 +780,7 @@ fun NotesScreen(
                             }
                         }
                     } else {
-                    Surface(color = Color(0xFF153B50), shape = RoundedCornerShape(topStart = 9.dp, topEnd = 9.dp), border = BorderStroke(1.dp, Color(0xFFB7DCD7))) {
+                    Surface(color = Color(0xFF00676B)) {
                         Row(
                             Modifier.fillMaxWidth().height(52.dp).padding(horizontal = 5.dp),
                             verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
@@ -861,74 +861,14 @@ fun NotesScreen(
                     }
 
                     Surface(
-                        modifier = Modifier.fillMaxWidth().weight(1f).padding(horizontal = 12.dp, vertical = 8.dp),
-                        shape = RoundedCornerShape(10.dp),
-                        color = Color.White,
-                        border = BorderStroke(1.dp, Color(0xFFB7DCD7))
+                        modifier = Modifier.fillMaxWidth().weight(1f).padding(horizontal = 10.dp, vertical = 8.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        color = readingBackground(editorBackground),
+                        border = BorderStroke(1.dp, Color(0xFFD5DADD))
                     ) {
                         Box(Modifier.fillMaxSize()) {
-                            // Islamic ornamental frame, turquoise waves and mosque skyline.
-                            androidx.compose.foundation.Canvas(Modifier.matchParentSize()) {
-                                val w = size.width
-                                val h = size.height
-                                val gold = Color(0xFFD5AD55)
-                                val teal = Color(0xFF087F83)
-                                val stroke = androidx.compose.ui.graphics.drawscope.Stroke(width = 2.dp.toPx())
-                                // Corner ornaments remain outside the writing area.
-                                for (right in listOf(false, true)) {
-                                    val x = if (right) w else 0f
-                                    val direction = if (right) -1f else 1f
-                                    val corner = androidx.compose.ui.graphics.Path().apply {
-                                        moveTo(x, 70.dp.toPx())
-                                        quadraticBezierTo(x + direction * 10.dp.toPx(), 20.dp.toPx(),
-                                            x + direction * 70.dp.toPx(), 0f)
-                                        moveTo(x, 43.dp.toPx())
-                                        quadraticBezierTo(x + direction * 8.dp.toPx(), 9.dp.toPx(),
-                                            x + direction * 43.dp.toPx(), 0f)
-                                    }
-                                    drawPath(corner, gold, style = stroke)
-                                    drawCircle(teal, radius = 4.dp.toPx(),
-                                        center = androidx.compose.ui.geometry.Offset(x + direction * 22.dp.toPx(), 18.dp.toPx()))
-                                }
-                                val base = h - 4.dp.toPx()
-                                val wave = androidx.compose.ui.graphics.Path().apply {
-                                    moveTo(0f, base - 40.dp.toPx())
-                                    cubicTo(w * 0.25f, base + 8.dp.toPx(), w * 0.35f, base - 65.dp.toPx(), w * 0.58f, base - 30.dp.toPx())
-                                    cubicTo(w * 0.76f, base - 5.dp.toPx(), w * 0.88f, base - 68.dp.toPx(), w, base - 47.dp.toPx())
-                                    lineTo(w, h)
-                                    lineTo(0f, h)
-                                    close()
-                                }
-                                drawPath(wave, Color(0xFFBCE5E3).copy(alpha = 0.5f))
-                                val foreground = androidx.compose.ui.graphics.Path().apply {
-                                    moveTo(0f, base - 13.dp.toPx())
-                                    cubicTo(w * 0.28f, base - 42.dp.toPx(), w * 0.48f, base + 8.dp.toPx(), w * 0.69f, base - 18.dp.toPx())
-                                    cubicTo(w * 0.85f, base - 42.dp.toPx(), w * 0.93f, base - 12.dp.toPx(), w, base - 30.dp.toPx())
-                                    lineTo(w, h)
-                                    lineTo(0f, h)
-                                    close()
-                                }
-                                drawPath(foreground, teal)
-                                // Subtle mosque domes at the foot of the page.
-                                for (i in 0..8) {
-                                    val cx = w * (i + 0.5f) / 9f
-                                    val half = w / 24f
-                                    val y = base - 46.dp.toPx() - (if (i == 5) 16.dp.toPx() else 0f)
-                                    val dome = androidx.compose.ui.graphics.Path().apply {
-                                        moveTo(cx - half, base - 19.dp.toPx())
-                                        lineTo(cx - half, y + 12.dp.toPx())
-                                        quadraticBezierTo(cx - half, y + 2.dp.toPx(), cx, y)
-                                        quadraticBezierTo(cx + half, y + 2.dp.toPx(), cx + half, y + 12.dp.toPx())
-                                        lineTo(cx + half, base - 19.dp.toPx())
-                                        close()
-                                    }
-                                    drawPath(dome, Color(0xFF73BAB9).copy(alpha = 0.35f))
-                                }
-                                drawLine(gold, androidx.compose.ui.geometry.Offset(0f, base - 10.dp.toPx()),
-                                    androidx.compose.ui.geometry.Offset(w, base - 10.dp.toPx()), 1.dp.toPx())
-                            }
                             Column(
-                                Modifier.fillMaxSize().padding(horizontal = 18.dp, vertical = 16.dp)
+                                Modifier.fillMaxSize().padding(horizontal = 18.dp, vertical = 18.dp)
                             ) {
                                 androidx.compose.foundation.text.BasicTextField(
                                     value = title,
@@ -949,11 +889,7 @@ fun NotesScreen(
                                     }
                                 )
                                 Spacer(Modifier.height(12.dp))
-                                Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                                    HorizontalDivider(modifier = Modifier.weight(1f), color = Color(0xFFD8B66A), thickness = 1.dp)
-                                    Text(" ۞ ", color = Color(0xFFC9A24A), fontSize = 21.sp)
-                                    HorizontalDivider(modifier = Modifier.weight(1f), color = Color(0xFFD8B66A), thickness = 1.dp)
-                                }
+                                HorizontalDivider(color = Color(0xFFD5DADD), thickness = 1.dp)
                                 Spacer(Modifier.height(12.dp))
                                 androidx.compose.foundation.text.BasicTextField(
                                     value = body,
@@ -966,8 +902,7 @@ fun NotesScreen(
                                         body = next
                                     },
                                     modifier = Modifier.weight(1f).fillMaxWidth()
-                                        .border(BorderStroke(1.dp, if (editorBackground == "dark") Color(0xFF507875) else Color(0xFFB7DCD7)), RoundedCornerShape(10.dp))
-                                        .padding(12.dp),
+                                        .padding(horizontal = 2.dp, vertical = 4.dp),
                                     textStyle = androidx.compose.ui.text.TextStyle(
                                         fontSize = editorFontSize.sp,
                                         color = if (editorBackground == "dark") Color(0xFFF3F7F6) else Color(0xFF263B3E),
