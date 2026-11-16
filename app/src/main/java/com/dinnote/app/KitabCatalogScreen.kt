@@ -15,6 +15,8 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.TextRange
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
+import kotlinx.coroutines.launch
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -166,7 +168,18 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
             val paragraphs = remember(item.id, item.content) {
                 item.content.split(Regex("\\n\\s*\\n")).filter { it.isNotBlank() }
             }
-            LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            val readerListState = rememberLazyListState()
+            val readerScope = rememberCoroutineScope()
+            val savedParagraph = prefs.getInt("reading_position_${item.id}", 0)
+                .coerceIn(0, (paragraphs.size - 1).coerceAtLeast(0))
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text("Perenggan: ${paragraphs.size}", fontSize = 12.sp, color = Color(0xFF075B59))
+                TextButton(onClick = { readerScope.launch { readerListState.animateScrollToItem(savedParagraph) } },
+                    enabled = paragraphs.isNotEmpty()) {
+                    Text("Sambung bacaan (${savedParagraph + 1})")
+                }
+            }
+            LazyColumn(state = readerListState, verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(paragraphs.size) { index ->
                     val highlighted = isHighlighted(item.id, index)
                     Surface(
@@ -175,7 +188,10 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
                         shape = RoundedCornerShape(10.dp)
                     ) {
                         Column(Modifier.fillMaxWidth().padding(12.dp)) {
-                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                TextButton(onClick = {
+                                    prefs.edit().putInt("reading_position_${item.id}", index).apply()
+                                }) { Text("Simpan tempat baca #${index + 1}", fontSize = 12.sp) }
                                 TextButton(onClick = { toggleHighlight(item.id, index) }) {
                                     Text(if (highlighted) "★ Buang highlight" else "☆ Highlight perenggan",
                                         fontSize = 12.sp)
