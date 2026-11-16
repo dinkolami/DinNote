@@ -1,6 +1,8 @@
 package com.dinnote.app
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -99,7 +101,7 @@ fun GlobalSearchScreen(modifier: Modifier = Modifier) {
             title = { Text(hit.title) },
             text = {
                 Column(Modifier.heightIn(max = 480.dp)
-                    .verticalScroll(androidx.compose.foundation.rememberScrollState())) {
+                    .verticalScroll(rememberScrollState())) {
                     Text(hit.content, modifier = Modifier.fillMaxWidth(),
                         style = androidx.compose.ui.text.TextStyle(
                             textDirection = TextDirection.ContentOrRtl),
