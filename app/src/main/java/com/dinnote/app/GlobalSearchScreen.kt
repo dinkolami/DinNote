@@ -1,0 +1,111 @@
+package com.dinnote.app
+
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDirection
+import androidx.compose.ui.unit.dp
+import org.json.JSONArray
+
+private data class SearchHit(val source: String, val key: String, val title: String, val content: String)
+
+@Composable
+fun GlobalSearchScreen(modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+    val database = remember { NoteDatabase(context).also { it.migrateOldSingleNote(context) } }
+    val library = remember { context.getSharedPreferences("dinnote_library_edits", 0) }
+    val catalog = remember { context.getSharedPreferences("dinnote_kitab_catalog", 0) }
+    val favorites = remember { context.getSharedPreferences("dinnote_bookmarks", 0) }
+    var query by remember { mutableStateOf("") }
+    var favoritesOnly by remember { mutableStateOf(false) }
+    var revision by remember { mutableIntStateOf(0) }
+    var opened by remember { mutableStateOf<SearchHit?>(null) }
+    val hits = remember(query, favoritesOnly, revision) {
+        buildList {
+            database.allNotes().forEach { note ->
+                add(SearchHit("Nota", "note_${note.id}", note.title.ifBlank { "Tanpa tajuk" }, note.body))
+            }
+            library.all.keys.filter { it.startsWith("entry_") && it.endsWith("_title") }.forEach { titleKey ->
+                val key = titleKey.removeSuffix("_title")
+                add(SearchHit("Maktabah", key, library.getString(titleKey, "").orEmpty(),
+                    library.getString(key + "_body", "").orEmpty()))
+            }
+            runCatching {
+                val books = JSONArray(catalog.getString("books", "[]"))
+                for (i in 0 until books.length()) {
+                    val book = books.getJSONObject(i)
+                    add(SearchHit("Kitab", "book_${book.optLong("id")}",
+                        book.optString("title"), book.optString("content")))
+                }
+            }
+            kalimahEntries.forEach { entry ->
+                add(SearchHit("Pelbagai", "kalimah_${entry.title}", entry.title,
+                    entry.arabic + "\n" + entry.meaning))
+            }
+        }.filter { hit ->
+            (!favoritesOnly || favorites.getBoolean(hit.key, false)) &&
+                (query.isBlank() && favoritesOnly || query.isNotBlank() &&
+                    (hit.title.contains(query, true) || hit.content.contains(query, true)))
+        }
+    }
+    Column(modifier.fillMaxSize().padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text("Carian Pintar & Kegemaran", fontWeight = FontWeight.SemiBold)
+        OutlinedTextField(value = query, onValueChange = { query = it },
+            modifier = Modifier.fillMaxWidth(), singleLine = true,
+            placeholder = { Text("Cari nota, kitab, hikmah dan kalimah") })
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            FilterChip(selected = !favoritesOnly, onClick = { favoritesOnly = false },
+                label = { Text("Semua") })
+            FilterChip(selected = favoritesOnly, onClick = { favoritesOnly = true },
+                label = { Text("★ Kegemaran") })
+        }
+        Text("${hits.size} hasil", style = MaterialTheme.typography.labelMedium)
+        LazyColumn(verticalArrangement = Arrangement.spacedBy(7.dp)) {
+            items(hits, key = { it.key }) { hit ->
+                Surface(modifier = Modifier.fillMaxWidth(),
+                    shape = androidx.compose.foundation.shape.RoundedCornerShape(10.dp),
+                    color = MaterialTheme.colorScheme.surface,
+                    border = androidx.compose.foundation.BorderStroke(1.dp,
+                        androidx.compose.ui.graphics.Color(0xFFD8DEE3))) {
+                    Row(Modifier.fillMaxWidth().padding(10.dp)) {
+                        Column(Modifier.weight(1f).clickable { opened = hit }) {
+                            Text(hit.source, color = MaterialTheme.colorScheme.primary,
+                                style = MaterialTheme.typography.labelSmall)
+                            Text(hit.title, fontWeight = FontWeight.SemiBold)
+                            Text(hit.content.take(110), maxLines = 2,
+                                style = MaterialTheme.typography.bodySmall)
+                        }
+                        TextButton(onClick = {
+                            favorites.edit().putBoolean(hit.key,
+                                !favorites.getBoolean(hit.key, false)).apply()
+                            revision++
+                        }) {
+                            Text(if (favorites.getBoolean(hit.key, false)) "★" else "☆")
+                        }
+                    }
+                }
+            }
+        }
+    }
+    opened?.let { hit ->
+        AlertDialog(onDismissRequest = { opened = null },
+            title = { Text(hit.title) },
+            text = {
+                Column(Modifier.heightIn(max = 480.dp)
+                    .verticalScroll(androidx.compose.foundation.rememberScrollState())) {
+                    Text(hit.content, modifier = Modifier.fillMaxWidth(),
+                        style = androidx.compose.ui.text.TextStyle(
+                            textDirection = TextDirection.ContentOrRtl),
+                        textAlign = TextAlign.Start)
+                }
+            },
+            confirmButton = { TextButton(onClick = { opened = null }) { Text("Tutup") } })
+    }
+}
