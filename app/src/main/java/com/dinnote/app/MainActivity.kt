@@ -252,11 +252,11 @@ private fun DinNoteDashboardTile(
     modifier: Modifier = Modifier, onClick: () -> Unit
 ) {
     Surface(
-        modifier = modifier.height(112.dp).clickable(onClick = onClick),
-        shape = RoundedCornerShape(12.dp),
+        modifier = modifier.height(108.dp).clickable(onClick = onClick),
+        shape = RoundedCornerShape(15.dp),
         color = Color.White,
-        border = BorderStroke(1.dp, Color(0xFFD5E5E4)),
-        shadowElevation = 1.dp
+        border = BorderStroke(1.dp, Color(0xFF83C9C5)),
+        shadowElevation = 2.dp
     ) {
         Column(
             modifier = Modifier.fillMaxSize().padding(horizontal = 5.dp, vertical = 8.dp),
@@ -345,16 +345,16 @@ fun HomeScreen(
         IslamicGeometricBackground(Modifier.matchParentSize())
     Column(
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())
-            .padding(horizontal = 14.dp, vertical = 4.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+            .padding(horizontal = 14.dp, vertical = 6.dp),
+        verticalArrangement = Arrangement.spacedBy(11.dp)
     ) {
         Surface(
             modifier = Modifier.fillMaxWidth().clickable(onClick = onOpenSearch),
-            shape = RoundedCornerShape(12.dp), color = Color.White,
-            border = BorderStroke(1.dp, Color(0xFFB7DCD7))
+            shape = RoundedCornerShape(16.dp), color = Color.White,
+            border = BorderStroke(1.dp, Color(0xFF83C9C5)), shadowElevation = 2.dp
         ) {
             Text("⌕   Cari nota, kitab dan rujukan",
-                modifier = Modifier.padding(horizontal = 14.dp, vertical = 13.dp),
+                modifier = Modifier.padding(horizontal = 15.dp, vertical = 11.dp),
                 fontSize = 14.sp, color = Color(0xFF52716E))
         }
         if (pinnedNotes.isNotEmpty()) {
@@ -363,8 +363,8 @@ fun HomeScreen(
                 Surface(
                     modifier = Modifier.fillMaxWidth().clickable { onOpenPinnedNote(note.id) },
                     color = Color.White,
-                    shape = RoundedCornerShape(10.dp),
-                    border = BorderStroke(1.dp, Color(0xFFB7DCD7))
+                    shape = RoundedCornerShape(14.dp),
+                    border = BorderStroke(1.dp, Color(0xFF83C9C5)), shadowElevation = 2.dp
                 ) {
                     Column(Modifier.padding(13.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text("📌  " + note.title.ifBlank { "Tanpa tajuk" },
@@ -376,8 +376,7 @@ fun HomeScreen(
                 }
             }
         }
-        Text("Teroka DinNote", fontSize = 16.sp, fontWeight = FontWeight.Bold,
-            color = Color(0xFF075B59))
+        PremiumSectionHeading("Teroka DinNote", "✦")
         Row(horizontalArrangement = Arrangement.spacedBy(9.dp)) {
             DinNoteDashboardTile("Maktabah", "Kitab & rujukan", "▣",
                 Modifier.weight(1f), onOpenLibrary)
@@ -396,8 +395,8 @@ fun HomeScreen(
         }
         Surface(
             modifier = Modifier.fillMaxWidth().clickable(onClick = onOpenLibrary),
-            shape = RoundedCornerShape(14.dp), color = Color(0xFFF2FAF8),
-            border = BorderStroke(1.dp, Color(0xFFB7DCD7))
+            shape = RoundedCornerShape(16.dp), color = Color(0xFFEAF8F6),
+            border = BorderStroke(1.dp, Color(0xFF83C9C5)), shadowElevation = 2.dp
         ) {
             Row(Modifier.fillMaxWidth().padding(14.dp),
                 verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
