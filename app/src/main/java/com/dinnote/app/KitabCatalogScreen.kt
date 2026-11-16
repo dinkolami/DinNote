@@ -13,6 +13,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDirection
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -71,8 +73,8 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
                 textAlign = TextAlign.Right, modifier = Modifier.fillMaxWidth())
             Text(item.author, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Right)
             HorizontalDivider(Modifier.padding(vertical = 14.dp))
-            LazyColumn { item { Text(item.content, fontSize = 22.sp, lineHeight = 38.sp,
-                modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Start) } }
+            LazyColumn { item { Text(item.content, fontSize = 22.sp, lineHeight = 38.sp, style = TextStyle(textDirection = TextDirection.ContentOrRtl),
+                modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Right) } }
         }
     } else {
         Column(modifier.fillMaxSize().padding(horizontal = 12.dp)) {
@@ -126,7 +128,7 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
                     OutlinedTextField(title, { title = it }, label = { Text("Nama kitab") })
                     OutlinedTextField(author, { author = it }, label = { Text("Pengarang") })
                     OutlinedTextField(category, { category = it }, label = { Text("Kategori") })
-                    OutlinedTextField(content, { content = it }, label = { Text("Kandungan Arab / Melayu") }, minLines = 4)
+                    OutlinedTextField(content, { content = it }, label = { Text("Kandungan Arab / Melayu") }, minLines = 4, textStyle = TextStyle(textDirection = TextDirection.ContentOrRtl))
                 }
             },
             confirmButton = {
