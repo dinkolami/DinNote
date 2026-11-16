@@ -1,6 +1,7 @@
 package com.dinnote.app
 
 import android.os.Bundle
+import android.content.Intent
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -337,6 +338,17 @@ fun NotesScreen(modifier: Modifier = Modifier) {
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.End
                             ) {
+                                TextButton(onClick = {
+                                    val shareText = buildString {
+                                        if (item.title.isNotBlank()) append(item.title).append("\\n\\n")
+                                        append(item.body)
+                                    }
+                                    val intent = Intent(Intent.ACTION_SEND).apply {
+                                        type = "text/plain"
+                                        putExtra(Intent.EXTRA_TEXT, shareText)
+                                    }
+                                    context.startActivity(Intent.createChooser(intent, "Kongsi nota"))
+                                }) { Text("Kongsi") }
                                 TextButton(onClick = {
                                     database.setPinned(item.id, !item.pinned)
                                     refreshNotes()
