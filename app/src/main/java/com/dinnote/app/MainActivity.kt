@@ -61,17 +61,16 @@ fun DinNoteApp() {
         Scaffold(
             containerColor = MaterialTheme.colorScheme.background,
             topBar = {
-                TopAppBar(
-                    title = {
-                        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(7.dp)) {
-                            Text("📗", fontSize = 19.sp)
-                            Text("dinnote", fontWeight = FontWeight.Bold)
-                        }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    )
-                )
+                Surface(color = MaterialTheme.colorScheme.surface) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().height(42.dp).padding(horizontal = 14.dp),
+                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Text("📗", fontSize = 15.sp)
+                        Text("dinnote", fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
+                    }
+                }
             },
             bottomBar = {
                 NavigationBar {
@@ -668,7 +667,7 @@ fun NotesScreen(
             )
         ) {
             Surface(modifier = Modifier.fillMaxSize(), color = if (readingMode) readingBackground(displayPrefs.getString("background", "white") ?: "white") else Color.White) {
-                Column(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding().imePadding()) {
+                Column(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding()) {
                     if (readingMode) {
                         Row(Modifier.fillMaxWidth().padding(12.dp), horizontalArrangement = Arrangement.SpaceBetween) {
                             TextButton(onClick = { showEditor = false }) { Text("← Kembali") }
@@ -683,12 +682,12 @@ fun NotesScreen(
                     } else {
                     Surface(color = Color(0xFF08747A)) {
                     Row(
-                        Modifier.fillMaxWidth().height(66.dp).padding(horizontal = 12.dp),
+                        Modifier.fillMaxWidth().height(48.dp).padding(horizontal = 8.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
                     ) {
                         TextButton(onClick = { persistNote(); showEditor = false }) { Text("←", color = Color.White, fontSize = 27.sp) }
-                        Text(if (editingId == null) "Nota Baharu" else "Edit Nota", modifier = Modifier.weight(1f), color = Color.White, fontSize = 23.sp, fontWeight = FontWeight.SemiBold)
+                        Text(if (editingId == null) "Nota Baharu" else "Edit Nota", modifier = Modifier.weight(1f), color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
                         Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                             TextButton(enabled = undoStack.isNotEmpty(), onClick = {
                                 if (undoStack.isNotEmpty()) { redoStack.add(body); body = undoStack.removeAt(undoStack.lastIndex) }
