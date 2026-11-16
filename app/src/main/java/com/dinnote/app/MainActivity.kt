@@ -123,32 +123,59 @@ fun HomeScreen(
     ) {
         Card(
             modifier = Modifier.fillMaxWidth(),
-            shape = MaterialTheme.shapes.extraLarge,
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF124C3B))
+            shape = MaterialTheme.shapes.large,
+            colors = CardDefaults.cardColors(containerColor = Color(0xFF245B4B))
         ) {
-            Column(
-                Modifier.fillMaxWidth().padding(22.dp),
-                verticalArrangement = Arrangement.spacedBy(11.dp)
-            ) {
-                Text("دَفْتَرُ الْعِلْمِ وَالذِّكْرِ", color = Color(0xFFE8D8AE), fontSize = 17.sp)
-                Text("Assalamualaikum", color = Color.White, fontSize = 27.sp, fontWeight = FontWeight.Bold)
-                Text(
-                    "Selamat datang ke ruang ilmu dan catatan anda.",
-                    color = Color(0xFFE1EEE7),
-                    fontSize = 14.sp
-                )
-                Spacer(Modifier.height(2.dp))
-                Surface(
-                    color = Color(0xFF286653),
-                    shape = MaterialTheme.shapes.large,
-                    modifier = Modifier.fillMaxWidth().clickable(onClick = onOpenNotes)
+            Box(Modifier.fillMaxWidth()) {
+                // Nature landscape painted behind the compact greeting; no network required.
+                androidx.compose.foundation.Canvas(Modifier.matchParentSize()) {
+                    val w = size.width
+                    val h = size.height
+                    drawRect(
+                        brush = androidx.compose.ui.graphics.Brush.verticalGradient(
+                            listOf(Color(0xFF8BC8C2), Color(0xFFB9DCC5), Color(0xFF477B62))
+                        )
+                    )
+                    drawCircle(Color(0xFFFFE3A1).copy(alpha = 0.8f), radius = h * 0.23f,
+                        center = androidx.compose.ui.geometry.Offset(w * 0.82f, h * 0.22f))
+                    val distant = androidx.compose.ui.graphics.Path().apply {
+                        moveTo(0f, h * 0.78f)
+                        lineTo(w * 0.19f, h * 0.35f)
+                        lineTo(w * 0.40f, h * 0.72f)
+                        lineTo(w * 0.64f, h * 0.27f)
+                        lineTo(w, h * 0.79f)
+                        lineTo(w, h)
+                        lineTo(0f, h)
+                        close()
+                    }
+                    drawPath(distant, Color(0xFF669B83))
+                    val foreground = androidx.compose.ui.graphics.Path().apply {
+                        moveTo(0f, h * 0.91f)
+                        quadraticTo(w * 0.30f, h * 0.56f, w * 0.56f, h * 0.85f)
+                        quadraticTo(w * 0.79f, h * 0.60f, w, h * 0.77f)
+                        lineTo(w, h)
+                        lineTo(0f, h)
+                        close()
+                    }
+                    drawPath(foreground, Color(0xFF2F6A52))
+                    drawRect(Color(0xFF123E35).copy(alpha = 0.42f))
+                }
+                Row(
+                    Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 10.dp),
+                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Row(
-                        Modifier.padding(horizontal = 16.dp, vertical = 13.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        Text("Assalamualaikum", color = Color.White, fontSize = 19.sp, fontWeight = FontWeight.Bold)
+                        Text("Selamat datang ke DinNote", color = Color.White, fontSize = 12.sp)
+                    }
+                    Surface(
+                        color = Color(0xFF16634F),
+                        shape = MaterialTheme.shapes.medium,
+                        modifier = Modifier.clickable(onClick = onOpenNotes)
                     ) {
-                        Text("＋  Tulis nota baharu", color = Color.White, fontWeight = FontWeight.SemiBold)
-                        Text("→", color = Color(0xFFE8D8AE), fontSize = 18.sp)
+                        Text("+ Nota", Modifier.padding(horizontal = 12.dp, vertical = 9.dp),
+                            color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
                     }
                 }
             }
