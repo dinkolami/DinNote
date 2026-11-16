@@ -599,20 +599,41 @@ fun NotesScreen(
             LazyVerticalGrid(
                 columns = GridCells.Fixed(1),
                 modifier = Modifier.weight(1f).fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(6.dp),
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
                 contentPadding = PaddingValues(bottom = 8.dp)
             ) {
                 items(orderedNotes.size) { index ->
                     val item = orderedNotes[index]
                     var menuExpanded by remember(item.id) { mutableStateOf(false) }
                     Card(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().combinedClickable(
+                            onClick = {
+                                editingId = item.id
+                                title = item.title
+                                body = TextFieldValue(item.body, selection = TextRange(item.body.length))
+                                undoStack.clear(); redoStack.clear()
+                                selectedColor = item.colorTag
+                                selectedCategory = item.category
+                                readingMode = true
+                                showEditor = true
+                            },
+                            onDoubleClick = {
+                                editingId = item.id
+                                title = item.title
+                                body = TextFieldValue(item.body, selection = TextRange(item.body.length))
+                                undoStack.clear(); redoStack.clear()
+                                selectedColor = item.colorTag
+                                selectedCategory = item.category
+                                readingMode = false
+                                showEditor = true
+                            }
+                        ),
                         colors = CardDefaults.cardColors(containerColor = Color.White),
                         shape = RoundedCornerShape(10.dp),
                         border = BorderStroke(1.dp, Color(0xFFB7DCD7))
                     ) {
-                        Column(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 7.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        Column(Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 5.dp), verticalArrangement = Arrangement.spacedBy(1.dp)) {
                             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                                 Text(item.category, color = MaterialTheme.colorScheme.primary, fontSize = 10.sp, maxLines = 1)
                                 Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -654,29 +675,8 @@ fun NotesScreen(
                                 }
                             }
                             Column(
-                                Modifier.fillMaxWidth().combinedClickable(
-                                    onClick = {
-                                        editingId = item.id
-                                        title = item.title
-                                        body = TextFieldValue(item.body, selection = TextRange(item.body.length))
-                                        undoStack.clear(); redoStack.clear()
-                                        selectedColor = item.colorTag
-                                        selectedCategory = item.category
-                                        readingMode = true
-                                        showEditor = true
-                                    },
-                                    onDoubleClick = {
-                                        editingId = item.id
-                                        title = item.title
-                                        body = TextFieldValue(item.body, selection = TextRange(item.body.length))
-                                        undoStack.clear(); redoStack.clear()
-                                        selectedColor = item.colorTag
-                                        selectedCategory = item.category
-                                        readingMode = false
-                                        showEditor = true
-                                    }
-                                ),
-                                verticalArrangement = Arrangement.spacedBy(6.dp)
+                                Modifier.fillMaxWidth(),
+                                verticalArrangement = Arrangement.spacedBy(2.dp)
                             ) {
                                 Text(item.title.ifBlank { "Tanpa tajuk" }, fontWeight = FontWeight.Bold, maxLines = 2)
                             }
