@@ -69,10 +69,10 @@ fun DisplaySettingsScreen(modifier: Modifier = Modifier) {
     var borderWidth by remember { mutableFloatStateOf(prefs.getFloat("border_width", 1f)) }
     var selectedSymbol by remember { mutableStateOf(prefs.getString("selected_symbol", "✦") ?: "✦") }
     var fontChoice by remember { mutableStateOf(prefs.getString("font", "Standard") ?: "Standard") }
-    Column(modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(18.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
-        Text("⚙ Tetapan Paparan", fontSize = 25.sp, fontWeight = FontWeight.Bold, color = Color(0xFF075A40))
-        Text("Sesuaikan rupa dan gaya bacaan nota.")
-        Text("Tema Islamik Premium", fontWeight = FontWeight.Bold)
+    Column(modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 14.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Text("Tetapan DinNote", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF075B59))
+        Text("Sesuaikan paparan nota dan Maktabah Arab–Melayu.", fontSize = 13.sp, color = Color(0xFF526B78))
+        Text("Tema Bacaan", fontWeight = FontWeight.SemiBold, color = Color(0xFF075B59))
         Text("Pilih gaya putih, turquoise, krim atau malam untuk bacaan.", fontSize = 12.sp)
         Text("Latar Belakang Bacaan", fontWeight = FontWeight.Bold)
         listOf("white" to "Putih", "turquoise" to "Turquoise Premium", "cream" to "Krim", "green" to "Hijau lembut", "sepia" to "Sepia", "dark" to "Gelap", "pink" to "Merah jambu", "blue" to "Biru lembut", "purple" to "Ungu", "nature" to "Alam").chunked(2).forEach { pair ->
@@ -84,8 +84,8 @@ fun DisplaySettingsScreen(modifier: Modifier = Modifier) {
                             prefs.edit().putString("background", key).apply()
                         },
                         color = readingBackground(key),
-                        shape = RoundedCornerShape(12.dp),
-                        border = androidx.compose.foundation.BorderStroke(if (background == key) 3.dp else 1.dp, if (background == key) Color(0xFF00865A) else Color.LightGray)
+                        shape = RoundedCornerShape(10.dp),
+                        border = androidx.compose.foundation.BorderStroke(if (background == key) 2.dp else 1.dp, if (background == key) Color(0xFF087F83) else Color(0xFFB7DCD7))
                     ) {
                         Box(Modifier.padding(12.dp)) {
                             Text(name + if (background == key) " ✓" else "", color = if (key == "dark") Color.White else Color.DarkGray)
@@ -126,11 +126,11 @@ fun DisplaySettingsScreen(modifier: Modifier = Modifier) {
                 )
             }
         }
-        Text("Saiz Tulisan: ${fontSize.toInt()}", fontWeight = FontWeight.Bold)
+        Text("Saiz Tulisan: ${fontSize.toInt()} sp", fontWeight = FontWeight.Bold)
         Slider(value = fontSize, onValueChange = {
             fontSize = it
             prefs.edit().putInt("font_size", it.toInt()).apply()
-        }, valueRange = 14f..32f)
+        }, valueRange = 14f..30f)
         Text("Jenis Fon", fontWeight = FontWeight.Bold)
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             listOf("Standard", "Serif", "Arab & Rumi").forEach { option ->
@@ -161,7 +161,7 @@ fun DisplaySettingsScreen(modifier: Modifier = Modifier) {
             "square" -> RoundedCornerShape(0.dp)
             "pill" -> RoundedCornerShape(36.dp)
             "dashed" -> CutCornerShape(12.dp)
-            else -> RoundedCornerShape(16.dp)
+            else -> RoundedCornerShape(10.dp)
         }
         val previewBorderColor = when (borderColor) {
             "blue" -> Color(0xFF3478B9)
@@ -178,9 +178,10 @@ fun DisplaySettingsScreen(modifier: Modifier = Modifier) {
             border = androidx.compose.foundation.BorderStroke(borderWidth.dp, previewBorderColor)
         ) {
             Column(Modifier.fillMaxWidth().padding(18.dp)) {
-                Text("بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ", fontSize = (fontSize + 5).sp, color = if (background == "dark") Color.White else Color(0xFF075A40))
+                Text("بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Right, fontSize = fontSize.sp, lineHeight = (fontSize * spacing).sp, color = if (background == "dark") Color.White else Color(0xFF075A40))
                 Spacer(Modifier.height(12.dp))
-                Text("$selectedSymbol Contoh paparan nota dengan tetapan yang dipilih.", fontSize = fontSize.sp, lineHeight = (fontSize * spacing).sp, color = if (background == "dark") Color.White else Color.DarkGray)
+                HorizontalDivider(color = Color(0xFFB7DCD7))
+                Text("$selectedSymbol Contoh terjemahan dan nota kajian kitab mazhab Syafi‘i.", fontSize = fontSize.sp, lineHeight = (fontSize * spacing).sp, color = if (background == "dark") Color.White else Color.DarkGray)
             }
         }
         HorizontalDivider(color = Color(0xFFE1E3E5))
