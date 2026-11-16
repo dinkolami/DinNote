@@ -340,7 +340,7 @@ fun NotesScreen(modifier: Modifier = Modifier) {
                             ) {
                                 TextButton(onClick = {
                                     val shareText = buildString {
-                                        if (item.title.isNotBlank()) append(item.title).append("\\n\\n")
+                                        if (item.title.isNotBlank()) append(item.title).append("\n\n")
                                         append(item.body)
                                     }
                                     val intent = Intent(Intent.ACTION_SEND).apply {
