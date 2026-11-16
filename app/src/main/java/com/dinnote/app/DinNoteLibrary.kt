@@ -86,6 +86,13 @@ private val hikmahItems = listOf(
         "فَإِنَّ مَعَ الْعُسْرِ يُسْرًا",
         "Kesusahan bukan keadaan yang kekal. Ayat ini mengajar orang beriman supaya terus berharap, bersabar dan berusaha.",
         "Al-Quran, Surah al-Insyirah 94:5."
+    ),
+    DinLibraryItem(
+        "Memelihara kasih sayang sesama saudara",
+        "Kata-kata yang dinukilkan daripada ‘Umar ibn al-Khattab",
+        "إِنَّ مِمَّا يُصَفِّي لَكَ وُدَّ أَخِيكَ أَنْ تَبْدَأَهُ بِالسَّلَامِ إِذَا لَقِيتَهُ، وَأَنْ تَدْعُوَهُ بِأَحَبِّ الْأَسْمَاءِ إِلَيْهِ، وَأَنْ تُوَسِّعَ لَهُ فِي الْمَجْلِسِ",
+        "Antara adab yang mengeratkan persaudaraan ialah memulakan salam, memanggil saudara dengan nama yang disukainya dan memberi ruang kepadanya dalam majlis.",
+        "Dinukilkan oleh Kalemtayeb pada halaman utama (kalemtayeb.com/item). Nisbah kata-kata ini kepada ‘Umar perlu disemak pada sumber asal."
     )
 )
 
