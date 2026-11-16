@@ -72,7 +72,15 @@ fun LibraryScreen2(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val entries = remember {
         mutableStateListOf<DinLibraryItem>().apply {
+            val prefs = context.getSharedPreferences("dinnote_library_edits", Context.MODE_PRIVATE)
             addAll(defaultLibraryItems().map { loadSavedItem(context, it) })
+            prefs.getStringSet("custom_ids", emptySet()).orEmpty().sorted().forEach { id ->
+                add(DinLibraryItem(id, prefs.getString("$id.category", "Kalimah Tayyibah") ?: "Kalimah Tayyibah",
+                    prefs.getString("$id.title", "") ?: "", prefs.getString("$id.author", "") ?: "",
+                    prefs.getString("$id.arabic", "") ?: "", prefs.getString("$id.transliteration", "") ?: "",
+                    prefs.getString("$id.explanation", "") ?: "", prefs.getString("$id.reference", "") ?: "",
+                    prefs.getString("$id.note", "") ?: ""))
+            }
         }
     }
     var category by remember { mutableStateOf("Kalimah Tayyibah") }
@@ -82,8 +90,12 @@ fun LibraryScreen2(modifier: Modifier = Modifier) {
 
     fun updateItem(updated: DinLibraryItem) {
         val index = entries.indexOfFirst { it.id == updated.id }
-        if (index >= 0) entries[index] = updated
-        context.getSharedPreferences("dinnote_library_edits", Context.MODE_PRIVATE).edit()
+        if (index >= 0) entries[index] = updated else entries.add(updated)
+        val prefs = context.getSharedPreferences("dinnote_library_edits", Context.MODE_PRIVATE)
+        val ids = prefs.getStringSet("custom_ids", emptySet()).orEmpty().toMutableSet()
+        if (updated.id.startsWith("custom_")) ids.add(updated.id)
+        prefs.edit().putStringSet("custom_ids", ids).apply()
+        prefs.edit().putString("${updated.id}.category", updated.category)
             .putString("${updated.id}.title", updated.title)
             .putString("${updated.id}.author", updated.author)
             .putString("${updated.id}.arabic", updated.arabic)
@@ -107,8 +119,8 @@ fun LibraryScreen2(modifier: Modifier = Modifier) {
         modifier = modifier.fillMaxSize().padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Text("Perpustakaan DinNote", fontSize = 23.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-        Text("Koleksi offline. Kandungan boleh diedit terus dan disimpan secara automatik.")
+        Text("Perpustakaan", fontSize = 23.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+        Text("Koleksi offline. Kandungan boleh ditambah dan diedit.")
         Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             listOf("Kalimah Tayyibah", "Kitab-Kitab", "Kalam Hikmah").forEach {
                 FilterChip(
@@ -133,7 +145,12 @@ fun LibraryScreen2(modifier: Modifier = Modifier) {
             },
             fontSize = 22.sp, color = MaterialTheme.colorScheme.primary
         )
-        Text("${filtered.size} kandungan  •  Tekan ikon pensel untuk edit", color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Text("${filtered.size} kandungan", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Button(onClick = {
+                editing = DinLibraryItem("custom_${java.util.UUID.randomUUID()}", category, "", "", "", explanation = "", reference = "")
+            }) { Text("+ Tambah kandungan") }
+        }
         LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.weight(1f)) {
             items(filtered, key = { it.id }) { entry ->
                 Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
@@ -175,13 +192,21 @@ fun LibraryScreen2(modifier: Modifier = Modifier) {
     editing?.let { item ->
         AlertDialog(
             onDismissRequest = { editing = null },
-            title = { Text("Edit ${item.category}") },
+            title = { Text(if (item.id.startsWith("custom_") && item.title.isBlank()) "Tambah kandungan" else "Edit ${item.category}") },
             text = {
                 Column(
                     modifier = Modifier.heightIn(max = 520.dp).verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(9.dp)
                 ) {
-                    Text("Perubahan disimpan automatik setiap kali anda menaip.", color = MaterialTheme.colorScheme.primary, fontSize = 12.sp)
+                    Text("Perubahan disimpan automatik pada telefon ini.", color = MaterialTheme.colorScheme.primary, fontSize = 12.sp)
+                    if (item.id.startsWith("custom_")) {
+                        Text("Bahagian kandungan", fontWeight = FontWeight.SemiBold)
+                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            listOf("Kalimah Tayyibah", "Kitab-Kitab", "Kalam Hikmah").forEach { target ->
+                                FilterChip(selected = item.category == target, onClick = { updateItem(item.copy(category = target)) }, label = { Text(target, fontSize = 10.sp) })
+                            }
+                        }
+                    }
                     OutlinedTextField(item.title, { updateItem(item.copy(title = it)) }, label = { Text("Tajuk") }, modifier = Modifier.fillMaxWidth())
                     OutlinedTextField(item.arabic, { updateItem(item.copy(arabic = it)) }, label = { Text("Teks Arab") }, modifier = Modifier.fillMaxWidth(), minLines = 2)
                     if (item.category == "Kalimah Tayyibah") {
