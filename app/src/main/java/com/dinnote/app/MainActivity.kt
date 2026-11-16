@@ -748,10 +748,10 @@ fun NotesScreen(
                             .horizontalScroll(rememberScrollState()),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        val tools = listOf("Tᵀ" to "", "16" to "", "B" to "**", "I" to "_", "U" to "__", "A" to "**", "✎" to "✍ ", "☰" to "• ", "⋯" to "1. ", "☑" to "☐ ", "▧" to "▧ ", "📎" to "📎 ")
+                        val tools = listOf("Tᵀ" to "", "${editorFontSize.toInt()}" to "", "B" to "**", "I" to "_", "U" to "__", "A" to "**", "✎" to "✍ ", "☰" to "• ", "⋯" to "1. ", "☑" to "☐ ", "▧" to "▧ ", "📎" to "📎 ")
                         tools.forEach { (label, insertion) ->
                             TextButton(onClick = {
-                                if (label == "16") {
+                                if (label == editorFontSize.toInt().toString()) {
                                     editorFontSize = if (editorFontSize >= 30f) 14f else editorFontSize + 2f
                                     displayPrefs.edit().putInt("font_size", editorFontSize.toInt()).apply()
                                 } else if (label == "Tᵀ") {
@@ -772,9 +772,9 @@ fun NotesScreen(
 
                     Surface(
                         modifier = Modifier.fillMaxWidth().weight(1f).padding(horizontal = 10.dp, vertical = 8.dp),
-                        shape = RoundedCornerShape(22.dp),
+                        shape = RoundedCornerShape(12.dp),
                         color = Color.White,
-                        border = BorderStroke(2.dp, Color(0xFFD5AD55))
+                        border = BorderStroke(1.dp, Color(0xFF0C9699))
                     ) {
                         Box(Modifier.fillMaxSize()) {
                             // Islamic ornamental frame, turquoise waves and mosque skyline.
@@ -838,7 +838,7 @@ fun NotesScreen(
                                     androidx.compose.ui.geometry.Offset(w, base - 10.dp.toPx()), 1.dp.toPx())
                             }
                             Column(
-                                Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 14.dp)
+                                Modifier.fillMaxSize().padding(horizontal = 18.dp, vertical = 16.dp)
                             ) {
                                 androidx.compose.foundation.text.BasicTextField(
                                     value = title,
@@ -854,7 +854,7 @@ fun NotesScreen(
                                     ),
                                     decorationBox = { inner ->
                                         Box {
-                                            if (title.isEmpty()) Text("🪶  Tajuk", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF087F83))
+                                            if (title.isEmpty()) Text("✎  Tajuk catatan", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF087F83))
                                             inner()
                                         }
                                     }
