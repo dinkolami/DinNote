@@ -23,6 +23,8 @@ fun readingBackground(value: String): Color = when (value) {
     "dark" -> Color(0xFF20272B)
     "pink" -> Color(0xFFFFE9EF)
     "blue" -> Color(0xFFE5F3FF)
+    "purple" -> Color(0xFFF0E7FF)
+    "nature" -> Color(0xFFEAF3E7)
     else -> Color.White
 }
 
@@ -34,12 +36,15 @@ fun DisplaySettingsScreen(modifier: Modifier = Modifier) {
     var fontSize by remember { mutableFloatStateOf(prefs.getInt("font_size", 19).toFloat()) }
     var spacing by remember { mutableStateOf(prefs.getFloat("line_spacing", 1.6f)) }
     var fullScreen by remember { mutableStateOf(prefs.getBoolean("full_screen", true)) }
+    var borderShape by remember { mutableStateOf(prefs.getString("border_shape", "rounded") ?: "rounded") }
+    var borderColor by remember { mutableStateOf(prefs.getString("border_color", "teal") ?: "teal") }
+    var borderWidth by remember { mutableFloatStateOf(prefs.getFloat("border_width", 1f)) }
     var fontChoice by remember { mutableStateOf(prefs.getString("font", "Standard") ?: "Standard") }
     Column(modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(18.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
         Text("⚙ Tetapan Paparan", fontSize = 25.sp, fontWeight = FontWeight.Bold, color = Color(0xFF075A40))
         Text("Sesuaikan rupa dan gaya bacaan nota.")
         Text("Latar Belakang Bacaan", fontWeight = FontWeight.Bold)
-        listOf("white" to "Putih", "cream" to "Krim", "green" to "Hijau lembut", "sepia" to "Sepia", "dark" to "Gelap", "pink" to "Merah jambu", "blue" to "Biru lembut").chunked(2).forEach { pair ->
+        listOf("white" to "Putih", "cream" to "Krim", "green" to "Hijau lembut", "sepia" to "Sepia", "dark" to "Gelap", "pink" to "Merah jambu", "blue" to "Biru lembut", "purple" to "Ungu", "nature" to "Alam").chunked(2).forEach { pair ->
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 pair.forEach { (key, name) ->
                     Surface(
@@ -59,6 +64,25 @@ fun DisplaySettingsScreen(modifier: Modifier = Modifier) {
                 if (pair.size == 1) Spacer(Modifier.weight(1f))
             }
         }
+        Text("Border item terpilih", fontWeight = FontWeight.Bold)
+        Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            listOf("rounded" to "Bucu bulat", "pill" to "Pill", "square" to "Petak", "dashed" to "Putus").forEach { (key, label) ->
+                FilterChip(selected = borderShape == key, onClick = {
+                    borderShape = key; prefs.edit().putString("border_shape", key).apply()
+                }, label = { Text(label) })
+            }
+        }
+        Text("Warna border", fontWeight = FontWeight.Bold)
+        Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            listOf("teal" to "Turquoise", "blue" to "Biru", "purple" to "Ungu", "pink" to "Merah jambu", "red" to "Merah", "orange" to "Oren", "gray" to "Kelabu").forEach { (key, label) ->
+                FilterChip(selected = borderColor == key, onClick = {
+                    borderColor = key; prefs.edit().putString("border_color", key).apply()
+                }, label = { Text(label) })
+            }
+        }
+        Text("Ketebalan border: ${borderWidth.toInt()} dp", fontWeight = FontWeight.Bold)
+        Slider(value = borderWidth, onValueChange = { borderWidth = it; prefs.edit().putFloat("border_width", it).apply() }, valueRange = 1f..4f, steps = 2)
+        Text("Ikon dan simbol pilihan: ✦ ★ ✓ ☑ ❖ ۞ ☪ ﷽ • →", fontSize = 15.sp)
         Text("Saiz Tulisan: ${fontSize.toInt()}", fontWeight = FontWeight.Bold)
         Slider(value = fontSize, onValueChange = {
             fontSize = it
