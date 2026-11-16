@@ -45,7 +45,6 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun DinNoteApp() {
     var selectedTab by remember { mutableIntStateOf(0) }
-    var showGlobalSearch by remember { mutableStateOf(false) }
     var openNewNote by remember { mutableStateOf(false) }
     val islamicScheme = lightColorScheme(
         primary = Color(0xFF087F8C),
@@ -72,8 +71,8 @@ fun DinNoteApp() {
                         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        Text("📗", fontSize = 15.sp)
-                        Text("DinNote", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF17313A))
+                        Text("◈", fontSize = 17.sp, color = Color(0xFF008F91))
+                        Text("DinNote", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color(0xFF006B70))
                     }
                 }
             },
@@ -112,7 +111,8 @@ fun DinNoteApp() {
                                 Triple("Utama", "⌂", 0),
                                 Triple("Nota", "✎", 1),
                                 Triple("Maktabah", "▤", 2),
-                                Triple("Tetapan", "⚙", 3)
+                                Triple("Carian", "⌕", 3),
+                                Triple("Tetapan", "⚙", 4)
                             )
                             tabs.forEachIndexed { index, tab ->
                                 if (index > 0) {
@@ -126,7 +126,6 @@ fun DinNoteApp() {
                                 Surface(
                                     modifier = Modifier.weight(1f).fillMaxHeight().clickable {
                                         selectedTab = tab.third
-                                        if (tab.third != 0) showGlobalSearch = false
                                     },
                                     shape = RoundedCornerShape(6.dp),
                                     color = if (active) Color(0xFFDDF4F2).copy(alpha = 0.92f)
@@ -160,10 +159,11 @@ fun DinNoteApp() {
             }
         ) { padding ->
             when (selectedTab) {
-                0 -> if (showGlobalSearch) GlobalSearchScreen(Modifier.padding(padding)) else HomeScreen(Modifier.padding(padding), onOpenNotes = { openNewNote = true; selectedTab = 1 }, onOpenLibrary = { selectedTab = 2 }, onOpenSearch = { showGlobalSearch = true })
+                0 -> HomeScreen(Modifier.padding(padding), onOpenNotes = { openNewNote = true; selectedTab = 1 }, onOpenLibrary = { selectedTab = 2 }, onOpenSearch = { selectedTab = 3 })
                 1 -> NotesScreen(Modifier.padding(padding), openNewNote = openNewNote, onNewNoteOpened = { openNewNote = false })
                 2 -> LibraryHubScreen(Modifier.padding(padding))
-                3 -> DisplaySettingsScreen(Modifier.padding(padding))
+                3 -> GlobalSearchScreen(Modifier.padding(padding))
+                4 -> DisplaySettingsScreen(Modifier.padding(padding))
             }
         }
     }
