@@ -92,6 +92,15 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
     var page by remember { mutableStateOf("") }
     var chapter by remember { mutableStateOf("") }
     var ascending by remember { mutableStateOf(true) }
+    var bookmarkRevision by remember { mutableIntStateOf(0) }
+    fun isBookmarked(id: Long): Boolean {
+        @Suppress("UNUSED_VARIABLE") val revision = bookmarkRevision
+        return prefs.getBoolean("bookmark_$id", false)
+    }
+    fun toggleBookmark(id: Long) {
+        prefs.edit().putBoolean("bookmark_$id", !isBookmarked(id)).apply()
+        bookmarkRevision++
+    }
     var copyFeedback by remember { mutableStateOf(false) }
     var excerptDialog by remember { mutableStateOf<KitabItem?>(null) }
     var excerptText by remember { mutableStateOf("") }
@@ -126,6 +135,9 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
                         excerptStatus = ""
                         excerptDialog = item
                     }) { Text("Nota Kuliah") }
+                    TextButton(onClick = { toggleBookmark(item.id) }) {
+                        Text(if (isBookmarked(item.id)) "★ Penanda" else "☆ Penanda")
+                    }
                     TextButton(onClick = { startEdit(item) }) { Text("Edit") }
                 }
             }
@@ -171,12 +183,13 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
                 Text("${books.size} kitab", modifier = Modifier.padding(12.dp))
             }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-                listOf("Semua", "Kegemaran", "Kategori").forEach { name ->
+                listOf("Semua", "Kegemaran", "Penanda", "Kategori").forEach { name ->
                     FilterChip(selected = filter == name, onClick = { filter = name }, label = { Text(name) })
                 }
             }
             val results = books.filter { b ->
                 (filter != "Kegemaran" || b.favorite) &&
+                    (filter != "Penanda" || isBookmarked(b.id)) &&
                     (kitabMatches(b.title, query) || kitabMatches(b.author, query) ||
                         kitabMatches(b.category, query) || kitabMatches(b.content, query)) &&
                     (filter != "Kategori" || b.category.isNotBlank())
@@ -201,6 +214,9 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
                                 val idx = books.indexOfFirst { it.id == b.id }
                                 if (idx >= 0) { books[idx] = b.copy(favorite = !b.favorite); persist() }
                             }) { Text(if (b.favorite) "★" else "☆") }
+                            TextButton(onClick = { toggleBookmark(b.id) }) {
+                                Text(if (isBookmarked(b.id)) "★ Penanda" else "☆ Penanda")
+                            }
                             TextButton(onClick = { opened = b }) { Text("Baca penuh") }
                         }
                     }
