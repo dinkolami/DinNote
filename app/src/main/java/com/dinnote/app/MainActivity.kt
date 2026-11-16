@@ -348,6 +348,21 @@ fun HomeScreen(
             .padding(horizontal = 14.dp, vertical = 6.dp),
         verticalArrangement = Arrangement.spacedBy(11.dp)
     ) {
+        // Premium mosque header: use the bundled drawable so the ornament works offline.
+        Row(
+            modifier = Modifier.fillMaxWidth().height(68.dp),
+            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text("DinNote", fontSize = 27.sp, fontWeight = FontWeight.Bold,
+                fontStyle = FontStyle.Italic, color = Color(0xFF075B59))
+            androidx.compose.foundation.Image(
+                painter = androidx.compose.ui.res.painterResource(R.drawable.dinnote_mosque_ornament),
+                contentDescription = null,
+                modifier = Modifier.width(150.dp).height(58.dp),
+                contentScale = ContentScale.Fit
+            )
+        }
         Surface(
             modifier = Modifier.fillMaxWidth().clickable(onClick = onOpenSearch),
             shape = RoundedCornerShape(16.dp), color = Color.White,
