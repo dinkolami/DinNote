@@ -178,7 +178,8 @@ fun HomeScreen(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Surface(
-            shape = androidx.compose.foundation.shape.RoundedCornerShape(17.dp),
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(10.dp),
+            border = BorderStroke(1.dp, Color(0xFF0C9699)),
             color = Color(0xFF075C43)
         ) {
             Box(Modifier.fillMaxWidth()) {
@@ -187,19 +188,33 @@ fun HomeScreen(
                     val h = size.height
                     drawRect(brush = androidx.compose.ui.graphics.Brush.horizontalGradient(
                         listOf(Color(0xFF348F84), Color(0xFF086044))))
-                    drawCircle(Color(0xFFFFE4A0).copy(alpha = 0.78f), radius = h * 0.22f,
-                        center = androidx.compose.ui.geometry.Offset(w * 0.80f, h * 0.24f))
-                    val hills = androidx.compose.ui.graphics.Path().apply {
-                        moveTo(0f, h * 0.87f)
-                        lineTo(w * 0.24f, h * 0.35f)
-                        lineTo(w * 0.47f, h * 0.78f)
-                        lineTo(w * 0.68f, h * 0.28f)
-                        lineTo(w, h * 0.81f)
-                        lineTo(w, h)
-                        lineTo(0f, h)
+                    // Islamic architectural arches and domes replace the old landscape.
+                    val archColor = Color(0xFF78C6B8).copy(alpha = 0.45f)
+                    val gold = Color(0xFFE5C78A).copy(alpha = 0.65f)
+                    for (index in 0..5) {
+                        val centerX = w * (index + 0.5f) / 6f
+                        val halfWidth = w / 12f
+                        val arch = androidx.compose.ui.graphics.Path().apply {
+                            moveTo(centerX - halfWidth, h)
+                            lineTo(centerX - halfWidth, h * 0.55f)
+                            quadraticBezierTo(centerX - halfWidth, h * 0.28f, centerX, h * 0.14f)
+                            quadraticBezierTo(centerX + halfWidth, h * 0.28f, centerX + halfWidth, h * 0.55f)
+                            lineTo(centerX + halfWidth, h)
+                            close()
+                        }
+                        drawPath(arch, archColor)
+                        drawPath(arch, gold, style = androidx.compose.ui.graphics.drawscope.Stroke(width = 1.dp.toPx()))
+                    }
+                    val dome = androidx.compose.ui.graphics.Path().apply {
+                        moveTo(w * 0.72f, h)
+                        lineTo(w * 0.72f, h * 0.52f)
+                        quadraticBezierTo(w * 0.72f, h * 0.25f, w * 0.83f, h * 0.18f)
+                        quadraticBezierTo(w * 0.94f, h * 0.25f, w * 0.94f, h * 0.52f)
+                        lineTo(w * 0.94f, h)
                         close()
                     }
-                    drawPath(hills, Color(0xFF277C65))
+                    drawPath(dome, Color(0xFF0A665B).copy(alpha = 0.58f))
+                    drawRect(Color(0xFF063D39).copy(alpha = 0.30f))
                     drawRect(Color(0xFF064E3B).copy(alpha = 0.25f))
                 }
                 Row(
