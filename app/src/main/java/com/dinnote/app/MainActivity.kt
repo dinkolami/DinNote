@@ -994,6 +994,10 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
     val libraryPrefs = remember { context.getSharedPreferences("dinnote_library_edits", android.content.Context.MODE_PRIVATE) }
     val libraryDisplayPrefs = remember { context.getSharedPreferences("dinnote_display", android.content.Context.MODE_PRIVATE) }
     var libraryFontSize by remember { mutableFloatStateOf(libraryDisplayPrefs.getInt("font_size", 19).toFloat()) }
+    val preferredBookLayout = libraryDisplayPrefs.getString("book_layout", "Arab di atas, Melayu di bawah") ?: "Arab di atas, Melayu di bawah"
+    val showArabicInLibrary = preferredBookLayout != "Melayu sahaja"
+    val showMalayInLibrary = preferredBookLayout != "Arab sahaja"
+    val malayFirstInLibrary = preferredBookLayout == "Melayu di atas, Arab di bawah"
     var libraryRevision by remember { mutableIntStateOf(0) }
     var showAddCategory by remember { mutableStateOf(false) }
     var newCategoryName by remember { mutableStateOf("") }
@@ -1119,9 +1123,16 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                                 verticalArrangement = Arrangement.spacedBy(7.dp)
                             ) {
                                 Text(entry.title, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                                Text(entry.arabic, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Right, style = androidx.compose.ui.text.TextStyle(textDirection = TextDirection.Rtl), fontSize = 25.sp)
-                                Text(entry.transliteration, fontWeight = FontWeight.Medium)
-                                Text(entry.meaning, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                if (malayFirstInLibrary && showMalayInLibrary) {
+                                    Text(entry.meaning, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    UnifiedEditorDivider()
+                                }
+                                if (showArabicInLibrary) Text(entry.arabic, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Right, style = androidx.compose.ui.text.TextStyle(textDirection = TextDirection.Rtl), fontSize = libraryFontSize.sp)
+                                if (showMalayInLibrary && !malayFirstInLibrary) {
+                                    if (showArabicInLibrary) UnifiedEditorDivider()
+                                    Text(entry.meaning, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                }
+                                if (showMalayInLibrary) Text(entry.transliteration, fontWeight = FontWeight.Medium, fontSize = 13.sp)
                                 Text("Tekan untuk maklumat lanjut", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
                                 IslamicCardFooter()
                             }
@@ -1299,9 +1310,16 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
             title = { Text(entry.title) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(entry.arabic, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Right, style = androidx.compose.ui.text.TextStyle(textDirection = TextDirection.Rtl), fontSize = 27.sp)
-                    Text(entry.transliteration, fontWeight = FontWeight.Bold)
-                    Text(entry.meaning)
+                    if (malayFirstInLibrary && showMalayInLibrary) {
+                        Text(entry.meaning)
+                        UnifiedEditorDivider()
+                    }
+                    if (showArabicInLibrary) Text(entry.arabic, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Right, style = androidx.compose.ui.text.TextStyle(textDirection = TextDirection.Rtl), fontSize = libraryFontSize.sp)
+                    if (showMalayInLibrary && !malayFirstInLibrary) {
+                        if (showArabicInLibrary) UnifiedEditorDivider()
+                        Text(entry.meaning)
+                    }
+                    if (showMalayInLibrary) Text(entry.transliteration, fontWeight = FontWeight.Medium, fontSize = 13.sp)
                     Text("Rujukan: ${entry.reference}", fontSize = 13.sp)
                     Text(entry.note, fontSize = 13.sp)
                     IslamicCardFooter()
