@@ -29,7 +29,8 @@ class NoteDatabase(context: Context) :
                 updated_at INTEGER NOT NULL,
                 color_tag TEXT NOT NULL DEFAULT 'green',
                 is_pinned INTEGER NOT NULL DEFAULT 0,
-                is_archived INTEGER NOT NULL DEFAULT 0
+                is_archived INTEGER NOT NULL DEFAULT 0,
+                category TEXT NOT NULL DEFAULT 'Lain-lain'
             )
             """.trimIndent()
         )
