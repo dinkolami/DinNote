@@ -29,7 +29,7 @@ fun LibraryHubScreen(modifier: Modifier = Modifier) {
         }
         when (section) {
             "Kitab" -> KitabCatalogScreen(Modifier.weight(1f))
-            else -> LibraryScreen2(Modifier.weight(1f))
+            else -> LibraryScreen(Modifier.weight(1f))
         }
     }
 }
