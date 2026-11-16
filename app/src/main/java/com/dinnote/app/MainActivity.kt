@@ -76,9 +76,9 @@ fun DinNoteApp() {
         Scaffold(
             containerColor = MaterialTheme.colorScheme.background,
             topBar = {
-                Surface(color = Color(0xFF087F8C)) {
+                Surface(color = Color(0xFF153B50)) {
                     Row(
-                        modifier = Modifier.fillMaxWidth().height(48.dp).padding(horizontal = 14.dp),
+                        modifier = Modifier.fillMaxWidth().height(46.dp).padding(horizontal = 14.dp),
                         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
@@ -250,8 +250,8 @@ fun HomeScreen(
     ) {
         Surface(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
-            color = Color(0xFF087F8C),
+            shape = RoundedCornerShape(10.dp),
+            color = Color(0xFF153B50),
             border = BorderStroke(1.dp, Color(0xFFB7DCD7))
         ) {
             Column(Modifier.fillMaxWidth().padding(18.dp)) {
@@ -780,7 +780,7 @@ fun NotesScreen(
                             }
                         }
                     } else {
-                    Surface(color = Color(0xFF006E70), shape = RoundedCornerShape(topStart = 10.dp, topEnd = 10.dp), border = BorderStroke(1.dp, Color(0xFFB7DCD7))) {
+                    Surface(color = Color(0xFF153B50), shape = RoundedCornerShape(topStart = 9.dp, topEnd = 9.dp), border = BorderStroke(1.dp, Color(0xFFB7DCD7))) {
                         Row(
                             Modifier.fillMaxWidth().height(52.dp).padding(horizontal = 5.dp),
                             verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
@@ -838,7 +838,7 @@ fun NotesScreen(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         val tools = listOf("A−" to "", "A+" to "", "B" to "**", "I" to "_", "U" to "__", "A" to "**", "✎" to "✍ ", "☰" to "• ", "⋯" to "1. ", "☑" to "☐ ", "▧" to "▧ ", "📎" to "📎 ")
-                        Text("${editorFontSize.toInt()} sp", modifier = Modifier.padding(top = 12.dp), color = Color(0xFF075B59), fontSize = 12.sp)
+                        Text("Fon ${editorFontSize.toInt()} sp", modifier = Modifier.padding(top = 12.dp), color = Color(0xFF075B59), fontSize = 12.sp)
                         tools.forEach { (label, insertion) ->
                             TextButton(onClick = {
                                 if (label == "A+") {
