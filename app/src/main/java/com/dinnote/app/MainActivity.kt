@@ -90,8 +90,25 @@ fun DinNoteApp() {
                         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        Text("▣", fontSize = 24.sp, color = Color(0xFF087F8C))
-                        Text("DinNote", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color(0xFF153B50))
+                        androidx.compose.foundation.Image(
+                            painter = androidx.compose.ui.res.painterResource(com.dinnote.app.R.drawable.ic_dinnote_header),
+                            contentDescription = "Logo DinNote",
+                            modifier = Modifier.size(40.dp)
+                        )
+                        Text(
+                            text = buildAnnotatedString {
+                                pushStyle(SpanStyle(color = Color(0xFF103B50)))
+                                append("Din")
+                                pop()
+                                pushStyle(SpanStyle(color = Color(0xFF008E93)))
+                                append("Note")
+                                pop()
+                            },
+                            fontSize = 23.sp,
+                            fontFamily = androidx.compose.ui.text.font.FontFamily.Serif,
+                            fontStyle = FontStyle.Italic,
+                            fontWeight = FontWeight.Bold
+                        )
                         Spacer(Modifier.weight(1f))
                         Text("v$installedVersion", fontSize = 10.sp, color = Color(0xFF52716E), maxLines = 1)
                     }
