@@ -26,12 +26,27 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+private fun normalizedKitabText(value: String): String =
+    value.lowercase(java.util.Locale.ROOT)
+        .replace(Regex("[\\u064B-\\u065F\\u0670\\u0640]"), "")
+        .replace(Regex("[أإآٱ]"), "ا")
+        .replace('ى', 'ي').replace('ؤ', 'و').replace('ئ', 'ي')
+
+private fun kitabMatches(value: String, query: String): Boolean =
+    normalizedKitabText(value).contains(normalizedKitabText(query.trim()))
+
 private data class KitabItem(val id: Long, val title: String, val author: String, val content: String, val category: String, val favorite: Boolean)
 
 @Composable
 fun KitabCatalogScreen(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val prefs = remember { context.getSharedPreferences("dinnote_kitab_catalog", Context.MODE_PRIVATE) }
+    val displayPrefs = remember { context.getSharedPreferences("dinnote_display", Context.MODE_PRIVATE) }
+    val readerBackground = displayPrefs.getString("background", "white") ?: "white"
+    val readerFontSize = displayPrefs.getInt("font_size", 19).coerceIn(14, 30)
+    val readerLineSpacing = displayPrefs.getFloat("line_spacing", 1.6f).coerceIn(1.2f, 2.2f)
+    val readerInk = if (readerBackground == "dark") Color.White else Color(0xFF263B3E)
+
     val books = remember {
         mutableStateListOf<KitabItem>().apply {
             runCatching {
@@ -81,8 +96,20 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
                 textAlign = TextAlign.Right, modifier = Modifier.fillMaxWidth())
             Text(item.author, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Right)
             HorizontalDivider(Modifier.padding(vertical = 14.dp))
-            LazyColumn { item { Text(item.content, fontSize = 22.sp, lineHeight = 38.sp, style = TextStyle(textDirection = TextDirection.ContentOrRtl),
-                modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Right) } }
+            LazyColumn {
+                item {
+                    Surface(color = readingBackground(readerBackground),
+                        border = BorderStroke(1.dp, Color(0xFFB7DCD7)),
+                        shape = RoundedCornerShape(10.dp)) {
+                        Text(item.content, fontSize = readerFontSize.sp,
+                            lineHeight = (readerFontSize * readerLineSpacing).sp,
+                            color = readerInk,
+                            style = TextStyle(textDirection = TextDirection.ContentOrRtl),
+                            modifier = Modifier.fillMaxWidth().padding(16.dp),
+                            textAlign = TextAlign.Start)
+                    }
+                }
+            }
         }
     } else {
         Column(modifier.fillMaxSize().padding(horizontal = 12.dp)) {
@@ -102,8 +129,8 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
             }
             val results = books.filter { b ->
                 (filter != "Kegemaran" || b.favorite) &&
-                    (b.title.contains(query, true) || b.author.contains(query, true) ||
-                        b.category.contains(query, true) || b.content.contains(query, true)) &&
+                    (kitabMatches(b.title, query) || kitabMatches(b.author, query) ||
+                        kitabMatches(b.category, query) || kitabMatches(b.content, query)) &&
                     (filter != "Kategori" || b.category.isNotBlank())
             }.let { if (ascending) it.sortedBy { b -> b.title } else it.sortedByDescending { b -> b.title } }
             LazyColumn {
