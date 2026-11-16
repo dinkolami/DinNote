@@ -92,6 +92,9 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
     var chapter by remember { mutableStateOf("") }
     var ascending by remember { mutableStateOf(true) }
     var copyFeedback by remember { mutableStateOf(false) }
+    var excerptDialog by remember { mutableStateOf<KitabItem?>(null) }
+    var excerptText by remember { mutableStateOf("") }
+    var excerptStatus by remember { mutableStateOf("") }
     fun startEdit(item: KitabItem?) {
         editing = item
         title = item?.title.orEmpty()
@@ -117,6 +120,11 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
                         clipboard.setPrimaryClip(android.content.ClipData.newPlainText("Petikan kitab DinNote", output))
                         copyFeedback = true
                     }) { Text("Salin & rujukan") }
+                    TextButton(onClick = {
+                        excerptText = ""
+                        excerptStatus = ""
+                        excerptDialog = item
+                    }) { Text("Nota Kuliah") }
                     TextButton(onClick = { startEdit(item) }) { Text("Edit") }
                 }
             }
@@ -197,6 +205,44 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
                 }
             }
         }
+    }
+    excerptDialog?.let { source ->
+        AlertDialog(
+            onDismissRequest = { excerptDialog = null },
+            shape = RoundedCornerShape(10.dp),
+            containerColor = Color.White,
+            title = { Text("Petikan untuk Nota Kuliah", color = Color(0xFF075B59)) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Pilih dan salin petikan daripada pembaca kitab, kemudian tampal di sini. Rujukan kitab akan dimasukkan secara automatik.", fontSize = 13.sp)
+                    OutlinedTextField(
+                        value = excerptText,
+                        onValueChange = { excerptText = it },
+                        label = { Text("Teks petikan Arab / Melayu") },
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 130.dp, max = 240.dp)
+                    )
+                    Text(formatKitabCitation(source.title, source.author, source.volume, source.page, source.chapter),
+                        fontSize = 12.sp, color = Color(0xFF075B59))
+                    if (excerptStatus.isNotBlank()) Text(excerptStatus, color = Color(0xFF075B59), fontSize = 12.sp)
+                }
+            },
+            confirmButton = {
+                TextButton(enabled = excerptText.isNotBlank(), onClick = {
+                    val citation = formatKitabCitation(source.title, source.author, source.volume, source.page, source.chapter)
+                    val body = excerptText.trim() + "\\n\\nRujukan: " + citation
+                    excerptStatus = runCatching {
+                        val db = NoteDatabase(context)
+                        val id = db.save("Kajian: " + source.title, body)
+                        db.setCategory(id, "Nota Kuliah")
+                        db.close()
+                        "Berjaya disimpan dalam Nota Kuliah."
+                    }.getOrElse { "Gagal menyimpan: ${it.message}" }
+                }) { Text("Simpan ke Nota") }
+            },
+            dismissButton = {
+                OutlinedButton(onClick = { excerptDialog = null }) { Text("Tutup") }
+            }
+        )
     }
     if (editorVisible) {
         androidx.compose.ui.window.Dialog(
