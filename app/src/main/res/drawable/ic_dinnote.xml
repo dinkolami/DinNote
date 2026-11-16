@@ -12,7 +12,7 @@
     <path android:fillColor="#E7D7AE" android:pathData="M18,55 C18,51 21,49 25,49 L72,49 C77,49 81,53 83,58 L91,83 C92,87 89,90 85,90 L30,90 C26,90 23,88 22,84z"/>
     <path android:fillColor="#FFFFFF" android:pathData="M22,54 C22,51 25,50 29,50 L73,50 C77,50 80,53 81,57 L88,82 C89,85 87,87 84,87 L31,87 C28,87 26,85 25,82z"/>
     <path android:fillColor="#145A45" android:pathData="M31,60h4v4h-4zM31,70h4v4h-4zM31,80h4v4h-4z"/>
-    <path android:fillColor="#D9B45B" android:pathData="M39,61h34v1.5h-34zM39,71h34v1.5h-34zM39,81h28v1.5h-28z"/>
+    <path android:fillColor="#D9B45B" android:pathData="M39,59h35v2h-35zM39,67h35v2h-35zM39,75h35v2h-35zM39,83h27v2h-27z"/>
     <path android:fillColor="#278451" android:pathData="M75,54 C82,45 89,39 96,36 C94,48 88,61 77,70 C73,66 72,60 75,54z"/>
     <path android:fillColor="#F0D17A" android:pathData="M75,70 L89,43 L79,73 L73,79z"/>
     <path android:fillColor="#0C3F30" android:pathData="M12,91h84v12h-84z"/>
