@@ -30,6 +30,7 @@ fun readingBackground(value: String): Color = when (value) {
     "blue" -> Color(0xFFE5F3FF)
     "purple" -> Color(0xFFF0E7FF)
     "nature" -> Color(0xFFEAF3E7)
+    "turquoise" -> Color(0xFFDDF4F2)
     else -> Color.White
 }
 
@@ -71,8 +72,10 @@ fun DisplaySettingsScreen(modifier: Modifier = Modifier) {
     Column(modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(18.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
         Text("⚙ Tetapan Paparan", fontSize = 25.sp, fontWeight = FontWeight.Bold, color = Color(0xFF075A40))
         Text("Sesuaikan rupa dan gaya bacaan nota.")
+        Text("Tema Islamik Premium", fontWeight = FontWeight.Bold)
+        Text("Pilih gaya putih, turquoise, krim atau malam untuk bacaan.", fontSize = 12.sp)
         Text("Latar Belakang Bacaan", fontWeight = FontWeight.Bold)
-        listOf("white" to "Putih", "cream" to "Krim", "green" to "Hijau lembut", "sepia" to "Sepia", "dark" to "Gelap", "pink" to "Merah jambu", "blue" to "Biru lembut", "purple" to "Ungu", "nature" to "Alam").chunked(2).forEach { pair ->
+        listOf("white" to "Putih", "turquoise" to "Turquoise Premium", "cream" to "Krim", "green" to "Hijau lembut", "sepia" to "Sepia", "dark" to "Gelap", "pink" to "Merah jambu", "blue" to "Biru lembut", "purple" to "Ungu", "nature" to "Alam").chunked(2).forEach { pair ->
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 pair.forEach { (key, name) ->
                     Surface(
