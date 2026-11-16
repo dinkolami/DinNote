@@ -664,11 +664,11 @@ fun NotesScreen(
             onDismissRequest = { persistNote(); showEditor = false },
             properties = androidx.compose.ui.window.DialogProperties(
                 usePlatformDefaultWidth = false,
-                decorFitsSystemWindows = true
+                decorFitsSystemWindows = false
             )
         ) {
             Surface(modifier = Modifier.fillMaxSize(), color = if (readingMode) readingBackground(displayPrefs.getString("background", "white") ?: "white") else Color.White) {
-                Column(Modifier.fillMaxSize()) {
+                Column(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding().imePadding()) {
                     if (readingMode) {
                         Row(Modifier.fillMaxWidth().padding(12.dp), horizontalArrangement = Arrangement.SpaceBetween) {
                             TextButton(onClick = { showEditor = false }) { Text("← Kembali") }
@@ -681,19 +681,21 @@ fun NotesScreen(
                             Text(formattedNoteText(body.text), fontSize = displayPrefs.getInt("font_size", 19).sp, lineHeight = (displayPrefs.getInt("font_size", 19) * displayPrefs.getFloat("line_spacing", 1.6f)).sp, color = if (displayPrefs.getString("background", "white") == "dark") Color.White else Color(0xFF263B3E))
                         }
                     } else {
+                    Surface(color = Color(0xFF08747A)) {
                     Row(
-                        Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 10.dp),
+                        Modifier.fillMaxWidth().height(66.dp).padding(horizontal = 12.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
                     ) {
-                        TextButton(onClick = { persistNote(); showEditor = false }) { Text("✓", fontSize = 27.sp) }
+                        TextButton(onClick = { persistNote(); showEditor = false }) { Text("←", color = Color.White, fontSize = 27.sp) }
+                        Text(if (editingId == null) "Nota Baharu" else "Edit Nota", modifier = Modifier.weight(1f), color = Color.White, fontSize = 23.sp, fontWeight = FontWeight.SemiBold)
                         Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                             TextButton(enabled = undoStack.isNotEmpty(), onClick = {
                                 if (undoStack.isNotEmpty()) { redoStack.add(body); body = undoStack.removeAt(undoStack.lastIndex) }
-                            }) { Text("↶", fontSize = 26.sp) }
+                            }) { Text("↶", color = Color.White, fontSize = 23.sp) }
                             TextButton(enabled = redoStack.isNotEmpty(), onClick = {
                                 if (redoStack.isNotEmpty()) { undoStack.add(body); body = redoStack.removeAt(redoStack.lastIndex) }
-                            }) { Text("↷", fontSize = 26.sp) }
+                            }) { Text("↷", color = Color.White, fontSize = 23.sp) }
                         }
                         TextButton(onClick = {
                             persistNote()
@@ -702,7 +704,8 @@ fun NotesScreen(
                                 putExtra(Intent.EXTRA_TEXT, title + "\n\n" + body.text)
                             }
                             context.startActivity(Intent.createChooser(intent, "Kongsi nota"))
-                        }) { Text("↗", fontSize = 24.sp) }
+                        }) { Text("↗", color = Color.White, fontSize = 23.sp) }
+                    }
                     }
                     HorizontalDivider(color = Color(0xFFF0F0F0))
                     Row(
@@ -763,7 +766,7 @@ fun NotesScreen(
                         Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(10.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        val tools = listOf("Aa" to "**", "☷" to "• ", "☰" to "1. ", "☑" to "☐ ", "B" to "**", "I" to "_", "U" to "__", "ع" to "بِسْمِ اللَّهِ ", "✎" to "✍ ")
+                        val tools = listOf("Aa" to "**", "B" to "**", "I" to "_", "U" to "__", "S" to "~~", "A" to "**", "✎" to "✍ ", "☷" to "• ", "☰" to "1. ", "☑" to "☐ ", "▧" to "▧ ", "📎" to "📎 ")
                         tools.forEach { (label, insertion) ->
                             TextButton(onClick = {
                                 if (insertion.isNotEmpty()) {
