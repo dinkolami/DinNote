@@ -7,6 +7,8 @@ import androidx.activity.compose.setContent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
@@ -26,6 +28,9 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.input.TransformedText
+import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.text.style.TextAlign
@@ -50,7 +55,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun DinNoteApp() {
     var selectedTab by remember { mutableIntStateOf(0) }
@@ -536,15 +541,28 @@ fun NotesScreen(
                                 }
                             }
                             Column(
-                                Modifier.fillMaxWidth().weight(1f).clickable {
-                                    editingId = item.id
-                                    title = item.title
-                                    body = TextFieldValue(item.body, selection = TextRange(item.body.length))
-                                    undoStack.clear(); redoStack.clear()
-                                    selectedColor = item.colorTag
-                                    selectedCategory = item.category
-                                    readingMode = true; showEditor = true
-                                },
+                                Modifier.fillMaxWidth().weight(1f).combinedClickable(
+                                    onClick = {
+                                        editingId = item.id
+                                        title = item.title
+                                        body = TextFieldValue(item.body, selection = TextRange(item.body.length))
+                                        undoStack.clear(); redoStack.clear()
+                                        selectedColor = item.colorTag
+                                        selectedCategory = item.category
+                                        readingMode = true
+                                        showEditor = true
+                                    },
+                                    onDoubleClick = {
+                                        editingId = item.id
+                                        title = item.title
+                                        body = TextFieldValue(item.body, selection = TextRange(item.body.length))
+                                        undoStack.clear(); redoStack.clear()
+                                        selectedColor = item.colorTag
+                                        selectedCategory = item.category
+                                        readingMode = false
+                                        showEditor = true
+                                    }
+                                ),
                                 verticalArrangement = Arrangement.spacedBy(6.dp)
                             ) {
                                 Text(item.title.ifBlank { "Tanpa tajuk" }, fontWeight = FontWeight.Bold, maxLines = 2)
@@ -910,7 +928,7 @@ fun NotesScreen(
                                 Spacer(Modifier.height(12.dp))
                                 androidx.compose.foundation.text.BasicTextField(
                                     value = body,
-                                    // Plain native text editing avoids unstable transformed cursor offsets.
+                                    // Same-length transformation keeps IME cursor offsets stable.
                                     onValueChange = { next ->
                                         if (next.text != body.text) {
                                             undoStack.add(body)
@@ -919,6 +937,7 @@ fun NotesScreen(
                                         }
                                         body = next
                                     },
+                                    visualTransformation = remember { NoteFormattingTransformation() },
                                     modifier = Modifier.weight(1f).fillMaxWidth()
                                         .border(
                                             BorderStroke(1.dp, if (editorBackground == "dark") Color(0xFF4F7774) else Color(0xFFE0E7E6)),
@@ -951,6 +970,39 @@ fun NotesScreen(
                 }
             }
         }
+    }
+}
+
+/**
+ * Render Markdown emphasis directly while editing, without changing underlying
+ * storage or cursor offsets. Every source character has one transformed UTF-16
+ * character; formatting delimiters become invisible word-joiners.
+ * This avoids the offset-mapping crashes seen with shrinking transformations.
+ */
+private class NoteFormattingTransformation : VisualTransformation {
+    override fun filter(text: AnnotatedString): TransformedText {
+        val source = text.text
+        val chars = source.toCharArray()
+        val spans = mutableListOf<Triple<Int, Int, SpanStyle>>()
+        val regex = Regex("""\*\*(.+?)\*\*|(?<!_)_([^_\n]+)_(?!_)""")
+        regex.findAll(source).forEach { match ->
+            val bold = match.value.startsWith("**")
+            val markerLength = if (bold) 2 else 1
+            val start = match.range.first
+            val endExclusive = match.range.last + 1
+            repeat(markerLength) { i ->
+                chars[start + i] = '\u2060'
+                chars[endExclusive - markerLength + i] = '\u2060'
+            }
+            spans.add(Triple(start + markerLength, endExclusive - markerLength,
+                if (bold) SpanStyle(fontWeight = FontWeight.Bold)
+                else SpanStyle(fontStyle = FontStyle.Italic)))
+        }
+        val styled = buildAnnotatedString {
+            append(String(chars))
+            spans.forEach { (start, end, style) -> addStyle(style, start, end) }
+        }
+        return TransformedText(styled, OffsetMapping.Identity)
     }
 }
 
