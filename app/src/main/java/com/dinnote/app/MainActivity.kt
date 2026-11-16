@@ -1033,7 +1033,7 @@ fun NotesScreen(
                     Surface(
                         modifier = Modifier.fillMaxWidth().weight(1f).padding(start = 10.dp, end = 10.dp, top = 2.dp, bottom = 8.dp),
                         shape = RoundedCornerShape(10.dp),
-                        color = readingBackground(editorBackground)
+                        color = if (noteBackgroundImage != null) Color.Transparent else readingBackground(editorBackground)
                     ) {
                         Box(Modifier.fillMaxSize()) {
                             Column(
