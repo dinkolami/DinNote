@@ -115,6 +115,7 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
     var query by remember { mutableStateOf("") }
     var filter by remember { mutableStateOf("Semua") }
     var showSuggestions by remember { mutableStateOf(false) }
+    var categoryFilter by remember { mutableStateOf("Semua bidang") }
     var opened by remember { mutableStateOf<KitabItem?>(null) }
     var editing by remember { mutableStateOf<KitabItem?>(null) }
     var editorVisible by remember { mutableStateOf(false) }
@@ -301,13 +302,34 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
                     FilterChip(selected = filter == name, onClick = { filter = name }, label = { Text(name) })
                 }
             }
+            val availableCategories = listOf("Semua bidang") + books.map { it.category }
+                .filter { it.isNotBlank() }.distinct().sorted()
+            if (availableCategories.size > 1) {
+                androidx.compose.foundation.lazy.LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    items(availableCategories) { field ->
+                        FilterChip(
+                            selected = categoryFilter == field,
+                            onClick = { categoryFilter = field },
+                            label = { Text(field) }
+                        )
+                    }
+                }
+            }
             val results = books.filter { b ->
+                (categoryFilter == "Semua bidang" || b.category == categoryFilter) &&
                 (filter != "Kegemaran" || b.favorite) &&
                     (filter != "Penanda" || isBookmarked(b.id)) &&
                     (kitabMatches(b.title, query) || kitabMatches(b.author, query) ||
                         kitabMatches(b.category, query) || kitabMatches(b.content, query)) &&
                     (filter != "Kategori" || b.category.isNotBlank())
             }.let { if (ascending) it.sortedBy { b -> b.title } else it.sortedByDescending { b -> b.title } }
+            Text(
+                "${results.size} daripada ${books.size} kitab dipaparkan",
+                fontSize = 12.sp, color = Color(0xFF53736F),
+                modifier = Modifier.padding(vertical = 4.dp)
+            )
             LazyColumn {
                 items(results, key = { it.id }) { b ->
                     Surface(
