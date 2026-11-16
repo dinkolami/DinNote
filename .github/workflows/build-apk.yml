@@ -67,7 +67,7 @@ jobs:
           rm app/dinnote-debug.keystore
 
       - name: Build clean APK
-        run: gradle --no-build-cache clean assembleDebug -PdinnoteVersionCode=${{ github.run_number }} -PdinnoteVersionName=2.3.${{ github.run_number }} --stacktrace --console=plain
+        run: gradle --no-build-cache clean assembleDebug -PdinnoteVersionCode=${{ github.run_number }} -PdinnoteVersionName=2.4.${{ github.run_number }} --stacktrace --console=plain
 
       - name: Verify APK signing certificate
         run: |
