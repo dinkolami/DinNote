@@ -84,7 +84,7 @@ fun DinNoteApp() {
             when (selectedTab) {
                 0 -> HomeScreen(Modifier.padding(padding))
                 1 -> NotesScreen(Modifier.padding(padding))
-                2 -> LibraryScreen(Modifier.padding(padding))
+                2 -> LibraryScreen2(Modifier.padding(padding))
             }
         }
     }
