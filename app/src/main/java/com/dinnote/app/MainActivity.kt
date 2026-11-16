@@ -6,6 +6,8 @@ import androidx.activity.compose.setContent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -171,6 +173,17 @@ fun NotesScreen(modifier: Modifier = Modifier) {
     var body by remember { mutableStateOf("") }
     var selectedColor by remember { mutableStateOf("green") }
     var showArchived by remember { mutableStateOf(false) }
+    var selectedCategory by remember { mutableStateOf("Semua") }
+    var showAddCategory by remember { mutableStateOf(false) }
+    var newCategoryName by remember { mutableStateOf("") }
+    val builtInCategories = listOf("Agama", "Pengajian", "Peribadi", "Kerja", "Idea", "Lain-lain")
+    val customCategories = remember {
+        mutableStateListOf<String>().apply {
+            addAll(context.getSharedPreferences("dinnote_categories", android.content.Context.MODE_PRIVATE)
+                .getStringSet("custom", emptySet()).orEmpty().sorted())
+        }
+    }
+    val allCategories = builtInCategories + customCategories
 
     fun refreshNotes() {
         notes.clear()
@@ -208,8 +221,10 @@ fun NotesScreen(modifier: Modifier = Modifier) {
     LaunchedEffect(Unit) { refreshNotes() }
 
     val visibleNotes = notes.filter {
-        it.archived == showArchived && (it.title.contains(search, ignoreCase = true) ||
-            it.body.contains(search, ignoreCase = true))
+        it.archived == showArchived &&
+            (selectedCategory == "Semua" || it.category == selectedCategory) &&
+            (it.title.contains(search, ignoreCase = true) ||
+                it.body.contains(search, ignoreCase = true))
     }
 
     Column(
@@ -228,6 +243,7 @@ fun NotesScreen(modifier: Modifier = Modifier) {
                 title = ""
                 body = ""
                 selectedColor = "green"
+                selectedCategory = if (selectedCategory == "Semua") "Lain-lain" else selectedCategory
                 showEditor = true
                 }) { Text("+ Nota") }
             }
@@ -248,6 +264,20 @@ fun NotesScreen(modifier: Modifier = Modifier) {
         }
         backupMessage?.let {
             Text(it, color = MaterialTheme.colorScheme.primary, fontSize = 12.sp)
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(7.dp)
+        ) {
+            (listOf("Semua") + allCategories).forEach { category ->
+                FilterChip(
+                    selected = selectedCategory == category,
+                    onClick = { selectedCategory = category },
+                    label = { Text(category) }
+                )
+            }
+            AssistChip(onClick = { showAddCategory = true }, label = { Text("+ Kategori") })
         }
 
         OutlinedTextField(
@@ -276,6 +306,7 @@ fun NotesScreen(modifier: Modifier = Modifier) {
                                 title = item.title
                                 body = item.body
                                 selectedColor = item.colorTag
+                                selectedCategory = item.category
                                 showEditor = true
                             }.padding(14.dp),
                             verticalArrangement = Arrangement.spacedBy(6.dp)
@@ -285,9 +316,8 @@ fun NotesScreen(modifier: Modifier = Modifier) {
                                 fontWeight = FontWeight.Bold
                             )
                             Text(
-                                item.body,
-                                maxLines = 3
-                            )
+                                Text(item.category, color = MaterialTheme.colorScheme.primary, fontSize = 11.sp)
+                                Text(item.body, maxLines = 3)
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.End
@@ -309,6 +339,7 @@ fun NotesScreen(modifier: Modifier = Modifier) {
                                     title = item.title
                                     body = item.body
                                     selectedColor = item.colorTag
+                                    selectedCategory = item.category
                                     showEditor = true
                                 }) { Text("Edit") }
                             }
@@ -317,6 +348,37 @@ fun NotesScreen(modifier: Modifier = Modifier) {
                 }
             }
         }
+    }
+
+    if (showAddCategory) {
+        AlertDialog(
+            onDismissRequest = { showAddCategory = false; newCategoryName = "" },
+            title = { Text("Tambah kategori") },
+            text = {
+                OutlinedTextField(
+                    value = newCategoryName,
+                    onValueChange = { newCategoryName = it },
+                    label = { Text("Nama kategori") },
+                    singleLine = true
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    val name = newCategoryName.trim()
+                    if (name.isNotEmpty() && name !in builtInCategories && name !in customCategories) {
+                        customCategories.add(name)
+                        context.getSharedPreferences("dinnote_categories", android.content.Context.MODE_PRIVATE)
+                            .edit().putStringSet("custom", customCategories.toSet()).apply()
+                        selectedCategory = name
+                    }
+                    newCategoryName = ""
+                    showAddCategory = false
+                }) { Text("Tambah") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showAddCategory = false; newCategoryName = "" }) { Text("Batal") }
+            }
+        )
     }
 
     if (showEditor) {
@@ -332,6 +394,27 @@ fun NotesScreen(modifier: Modifier = Modifier) {
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
+                    var categoryMenuExpanded by remember { mutableStateOf(false) }
+                    Text("Kategori nota", fontWeight = FontWeight.SemiBold)
+                    Box {
+                        OutlinedButton(onClick = { categoryMenuExpanded = true }) {
+                            Text(selectedCategory)
+                        }
+                        DropdownMenu(
+                            expanded = categoryMenuExpanded,
+                            onDismissRequest = { categoryMenuExpanded = false }
+                        ) {
+                            allCategories.forEach { category ->
+                                DropdownMenuItem(
+                                    text = { Text(category) },
+                                    onClick = {
+                                        selectedCategory = category
+                                        categoryMenuExpanded = false
+                                    }
+                                )
+                            }
+                        }
+                    }
                     Text("Warna nota", fontWeight = FontWeight.SemiBold)
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -362,6 +445,7 @@ fun NotesScreen(modifier: Modifier = Modifier) {
                     if (title.isNotBlank() || body.isNotBlank()) {
                         val savedId = database.save(title.trim(), body, editingId)
                         database.setColor(savedId, selectedColor)
+                        database.setCategory(savedId, selectedCategory)
                         refreshNotes()
                         showEditor = false
                     }
