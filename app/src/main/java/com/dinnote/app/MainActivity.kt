@@ -785,28 +785,28 @@ fun NotesScreen(
                             }
                         }
                     } else {
-                    Surface(color = Color(0xFF00676B)) {
+                    Surface(color = Color.White) {
                         Row(
-                            Modifier.fillMaxWidth().height(52.dp).padding(horizontal = 5.dp),
+                            Modifier.fillMaxWidth().height(46.dp).padding(horizontal = 8.dp),
                             verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
                         ) {
                             TextButton(onClick = { persistNote(); showEditor = false }) {
-                                Text("←", color = Color.White, fontSize = 25.sp)
+                                Text("←", color = Color(0xFF087F83), fontSize = 23.sp)
                             }
                             Text(
-                                if (editingId == null) "✎  Catatan Baharu" else "✎  Edit Catatan",
+                                if (editingId == null) "Catatan Baharu" else "Edit Catatan",
                                 modifier = Modifier.weight(1f),
-                                color = Color.White, fontSize = 16.sp,
+                                color = Color(0xFF103B50), fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold, maxLines = 1
                             )
                             TextButton(enabled = undoStack.isNotEmpty(), onClick = {
                                 if (undoStack.isNotEmpty()) { redoStack.add(body); body = undoStack.removeAt(undoStack.lastIndex) }
-                            }) { Text("↶", color = Color.White, fontSize = 22.sp) }
+                            }) { Text("↶", color = if (undoStack.isNotEmpty()) Color(0xFF087F83) else Color.LightGray, fontSize = 21.sp) }
                             TextButton(enabled = redoStack.isNotEmpty(), onClick = {
                                 if (redoStack.isNotEmpty()) { undoStack.add(body); body = redoStack.removeAt(redoStack.lastIndex) }
-                            }) { Text("↷", color = Color.White, fontSize = 22.sp) }
+                            }) { Text("↷", color = if (redoStack.isNotEmpty()) Color(0xFF087F83) else Color.LightGray, fontSize = 21.sp) }
                             TextButton(onClick = { persistNote(); readingMode = true }) {
-                                Text("✓", color = Color(0xFFFFD56A), fontSize = 30.sp, fontWeight = FontWeight.Bold)
+                                Text("Simpan", color = Color(0xFF087F83), fontSize = 13.sp, fontWeight = FontWeight.Bold)
                             }
                         }
                     }
@@ -847,9 +847,9 @@ fun NotesScreen(
 
                     Surface(
                         modifier = Modifier.fillMaxWidth().weight(1f).padding(start = 10.dp, end = 10.dp, top = 2.dp, bottom = 8.dp),
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RoundedCornerShape(10.dp),
                         color = readingBackground(editorBackground),
-                        border = BorderStroke(1.dp, Color(0xFFD5DADD))
+                        border = BorderStroke(1.dp, Color(0xFFB7DCD7))
                     ) {
                         Box(Modifier.fillMaxSize()) {
                             Column(
