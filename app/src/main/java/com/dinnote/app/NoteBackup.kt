@@ -14,7 +14,8 @@ object NoteBackup {
     fun export(context: Context, uri: Uri, notes: List<DinNote>) {
         val root = JSONObject()
             .put("format", "DinNoteBackup")
-            .put("version", 1)
+            .put("version", 2)
+            .put("preferences", exportPreferences(context))
             .put("notes", JSONArray().apply {
                 notes.forEach { note ->
                     put(
@@ -43,7 +44,7 @@ object NoteBackup {
         require(root.optString("format") == "DinNoteBackup") {
             "Fail ini bukan sandaran DinNote."
         }
-        require(root.optInt("version", 0) in 1..1) {
+        require(root.optInt("version", 0) in 1..2) {
             "Versi sandaran ini tidak disokong."
         }
 
@@ -81,7 +82,55 @@ object NoteBackup {
             existing.add(signature)
             imported++
         }
+        if (root.optInt("version") >= 2) restorePreferences(context, root.optJSONObject("preferences"))
         return NoteImportResult(imported, skipped)
+    }
+
+    private val backupPreferenceFiles = listOf(
+        "dinnote_categories", "dinnote_library_edits", "dinnote_kitab_catalog", "dinnote_display"
+    )
+
+    private fun exportPreferences(context: Context): JSONObject = JSONObject().apply {
+        backupPreferenceFiles.forEach { name ->
+            val values = JSONObject()
+            context.getSharedPreferences(name, Context.MODE_PRIVATE).all.forEach { (key, value) ->
+                when (value) {
+                    is String -> values.put(key, JSONObject().put("type", "string").put("value", value))
+                    is Boolean -> values.put(key, JSONObject().put("type", "boolean").put("value", value))
+                    is Int -> values.put(key, JSONObject().put("type", "int").put("value", value))
+                    is Float -> values.put(key, JSONObject().put("type", "float").put("value", value.toDouble()))
+                    is Long -> values.put(key, JSONObject().put("type", "long").put("value", value))
+                    is Set<*> -> values.put(key, JSONObject().put("type", "strings")
+                        .put("value", JSONArray(value.filterIsInstance<String>())))
+                }
+            }
+            put(name, values)
+        }
+    }
+
+    private fun restorePreferences(context: Context, preferences: JSONObject?) {
+        if (preferences == null) return
+        backupPreferenceFiles.forEach { name ->
+            val values = preferences.optJSONObject(name) ?: return@forEach
+            val editor = context.getSharedPreferences(name, Context.MODE_PRIVATE).edit()
+            val keys = values.keys()
+            while (keys.hasNext()) {
+                val key = keys.next()
+                val entry = values.optJSONObject(key) ?: continue
+                when (entry.optString("type")) {
+                    "string" -> editor.putString(key, entry.optString("value"))
+                    "boolean" -> editor.putBoolean(key, entry.optBoolean("value"))
+                    "int" -> editor.putInt(key, entry.optInt("value"))
+                    "float" -> editor.putFloat(key, entry.optDouble("value").toFloat())
+                    "long" -> editor.putLong(key, entry.optLong("value"))
+                    "strings" -> {
+                        val array = entry.optJSONArray("value") ?: JSONArray()
+                        editor.putStringSet(key, (0 until array.length()).map { array.optString(it) }.toSet())
+                    }
+                }
+            }
+            editor.apply()
+        }
     }
 
     private fun noteSignature(
