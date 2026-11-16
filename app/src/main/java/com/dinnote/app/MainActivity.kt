@@ -888,13 +888,12 @@ fun NotesScreen(
                                     textStyle = androidx.compose.ui.text.TextStyle(
                                         fontSize = 18.sp,
                                         fontWeight = FontWeight.SemiBold,
-                                        fontStyle = FontStyle.Italic,
-                                        color = Color(0xFF087F83),
+                                        color = if (editorBackground == "dark") Color(0xFFB9E7E1) else Color(0xFF087F83),
                                         textDirection = TextDirection.ContentOrRtl
                                     ),
                                     decorationBox = { inner ->
                                         Box {
-                                            if (title.isEmpty()) Text("✎  Tajuk catatan", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF087F83))
+                                            if (title.isEmpty()) Text("Catatan Baharu", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF087F83))
                                             inner()
                                         }
                                     }
