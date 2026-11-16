@@ -151,6 +151,7 @@ fun DinNoteApp() {
                                 Surface(
                                     modifier = Modifier.weight(1f).fillMaxHeight().clickable {
                                         selectedTab = tab.third
+                                        if (tab.third == 1) openNewNote = false
                                     },
                                     shape = RoundedCornerShape(6.dp),
                                     color = if (active) Color(0xFFDDF4F2).copy(alpha = 0.92f)
@@ -184,7 +185,7 @@ fun DinNoteApp() {
             }
         ) { padding ->
             when (selectedTab) {
-                0 -> HomeScreen(Modifier.padding(padding), onOpenNotes = { openNewNote = true; selectedTab = 1 }, onOpenLibrary = { selectedTab = 2 }, onOpenSearch = { selectedTab = 3 }, onOpenSettings = { selectedTab = 4 })
+                0 -> HomeScreen(Modifier.padding(padding), onOpenNotes = { openNewNote = false; selectedTab = 1 }, onOpenLibrary = { selectedTab = 2 }, onOpenSearch = { selectedTab = 3 }, onOpenSettings = { selectedTab = 4 })
                 1 -> NotesScreen(Modifier.padding(padding), openNewNote = openNewNote, onNewNoteOpened = { openNewNote = false })
                 2 -> LibraryHubScreen(Modifier.padding(padding))
                 3 -> GlobalSearchScreen(Modifier.padding(padding))
