@@ -932,9 +932,13 @@ fun NotesScreen(
                 }
                 Column(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding()) {
                     if (readingMode) {
-                        Row(Modifier.fillMaxWidth().padding(12.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-                            TextButton(onClick = { showEditor = false }) { Text("← Kembali") }
-                            TextButton(onClick = { readingMode = false }) { Text("✎ Edit") }
+                        Row(
+                            Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 2.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                        ) {
+                            TextButton(onClick = { showEditor = false }, contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp)) { Text("← Kembali", fontSize = 13.sp) }
+                            TextButton(onClick = { readingMode = false }, contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp)) { Text("✎ Edit", fontSize = 13.sp) }
                         }
                         HorizontalDivider()
                         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 5.dp, vertical = 12.dp).combinedClickable(onClick = {}, onDoubleClick = { readingMode = false })) {
