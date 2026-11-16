@@ -49,4 +49,4 @@ jobs:
           retention-days: 30
           if-no-files-found: error
 
-# Build latest implemented editor — commit 15c66d0
+# Rebuild latest DinNote editor and Maktabah changes
