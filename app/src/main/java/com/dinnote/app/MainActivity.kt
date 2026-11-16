@@ -918,8 +918,8 @@ fun NotesScreen(
                                     modifier = Modifier.weight(1f).fillMaxWidth(),
                                     textStyle = androidx.compose.ui.text.TextStyle(
                                         fontSize = editorFontSize.sp,
-                                        color = Color(0xFF263B3E),
-                                        lineHeight = (editorFontSize * 1.5f).sp,
+                                        color = if (editorBackground == "dark") Color(0xFFF3F7F6) else Color(0xFF263B3E),
+                                        lineHeight = (editorFontSize * displayPrefs.getFloat("line_spacing", 1.6f).coerceIn(1.2f, 2.2f)).sp,
                                         textDirection = TextDirection.ContentOrRtl
                                     ),
                                     decorationBox = { inner ->
@@ -928,7 +928,7 @@ fun NotesScreen(
                                                 "✎  Tulis catatan anda di sini...",
                                                 fontSize = 16.sp,
                                                 fontStyle = FontStyle.Italic,
-                                                color = Color.Gray
+                                                color = if (editorBackground == "dark") Color(0xFFB8CECB) else Color(0xFF667A7B)
                                             )
                                             inner()
                                         }
