@@ -189,9 +189,14 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
                 mutableIntStateOf(prefs.getInt("reading_position_${item.id}", 0)
                     .coerceIn(0, (paragraphs.size - 1).coerceAtLeast(0)))
             }
-            LaunchedEffect(item.id) {
+            LaunchedEffect(item.id, paragraphs.size) {
                 if (paragraphs.isNotEmpty() && savedParagraph > 0) {
-                    readerListState.scrollToItem(savedParagraph)
+                    val safeParagraph = savedParagraph.coerceAtMost(paragraphs.lastIndex)
+                    if (safeParagraph != savedParagraph) {
+                        savedParagraph = safeParagraph
+                        prefs.edit().putInt("reading_position_${item.id}", safeParagraph).apply()
+                    }
+                    readerListState.scrollToItem(safeParagraph)
                 }
             }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
