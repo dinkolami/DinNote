@@ -72,6 +72,18 @@ jobs:
           echo "Building versionCode=$VERSION_CODE versionName=2.4.$GITHUB_RUN_NUMBER"
           gradle --no-build-cache clean assembleDebug -PdinnoteVersionCode="$VERSION_CODE" -PdinnoteVersionName="2.4.$GITHUB_RUN_NUMBER" --stacktrace --console=plain
 
+      - name: Verify packaged app identity and build version
+        run: |
+          APK=app/build/outputs/apk/debug/app-debug.apk
+          test -s "$APK"
+          EXPECTED_CODE=$((240000 + GITHUB_RUN_NUMBER))
+          EXPECTED_NAME="2.4.$GITHUB_RUN_NUMBER"
+          BADGING=$("$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$APK")
+          printf '%s\n' "$BADGING" | grep -F "package: name='com.dinnote.app'"
+          printf '%s\n' "$BADGING" | grep -F "versionCode='$EXPECTED_CODE'"
+          printf '%s\n' "$BADGING" | grep -F "versionName='$EXPECTED_NAME'"
+          echo "Verified APK package, versionCode and versionName for commit $GITHUB_SHA"
+
       - name: Verify APK signing certificate
         run: |
           APK=app/build/outputs/apk/debug/app-debug.apk
