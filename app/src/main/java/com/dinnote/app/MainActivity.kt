@@ -633,113 +633,117 @@ fun NotesScreen(
     }
 
     if (showEditor) {
-        AlertDialog(
-            onDismissRequest = { showEditor = false },
-            title = { Text(if (editingId == null) "Nota Baharu" else "Edit Nota") },
-            text = {
-                Column(
-                    modifier = Modifier.verticalScroll(rememberScrollState()),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    OutlinedTextField(
-                        value = title,
-                        onValueChange = { title = it },
-                        label = { Text("Tajuk nota") },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    var categoryMenuExpanded by remember { mutableStateOf(false) }
-                    Text("Kategori nota", fontWeight = FontWeight.SemiBold)
-                    Box {
-                        OutlinedButton(onClick = { categoryMenuExpanded = true }) {
-                            Text(selectedCategory)
-                        }
-                        DropdownMenu(
-                            expanded = categoryMenuExpanded,
-                            onDismissRequest = { categoryMenuExpanded = false }
-                        ) {
-                            allCategories.forEach { category ->
-                                DropdownMenuItem(
-                                    text = { Text(category) },
-                                    onClick = {
+        fun persistNote() {
+            if (title.isNotBlank() || body.text.isNotBlank()) {
+                val id = database.save(title.trim(), body.text, editingId)
+                editingId = id
+                database.setColor(id, selectedColor)
+                database.setCategory(id, selectedCategory)
+                refreshNotes()
+            }
+        }
+        LaunchedEffect(title, body.text, selectedCategory, selectedColor) {
+            kotlinx.coroutines.delay(650)
+            persistNote()
+        }
+        androidx.compose.ui.window.Dialog(
+            onDismissRequest = { persistNote(); showEditor = false },
+            properties = androidx.compose.ui.window.DialogProperties(
+                usePlatformDefaultWidth = false,
+                decorFitsSystemWindows = false
+            )
+        ) {
+            Surface(modifier = Modifier.fillMaxSize(), color = Color.White) {
+                Column(Modifier.fillMaxSize()) {
+                    Row(
+                        Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 10.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                    ) {
+                        TextButton(onClick = { persistNote(); showEditor = false }) { Text("✓", fontSize = 27.sp) }
+                        Text("DinNote", color = Color(0xFF168D91), fontWeight = FontWeight.SemiBold)
+                        TextButton(onClick = {
+                            persistNote()
+                            val intent = Intent(Intent.ACTION_SEND).apply {
+                                type = "text/plain"
+                                putExtra(Intent.EXTRA_TEXT, title + "\n\n" + body.text)
+                            }
+                            context.startActivity(Intent.createChooser(intent, "Kongsi nota"))
+                        }) { Text("↗", fontSize = 24.sp) }
+                    }
+                    HorizontalDivider(color = Color(0xFFF0F0F0))
+                    Row(
+                        Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                    ) {
+                        Text(
+                            java.text.SimpleDateFormat("dd/MM, h:mm a", java.util.Locale("ms", "MY"))
+                                .format(java.util.Date()),
+                            color = Color.Gray, fontSize = 13.sp
+                        )
+                        var categoryExpanded by remember { mutableStateOf(false) }
+                        Box {
+                            TextButton(onClick = { categoryExpanded = true }) {
+                                Text("▣  $selectedCategory  ▾", color = Color(0xFF536A70))
+                            }
+                            DropdownMenu(expanded = categoryExpanded, onDismissRequest = { categoryExpanded = false }) {
+                                allCategories.forEach { category ->
+                                    DropdownMenuItem(text = { Text(category) }, onClick = {
                                         selectedCategory = category
-                                        categoryMenuExpanded = false
-                                    }
-                                )
+                                        categoryExpanded = false
+                                    })
+                                }
                             }
                         }
                     }
-                    Text("Warna nota", fontWeight = FontWeight.SemiBold)
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        listOf("green", "yellow", "blue", "pink", "purple").forEach { tag ->
-                            Surface(
-                                modifier = Modifier.size(34.dp).clickable { selectedColor = tag },
-                                shape = MaterialTheme.shapes.small,
-                                color = noteColor(tag),
-                                border = if (selectedColor == tag)
-                                    androidx.compose.foundation.BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
-                                else null
-                            ) {}
+                    androidx.compose.foundation.text.BasicTextField(
+                        value = title,
+                        onValueChange = { title = it },
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 12.dp),
+                        singleLine = true,
+                        textStyle = androidx.compose.ui.text.TextStyle(fontSize = 28.sp, color = Color(0xFF263B3E)),
+                        decorationBox = { inner ->
+                            Box {
+                                if (title.isEmpty()) Text("Title", fontSize = 28.sp, color = Color.LightGray)
+                                inner()
+                            }
                         }
-                    }
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        OutlinedButton(onClick = {
-                            val start = body.selection.min
-                            val end = body.selection.max
-                            val selected = body.text.substring(start, end)
-                            val updated = body.text.replaceRange(start, end, "**$selected**")
-                            body = TextFieldValue(updated, selection = TextRange(start + 2, end + 2))
-                        }) { Text("B  Tebal") }
-                        OutlinedButton(onClick = {
-                            val start = body.selection.min
-                            val end = body.selection.max
-                            val selected = body.text.substring(start, end)
-                            val updated = body.text.replaceRange(start, end, "_${selected}_")
-                            body = TextFieldValue(updated, selection = TextRange(start + 1, end + 1))
-                        }) { Text("I  Condong") }
-                    }
-                    OutlinedTextField(
+                    )
+                    androidx.compose.foundation.text.BasicTextField(
                         value = body,
                         onValueChange = { body = it },
-                        label = { Text("Kandungan (Arab atau Rumi)") },
-                        minLines = 5,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.weight(1f).fillMaxWidth().padding(horizontal = 24.dp, vertical = 8.dp),
+                        textStyle = androidx.compose.ui.text.TextStyle(fontSize = 19.sp, color = Color(0xFF263B3E), lineHeight = 28.sp),
+                        decorationBox = { inner ->
+                            Box {
+                                if (body.text.isEmpty()) Text("Note here", fontSize = 19.sp, color = Color.LightGray)
+                                inner()
+                            }
+                        }
                     )
-                    val wordCount = body.text.trim().split(Regex("\\s+")).count { it.isNotBlank() }
-                    Text(
-                        "${body.text.length} aksara  •  $wordCount perkataan",
-                        modifier = Modifier.fillMaxWidth(),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontSize = 12.sp
-                    )
-                    Text(
-                        "Petua: Asingkan tajuk, petikan Arab, terjemahan dan rujukan pada baris berbeza supaya nota lebih kemas.",
-                        color = MaterialTheme.colorScheme.secondary,
-                        fontSize = 12.sp
-                    )
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = {
-                    if (title.isNotBlank() || body.text.isNotBlank()) {
-                        val savedId = database.save(title.trim(), body.text, editingId)
-                        database.setColor(savedId, selectedColor)
-                        database.setCategory(savedId, selectedCategory)
-                        refreshNotes()
-                        showEditor = false
+                    HorizontalDivider(color = Color(0xFFF0F0F0))
+                    Row(
+                        Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(10.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        val tools = listOf("Aa" to "", "☷" to "• ", "☰" to "1. ", "☑" to "☐ ", "✎" to "_", "B" to "**", "I" to "_")
+                        tools.forEach { (label, insertion) ->
+                            TextButton(onClick = {
+                                if (insertion.isNotEmpty()) {
+                                    val a = body.selection.min
+                                    val b = body.selection.max
+                                    val selected = body.text.substring(a, b)
+                                    val newText = if (insertion == "**" || insertion == "_") insertion + selected + insertion else insertion + selected
+                                    val result = body.text.replaceRange(a, b, newText)
+                                    body = TextFieldValue(result, selection = TextRange(a + newText.length))
+                                }
+                            }) { Text(label, color = Color(0xFF4F9BC9), fontSize = 21.sp) }
+                        }
                     }
-                }) { Text("Simpan") }
-            },
-            dismissButton = {
-                TextButton(onClick = { showEditor = false }) { Text("Batal") }
+                }
             }
-        )
+        }
     }
 }
 
