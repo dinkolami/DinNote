@@ -63,9 +63,9 @@ fun DinNoteApp() {
             topBar = {
                 TopAppBar(
                     title = {
-                        Column(verticalArrangement = Arrangement.spacedBy(1.dp)) {
-                            Text("DinNote", fontWeight = FontWeight.Bold)
-                            Text("دفتر العلم والذكر", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(7.dp)) {
+                            Text("📗", fontSize = 19.sp)
+                            Text("dinnote", fontWeight = FontWeight.Bold)
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
