@@ -803,7 +803,7 @@ fun NotesScreen(
                             TextButton(onClick = { readingMode = false }) { Text("✎ Edit") }
                         }
                         HorizontalDivider()
-                        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp)) {
+                        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp).combinedClickable(onClick = {}, onDoubleClick = { readingMode = false })) {
                             Text(title.ifBlank { "Tanpa tajuk" }, fontSize = 27.sp, fontWeight = FontWeight.Bold)
                             Spacer(Modifier.height(16.dp))
                             Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
