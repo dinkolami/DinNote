@@ -736,14 +736,14 @@ fun NotesScreen(
                             }
                         }
                     } else {
-                    Surface(color = Color.White) {
+                    Surface(color = Color(0xFF006E70)) {
                     Row(
                         Modifier.fillMaxWidth().height(48.dp).padding(horizontal = 8.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
                     ) {
                         TextButton(onClick = { persistNote(); showEditor = false }) { Text("←", color = Color(0xFF08747A), fontSize = 27.sp) }
-                        Text(if (editingId == null) "Nota Baharu" else "Edit Nota", modifier = Modifier.weight(1f), color = Color(0xFF08747A), fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
+                        Text(if (editingId == null) "Catatan Baharu" else "Edit Catatan", modifier = Modifier.weight(1f), color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
                         Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                             TextButton(enabled = undoStack.isNotEmpty(), onClick = {
                                 if (undoStack.isNotEmpty()) { redoStack.add(body); body = undoStack.removeAt(undoStack.lastIndex) }
@@ -790,7 +790,7 @@ fun NotesScreen(
                     }
                     HorizontalDivider(color = Color(0xFFF0F0F0))
                     Row(
-                        Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(10.dp),
+                        Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal = 8.dp, vertical = 6.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         val tools = listOf("Aa" to "**", "B" to "**", "I" to "_", "U" to "__", "S" to "~~", "A" to "**", "✎" to "✍ ", "☷" to "• ", "☰" to "1. ", "☑" to "☐ ", "▧" to "▧ ", "📎" to "📎 ")
@@ -805,37 +805,96 @@ fun NotesScreen(
                                     undoStack.add(body); redoStack.clear()
                                     body = TextFieldValue(result, selection = TextRange(a + newText.length))
                                 }
-                            }) { Text(label, color = Color(0xFF4F9BC9), fontSize = 21.sp) }
+                            }) { Text(label, color = Color(0xFF087F83), fontSize = 19.sp) }
                         }
                     }
-                    androidx.compose.foundation.text.BasicTextField(
-                        value = title,
-                        onValueChange = { title = it },
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 5.dp),
-                        singleLine = true,
-                        textStyle = androidx.compose.ui.text.TextStyle(fontSize = 28.sp, color = Color(0xFF263B3E)),
-                        decorationBox = { inner ->
-                            Box {
-                                if (title.isEmpty()) Text("Tajuk", fontSize = 28.sp, color = Color.LightGray)
-                                inner()
+
+                    Surface(
+                        modifier = Modifier.fillMaxWidth().weight(1f).padding(horizontal = 10.dp, vertical = 8.dp),
+                        shape = RoundedCornerShape(14.dp),
+                        color = Color.White,
+                        border = BorderStroke(1.5.dp, Color(0xFFC9A24A))
+                    ) {
+                        Box(Modifier.fillMaxSize()) {
+                            // Decorative mosque arcade stays behind the text, at the bottom.
+                            androidx.compose.foundation.Canvas(
+                                Modifier.fillMaxWidth().height(76.dp)
+                                    .align(androidx.compose.ui.Alignment.BottomCenter)
+                            ) {
+                                val w = size.width
+                                val h = size.height
+                                drawRect(Color(0xFFE8F6F5).copy(alpha = 0.55f))
+                                val stroke = androidx.compose.ui.graphics.drawscope.Stroke(width = 1.dp.toPx())
+                                for (i in 0..8) {
+                                    val cx = w * (i + 0.5f) / 9f
+                                    val half = w / 20f
+                                    val arch = androidx.compose.ui.graphics.Path().apply {
+                                        moveTo(cx - half, h)
+                                        lineTo(cx - half, h * 0.58f)
+                                        quadraticBezierTo(cx - half, h * 0.20f, cx, h * 0.10f)
+                                        quadraticBezierTo(cx + half, h * 0.20f, cx + half, h * 0.58f)
+                                        lineTo(cx + half, h)
+                                    }
+                                    drawPath(arch, Color(0xFF087F83).copy(alpha = 0.22f), style = stroke)
+                                }
+                            }
+                            Column(
+                                Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 14.dp)
+                            ) {
+                                androidx.compose.foundation.text.BasicTextField(
+                                    value = title,
+                                    onValueChange = { title = it },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    singleLine = true,
+                                    textStyle = androidx.compose.ui.text.TextStyle(
+                                        fontSize = 18.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        fontStyle = FontStyle.Italic,
+                                        color = Color(0xFF087F83),
+                                        textDirection = TextDirection.ContentOrRtl
+                                    ),
+                                    decorationBox = { inner ->
+                                        Box {
+                                            if (title.isEmpty()) Text("✒  Tajuk", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF087F83))
+                                            inner()
+                                        }
+                                    }
+                                )
+                                Spacer(Modifier.height(12.dp))
+                                HorizontalDivider(color = Color(0xFFD8B66A), thickness = 1.dp)
+                                Spacer(Modifier.height(12.dp))
+                                androidx.compose.foundation.text.BasicTextField(
+                                    value = body,
+                                    onValueChange = { next ->
+                                        if (next.text != body.text) {
+                                            undoStack.add(body)
+                                            if (undoStack.size > 60) undoStack.removeAt(0)
+                                            redoStack.clear()
+                                        }
+                                        body = next
+                                    },
+                                    modifier = Modifier.weight(1f).fillMaxWidth(),
+                                    textStyle = androidx.compose.ui.text.TextStyle(
+                                        fontSize = editorFontSize.sp,
+                                        color = Color(0xFF263B3E),
+                                        lineHeight = (editorFontSize * 1.5f).sp,
+                                        textDirection = TextDirection.ContentOrRtl
+                                    ),
+                                    decorationBox = { inner ->
+                                        Box {
+                                            if (body.text.isEmpty()) Text(
+                                                "✎  Tulis catatan anda di sini...",
+                                                fontSize = 16.sp,
+                                                fontStyle = FontStyle.Italic,
+                                                color = Color.Gray
+                                            )
+                                            inner()
+                                        }
+                                    }
+                                )
                             }
                         }
-                    )
-                    androidx.compose.foundation.text.BasicTextField(
-                        value = body,
-                        onValueChange = { next ->
-                            if (next.text != body.text) { undoStack.add(body); if (undoStack.size > 60) undoStack.removeAt(0); redoStack.clear() }
-                            body = next
-                        },
-                        modifier = Modifier.weight(1f).fillMaxWidth().padding(horizontal = 24.dp, vertical = 8.dp),
-                        textStyle = androidx.compose.ui.text.TextStyle(fontSize = editorFontSize.sp, color = Color(0xFF263B3E), lineHeight = (editorFontSize * 1.5f).sp, textDirection = TextDirection.ContentOrRtl),
-                        decorationBox = { inner ->
-                            Box {
-                                if (body.text.isEmpty()) Text("Tulis nota di sini", fontSize = 19.sp, color = Color.LightGray)
-                                inner()
-                            }
-                        }
-                    )
+                    }
 
                     }
                 }
