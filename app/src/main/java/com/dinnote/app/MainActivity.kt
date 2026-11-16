@@ -1255,7 +1255,7 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                         shape = RoundedCornerShape(10.dp), color = Color.White,
                         border = BorderStroke(1.dp, Color(0xFFB7DCD7))) {
                         Box(Modifier.fillMaxSize()) {
-                            UnifiedEditorMosqueFooter(Modifier.align(androidx.compose.ui.Alignment.BottomCenter))
+                            // Keep the writing surface unobstructed; decoration belongs to reading cards.
                             Column(Modifier.fillMaxSize().padding(horizontal = 18.dp, vertical = 16.dp)) {
                                 androidx.compose.foundation.text.BasicTextField(
                                     value = libraryTitle, onValueChange = { libraryTitle = it },
