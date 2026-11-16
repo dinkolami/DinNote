@@ -193,9 +193,14 @@ fun NotesScreen(modifier: Modifier = Modifier) {
     ) { uri ->
         if (uri != null) {
             backupMessage = runCatching {
-                val count = NoteBackup.import(context, uri, database)
+                val result = NoteBackup.import(context, uri, database)
                 refreshNotes()
-                "${count} nota berjaya dipulihkan."
+                buildString {
+                    append("${result.imported} nota dipulihkan.")
+                    if (result.skippedDuplicates > 0) {
+                        append(" ${result.skippedDuplicates} nota pendua sedia ada dilangkau.")
+                    }
+                }
             }.getOrElse { "Pemulihan gagal: ${it.message ?: "ralat"}" }
         }
     }
