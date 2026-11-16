@@ -185,7 +185,7 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
             }
             val readerListState = rememberLazyListState()
             val readerScope = rememberCoroutineScope()
-            var savedParagraph by remember(item.id) {
+            var savedParagraph by remember(item.id, paragraphs.size) {
                 mutableIntStateOf(prefs.getInt("reading_position_${item.id}", 0)
                     .coerceIn(0, (paragraphs.size - 1).coerceAtLeast(0)))
             }
@@ -204,7 +204,7 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
                 Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
                     TextButton(onClick = { readerScope.launch { readerListState.animateScrollToItem(savedParagraph) } },
                         enabled = paragraphs.isNotEmpty()) {
-                        Text("Sambung (${savedParagraph + 1})", fontSize = 12.sp)
+                        Text(if (paragraphs.isEmpty()) "Tiada perenggan" else "Sambung (${savedParagraph + 1})", fontSize = 12.sp)
                     }
                     if (savedParagraph > 0) {
                         TextButton(onClick = {
