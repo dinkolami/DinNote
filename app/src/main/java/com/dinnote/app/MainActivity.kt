@@ -3,6 +3,10 @@
 package com.dinnote.app
 
 import android.os.Bundle
+import android.net.Uri
+import android.graphics.BitmapFactory
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import android.content.Intent
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -435,6 +439,22 @@ fun NotesScreen(
     var body by remember { mutableStateOf(TextFieldValue("")) }
     var selectedColor by remember { mutableStateOf("green") }
     var editorBackground by remember { mutableStateOf(displayPrefs.getString("background", "white") ?: "white") }
+    var imageUri by remember { mutableStateOf(displayPrefs.getString("background_image_uri", "") ?: "") }
+    var imageOpacity by remember { mutableFloatStateOf(displayPrefs.getFloat("background_image_opacity", 0.18f)) }
+    val noteBackgroundImage = remember(imageUri) {
+        if (imageUri.isBlank()) null else runCatching {
+            context.contentResolver.openInputStream(Uri.parse(imageUri))?.use {
+                BitmapFactory.decodeStream(it)?.asImageBitmap()
+            }
+        }.getOrNull()
+    }
+    LaunchedEffect(showEditor) {
+        if (showEditor) {
+            editorBackground = displayPrefs.getString("background", "white") ?: "white"
+            imageUri = displayPrefs.getString("background_image_uri", "") ?: ""
+            imageOpacity = displayPrefs.getFloat("background_image_opacity", 0.18f)
+        }
+    }
     var editorFontSize by remember { mutableFloatStateOf(displayPrefs.getInt("font_size", 19).toFloat()) }
     var symbolMenu by remember { mutableStateOf(false) }
     var showArchived by remember { mutableStateOf(false) }
@@ -899,7 +919,16 @@ fun NotesScreen(
                 decorFitsSystemWindows = false
             )
         ) {
-            Surface(modifier = Modifier.fillMaxSize(), color = readingBackground(editorBackground)) {
+            Box(Modifier.fillMaxSize().background(readingBackground(editorBackground))) {
+                if (noteBackgroundImage != null) {
+                    androidx.compose.foundation.Image(
+                        bitmap = noteBackgroundImage,
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        alpha = imageOpacity.coerceIn(0.05f, 0.65f),
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
                 Column(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding()) {
                     if (readingMode) {
                         Row(Modifier.fillMaxWidth().padding(12.dp), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -1188,6 +1217,12 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
         editingLibraryKey?.let { key ->
             libraryPrefs.edit().putString(key + "_title", libraryTitle).putString(key + "_body", libraryBody.text).apply()
             libraryRevision++
+        }
+    }
+    LaunchedEffect(editingLibraryKey, libraryTitle, libraryBody.text) {
+        if (editingLibraryKey != null) {
+            kotlinx.coroutines.delay(700)
+            saveLibraryEditor()
         }
     }
     val libraryItems = remember(libraryRevision, selectedCategory) {
