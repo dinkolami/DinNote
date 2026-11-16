@@ -754,7 +754,7 @@ fun NotesScreen(
                             body = next
                         },
                         modifier = Modifier.weight(1f).fillMaxWidth().padding(horizontal = 24.dp, vertical = 8.dp),
-                        textStyle = androidx.compose.ui.text.TextStyle(fontSize = editorFontSize.sp, color = Color(0xFF263B3E), lineHeight = (editorFontSize * 1.5f).sp, textDirection = TextDirection.ContentOrLtr),
+                        textStyle = androidx.compose.ui.text.TextStyle(fontSize = editorFontSize.sp, color = Color(0xFF263B3E), lineHeight = (editorFontSize * 1.5f).sp, textDirection = TextDirection.ContentOrRtl),
                         decorationBox = { inner ->
                             Box {
                                 if (body.text.isEmpty()) Text("Tulis nota di sini", fontSize = 19.sp, color = Color.LightGray)
@@ -908,7 +908,7 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
 
         when (selectedCategory) {
             "Pelbagai" -> {
-                Text("الكلمات الطيبة", fontSize = 22.sp)
+                Text("الكلمات الطيبة", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Right, style = androidx.compose.ui.text.TextStyle(textDirection = TextDirection.Rtl), fontSize = 22.sp)
 
                 Text("${filteredEntries.size} kalimah tersedia", color = MaterialTheme.colorScheme.primary)
                 LazyColumn(
@@ -925,7 +925,7 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                                 verticalArrangement = Arrangement.spacedBy(7.dp)
                             ) {
                                 Text(entry.title, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                                Text(entry.arabic, modifier = Modifier.fillMaxWidth(), fontSize = 25.sp)
+                                Text(entry.arabic, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Right, style = androidx.compose.ui.text.TextStyle(textDirection = TextDirection.Rtl), fontSize = 25.sp)
                                 Text(entry.transliteration, fontWeight = FontWeight.Medium)
                                 Text(entry.meaning, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 Text("Tekan untuk maklumat lanjut", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
@@ -943,7 +943,7 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                     Card(Modifier.fillMaxWidth().clickable { openLibraryEditor(key) }) {
                         Column(Modifier.padding(16.dp)) {
                             Text(libraryPrefs.getString(key + "_title", "Tanpa tajuk") ?: "Tanpa tajuk", fontWeight = FontWeight.Bold)
-                            Text((libraryPrefs.getString(key + "_body", "") ?: "").take(130), maxLines = 3)
+                            Text((libraryPrefs.getString(key + "_body", "") ?: "").take(130), modifier = Modifier.fillMaxWidth(), style = androidx.compose.ui.text.TextStyle(textDirection = TextDirection.ContentOrLtr), maxLines = 3)
                         }
                     }
                 }
@@ -957,7 +957,7 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                     Card(Modifier.fillMaxWidth().clickable { openLibraryEditor(key) }) {
                         Column(Modifier.padding(16.dp)) {
                             Text(libraryPrefs.getString(key + "_title", "Tanpa tajuk") ?: "Tanpa tajuk", fontWeight = FontWeight.Bold)
-                            Text((libraryPrefs.getString(key + "_body", "") ?: "").take(130), maxLines = 3)
+                            Text((libraryPrefs.getString(key + "_body", "") ?: "").take(130), modifier = Modifier.fillMaxWidth(), style = androidx.compose.ui.text.TextStyle(textDirection = TextDirection.ContentOrLtr), maxLines = 3)
                         }
                     }
                 }
@@ -1009,7 +1009,7 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
             onDismissRequest = { saveLibraryEditor(); editingLibraryKey = null },
             properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)
         ) {
-            Surface(Modifier.fillMaxSize(), color = Color.White) {
+            Surface(Modifier.fillMaxSize().padding(6.dp), shape = RoundedCornerShape(18.dp), border = BorderStroke(1.dp, Color(0xFFCED4D8)), color = Color.White) {
                 Column(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding()) {
                     Row(Modifier.fillMaxWidth().height(48.dp).padding(horizontal = 8.dp),
                         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
