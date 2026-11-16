@@ -15,6 +15,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDirection
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.window.Dialog
 
 private data class DinLibraryItem(
@@ -160,7 +163,7 @@ fun LibraryScreen2(modifier: Modifier = Modifier) {
                             Text(entry.title, modifier = Modifier.weight(1f), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                             TextButton(onClick = { editing = entry }) { Text("✎ Edit") }
                         }
-                        Text(entry.arabic, fontSize = 23.sp)
+                        Text(entry.arabic, fontSize = 23.sp, textAlign = TextAlign.Right, modifier = Modifier.fillMaxWidth(), style = TextStyle(textDirection = TextDirection.ContentOrRtl))
                         if (entry.transliteration.isNotBlank()) Text(entry.transliteration, fontWeight = FontWeight.Medium)
                         if (entry.author.isNotBlank()) Text(entry.author, fontSize = 12.sp, color = MaterialTheme.colorScheme.secondary)
                         Text(entry.explanation, maxLines = 3, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -181,7 +184,7 @@ fun LibraryScreen2(modifier: Modifier = Modifier) {
                     }
                     Text(entry.title, fontSize = 23.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                     Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                        if (entry.arabic.isNotBlank()) Text(entry.arabic, fontSize = 28.sp, modifier = Modifier.fillMaxWidth())
+                        if (entry.arabic.isNotBlank()) Text(entry.arabic, fontSize = 28.sp, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Right, style = TextStyle(textDirection = TextDirection.ContentOrRtl))
                         if (entry.transliteration.isNotBlank()) Text(entry.transliteration, fontSize = 17.sp)
                         if (entry.author.isNotBlank()) Text(entry.author, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.secondary)
                         Text(entry.explanation, fontSize = 17.sp)
@@ -219,7 +222,7 @@ fun LibraryScreen2(modifier: Modifier = Modifier) {
                         }
                     }
                     OutlinedTextField(item.title, { updateItem(item.copy(title = it)) }, label = { Text("Tajuk") }, modifier = Modifier.fillMaxWidth())
-                    OutlinedTextField(item.arabic, { updateItem(item.copy(arabic = it)) }, label = { Text("Teks Arab") }, modifier = Modifier.fillMaxWidth(), minLines = 2)
+                    OutlinedTextField(item.arabic, { updateItem(item.copy(arabic = it)) }, label = { Text("Teks Arab") }, modifier = Modifier.fillMaxWidth(), minLines = 2, textStyle = TextStyle(textAlign = TextAlign.Right, textDirection = TextDirection.ContentOrRtl))
                     if (item.category == "Kalimah Tayyibah") {
                         OutlinedTextField(item.transliteration, { updateItem(item.copy(transliteration = it)) }, label = { Text("Bacaan Rumi") }, modifier = Modifier.fillMaxWidth())
                     }
