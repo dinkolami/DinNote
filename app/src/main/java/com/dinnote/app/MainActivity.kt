@@ -973,6 +973,17 @@ fun noteColor(tag: String): Color = when (tag) {
     else -> Color(0xFFE5F2E3)
 }
 
+private fun normalizeArabicSearch(value: String): String =
+    value.lowercase(java.util.Locale.ROOT)
+        .replace(Regex("[\\u064B-\\u065F\\u0670\\u0640]"), "")
+        .replace(Regex("[أإآٱ]"), "ا")
+        .replace('ى', 'ي')
+        .replace('ؤ', 'و')
+        .replace('ئ', 'ي')
+
+private fun matchesMaktabahSearch(value: String, query: String): Boolean =
+    normalizeArabicSearch(value).contains(normalizeArabicSearch(query.trim()))
+
 @Composable
 fun LibraryScreen(modifier: Modifier = Modifier) {
     var selectedCategory by remember { mutableStateOf("Pelbagai") }
@@ -987,7 +998,7 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
     var showAddCategory by remember { mutableStateOf(false) }
     var newCategoryName by remember { mutableStateOf("") }
     var categoryToRename by remember { mutableStateOf<String?>(null) }
-    val builtinLibraryCategories = listOf("Pelbagai", "Kitab-Kitab", "Kalam Hikmah")
+    val builtinLibraryCategories = listOf("Pelbagai", "Kitab-Kitab", "Fiqh Syafi‘i", "Usul Fiqh", "Hadis", "Tafsir", "Akidah", "Tasawuf", "Bahasa Arab", "Kalam Hikmah")
     val customLibraryCategories = remember(libraryRevision) {
         libraryPrefs.getString("custom_categories", "")!!.split("\\n").filter { it.isNotBlank() }
     }
@@ -1012,10 +1023,10 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
     }
 
     val filteredEntries = kalimahEntries.filter { entry ->
-        entry.title.contains(search, ignoreCase = true) ||
-            entry.transliteration.contains(search, ignoreCase = true) ||
-            entry.meaning.contains(search, ignoreCase = true) ||
-            entry.arabic.contains(search)
+        matchesMaktabahSearch(entry.title, search) ||
+            matchesMaktabahSearch(entry.transliteration, search) ||
+            matchesMaktabahSearch(entry.meaning, search) ||
+            matchesMaktabahSearch(entry.arabic, search)
     }
 
     Column(
@@ -1122,8 +1133,8 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                 Text("📚 Maktabah Kitab", fontSize = 20.sp, fontWeight = FontWeight.Bold)
 
                 Button(onClick = { openLibraryEditor("entry_Kitab-Kitab_" + System.currentTimeMillis()) }) { Text("+ Tambah Kitab") }
-                libraryItems.filter { (libraryPrefs.getString(it + "_title", "") ?: "").contains(search, true) ||
-                    (libraryPrefs.getString(it + "_body", "") ?: "").contains(search, true) }.forEach { key ->
+                libraryItems.filter { matchesMaktabahSearch(libraryPrefs.getString(it + "_title", "") ?: "", search) ||
+                    matchesMaktabahSearch(libraryPrefs.getString(it + "_body", "") ?: "", search) }.forEach { key ->
                     Card(modifier = Modifier.fillMaxWidth().clickable { openLibraryEditor(key) }, border = BorderStroke(1.dp, Color(0xFFB7DCD7)), shape = RoundedCornerShape(10.dp), colors = CardDefaults.cardColors(containerColor = Color.White)) {
                         Column(Modifier.padding(16.dp)) {
                             Text(libraryPrefs.getString(key + "_title", "Tanpa tajuk") ?: "Tanpa tajuk", fontWeight = FontWeight.Bold)
@@ -1137,8 +1148,8 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                 Text("✨ Kalam Hikmah", fontSize = 20.sp, fontWeight = FontWeight.Bold)
 
                 Button(onClick = { openLibraryEditor("entry_" + selectedCategory + "_" + System.currentTimeMillis()) }) { Text("+ Tambah Kandungan") }
-                libraryItems.filter { (libraryPrefs.getString(it + "_title", "") ?: "").contains(search, true) ||
-                    (libraryPrefs.getString(it + "_body", "") ?: "").contains(search, true) }.forEach { key ->
+                libraryItems.filter { matchesMaktabahSearch(libraryPrefs.getString(it + "_title", "") ?: "", search) ||
+                    matchesMaktabahSearch(libraryPrefs.getString(it + "_body", "") ?: "", search) }.forEach { key ->
                     Card(modifier = Modifier.fillMaxWidth().clickable { openLibraryEditor(key) }, border = BorderStroke(1.dp, Color(0xFFB7DCD7)), shape = RoundedCornerShape(10.dp), colors = CardDefaults.cardColors(containerColor = Color.White)) {
                         Column(Modifier.padding(16.dp)) {
                             Text(libraryPrefs.getString(key + "_title", "Tanpa tajuk") ?: "Tanpa tajuk", fontWeight = FontWeight.Bold)
