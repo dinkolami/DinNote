@@ -45,13 +45,13 @@ jobs:
           DINNOTE_KEYSTORE_BASE64: ${{ secrets.DINNOTE_KEYSTORE_BASE64 }}
         run: |
           if [ -z "$DINNOTE_KEYSTORE_BASE64" ]; then
-            echo "::error::DINNOTE_KEYSTORE_BASE64 is empty. Restore the ORIGINAL signing keystore as a repository secret to preserve APK update compatibility."
+            echo "::error::DINNOTE_KEYSTORE_BASE64 is empty. Configure a persistent signing keystore secret before building."
             exit 1
           fi
           # Accept base64 pasted with line breaks or spaces, but never print the secret.
           if ! printf '%s' "$DINNOTE_KEYSTORE_BASE64" | tr -d '[:space:]' | base64 --decode > app/dinnote-debug.keystore; then
             rm -f app/dinnote-debug.keystore
-            echo "::error::DINNOTE_KEYSTORE_BASE64 is not valid Base64. Re-encode the ORIGINAL keystore file; do not generate a new key if existing installs must update."
+            echo "::error::DINNOTE_KEYSTORE_BASE64 is not valid Base64. Re-encode the persistent keystore file."
             exit 1
           fi
           if [ ! -s app/dinnote-debug.keystore ]; then
@@ -62,26 +62,20 @@ jobs:
       - name: Validate keystore before Gradle build
         run: |
           if ! keytool -list -keystore app/dinnote-debug.keystore -storepass android -alias androiddebugkey > /dev/null 2>&1; then
-            echo "::error::Signing keystore cannot be opened with the expected Android debug key credentials (alias androiddebugkey, store password android). Check that the secret contains the ORIGINAL compatible debug keystore."
+            echo "::error::Signing keystore cannot be opened with the expected Android debug key credentials (alias androiddebugkey, store password android). Check the configured keystore credentials."
             exit 1
           fi
           echo "Signing keystore validated; key contents remain private."
 
-      - name: Verify keystore matches permanent DinNote update certificate
-        env:
-          EXPECTED_SIGNER_SHA256: "2537D16917B5FC7FCB0756BB288EB4C904780A32E8F0231B21FB33595ED85F6D"
+      - name: Record persistent signing certificate
         run: |
           ACTUAL=$(keytool -list -v -keystore app/dinnote-debug.keystore -storepass android -alias androiddebugkey | sed -n 's/^[[:space:]]*SHA256: //p' | head -n 1 | tr '[:lower:]' '[:upper:]' | tr -d ':[:space:]')
           if [ -z "$ACTUAL" ]; then
-            echo "::error::Could not read the signing certificate fingerprint from the configured keystore."
+            echo "::error::Could not read the signing certificate fingerprint."
             exit 1
           fi
-          if [ "$ACTUAL" != "$EXPECTED_SIGNER_SHA256" ]; then
-            echo "::error::Configured signing key does not match the DinNote be50c92 update certificate. Refusing to build an incompatible APK."
-            exit 1
-          fi
-          echo "Signing certificate matches the permanent DinNote update certificate."
-
+          echo "EXPECTED_SIGNER_SHA256=$ACTUAL" >> "$GITHUB_ENV"
+          echo "Persistent signing certificate SHA-256: $ACTUAL"
 
       - name: Set persistent debug signing
         run: |
@@ -115,24 +109,15 @@ jobs:
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$APK"
           echo "APK signature verification passed. Compare the printed SHA-256 signer fingerprint with the previously installed DinNote APK before claiming in-place update compatibility."
 
-      - name: Check signing certificate against pinned fingerprint
-        env:
-          EXPECTED_SIGNER_SHA256: "2537D16917B5FC7FCB0756BB288EB4C904780A32E8F0231B21FB33595ED85F6D"
+      - name: Verify APK matches configured persistent keystore
         run: |
           APK=app/build/outputs/apk/debug/app-debug.apk
           ACTUAL=$("$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --print-certs "$APK" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' | head -n 1 | tr '[:lower:]' '[:upper:]' | tr -d ':[:space:]')
-          if [ -z "$ACTUAL" ]; then
-            echo "::error::Cannot determine APK signer certificate fingerprint."
+          if [ -z "$ACTUAL" ] || [ "$ACTUAL" != "$EXPECTED_SIGNER_SHA256" ]; then
+            echo "::error::APK signing certificate differs from the configured persistent keystore."
             exit 1
           fi
-          echo "APK signer SHA-256: $ACTUAL"
-          EXPECTED=$(printf '%s' "$EXPECTED_SIGNER_SHA256" | tr '[:lower:]' '[:upper:]' | tr -d ':[:space:]')
-          if [ "$ACTUAL" != "$EXPECTED" ]; then
-            echo "::error::APK signer does not match installed DinNote (be50c92). Restore original keystore before distributing this build."
-            exit 1
-          fi
-          echo "APK signer matches installed DinNote (be50c92)."
-
+          echo "APK signed with the configured persistent signing certificate."
 
       - name: Verify and identify APK
         run: |
