@@ -384,8 +384,9 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
                     BasicTextField(
                         value = content, onValueChange = { content = it },
                         modifier = Modifier.fillMaxWidth().weight(1f)
-                            .padding(horizontal = 20.dp, vertical = 12.dp),
-                        textStyle = TextStyle(fontSize = 19.sp, lineHeight = 29.sp,
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        textStyle = TextStyle(fontSize = readerFontSize.sp,
+                            lineHeight = (readerFontSize * readerLineSpacing).sp,
                             color = Color(0xFF263B3E), textDirection = TextDirection.ContentOrRtl),
                         decorationBox = { inner ->
                             Box {
