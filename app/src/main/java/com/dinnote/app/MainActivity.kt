@@ -1276,7 +1276,9 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                                 Spacer(Modifier.height(12.dp))
                                 androidx.compose.foundation.text.BasicTextField(
                                     value = libraryBody, onValueChange = { libraryBody = it },
-                                    modifier = Modifier.weight(1f).fillMaxWidth(),
+                                    modifier = Modifier.weight(1f).fillMaxWidth()
+                                        .border(BorderStroke(1.dp, Color(0xFFE0E7E6)), RoundedCornerShape(10.dp))
+                                        .padding(horizontal = 14.dp, vertical = 12.dp),
                                     textStyle = androidx.compose.ui.text.TextStyle(fontSize = libraryFontSize.sp,
                                         lineHeight = (libraryFontSize * libraryDisplayPrefs.getFloat("line_spacing", 1.6f)).sp, color = Color(0xFF263B3E),
                                         textDirection = TextDirection.ContentOrRtl),
