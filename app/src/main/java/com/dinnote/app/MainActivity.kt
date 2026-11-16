@@ -708,9 +708,9 @@ fun NotesScreen(
                             }
                         }
                     } else {
-                    Surface(color = Color(0xFF006E70), shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp), border = BorderStroke(1.dp, Color(0xFFD5AD55))) {
+                    Surface(color = Color(0xFF006E70), shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp), border = BorderStroke(2.dp, Color(0xFFD5AD55))) {
                         Row(
-                            Modifier.fillMaxWidth().height(52.dp).padding(horizontal = 4.dp),
+                            Modifier.fillMaxWidth().height(58.dp).padding(horizontal = 5.dp),
                             verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
                         ) {
                             TextButton(onClick = { persistNote(); showEditor = false }) {
@@ -719,7 +719,7 @@ fun NotesScreen(
                             Text(
                                 if (editingId == null) "✎  Catatan Baharu" else "✎  Edit Catatan",
                                 modifier = Modifier.weight(1f),
-                                color = Color.White, fontSize = 15.sp,
+                                color = Color.White, fontSize = 19.sp,
                                 fontWeight = FontWeight.SemiBold, maxLines = 1
                             )
                             TextButton(enabled = undoStack.isNotEmpty(), onClick = {
@@ -729,7 +729,7 @@ fun NotesScreen(
                                 if (redoStack.isNotEmpty()) { undoStack.add(body); body = redoStack.removeAt(redoStack.lastIndex) }
                             }) { Text("↷", color = Color.White, fontSize = 22.sp) }
                             TextButton(onClick = { persistNote(); readingMode = true }) {
-                                Text("✓", color = Color(0xFFFFD56A), fontSize = 27.sp, fontWeight = FontWeight.Bold)
+                                Text("✓", color = Color(0xFFFFD56A), fontSize = 30.sp, fontWeight = FontWeight.Bold)
                             }
                         }
                     }
@@ -782,7 +782,7 @@ fun NotesScreen(
 
                     Surface(
                         modifier = Modifier.fillMaxWidth().weight(1f).padding(horizontal = 10.dp, vertical = 8.dp),
-                        shape = RoundedCornerShape(18.dp),
+                        shape = RoundedCornerShape(22.dp),
                         color = Color.White,
                         border = BorderStroke(2.dp, Color(0xFFD5AD55))
                     ) {
