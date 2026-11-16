@@ -19,6 +19,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -172,7 +178,7 @@ fun NotesScreen(modifier: Modifier = Modifier) {
     var showEditor by remember { mutableStateOf(false) }
     var editingId by remember { mutableStateOf<Long?>(null) }
     var title by remember { mutableStateOf("") }
-    var body by remember { mutableStateOf("") }
+    var body by remember { mutableStateOf(TextFieldValue("")) }
     var selectedColor by remember { mutableStateOf("green") }
     var showArchived by remember { mutableStateOf(false) }
     var selectedCategory by remember { mutableStateOf("Semua") }
@@ -256,7 +262,7 @@ fun NotesScreen(modifier: Modifier = Modifier) {
                 Button(onClick = {
                 editingId = null
                 title = ""
-                body = ""
+                body = TextFieldValue("")
                 selectedColor = "green"
                 selectedCategory = if (selectedCategory == "Semua") "Lain-lain" else selectedCategory
                 showEditor = true
@@ -322,7 +328,7 @@ fun NotesScreen(modifier: Modifier = Modifier) {
                             Modifier.fillMaxWidth().clickable {
                                 editingId = item.id
                                 title = item.title
-                                body = item.body
+                                body = TextFieldValue(item.body, selection = TextRange(item.body.length))
                                 selectedColor = item.colorTag
                                 selectedCategory = item.category
                                 showEditor = true
@@ -334,7 +340,7 @@ fun NotesScreen(modifier: Modifier = Modifier) {
                                 fontWeight = FontWeight.Bold
                             )
                             Text(item.category, color = MaterialTheme.colorScheme.primary, fontSize = 11.sp)
-                            Text(item.body, maxLines = 3)
+                            Text(formattedNoteText(item.body), maxLines = 3)
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.End
@@ -566,6 +572,25 @@ fun NotesScreen(modifier: Modifier = Modifier) {
                             ) {}
                         }
                     }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        OutlinedButton(onClick = {
+                            val start = body.selection.min
+                            val end = body.selection.max
+                            val selected = body.text.substring(start, end)
+                            val updated = body.text.replaceRange(start, end, "**$selected**")
+                            body = TextFieldValue(updated, selection = TextRange(start + 2, end + 2))
+                        }) { Text("B  Tebal") }
+                        OutlinedButton(onClick = {
+                            val start = body.selection.min
+                            val end = body.selection.max
+                            val selected = body.text.substring(start, end)
+                            val updated = body.text.replaceRange(start, end, "_$selected_")
+                            body = TextFieldValue(updated, selection = TextRange(start + 1, end + 1))
+                        }) { Text("I  Condong") }
+                    }
                     OutlinedTextField(
                         value = body,
                         onValueChange = { body = it },
@@ -573,9 +598,9 @@ fun NotesScreen(modifier: Modifier = Modifier) {
                         minLines = 5,
                         modifier = Modifier.fillMaxWidth()
                     )
-                    val wordCount = body.trim().split(Regex("\\s+")).count { it.isNotBlank() }
+                    val wordCount = body.text.trim().split(Regex("\\s+")).count { it.isNotBlank() }
                     Text(
-                        "${body.length} aksara  •  $wordCount perkataan",
+                        "${body.text.length} aksara  •  $wordCount perkataan",
                         modifier = Modifier.fillMaxWidth(),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 12.sp
@@ -589,8 +614,8 @@ fun NotesScreen(modifier: Modifier = Modifier) {
             },
             confirmButton = {
                 TextButton(onClick = {
-                    if (title.isNotBlank() || body.isNotBlank()) {
-                        val savedId = database.save(title.trim(), body, editingId)
+                    if (title.isNotBlank() || body.text.isNotBlank()) {
+                        val savedId = database.save(title.trim(), body.text, editingId)
                         database.setColor(savedId, selectedColor)
                         database.setCategory(savedId, selectedCategory)
                         refreshNotes()
@@ -605,6 +630,25 @@ fun NotesScreen(modifier: Modifier = Modifier) {
     }
 }
 
+fun formattedNoteText(source: String): AnnotatedString = buildAnnotatedString {
+    val pattern = Regex("""\*\*(.+?)\*\*|_(.+?)_""")
+    var cursor = 0
+    pattern.findAll(source).forEach { match ->
+        append(source.substring(cursor, match.range.first))
+        val boldText = match.groups[1]?.value
+        if (boldText != null) {
+            pushStyle(SpanStyle(fontWeight = FontWeight.Bold))
+            append(boldText)
+            pop()
+        } else {
+            pushStyle(SpanStyle(fontStyle = FontStyle.Italic))
+            append(match.groups[2]?.value.orEmpty())
+            pop()
+        }
+        cursor = match.range.last + 1
+    }
+    append(source.substring(cursor))
+}
 @Composable
 fun noteColor(tag: String): Color = when (tag) {
     "yellow" -> Color(0xFFFFF4CC)
