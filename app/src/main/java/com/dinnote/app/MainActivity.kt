@@ -936,9 +936,15 @@ fun NotesScreen(
                             TextButton(onClick = { readingMode = false }) { Text("✎ Edit") }
                         }
                         HorizontalDivider()
-                        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp).combinedClickable(onClick = {}, onDoubleClick = { readingMode = false })) {
-                            Text(title.ifBlank { "Tanpa tajuk" }, fontSize = 27.sp, fontWeight = FontWeight.Bold)
-                            Spacer(Modifier.height(16.dp))
+                        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 2.dp, vertical = 12.dp).combinedClickable(onClick = {}, onDoubleClick = { readingMode = false })) {
+                            Text(title.ifBlank { "Tanpa tajuk" }, fontSize = 23.sp, lineHeight = 28.sp, fontWeight = FontWeight.Bold)
+                            Spacer(Modifier.height(10.dp))
+                            Row(Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                                HorizontalDivider(Modifier.weight(1f), thickness = 1.dp, color = Color(0xFF008F93))
+                                Text(" ۞ ", fontSize = 19.sp, color = Color(0xFF008F93))
+                                HorizontalDivider(Modifier.weight(1f), thickness = 1.dp, color = Color(0xFF008F93))
+                            }
+                            Spacer(Modifier.height(12.dp))
                             Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
                                 body.text.split("\n").forEach { line ->
                                     val arabic = line.any { it in '\u0600'..'\u06FF' }
