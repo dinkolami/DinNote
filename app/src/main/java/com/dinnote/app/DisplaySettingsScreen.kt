@@ -1,6 +1,12 @@
 package com.dinnote.app
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import androidx.compose.foundation.Image
+import androidx.compose.ui.graphics.asImageBitmap
+import android.graphics.BitmapFactory
+import androidx.compose.ui.layout.ContentScale
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -59,6 +65,15 @@ fun DisplaySettingsScreen(modifier: Modifier = Modifier) {
                 val result = NoteBackup.import(context, uri, noteDatabase)
                 "${result.imported} nota dipulihkan; ${result.skippedDuplicates} pendua dilangkau."
             }.getOrElse { "Gagal memulihkan data: ${it.message}" }
+        }
+    }
+    var imageUri by remember { mutableStateOf(prefs.getString("background_image_uri", "") ?: "") }
+    var imageOpacity by remember { mutableFloatStateOf(prefs.getFloat("background_image_opacity", 0.18f)) }
+    val imagePicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) {
+            runCatching { context.contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION) }
+            imageUri = uri.toString()
+            settingsStatus = "Gambar dipilih. Tekan Simpan Tetapan."
         }
     }
     var background by remember { mutableStateOf(prefs.getString("background", "white") ?: "white") }
@@ -128,6 +143,33 @@ fun DisplaySettingsScreen(modifier: Modifier = Modifier) {
                     }
                 }
                 if (pair.size == 1) Spacer(Modifier.weight(1f))
+            }
+        }
+        HorizontalDivider(color = Color(0xFFE1E3E5))
+        Text("Gambar Latar Belakang", fontWeight = FontWeight.Bold)
+        Text("Pilih gambar daripada galeri telefon. Gambar disimpan sebagai pilihan paparan.", fontSize = 12.sp)
+        OutlinedButton(onClick = { imagePicker.launch(arrayOf("image/*")) }, modifier = Modifier.fillMaxWidth()) {
+            Text("Pilih gambar daripada galeri")
+        }
+        if (imageUri.isNotBlank()) {
+            OutlinedButton(onClick = { imageUri = ""; settingsStatus = "Perubahan belum disimpan" }) {
+                Text("Buang gambar latar")
+            }
+            Text("Kelegapan gambar: ${(imageOpacity * 100).toInt()}%", fontSize = 13.sp)
+            Slider(value = imageOpacity, onValueChange = { imageOpacity = it; settingsStatus = "Perubahan belum disimpan" }, valueRange = 0.05f..0.65f)
+            val bitmap = remember(imageUri) {
+                runCatching {
+                    context.contentResolver.openInputStream(Uri.parse(imageUri))?.use {
+                        BitmapFactory.decodeStream(it)?.asImageBitmap()
+                    }
+                }.getOrNull()
+            }
+            if (bitmap != null) {
+                Box(Modifier.fillMaxWidth().height(110.dp)) {
+                    Image(bitmap = bitmap, contentDescription = "Pratonton gambar latar", contentScale = ContentScale.Crop, alpha = imageOpacity, modifier = Modifier.fillMaxSize())
+                }
+            } else {
+                Text("Gambar tidak dapat dibaca. Sila pilih semula.", fontSize = 12.sp, color = Color.Red)
             }
         }
         Text("Border item terpilih", fontWeight = FontWeight.Bold)
@@ -223,6 +265,8 @@ fun DisplaySettingsScreen(modifier: Modifier = Modifier) {
             onClick = {
                 val saved = prefs.edit()
                     .putString("background", background)
+                    .putString("background_image_uri", imageUri)
+                    .putFloat("background_image_opacity", imageOpacity)
                     .putInt("font_size", fontSize.toInt())
                     .putFloat("line_spacing", spacing)
                     .putBoolean("full_screen", fullScreen)
