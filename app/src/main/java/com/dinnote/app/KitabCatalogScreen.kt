@@ -3,6 +3,9 @@ package com.dinnote.app
 import android.content.Context
 import org.json.JSONArray
 import org.json.JSONObject
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -100,7 +103,13 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
             }.let { if (ascending) it.sortedBy { b -> b.title } else it.sortedByDescending { b -> b.title } }
             LazyColumn {
                 items(results, key = { it.id }) { b ->
-                    Column(Modifier.fillMaxWidth().clickable { opened = b }.padding(vertical = 15.dp)) {
+                    Surface(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
+                        shape = RoundedCornerShape(18.dp),
+                        color = Color.White,
+                        border = BorderStroke(1.dp, Color(0xFFE1E3E5))
+                    ) {
+                    Column(Modifier.fillMaxWidth().clickable { opened = b }.padding(16.dp)) {
                         Text(b.title, fontSize = 23.sp, textAlign = TextAlign.Right,
                             modifier = Modifier.fillMaxWidth(), fontWeight = FontWeight.Medium)
                         Spacer(Modifier.height(5.dp))
@@ -115,7 +124,7 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
                             TextButton(onClick = { opened = b }) { Text("Baca penuh") }
                         }
                     }
-                    HorizontalDivider()
+                    }
                 }
             }
         }
