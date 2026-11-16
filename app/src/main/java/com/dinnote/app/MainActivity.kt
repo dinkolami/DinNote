@@ -1154,44 +1154,68 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
             onDismissRequest = { saveLibraryEditor(); editingLibraryKey = null },
             properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)
         ) {
-            Surface(Modifier.fillMaxSize().padding(6.dp), shape = RoundedCornerShape(18.dp), border = BorderStroke(2.dp, Color(0xFFD5AD55)), color = Color.White) {
+            Surface(Modifier.fillMaxSize().padding(2.dp), shape = RoundedCornerShape(12.dp),
+                border = BorderStroke(1.dp, Color(0xFF0C9699)), color = Color.White) {
                 Column(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding()) {
-                    UnifiedEditorHeading("Catatan Maktabah", onBack = { saveLibraryEditor(); editingLibraryKey = null }, onSave = { saveLibraryEditor(); editingLibraryKey = null })
-                    HorizontalDivider(color = Color(0xFFD8B66A))
-                    Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(5.dp)) {
-                        listOf("B" to "**", "I" to "_", "U" to "__", "S" to "~~", "•" to "• ", "1." to "1. ", "☑" to "☐ ").forEach { (label, marker) ->
+                    UnifiedEditorHeading("Catatan Maktabah",
+                        onBack = { saveLibraryEditor(); editingLibraryKey = null },
+                        onSave = { saveLibraryEditor(); editingLibraryKey = null })
+                    Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal = 8.dp, vertical = 5.dp),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        listOf("B" to "**", "I" to "_", "U" to "__", "S" to "~~",
+                            "•" to "• ", "1." to "1. ", "☑" to "☐ ", "✎" to "✍ ").forEach { (label, marker) ->
                             TextButton(onClick = {
                                 val a = libraryBody.selection.min
                                 val b = libraryBody.selection.max
                                 val selected = libraryBody.text.substring(a, b)
-                                val insertion = if (marker in listOf("**", "_", "__", "~~")) marker + selected + marker else marker + selected
+                                val insertion = if (marker in listOf("**", "_", "__", "~~"))
+                                    marker + selected + marker else marker + selected
                                 libraryBody = TextFieldValue(libraryBody.text.replaceRange(a, b, insertion),
                                     selection = TextRange(a + insertion.length))
-                            }) { Text(label) }
+                            }) { Text(label, color = Color(0xFF087F83), fontSize = 17.sp) }
                         }
                     }
                     Surface(Modifier.fillMaxWidth().weight(1f).padding(horizontal = 10.dp, vertical = 8.dp),
-                        shape = RoundedCornerShape(18.dp), color = Color.White,
-                        border = BorderStroke(2.dp, Color(0xFFD5AD55))) {
-                      Box(Modifier.fillMaxSize()) {
-                        UnifiedEditorMosqueFooter(Modifier.align(androidx.compose.ui.Alignment.BottomCenter))
-                        Column(Modifier.fillMaxSize().padding(horizontal = 8.dp, vertical = 6.dp)) {
-                    androidx.compose.foundation.text.BasicTextField(
-                        value = libraryTitle, onValueChange = { libraryTitle = it },
-                        modifier = Modifier.fillMaxWidth().padding(16.dp),
-                        singleLine = true,
-                        textStyle = androidx.compose.ui.text.TextStyle(fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF087F83), textDirection = TextDirection.ContentOrRtl),
-                        decorationBox = { inner -> Box { if (libraryTitle.isEmpty()) Text("🪶  Tajuk", color = Color(0xFF087F83), fontSize = 18.sp); inner() } }
-                    )
-                    UnifiedEditorDivider()
-                    androidx.compose.foundation.text.BasicTextField(
-                        value = libraryBody, onValueChange = { libraryBody = it },
-                        modifier = Modifier.weight(1f).fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
-                        textStyle = androidx.compose.ui.text.TextStyle(fontSize = 16.sp, lineHeight = 26.sp, color = Color(0xFF263B3E), textDirection = TextDirection.ContentOrRtl),
-                        decorationBox = { inner -> Box { if (libraryBody.text.isEmpty()) Text("✎  Tulis catatan anda di sini...", color = Color.Gray); inner() } }
-                    )
+                        shape = RoundedCornerShape(12.dp), color = Color.White,
+                        border = BorderStroke(1.dp, Color(0xFF0C9699))) {
+                        Box(Modifier.fillMaxSize()) {
+                            UnifiedEditorMosqueFooter(Modifier.align(androidx.compose.ui.Alignment.BottomCenter))
+                            Column(Modifier.fillMaxSize().padding(horizontal = 18.dp, vertical = 16.dp)) {
+                                androidx.compose.foundation.text.BasicTextField(
+                                    value = libraryTitle, onValueChange = { libraryTitle = it },
+                                    modifier = Modifier.fillMaxWidth(), singleLine = true,
+                                    textStyle = androidx.compose.ui.text.TextStyle(fontSize = 18.sp,
+                                        fontWeight = FontWeight.SemiBold, color = Color(0xFF087F83),
+                                        textDirection = TextDirection.ContentOrRtl),
+                                    decorationBox = { inner ->
+                                        Box {
+                                            if (libraryTitle.isEmpty()) Text("✎  Tajuk catatan",
+                                                color = Color(0xFF087F83), fontSize = 18.sp)
+                                            inner()
+                                        }
+                                    }
+                                )
+                                Spacer(Modifier.height(12.dp))
+                                UnifiedEditorDivider()
+                                Spacer(Modifier.height(12.dp))
+                                androidx.compose.foundation.text.BasicTextField(
+                                    value = libraryBody, onValueChange = { libraryBody = it },
+                                    modifier = Modifier.weight(1f).fillMaxWidth(),
+                                    textStyle = androidx.compose.ui.text.TextStyle(fontSize = 16.sp,
+                                        lineHeight = 24.sp, color = Color(0xFF263B3E),
+                                        textDirection = TextDirection.ContentOrRtl),
+                                    decorationBox = { inner ->
+                                        Box {
+                                            if (libraryBody.text.isEmpty()) Text(
+                                                "✎  Tulis catatan anda di sini...",
+                                                color = Color.Gray, fontSize = 16.sp)
+                                            inner()
+                                        }
+                                    }
+                                )
+                                Spacer(Modifier.height(64.dp))
+                            }
                         }
-                      }
                     }
                 }
             }
