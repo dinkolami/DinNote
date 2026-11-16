@@ -94,7 +94,7 @@ fun DinNoteApp() {
             }
         ) { padding ->
             when (selectedTab) {
-                0 -> HomeScreen(Modifier.padding(padding))
+                0 -> HomeScreen(Modifier.padding(padding), onOpenNotes = { selectedTab = 1 }, onOpenLibrary = { selectedTab = 2 })
                 1 -> NotesScreen(Modifier.padding(padding))
                 2 -> LibraryScreen2(Modifier.padding(padding))
             }
@@ -103,64 +103,117 @@ fun DinNoteApp() {
 }
 
 @Composable
-fun HomeScreen(modifier: Modifier = Modifier) {
+fun HomeScreen(
+    modifier: Modifier = Modifier,
+    onOpenNotes: () -> Unit,
+    onOpenLibrary: () -> Unit
+) {
     Column(
-        modifier = modifier.fillMaxSize().padding(18.dp),
+        modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(18.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Card(
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
-            shape = MaterialTheme.shapes.extraLarge
+            shape = MaterialTheme.shapes.extraLarge,
+            colors = CardDefaults.cardColors(containerColor = Color(0xFF124C3B))
         ) {
             Column(
                 Modifier.fillMaxWidth().padding(22.dp),
-                verticalArrangement = Arrangement.spacedBy(9.dp)
+                verticalArrangement = Arrangement.spacedBy(11.dp)
             ) {
-                Text("بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ", color = Color(0xFFF3E6C8), fontSize = 20.sp)
-                Text("Assalamualaikum", color = Color.White, fontSize = 25.sp, fontWeight = FontWeight.Bold)
+                Text("دَفْتَرُ الْعِلْمِ وَالذِّكْرِ", color = Color(0xFFE8D8AE), fontSize = 17.sp)
+                Text("Assalamualaikum", color = Color.White, fontSize = 27.sp, fontWeight = FontWeight.Bold)
                 Text(
-                    "Ruang mencatat, mengingati dan menghimpunkan ilmu.",
-                    color = Color(0xFFE4EFE8),
+                    "Selamat datang ke ruang ilmu dan catatan anda.",
+                    color = Color(0xFFE1EEE7),
                     fontSize = 14.sp
                 )
-                Text("دَفْتَرُ الْعِلْمِ وَالذِّكْرِ", color = Color(0xFFF3E6C8), fontSize = 17.sp)
-            }
-        }
-        Text(
-            "Ruang DinNote",
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary
-        )
-        Card(
-            Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            shape = MaterialTheme.shapes.large
-        ) {
-            Row(Modifier.fillMaxWidth().padding(18.dp), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-                Text("✎", fontSize = 27.sp, color = MaterialTheme.colorScheme.primary)
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text("Nota Peribadi", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                    Text("Catat idea, susun tugasan dan simpan nota penting.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Spacer(Modifier.height(2.dp))
+                Surface(
+                    color = Color(0xFF286653),
+                    shape = MaterialTheme.shapes.large,
+                    modifier = Modifier.fillMaxWidth().clickable(onClick = onOpenNotes)
+                ) {
+                    Row(
+                        Modifier.padding(horizontal = 16.dp, vertical = 13.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text("＋  Tulis nota baharu", color = Color.White, fontWeight = FontWeight.SemiBold)
+                        Text("→", color = Color(0xFFE8D8AE), fontSize = 18.sp)
+                    }
                 }
             }
         }
+
+        Text("Ruang anda", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Card(
+                Modifier.weight(1f).clickable(onClick = onOpenNotes),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFE5F0E7)),
+                shape = MaterialTheme.shapes.large
+            ) {
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("✎", fontSize = 27.sp, color = Color(0xFF145A45))
+                    Text("Nota Peribadi", fontWeight = FontWeight.Bold, color = Color(0xFF173F32))
+                    Text("Idea, tugasan dan catatan harian", fontSize = 12.sp, color = Color(0xFF53685D))
+                    Text("Buka nota  →", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF145A45))
+                }
+            }
+            Card(
+                Modifier.weight(1f).clickable(onClick = onOpenLibrary),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFF2EAD9)),
+                shape = MaterialTheme.shapes.large
+            ) {
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("۞", fontSize = 27.sp, color = Color(0xFF8B6938))
+                    Text("Perpustakaan", fontWeight = FontWeight.Bold, color = Color(0xFF493719))
+                    Text("Zikir, kitab dan kata hikmah", fontSize = 12.sp, color = Color(0xFF756344))
+                    Text("Teroka ilmu  →", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF8B6938))
+                }
+            }
+        }
+
+        Text("Koleksi dalam DinNote", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
         Card(
-            Modifier.fillMaxWidth(),
+            Modifier.fillMaxWidth().clickable(onClick = onOpenLibrary),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
             shape = MaterialTheme.shapes.large
         ) {
-            Row(Modifier.fillMaxWidth().padding(18.dp), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-                Text("۞", fontSize = 27.sp, color = MaterialTheme.colorScheme.secondary)
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text("Perpustakaan Ilmu", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                    Text("Kalimah Tayyibah, kitab-kitab dan Kalam Hikmah.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Column(Modifier.fillMaxWidth().padding(17.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                    Text("☾", fontSize = 23.sp, color = MaterialTheme.colorScheme.secondary)
+                    Spacer(Modifier.width(12.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text("Kalimah Tayyibah", fontWeight = FontWeight.Bold)
+                        Text("Zikir dan ungkapan yang baik", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    Text("›", fontSize = 24.sp, color = MaterialTheme.colorScheme.secondary)
+                }
+                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.45f))
+                Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                    Text("📚", fontSize = 22.sp)
+                    Spacer(Modifier.width(12.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text("Kitab-Kitab", fontWeight = FontWeight.Bold)
+                        Text("Petikan Arab, syarah dan nota pengajian", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    Text("›", fontSize = 24.sp, color = MaterialTheme.colorScheme.secondary)
+                }
+                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.45f))
+                Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                    Text("✧", fontSize = 25.sp, color = MaterialTheme.colorScheme.secondary)
+                    Spacer(Modifier.width(12.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text("Kalam Hikmah", fontWeight = FontWeight.Bold)
+                        Text("Nasihat ulama dan peringatan", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    Text("›", fontSize = 24.sp, color = MaterialTheme.colorScheme.secondary)
                 }
             }
         }
         Text(
-            "Ilmu yang dicatat, mudah-mudahan menjadi manfaat.",
+            "“Ilmu yang dicatat, mudah-mudahan menjadi manfaat.”",
+            modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp),
             color = MaterialTheme.colorScheme.secondary,
             fontSize = 13.sp
         )
