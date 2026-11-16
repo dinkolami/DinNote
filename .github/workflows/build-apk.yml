@@ -59,6 +59,14 @@ jobs:
             exit 1
           fi
 
+      - name: Validate keystore before Gradle build
+        run: |
+          if ! keytool -list -keystore app/dinnote-debug.keystore -storepass android -alias androiddebugkey > /dev/null 2>&1; then
+            echo "::error::Signing keystore cannot be opened with the expected Android debug key credentials (alias androiddebugkey, store password android). Check that the secret contains the ORIGINAL compatible debug keystore."
+            exit 1
+          fi
+          echo "Signing keystore validated; key contents remain private."
+
       - name: Set persistent debug signing
         run: |
           mkdir -p "$HOME/.android"
