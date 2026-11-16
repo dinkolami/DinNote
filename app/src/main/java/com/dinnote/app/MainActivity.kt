@@ -62,6 +62,7 @@ class MainActivity : ComponentActivity() {
 fun DinNoteApp() {
     var selectedTab by remember { mutableIntStateOf(0) }
     var openNewNote by remember { mutableStateOf(false) }
+    var openPinnedNoteId by remember { mutableStateOf<Long?>(null) }
     val appContext = LocalContext.current
     val installedVersion = remember {
         try {
@@ -185,8 +186,8 @@ fun DinNoteApp() {
             }
         ) { padding ->
             when (selectedTab) {
-                0 -> HomeScreen(Modifier.padding(padding), onOpenNotes = { openNewNote = false; selectedTab = 1 }, onOpenLibrary = { selectedTab = 2 }, onOpenSearch = { selectedTab = 3 }, onOpenSettings = { selectedTab = 4 })
-                1 -> NotesScreen(Modifier.padding(padding), openNewNote = openNewNote, onNewNoteOpened = { openNewNote = false })
+                0 -> HomeScreen(Modifier.padding(padding), onOpenNotes = { openNewNote = false; selectedTab = 1 }, onOpenPinnedNote = { id -> openPinnedNoteId = id; selectedTab = 1 }, onOpenLibrary = { selectedTab = 2 }, onOpenSearch = { selectedTab = 3 }, onOpenSettings = { selectedTab = 4 })
+                1 -> NotesScreen(Modifier.padding(padding), openNewNote = openNewNote, onNewNoteOpened = { openNewNote = false }, openNoteId = openPinnedNoteId, onNoteOpened = { openPinnedNoteId = null })
                 2 -> LibraryHubScreen(Modifier.padding(padding))
                 3 -> GlobalSearchScreen(Modifier.padding(padding))
                 4 -> DisplaySettingsScreen(Modifier.padding(padding))
@@ -326,10 +327,15 @@ private fun IslamicGeometricBackground(modifier: Modifier = Modifier) {
 fun HomeScreen(
     modifier: Modifier = Modifier,
     onOpenNotes: () -> Unit,
+    onOpenPinnedNote: (Long) -> Unit,
     onOpenLibrary: () -> Unit,
     onOpenSearch: () -> Unit,
     onOpenSettings: () -> Unit
 ) {
+    val context = LocalContext.current
+    val pinnedNotes = remember { mutableStateListOf<DinNote>() }
+    val pinnedDatabase = remember { NoteDatabase(context).also { it.migrateOldSingleNote(context) } }
+    LaunchedEffect(Unit) { pinnedNotes.clear(); pinnedNotes.addAll(pinnedDatabase.allNotes().filter { it.pinned && !it.archived }.sortedByDescending { it.updatedAt }) }
     Box(modifier = modifier.fillMaxSize()) {
         IslamicGeometricBackground(Modifier.matchParentSize())
     Column(
@@ -345,6 +351,25 @@ fun HomeScreen(
             Text("⌕   Cari nota, kitab dan rujukan",
                 modifier = Modifier.padding(horizontal = 14.dp, vertical = 13.dp),
                 fontSize = 14.sp, color = Color(0xFF52716E))
+        }
+        if (pinnedNotes.isNotEmpty()) {
+            PremiumSectionHeading("Nota Dipinkan", "✦")
+            pinnedNotes.forEach { note ->
+                Surface(
+                    modifier = Modifier.fillMaxWidth().clickable { onOpenPinnedNote(note.id) },
+                    color = Color.White,
+                    shape = RoundedCornerShape(10.dp),
+                    border = BorderStroke(1.dp, Color(0xFFB7DCD7))
+                ) {
+                    Column(Modifier.padding(13.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text("📌  " + note.title.ifBlank { "Tanpa tajuk" },
+                            fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF075B59),
+                            maxLines = 2)
+                        Text(formattedNoteText(note.body).text,
+                            fontSize = 12.sp, color = Color(0xFF52666A), maxLines = 2)
+                    }
+                }
+            }
         }
         Text("Teroka DinNote", fontSize = 16.sp, fontWeight = FontWeight.Bold,
             color = Color(0xFF075B59))
@@ -390,7 +415,9 @@ fun HomeScreen(
 fun NotesScreen(
     modifier: Modifier = Modifier,
     openNewNote: Boolean = false,
-    onNewNoteOpened: () -> Unit = {}
+    onNewNoteOpened: () -> Unit = {},
+    openNoteId: Long? = null,
+    onNoteOpened: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val displayPrefs = remember { context.getSharedPreferences("dinnote_display", android.content.Context.MODE_PRIVATE) }
@@ -444,6 +471,23 @@ fun NotesScreen(
     }
 
     LaunchedEffect(Unit) { refreshNotes() }
+
+    LaunchedEffect(openNoteId) {
+        if (openNoteId != null) {
+            refreshNotes()
+            notes.firstOrNull { it.id == openNoteId }?.let { item ->
+                editingId = item.id
+                title = item.title
+                body = TextFieldValue(item.body, selection = TextRange(item.body.length))
+                undoStack.clear(); redoStack.clear()
+                selectedColor = item.colorTag
+                selectedCategory = item.category
+                readingMode = true
+                showEditor = true
+            }
+            onNoteOpened()
+        }
+    }
 
     LaunchedEffect(openNewNote) {
         if (openNewNote) {
