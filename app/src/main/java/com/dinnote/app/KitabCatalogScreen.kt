@@ -190,9 +190,18 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
             }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text("Perenggan: ${paragraphs.size}", fontSize = 12.sp, color = Color(0xFF075B59))
-                TextButton(onClick = { readerScope.launch { readerListState.animateScrollToItem(savedParagraph) } },
-                    enabled = paragraphs.isNotEmpty()) {
-                    Text("Sambung bacaan (${savedParagraph + 1})")
+                Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                    TextButton(onClick = { readerScope.launch { readerListState.animateScrollToItem(savedParagraph) } },
+                        enabled = paragraphs.isNotEmpty()) {
+                        Text("Sambung (${savedParagraph + 1})", fontSize = 12.sp)
+                    }
+                    if (savedParagraph > 0) {
+                        TextButton(onClick = {
+                            prefs.edit().putInt("reading_position_${item.id}", 0).apply()
+                            savedParagraph = 0
+                            readerScope.launch { readerListState.animateScrollToItem(0) }
+                        }) { Text("Mula semula", fontSize = 12.sp) }
+                    }
                 }
             }
             LazyColumn(state = readerListState, verticalArrangement = Arrangement.spacedBy(8.dp)) {
