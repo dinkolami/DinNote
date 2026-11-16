@@ -49,4 +49,4 @@ jobs:
           retention-days: 30
           if-no-files-found: error
 
-# Rebuild editor revision #91
+# Rebuild current DinNote APK — 2026-11-16
