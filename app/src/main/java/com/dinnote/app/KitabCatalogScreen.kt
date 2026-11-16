@@ -3,6 +3,7 @@ package com.dinnote.app
 import android.content.Context
 import org.json.JSONArray
 import org.json.JSONObject
+import androidx.compose.foundation.background
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.graphics.Color
@@ -55,6 +56,12 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
     val prefs = remember { context.getSharedPreferences("dinnote_kitab_catalog", Context.MODE_PRIVATE) }
     val displayPrefs = remember { context.getSharedPreferences("dinnote_display", Context.MODE_PRIVATE) }
     val readerBackground = displayPrefs.getString("background", "white") ?: "white"
+    val editorBackground = when (readerBackground) {
+        "dark" -> Color(0xFF192B2C)
+        "sepia" -> Color(0xFFF7F0DF)
+        else -> Color.White
+    }
+    val editorInk = if (readerBackground == "dark") Color(0xFFF3F7F6) else Color(0xFF263B3E)
     val readerFontSize = displayPrefs.getInt("font_size", 19).coerceIn(14, 30)
     val readerLineSpacing = displayPrefs.getFloat("line_spacing", 1.6f).coerceIn(1.2f, 2.2f)
     val readerInk = if (readerBackground == "dark") Color.White else Color(0xFF263B3E)
@@ -384,10 +391,12 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
                     BasicTextField(
                         value = content, onValueChange = { content = it },
                         modifier = Modifier.fillMaxWidth().weight(1f)
-                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                            .padding(horizontal = 16.dp, vertical = 12.dp)
+                            .background(editorBackground, RoundedCornerShape(10.dp))
+                            .padding(10.dp),
                         textStyle = TextStyle(fontSize = readerFontSize.sp,
                             lineHeight = (readerFontSize * readerLineSpacing).sp,
-                            color = Color(0xFF263B3E), textDirection = TextDirection.ContentOrRtl),
+                            color = editorInk, textDirection = TextDirection.ContentOrRtl),
                         decorationBox = { inner ->
                             Box {
                                 if (content.text.isEmpty()) Text("Tulis kandungan Arab atau Melayu...",
