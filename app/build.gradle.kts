@@ -12,8 +12,8 @@ android {
         applicationId = "com.dinnote.app"
         minSdk = 26
         targetSdk = 36
-        versionCode = 5
-        versionName = "2.3"
+        versionCode = (providers.gradleProperty("dinnoteVersionCode").orNull?.toIntOrNull() ?: 5)
+        versionName = providers.gradleProperty("dinnoteVersionName").orNull ?: "2.3"
     }
 
     compileOptions {
