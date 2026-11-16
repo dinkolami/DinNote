@@ -1417,16 +1417,25 @@ private fun DefaultEditorTextField(
 @Composable
 private fun DefaultEditorFontControls(fontSize: Float, onChange: (Float) -> Unit) {
     Row(
-        Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp),
+        Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 3.dp),
         horizontalArrangement = Arrangement.End,
         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
     ) {
-        TextButton(onClick = { onChange((fontSize - 2f).coerceAtLeast(14f)) }) {
-            Text("A−", color = Color(0xFF087F83), fontSize = 15.sp)
+        Text("Saiz tulisan", fontSize = 12.sp, color = Color(0xFF53736F))
+        Spacer(Modifier.width(8.dp))
+        TextButton(
+            onClick = { onChange((fontSize - 1f).coerceAtLeast(14f)) },
+            enabled = fontSize > 14f
+        ) {
+            Text("A−", color = Color(0xFF087F83), fontSize = 16.sp)
         }
-        Text("${fontSize.toInt()} sp", color = Color(0xFF075B59), fontSize = 12.sp)
-        TextButton(onClick = { onChange((fontSize + 2f).coerceAtMost(30f)) }) {
-            Text("A+", color = Color(0xFF087F83), fontSize = 15.sp)
+        Text("${fontSize.toInt()}", color = Color(0xFF075B59), fontSize = 13.sp,
+            fontWeight = FontWeight.SemiBold)
+        TextButton(
+            onClick = { onChange((fontSize + 1f).coerceAtMost(30f)) },
+            enabled = fontSize < 30f
+        ) {
+            Text("A+", color = Color(0xFF087F83), fontSize = 16.sp)
         }
     }
 }
