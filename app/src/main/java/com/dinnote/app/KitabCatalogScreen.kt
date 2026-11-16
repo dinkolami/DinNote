@@ -101,6 +101,15 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
         prefs.edit().putBoolean("bookmark_$id", !isBookmarked(id)).apply()
         bookmarkRevision++
     }
+    var highlightRevision by remember { mutableIntStateOf(0) }
+    fun isHighlighted(id: Long, paragraph: Int): Boolean {
+        @Suppress("UNUSED_VARIABLE") val revision = highlightRevision
+        return prefs.getBoolean("highlight_${id}_$paragraph", false)
+    }
+    fun toggleHighlight(id: Long, paragraph: Int) {
+        prefs.edit().putBoolean("highlight_${id}_$paragraph", !isHighlighted(id, paragraph)).apply()
+        highlightRevision++
+    }
     var copyFeedback by remember { mutableStateOf(false) }
     var excerptDialog by remember { mutableStateOf<KitabItem?>(null) }
     var excerptText by remember { mutableStateOf("") }
@@ -154,18 +163,32 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
                     fontSize = 13.sp, color = Color(0xFF075B59))
             }
             HorizontalDivider(Modifier.padding(vertical = 14.dp))
-            LazyColumn {
-                item {
-                    Surface(color = readingBackground(readerBackground),
-                        border = BorderStroke(1.dp, Color(0xFFB7DCD7)),
-                        shape = RoundedCornerShape(10.dp)) {
-                        SelectionContainer {
-                        Text(item.content, fontSize = readerFontSize.sp,
-                            lineHeight = (readerFontSize * readerLineSpacing).sp,
-                            color = readerInk,
-                            style = TextStyle(textDirection = TextDirection.ContentOrRtl),
-                            modifier = Modifier.fillMaxWidth().padding(16.dp),
-                            textAlign = TextAlign.Start)
+            val paragraphs = remember(item.id, item.content) {
+                item.content.split(Regex("\\n\\s*\\n")).filter { it.isNotBlank() }
+            }
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                items(paragraphs.size) { index ->
+                    val highlighted = isHighlighted(item.id, index)
+                    Surface(
+                        color = if (highlighted) Color(0xFFFFF2BD) else readingBackground(readerBackground),
+                        border = BorderStroke(1.dp, if (highlighted) Color(0xFFD9AF55) else Color(0xFFB7DCD7)),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Column(Modifier.fillMaxWidth().padding(12.dp)) {
+                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                                TextButton(onClick = { toggleHighlight(item.id, index) }) {
+                                    Text(if (highlighted) "★ Buang highlight" else "☆ Highlight perenggan",
+                                        fontSize = 12.sp)
+                                }
+                            }
+                            SelectionContainer {
+                                Text(paragraphs[index], fontSize = readerFontSize.sp,
+                                    lineHeight = (readerFontSize * readerLineSpacing).sp,
+                                    color = if (highlighted) Color(0xFF263B3E) else readerInk,
+                                    style = TextStyle(textDirection = TextDirection.ContentOrRtl),
+                                    modifier = Modifier.fillMaxWidth().padding(4.dp),
+                                    textAlign = TextAlign.Start)
+                            }
                         }
                     }
                 }
