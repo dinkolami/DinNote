@@ -97,7 +97,21 @@ jobs:
           sha256sum app/build/outputs/apk/debug/app-debug.apk
           mkdir -p dist
           cp app/build/outputs/apk/debug/app-debug.apk "dist/DinNote-${GITHUB_SHA:0:7}-debug.apk"
-          printf 'Commit: %s\nBuild: %s\n' "$GITHUB_SHA" "$GITHUB_RUN_ID" > dist/BUILD-INFO.txt
+          APK_NAME="DinNote-${GITHUB_SHA:0:7}-debug.apk"
+          {
+            printf 'Commit: %s\n' "$GITHUB_SHA"
+            printf 'Build run: %s\n' "$GITHUB_RUN_ID"
+            printf 'Build number: %s\n' "$GITHUB_RUN_NUMBER"
+            printf 'Version name: 2.4.%s\n' "$GITHUB_RUN_NUMBER"
+            printf 'Version code: %s\n' "$((240000 + GITHUB_RUN_NUMBER))"
+            printf 'Package: com.dinnote.app\n'
+            printf 'APK file: %s\n' "$APK_NAME"
+            printf 'APK SHA-256: %s\n' "$(sha256sum "dist/$APK_NAME" | cut -d ' ' -f1)"
+            printf 'Workflow: %s/actions/runs/%s\n' "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY" "$GITHUB_RUN_ID"
+          } > dist/BUILD-INFO.txt
+          (cd dist && sha256sum "$APK_NAME" > SHA256SUMS.txt)
+          echo "Build provenance:"
+          cat dist/BUILD-INFO.txt
           ls -lh dist/
 
       - name: Upload versioned APK
