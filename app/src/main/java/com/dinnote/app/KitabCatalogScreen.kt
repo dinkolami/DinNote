@@ -58,6 +58,7 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
     val readerFontSize = displayPrefs.getInt("font_size", 19).coerceIn(14, 30)
     val readerLineSpacing = displayPrefs.getFloat("line_spacing", 1.6f).coerceIn(1.2f, 2.2f)
     val readerInk = if (readerBackground == "dark") Color.White else Color(0xFF263B3E)
+    val readerBorder = if (readerBackground == "dark") Color(0xFF507875) else Color(0xFFB7DCD7)
 
     val books = remember {
         mutableStateListOf<KitabItem>().apply {
@@ -186,10 +187,10 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
                     val highlighted = isHighlighted(item.id, index)
                     Surface(
                         color = if (highlighted) Color(0xFFFFF2BD) else readingBackground(readerBackground),
-                        border = BorderStroke(1.dp, if (highlighted) Color(0xFFD9AF55) else Color(0xFFB7DCD7)),
-                        shape = RoundedCornerShape(10.dp)
+                        border = BorderStroke(1.dp, if (highlighted) Color(0xFFD9AF55) else readerBorder),
+                        shape = RoundedCornerShape(12.dp)
                     ) {
-                        Column(Modifier.fillMaxWidth().padding(12.dp)) {
+                        Column(Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp)) {
                             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                                 TextButton(onClick = {
                                     prefs.edit().putInt("reading_position_${item.id}", index).apply()
