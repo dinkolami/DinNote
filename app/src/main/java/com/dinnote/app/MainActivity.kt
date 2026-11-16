@@ -99,7 +99,7 @@ fun DinNoteApp() {
             when (selectedTab) {
                 0 -> HomeScreen(Modifier.padding(padding), onOpenNotes = { openNewNote = true; selectedTab = 1 }, onOpenLibrary = { selectedTab = 2 })
                 1 -> NotesScreen(Modifier.padding(padding), openNewNote = openNewNote, onNewNoteOpened = { openNewNote = false })
-                2 -> KitabCatalogScreen(Modifier.padding(padding))
+                2 -> LibraryHubScreen(Modifier.padding(padding))
             }
         }
     }
