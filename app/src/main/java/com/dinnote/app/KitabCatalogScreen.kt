@@ -242,6 +242,12 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
                                     modifier = Modifier.fillMaxWidth().padding(4.dp),
                                     textAlign = if (kitabParagraphIsArabic(paragraphs[index])) TextAlign.Right else readerTextAlignment)
                             }
+                            if (readerBackground != "dark") {
+                                Text("⌒  ۞  ⌒   DinNote   ⌒  ۞  ⌒",
+                                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                                    fontSize = 11.sp, color = Color(0xFFB48B39),
+                                    textAlign = TextAlign.Center)
+                            }
                         }
                     }
                 }
