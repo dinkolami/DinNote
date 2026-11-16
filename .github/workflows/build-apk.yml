@@ -1,4 +1,5 @@
 name: Build DinNote APK
+run-name: DinNote APK • ${{ github.ref_name }} • ${{ github.sha }}
 
 on:
   workflow_dispatch:
