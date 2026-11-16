@@ -126,7 +126,7 @@ fun DinNoteApp() {
                                     modifier = Modifier.weight(1f).fillMaxHeight().clickable {
                                         selectedTab = tab.third
                                     },
-                                    shape = RoundedCornerShape(12.dp),
+                                    shape = RoundedCornerShape(6.dp),
                                     color = if (active) Color(0xFFDDF4F2).copy(alpha = 0.92f)
                                             else Color.Transparent
                                 ) {
@@ -171,7 +171,7 @@ fun DinNoteApp() {
 private fun HomeShortcut(label: String, symbol: String, modifier: Modifier = Modifier, onClick: () -> Unit) {
     Surface(
         modifier = modifier.height(54.dp).clickable(onClick = onClick),
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(15.dp),
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(7.dp),
         color = Color.White,
         border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFD5D9DD))
     ) {
@@ -199,7 +199,7 @@ fun HomeScreen(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Surface(
-            shape = androidx.compose.foundation.shape.RoundedCornerShape(10.dp),
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(6.dp),
             border = BorderStroke(1.dp, Color(0xFF0C9699)),
             color = Color(0xFF075C43)
         ) {
@@ -374,19 +374,34 @@ fun NotesScreen(
             }
         }
 
-        Row(
-            modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(7.dp)
-        ) {
-            (listOf("Semua") + allCategories).forEach { category ->
-                FilterChip(
-                    selected = selectedCategory == category,
-                    onClick = { selectedCategory = category },
-                    label = { Text(category) }
-                )
+        var notesCategoryExpanded by remember { mutableStateOf(false) }
+        Box(Modifier.fillMaxWidth()) {
+            Surface(modifier = Modifier.fillMaxWidth().clickable { notesCategoryExpanded = true },
+                shape = RoundedCornerShape(6.dp), color = Color.White,
+                border = BorderStroke(1.dp, Color(0xFFB7D7D6))) {
+                Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 9.dp),
+                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                    Text("Kategori: $selectedCategory", modifier = Modifier.weight(1f), fontSize = 13.sp)
+                    Text("⌄", fontSize = 20.sp, color = Color(0xFF087F8C))
+                }
             }
-            AssistChip(onClick = { showAddCategory = true }, label = { Text("+ Kategori") })
-            AssistChip(onClick = { showManageCategories = true }, label = { Text("Urus kategori") })
+            DropdownMenu(expanded = notesCategoryExpanded, onDismissRequest = { notesCategoryExpanded = false }) {
+                (listOf("Semua") + allCategories).forEach { category ->
+                    DropdownMenuItem(text = { Text(category) }, onClick = {
+                        selectedCategory = category
+                        notesCategoryExpanded = false
+                    })
+                }
+                HorizontalDivider()
+                DropdownMenuItem(text = { Text("+ Tambah kategori") }, onClick = {
+                    notesCategoryExpanded = false
+                    showAddCategory = true
+                })
+                DropdownMenuItem(text = { Text("Urus kategori") }, onClick = {
+                    notesCategoryExpanded = false
+                    showManageCategories = true
+                })
+            }
         }
 
         OutlinedTextField(
@@ -436,7 +451,7 @@ fun NotesScreen(
                     Card(
                         modifier = Modifier.fillMaxWidth().heightIn(min = 142.dp),
                         colors = CardDefaults.cardColors(containerColor = noteColor(item.colorTag)),
-                        shape = RoundedCornerShape(10.dp),
+                        shape = RoundedCornerShape(6.dp),
                         border = BorderStroke(1.dp, Color(0xFF0C9699))
                     ) {
                         Column(Modifier.fillMaxWidth().padding(12.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
@@ -883,18 +898,37 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
         Text("Maktabah", fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
 
 
-        Row(Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-            Row(Modifier.weight(1f).horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-                allLibraryCategories.forEach { category ->
-                    FilterChip(
-                        selected = selectedCategory == category,
-                        onClick = { selectedCategory = category; search = "" },
-                        label = { Text(category, fontSize = 11.sp) }
-                    )
+        var libraryCategoryExpanded by remember { mutableStateOf(false) }
+        Box(Modifier.fillMaxWidth()) {
+            Surface(
+                modifier = Modifier.fillMaxWidth().clickable { libraryCategoryExpanded = true },
+                shape = RoundedCornerShape(6.dp),
+                color = Color.White,
+                border = BorderStroke(1.dp, Color(0xFFB7D7D6))
+            ) {
+                Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 9.dp),
+                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                    Text("Kategori: $selectedCategory", modifier = Modifier.weight(1f),
+                        fontSize = 13.sp, color = Color(0xFF087F8C))
+                    Text("⌄", fontSize = 20.sp, color = Color(0xFF087F8C))
                 }
             }
-            TextButton(onClick = { newCategoryName = ""; showAddCategory = true }) { Text("+ Kategori") }
+            DropdownMenu(expanded = libraryCategoryExpanded,
+                onDismissRequest = { libraryCategoryExpanded = false }) {
+                allLibraryCategories.forEach { category ->
+                    DropdownMenuItem(text = { Text(category) }, onClick = {
+                        selectedCategory = category
+                        search = ""
+                        libraryCategoryExpanded = false
+                    })
+                }
+                HorizontalDivider()
+                DropdownMenuItem(text = { Text("+ Tambah kategori") }, onClick = {
+                    libraryCategoryExpanded = false
+                    newCategoryName = ""
+                    showAddCategory = true
+                })
+            }
         }
         if (selectedCategory in customLibraryCategories) {
             TextButton(onClick = { categoryToRename = selectedCategory; newCategoryName = selectedCategory }) {
@@ -936,7 +970,7 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                             modifier = Modifier.fillMaxWidth().clickable { selectedEntry = entry },
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                             border = BorderStroke(1.dp, Color(0xFF0C9699)),
-                            shape = RoundedCornerShape(10.dp)
+                            shape = RoundedCornerShape(6.dp)
                         ) {
                             Column(
                                 modifier = Modifier.fillMaxWidth().padding(16.dp),
@@ -959,7 +993,7 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                 Button(onClick = { openLibraryEditor("entry_Kitab-Kitab_" + System.currentTimeMillis()) }) { Text("+ Tambah Kitab") }
                 libraryItems.filter { (libraryPrefs.getString(it + "_title", "") ?: "").contains(search, true) ||
                     (libraryPrefs.getString(it + "_body", "") ?: "").contains(search, true) }.forEach { key ->
-                    Card(modifier = Modifier.fillMaxWidth().clickable { openLibraryEditor(key) }, border = BorderStroke(1.dp, Color(0xFF0C9699)), shape = RoundedCornerShape(10.dp), colors = CardDefaults.cardColors(containerColor = Color.White)) {
+                    Card(modifier = Modifier.fillMaxWidth().clickable { openLibraryEditor(key) }, border = BorderStroke(1.dp, Color(0xFF0C9699)), shape = RoundedCornerShape(6.dp), colors = CardDefaults.cardColors(containerColor = Color.White)) {
                         Column(Modifier.padding(16.dp)) {
                             Text(libraryPrefs.getString(key + "_title", "Tanpa tajuk") ?: "Tanpa tajuk", fontWeight = FontWeight.Bold)
                             Text((libraryPrefs.getString(key + "_body", "") ?: "").take(130), modifier = Modifier.fillMaxWidth(), style = androidx.compose.ui.text.TextStyle(textDirection = TextDirection.ContentOrLtr), maxLines = 3)
@@ -974,7 +1008,7 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                 Button(onClick = { openLibraryEditor("entry_" + selectedCategory + "_" + System.currentTimeMillis()) }) { Text("+ Tambah Kandungan") }
                 libraryItems.filter { (libraryPrefs.getString(it + "_title", "") ?: "").contains(search, true) ||
                     (libraryPrefs.getString(it + "_body", "") ?: "").contains(search, true) }.forEach { key ->
-                    Card(modifier = Modifier.fillMaxWidth().clickable { openLibraryEditor(key) }, border = BorderStroke(1.dp, Color(0xFF0C9699)), shape = RoundedCornerShape(10.dp), colors = CardDefaults.cardColors(containerColor = Color.White)) {
+                    Card(modifier = Modifier.fillMaxWidth().clickable { openLibraryEditor(key) }, border = BorderStroke(1.dp, Color(0xFF0C9699)), shape = RoundedCornerShape(6.dp), colors = CardDefaults.cardColors(containerColor = Color.White)) {
                         Column(Modifier.padding(16.dp)) {
                             Text(libraryPrefs.getString(key + "_title", "Tanpa tajuk") ?: "Tanpa tajuk", fontWeight = FontWeight.Bold)
                             Text((libraryPrefs.getString(key + "_body", "") ?: "").take(130), modifier = Modifier.fillMaxWidth(), style = androidx.compose.ui.text.TextStyle(textDirection = TextDirection.ContentOrLtr), maxLines = 3)
@@ -1093,34 +1127,38 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
 
 @Composable
 private fun IslamicCardFooter() {
+    // Shared compact Islamic ruler divider: 75% opacity, centered and flush to the card bottom.
     androidx.compose.foundation.Canvas(
-        modifier = Modifier.fillMaxWidth().height(44.dp)
+        modifier = Modifier.fillMaxWidth().height(24.dp)
     ) {
         val w = size.width
         val h = size.height
-        val teal = Color(0xFFB7DDDA)
-        val gold = Color(0xFFD8B46A)
-        val path = androidx.compose.ui.graphics.Path().apply {
-            moveTo(0f, h * 0.88f)
-            quadraticBezierTo(w * 0.18f, h * 0.88f, w * 0.32f, h * 0.72f)
-            quadraticBezierTo(w * 0.43f, h * 0.70f, w * 0.5f, h * 0.08f)
-            quadraticBezierTo(w * 0.57f, h * 0.70f, w * 0.68f, h * 0.72f)
-            quadraticBezierTo(w * 0.82f, h * 0.88f, w, h * 0.88f)
-            lineTo(w, h)
-            lineTo(0f, h)
+        val teal = Color(0xFF008F93).copy(alpha = 0.75f)
+        val gold = Color(0xFFD4A443).copy(alpha = 0.75f)
+        val center = w / 2f
+        val half = w * 0.23f
+        val y = h - 1.dp.toPx()
+        val stroke = androidx.compose.ui.graphics.drawscope.Stroke(width = 1.dp.toPx())
+        drawLine(teal, androidx.compose.ui.geometry.Offset(center-half, y),
+            androidx.compose.ui.geometry.Offset(center+half, y), strokeWidth = 1.dp.toPx())
+        drawLine(gold, androidx.compose.ui.geometry.Offset(center-half*0.88f, y-4.dp.toPx()),
+            androidx.compose.ui.geometry.Offset(center+half*0.88f, y-4.dp.toPx()),
+            strokeWidth = 1.dp.toPx())
+        for (i in -5..5) {
+            val x = center + i * half / 6f
+            val tickHeight = if (i % 2 == 0) 6.dp.toPx() else 3.dp.toPx()
+            drawLine(teal, androidx.compose.ui.geometry.Offset(x,y),
+                androidx.compose.ui.geometry.Offset(x,y-tickHeight), strokeWidth = 1.dp.toPx())
+        }
+        val diamond = androidx.compose.ui.graphics.Path().apply {
+            moveTo(center, y-15.dp.toPx())
+            lineTo(center+7.dp.toPx(), y-8.dp.toPx())
+            lineTo(center, y-1.dp.toPx())
+            lineTo(center-7.dp.toPx(), y-8.dp.toPx())
             close()
         }
-        drawPath(path, teal.copy(alpha = 0.42f))
-        drawPath(path, gold, style = androidx.compose.ui.graphics.drawscope.Stroke(width = 2.dp.toPx()))
-        val dome = androidx.compose.ui.graphics.Path().apply {
-            moveTo(w * 0.43f, h * 0.9f)
-            quadraticBezierTo(w * 0.42f, h * 0.51f, w * 0.5f, h * 0.45f)
-            quadraticBezierTo(w * 0.58f, h * 0.51f, w * 0.57f, h * 0.9f)
-            close()
-        }
-        drawPath(dome, Color(0xFF77B8B2))
-        for (x in listOf(0.34f, 0.38f, 0.62f, 0.66f)) {
-            drawRect(Color(0xFF77B8B2), topLeft = androidx.compose.ui.geometry.Offset(w*x, h*0.62f), size = androidx.compose.ui.geometry.Size(w*0.012f, h*0.28f))
-        }
+        drawPath(diamond, gold, style = stroke)
+        drawCircle(teal, radius = 2.dp.toPx(),
+            center = androidx.compose.ui.geometry.Offset(center,y-8.dp.toPx()))
     }
 }
