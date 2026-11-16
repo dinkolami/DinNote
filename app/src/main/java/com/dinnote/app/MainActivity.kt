@@ -112,147 +112,92 @@ fun DinNoteApp() {
 }
 
 @Composable
+private fun HomeShortcut(label: String, symbol: String, modifier: Modifier = Modifier, onClick: () -> Unit) {
+    Surface(
+        modifier = modifier.height(54.dp).clickable(onClick = onClick),
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(15.dp),
+        color = Color.White,
+        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFD5D9DD))
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
+            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+        ) {
+            Text(symbol, color = Color(0xFF006B46), fontSize = 20.sp)
+            Spacer(Modifier.width(9.dp))
+            Text(label, modifier = Modifier.weight(1f), fontSize = 13.sp,
+                fontWeight = FontWeight.SemiBold, color = Color(0xFF183A30), maxLines = 1)
+            Text("›", fontSize = 21.sp, color = Color(0xFF006B46))
+        }
+    }
+}
+
+@Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
     onOpenNotes: () -> Unit,
     onOpenLibrary: () -> Unit
 ) {
     Column(
-        modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(18.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(14.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = MaterialTheme.shapes.large,
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF245B4B))
+        Surface(
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(17.dp),
+            color = Color(0xFF075C43)
         ) {
             Box(Modifier.fillMaxWidth()) {
-                // Nature landscape painted behind the compact greeting; no network required.
                 androidx.compose.foundation.Canvas(Modifier.matchParentSize()) {
                     val w = size.width
                     val h = size.height
-                    drawRect(
-                        brush = androidx.compose.ui.graphics.Brush.verticalGradient(
-                            listOf(Color(0xFF8BC8C2), Color(0xFFB9DCC5), Color(0xFF477B62))
-                        )
-                    )
-                    drawCircle(Color(0xFFFFE3A1).copy(alpha = 0.8f), radius = h * 0.23f,
-                        center = androidx.compose.ui.geometry.Offset(w * 0.82f, h * 0.22f))
-                    val distant = androidx.compose.ui.graphics.Path().apply {
-                        moveTo(0f, h * 0.78f)
-                        lineTo(w * 0.19f, h * 0.35f)
-                        lineTo(w * 0.40f, h * 0.72f)
-                        lineTo(w * 0.64f, h * 0.27f)
-                        lineTo(w, h * 0.79f)
+                    drawRect(brush = androidx.compose.ui.graphics.Brush.horizontalGradient(
+                        listOf(Color(0xFF348F84), Color(0xFF086044))))
+                    drawCircle(Color(0xFFFFE4A0).copy(alpha = 0.78f), radius = h * 0.22f,
+                        center = androidx.compose.ui.geometry.Offset(w * 0.80f, h * 0.24f))
+                    val hills = androidx.compose.ui.graphics.Path().apply {
+                        moveTo(0f, h * 0.87f)
+                        lineTo(w * 0.24f, h * 0.35f)
+                        lineTo(w * 0.47f, h * 0.78f)
+                        lineTo(w * 0.68f, h * 0.28f)
+                        lineTo(w, h * 0.81f)
                         lineTo(w, h)
                         lineTo(0f, h)
                         close()
                     }
-                    drawPath(distant, Color(0xFF669B83))
-                    val foreground = androidx.compose.ui.graphics.Path().apply {
-                        moveTo(0f, h * 0.91f)
-                        quadraticTo(w * 0.30f, h * 0.56f, w * 0.56f, h * 0.85f)
-                        quadraticTo(w * 0.79f, h * 0.60f, w, h * 0.77f)
-                        lineTo(w, h)
-                        lineTo(0f, h)
-                        close()
-                    }
-                    drawPath(foreground, Color(0xFF2F6A52))
-                    drawRect(Color(0xFF123E35).copy(alpha = 0.42f))
+                    drawPath(hills, Color(0xFF277C65))
+                    drawRect(Color(0xFF064E3B).copy(alpha = 0.25f))
                 }
                 Row(
-                    Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 10.dp),
-                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp),
+                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
                 ) {
-                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                        Text("Assalamualaikum", color = Color.White, fontSize = 19.sp, fontWeight = FontWeight.Bold)
-                        Text("Selamat datang ke DinNote", color = Color.White, fontSize = 12.sp)
+                    Column(Modifier.weight(1f)) {
+                        Text("Assalamualaikum", fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold, color = Color.White)
+                        Text("Selamat datang ke DinNote", fontSize = 11.sp, color = Color.White)
                     }
                     Surface(
-                        color = Color(0xFF16634F),
-                        shape = MaterialTheme.shapes.medium,
-                        modifier = Modifier.clickable(onClick = onOpenNotes)
+                        modifier = Modifier.clickable(onClick = onOpenNotes),
+                        color = Color.White,
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(14.dp)
                     ) {
-                        Text("+ Nota", Modifier.padding(horizontal = 12.dp, vertical = 9.dp),
-                            color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                        Text("+ Nota", modifier = Modifier.padding(horizontal = 13.dp, vertical = 10.dp),
+                            color = Color(0xFF006B46), fontSize = 13.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }
         }
-
-        Text("Ruang anda", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            Card(
-                Modifier.weight(1f).clickable(onClick = onOpenNotes),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFE5F0E7)),
-                shape = MaterialTheme.shapes.large
-            ) {
-                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("✎", fontSize = 27.sp, color = Color(0xFF145A45))
-                    Text("Nota Peribadi", fontWeight = FontWeight.Bold, color = Color(0xFF173F32))
-                    Text("Idea, tugasan dan catatan harian", fontSize = 12.sp, color = Color(0xFF53685D))
-                    Text("Buka nota  →", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF145A45))
-                }
-            }
-            Card(
-                Modifier.weight(1f).clickable(onClick = onOpenLibrary),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFF2EAD9)),
-                shape = MaterialTheme.shapes.large
-            ) {
-                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("۞", fontSize = 27.sp, color = Color(0xFF8B6938))
-                    Text("Perpustakaan", fontWeight = FontWeight.Bold, color = Color(0xFF493719))
-                    Text("Zikir, kitab dan kata hikmah", fontSize = 12.sp, color = Color(0xFF756344))
-                    Text("Teroka ilmu  →", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF8B6938))
-                }
-            }
+        Text("Ruang anda", fontSize = 17.sp, fontWeight = FontWeight.Bold, color = Color(0xFF00664C))
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            HomeShortcut("Nota Peribadi", "✎", Modifier.weight(1f), onOpenNotes)
+            HomeShortcut("Perpustakaan", "۞", Modifier.weight(1f), onOpenLibrary)
         }
-
-        Text("Koleksi dalam DinNote", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-        Card(
-            Modifier.fillMaxWidth().clickable(onClick = onOpenLibrary),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            shape = MaterialTheme.shapes.large
-        ) {
-            Column(Modifier.fillMaxWidth().padding(17.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                    Text("☾", fontSize = 23.sp, color = MaterialTheme.colorScheme.secondary)
-                    Spacer(Modifier.width(12.dp))
-                    Column(Modifier.weight(1f)) {
-                        Text("Kalimah Tayyibah", fontWeight = FontWeight.Bold)
-                        Text("Zikir dan ungkapan yang baik", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                    Text("›", fontSize = 24.sp, color = MaterialTheme.colorScheme.secondary)
-                }
-                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.45f))
-                Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                    Text("📚", fontSize = 22.sp)
-                    Spacer(Modifier.width(12.dp))
-                    Column(Modifier.weight(1f)) {
-                        Text("Kitab-Kitab", fontWeight = FontWeight.Bold)
-                        Text("Petikan Arab, syarah dan nota pengajian", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                    Text("›", fontSize = 24.sp, color = MaterialTheme.colorScheme.secondary)
-                }
-                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.45f))
-                Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                    Text("✧", fontSize = 25.sp, color = MaterialTheme.colorScheme.secondary)
-                    Spacer(Modifier.width(12.dp))
-                    Column(Modifier.weight(1f)) {
-                        Text("Kalam Hikmah", fontWeight = FontWeight.Bold)
-                        Text("Nasihat ulama dan peringatan", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                    Text("›", fontSize = 24.sp, color = MaterialTheme.colorScheme.secondary)
-                }
-            }
+        Text("Kandungan DinNote", fontSize = 17.sp, fontWeight = FontWeight.Bold, color = Color(0xFF00664C))
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            HomeShortcut("Kitab-Kitab", "▣", Modifier.weight(1f), onOpenLibrary)
+            HomeShortcut("Kalam Hikmah", "✧", Modifier.weight(1f), onOpenLibrary)
         }
-        Text(
-            "“Ilmu yang dicatat, mudah-mudahan menjadi manfaat.”",
-            modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp),
-            color = MaterialTheme.colorScheme.secondary,
-            fontSize = 13.sp
-        )
+        HomeShortcut("Pelbagai", "▱", Modifier.fillMaxWidth(), onOpenLibrary)
     }
 }
 
@@ -859,7 +804,7 @@ fun noteColor(tag: String): Color = when (tag) {
 
 @Composable
 fun LibraryScreen(modifier: Modifier = Modifier) {
-    var selectedCategory by remember { mutableStateOf("Kalimah Tayyibah") }
+    var selectedCategory by remember { mutableStateOf("Pelbagai") }
     var selectedEntry by remember { mutableStateOf<KalimahEntry?>(null) }
     var search by remember { mutableStateOf("") }
     var searchExpanded by remember { mutableStateOf(false) }
@@ -869,7 +814,7 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
     var showAddCategory by remember { mutableStateOf(false) }
     var newCategoryName by remember { mutableStateOf("") }
     var categoryToRename by remember { mutableStateOf<String?>(null) }
-    val builtinLibraryCategories = listOf("Kalimah Tayyibah", "Kitab-Kitab", "Kalam Hikmah")
+    val builtinLibraryCategories = listOf("Pelbagai", "Kitab-Kitab", "Kalam Hikmah")
     val customLibraryCategories = remember(libraryRevision) {
         libraryPrefs.getString("custom_categories", "")!!.split("\\n").filter { it.isNotBlank() }
     }
@@ -947,7 +892,7 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
         }
 
         when (selectedCategory) {
-            "Kalimah Tayyibah" -> {
+            "Pelbagai" -> {
                 Text("الكلمات الطيبة", fontSize = 22.sp)
 
                 Text("${filteredEntries.size} kalimah tersedia", color = MaterialTheme.colorScheme.primary)
