@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 180" role="img" aria-label="DinNote premium mosque ornament">
+<path d="M0 170 Q130 118 240 160 Q360 190 470 152 Q550 128 640 170" fill="none" stroke="#D5AB48" stroke-width="8"/>
+<path d="M0 178 Q130 126 240 168 Q360 198 470 160 Q550 136 640 178" fill="none" stroke="#117E82" stroke-width="5"/>
+<g fill="#FFF5DE" stroke="#D5AB48" stroke-width="3">
+<rect x="255" y="93" width="195" height="67" rx="3"/>
+<rect x="300" y="67" width="110" height="93"/>
+<rect x="435" y="43" width="20" height="117"/>
+<rect x="267" y="84" width="28" height="76"/>
+<rect x="413" y="84" width="28" height="76"/>
+</g>
+<g fill="#117E82" stroke="#D5AB48" stroke-width="3">
+<path d="M294 69 Q355 -7 416 69 Z"/>
+<path d="M263 86 Q281 53 299 86 Z"/>
+<path d="M409 86 Q427 53 445 86 Z"/>
+<path d="M430 43 Q445 18 460 43 Z"/>
+<path d="M338 160 V119 Q355 92 372 119 V160Z"/>
+</g>
+<g stroke="#D5AB48" stroke-width="3" fill="none"><path d="M355 18 V4 M445 25 V12"/><path d="M355 2 q-10 -5 -6 -13 q1 9 12 7 q-3 5 -6 6"/></g>
+<g fill="#247A50"><path d="M238 160 v-48" stroke="#9A692E" stroke-width="6"/><path d="M238 112 q-38 -30 -53 -2 q29 -13 53 9 q-8 -37 13 -43 q-8 20 -13 43 q28 -28 52 -13 q-29 -4 -52 13"/></g>
+<g fill="#247A50"><path d="M485 162 v-46" stroke="#9A692E" stroke-width="6"/><path d="M485 116 q-36 -25 -52 -2 q29 -12 52 9 q-7 -35 13 -43 q-8 22 -13 43 q27 -27 51 -11 q-30 -4 -51 11"/></g>
+</svg>
