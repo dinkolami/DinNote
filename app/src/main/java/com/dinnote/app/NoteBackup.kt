@@ -78,6 +78,7 @@ object NoteBackup {
             database.setPinned(id, pinned)
             database.setArchived(id, archived)
             database.setCategory(id, category)
+            existing.add(signature)
             imported++
         }
         return NoteImportResult(imported, skipped)
