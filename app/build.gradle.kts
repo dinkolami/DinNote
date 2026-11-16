@@ -16,6 +16,18 @@ android {
         versionName = providers.gradleProperty("dinnoteVersionName").orNull ?: "2.4"
     }
 
+    signingConfigs {
+        getByName("debug") {
+            val persistentKeystore = file("dinnote-debug.keystore")
+            if (persistentKeystore.exists()) {
+                storeFile = persistentKeystore
+                storePassword = "android"
+                keyAlias = "androiddebugkey"
+                keyPassword = "android"
+            }
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
