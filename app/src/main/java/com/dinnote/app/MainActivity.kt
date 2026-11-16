@@ -975,6 +975,13 @@ private fun matchesMaktabahSearch(value: String, query: String): Boolean =
 fun LibraryScreen(modifier: Modifier = Modifier) {
     var selectedCategory by remember { mutableStateOf("Pelbagai") }
     var selectedEntry by remember { mutableStateOf<KalimahEntry?>(null) }
+    var editingKalimah by remember { mutableStateOf<KalimahEntry?>(null) }
+    var kalimahArabic by remember { mutableStateOf("") }
+    var kalimahMeaning by remember { mutableStateOf("") }
+    var kalimahTransliteration by remember { mutableStateOf("") }
+    var kalimahReference by remember { mutableStateOf("") }
+    var kalimahNote by remember { mutableStateOf("") }
+    var showKalimahSettings by remember { mutableStateOf(false) }
     var search by remember { mutableStateOf("") }
     var searchExpanded by remember { mutableStateOf(false) }
     val context = LocalContext.current
@@ -1013,7 +1020,27 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
             .map { it.removeSuffix("_title") }.sorted()
     }
 
-    val filteredEntries = kalimahEntries.filter { entry ->
+    val displayedKalimah = remember(libraryRevision) {
+        kalimahEntries.map { entry ->
+            val prefix = "kalimah_edit_" + entry.title + "_"
+            entry.copy(
+                arabic = libraryPrefs.getString(prefix + "arabic", entry.arabic) ?: entry.arabic,
+                meaning = libraryPrefs.getString(prefix + "meaning", entry.meaning) ?: entry.meaning,
+                transliteration = libraryPrefs.getString(prefix + "transliteration", entry.transliteration) ?: entry.transliteration,
+                reference = libraryPrefs.getString(prefix + "reference", entry.reference) ?: entry.reference,
+                note = libraryPrefs.getString(prefix + "note", entry.note) ?: entry.note
+            )
+        }
+    }
+    fun editKalimah(entry: KalimahEntry) {
+        editingKalimah = entry
+        kalimahArabic = entry.arabic
+        kalimahMeaning = entry.meaning
+        kalimahTransliteration = entry.transliteration
+        kalimahReference = entry.reference
+        kalimahNote = entry.note
+    }
+    val filteredEntries = displayedKalimah.filter { entry ->
         matchesMaktabahSearch(entry.title, search) ||
             matchesMaktabahSearch(entry.transliteration, search) ||
             matchesMaktabahSearch(entry.meaning, search) ||
@@ -1109,7 +1136,20 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                                 modifier = Modifier.fillMaxWidth().padding(16.dp),
                                 verticalArrangement = Arrangement.spacedBy(7.dp)
                             ) {
-                                Text(entry.title, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                                Row(Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                                    Text(entry.title, modifier = Modifier.weight(1f), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                                    OutlinedButton(onClick = { editKalimah(entry) }, modifier = Modifier.height(34.dp),
+                                        contentPadding = PaddingValues(horizontal = 9.dp, vertical = 0.dp),
+                                        shape = RoundedCornerShape(8.dp), border = BorderStroke(1.dp, Color(0xFFB7DCD7))) {
+                                        Text("✎ Edit", fontSize = 12.sp, color = Color(0xFF087F83))
+                                    }
+                                    Spacer(Modifier.width(5.dp))
+                                    OutlinedButton(onClick = { showKalimahSettings = true }, modifier = Modifier.height(34.dp),
+                                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
+                                        shape = RoundedCornerShape(8.dp), border = BorderStroke(1.dp, Color(0xFFB7DCD7))) {
+                                        Text("⚙", fontSize = 15.sp, color = Color(0xFF087F83))
+                                    }
+                                }
                                 if (malayFirstInLibrary && showMalayInLibrary) {
                                     Text(entry.meaning, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                     UnifiedEditorDivider()
@@ -1284,6 +1324,58 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                 }
             }
         }
+    }
+
+    editingKalimah?.let { entry ->
+        AlertDialog(
+            onDismissRequest = { editingKalimah = null },
+            title = { Text("Edit · " + entry.title) },
+            text = {
+                Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedTextField(value = kalimahArabic, onValueChange = { kalimahArabic = it }, label = { Text("Teks Arab") }, modifier = Modifier.fillMaxWidth())
+                    OutlinedTextField(value = kalimahMeaning, onValueChange = { kalimahMeaning = it }, label = { Text("Terjemahan Melayu") }, modifier = Modifier.fillMaxWidth())
+                    OutlinedTextField(value = kalimahTransliteration, onValueChange = { kalimahTransliteration = it }, label = { Text("Transliterasi") }, modifier = Modifier.fillMaxWidth())
+                    OutlinedTextField(value = kalimahReference, onValueChange = { kalimahReference = it }, label = { Text("Rujukan") }, modifier = Modifier.fillMaxWidth())
+                    OutlinedTextField(value = kalimahNote, onValueChange = { kalimahNote = it }, label = { Text("Nota") }, modifier = Modifier.fillMaxWidth())
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    val prefix = "kalimah_edit_" + entry.title + "_"
+                    libraryPrefs.edit().putString(prefix + "arabic", kalimahArabic)
+                        .putString(prefix + "meaning", kalimahMeaning)
+                        .putString(prefix + "transliteration", kalimahTransliteration)
+                        .putString(prefix + "reference", kalimahReference)
+                        .putString(prefix + "note", kalimahNote).apply()
+                    libraryRevision++
+                    editingKalimah = null
+                }) { Text("Simpan") }
+            },
+            dismissButton = { TextButton(onClick = { editingKalimah = null }) { Text("Batal") } }
+        )
+    }
+    if (showKalimahSettings) {
+        AlertDialog(
+            onDismissRequest = { showKalimahSettings = false },
+            title = { Text("Tetapan paparan kalimah") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text("Saiz tulisan Arab: " + libraryFontSize.toInt() + " sp")
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedButton(onClick = {
+                            libraryFontSize = (libraryFontSize - 2f).coerceAtLeast(14f)
+                            libraryDisplayPrefs.edit().putInt("font_size", libraryFontSize.toInt()).apply()
+                        }) { Text("A−") }
+                        OutlinedButton(onClick = {
+                            libraryFontSize = (libraryFontSize + 2f).coerceAtMost(30f)
+                            libraryDisplayPrefs.edit().putInt("font_size", libraryFontSize.toInt()).apply()
+                        }) { Text("A+") }
+                    }
+                    Text("Susunan Arab dan Melayu boleh diubah melalui Tetapan utama DinNote.", fontSize = 13.sp)
+                }
+            },
+            confirmButton = { TextButton(onClick = { showKalimahSettings = false }) { Text("Selesai") } }
+        )
     }
 
     selectedEntry?.let { entry ->
