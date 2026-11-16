@@ -908,9 +908,13 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
             ) {
                 Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 9.dp),
                     verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                    Text("▤", fontSize = 19.sp, color = Color(0xFF087F8C))
+                    Spacer(Modifier.width(9.dp))
                     Text("Kategori: $selectedCategory", modifier = Modifier.weight(1f),
-                        fontSize = 13.sp, color = Color(0xFF087F8C))
-                    Text("⌄", fontSize = 20.sp, color = Color(0xFF087F8C))
+                        fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF20262B))
+                    VerticalDivider(modifier = Modifier.height(23.dp), color = Color(0xFFB7C0C8))
+                    Spacer(Modifier.width(10.dp))
+                    Text("⌄", fontSize = 20.sp, color = Color(0xFF20262B))
                 }
             }
             DropdownMenu(expanded = libraryCategoryExpanded,
