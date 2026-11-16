@@ -46,6 +46,16 @@ class MainActivity : ComponentActivity() {
 fun DinNoteApp() {
     var selectedTab by remember { mutableIntStateOf(0) }
     var openNewNote by remember { mutableStateOf(false) }
+    val appContext = LocalContext.current
+    val installedVersion = remember {
+        try {
+            @Suppress("DEPRECATION")
+            val info = appContext.packageManager.getPackageInfo(appContext.packageName, 0)
+            info.versionName ?: "?"
+        } catch (_: Exception) {
+            "?"
+        }
+    }
     val islamicScheme = lightColorScheme(
         primary = Color(0xFF087F8C),
         onPrimary = Color.White,
@@ -73,6 +83,8 @@ fun DinNoteApp() {
                     ) {
                         Text("◈", fontSize = 17.sp, color = Color(0xFF008F91))
                         Text("DinNote", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color(0xFF006B70))
+                        Spacer(Modifier.weight(1f))
+                        Text("v$installedVersion", fontSize = 10.sp, color = Color(0xFF52716E), maxLines = 1)
                     }
                 }
             },
