@@ -912,7 +912,7 @@ fun NotesScreen(
                                     decorationBox = { inner ->
                                         Box {
                                             if (body.text.isEmpty()) Text(
-                                                "✎  Tulis catatan anda di sini...",
+                                                "Sentuh di sini untuk menulis...",
                                                 fontSize = 16.sp,
                                                 fontStyle = FontStyle.Italic,
                                                 color = if (editorBackground == "dark") Color(0xFFB8CECB) else Color(0xFF667A7B)
@@ -1255,29 +1255,19 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                     UnifiedEditorHeading("Catatan Maktabah",
                         onBack = { saveLibraryEditor(); editingLibraryKey = null },
                         onSave = { saveLibraryEditor(); editingLibraryKey = null })
-                    Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal = 8.dp, vertical = 5.dp),
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    // Formatting uses Android's native selection menu; no raw Markdown markers.
+                    Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp),
+                        horizontalArrangement = Arrangement.End) {
                         TextButton(onClick = {
                             libraryFontSize = (libraryFontSize - 2f).coerceAtLeast(14f)
                             libraryDisplayPrefs.edit().putInt("font_size", libraryFontSize.toInt()).apply()
-                        }) { Text("A−", color = Color(0xFF087F83), fontSize = 16.sp) }
-                        Text("${libraryFontSize.toInt()} sp", modifier = Modifier.padding(top = 12.dp), color = Color(0xFF075B59), fontSize = 12.sp)
+                        }) { Text("A−", color = Color(0xFF087F83), fontSize = 15.sp) }
+                        Text("${libraryFontSize.toInt()} sp", modifier = Modifier.padding(top = 12.dp),
+                            color = Color(0xFF075B59), fontSize = 12.sp)
                         TextButton(onClick = {
                             libraryFontSize = (libraryFontSize + 2f).coerceAtMost(30f)
                             libraryDisplayPrefs.edit().putInt("font_size", libraryFontSize.toInt()).apply()
-                        }) { Text("A+", color = Color(0xFF087F83), fontSize = 16.sp) }
-                        listOf("B" to "**", "I" to "_", "U" to "__", "S" to "~~",
-                            "•" to "• ", "1." to "1. ", "☑" to "☐ ", "✎" to "✍ ").forEach { (label, marker) ->
-                            TextButton(onClick = {
-                                val a = libraryBody.selection.min
-                                val b = libraryBody.selection.max
-                                val selected = libraryBody.text.substring(a, b)
-                                val insertion = if (marker in listOf("**", "_", "__", "~~"))
-                                    marker + selected + marker else marker + selected
-                                libraryBody = TextFieldValue(libraryBody.text.replaceRange(a, b, insertion),
-                                    selection = TextRange(a + insertion.length))
-                            }) { Text(label, color = Color(0xFF087F83), fontSize = 17.sp) }
-                        }
+                        }) { Text("A+", color = Color(0xFF087F83), fontSize = 15.sp) }
                     }
                     Surface(Modifier.fillMaxWidth().weight(1f).padding(horizontal = 12.dp, vertical = 8.dp),
                         shape = RoundedCornerShape(10.dp), color = Color.White,
@@ -1293,7 +1283,7 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                                         textDirection = TextDirection.ContentOrRtl),
                                     decorationBox = { inner ->
                                         Box {
-                                            if (libraryTitle.isEmpty()) Text("✎  Tajuk catatan",
+                                            if (libraryTitle.isEmpty()) Text("Tajuk catatan",
                                                 color = Color(0xFF087F83), fontSize = 18.sp)
                                             inner()
                                         }
