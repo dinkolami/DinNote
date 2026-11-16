@@ -41,6 +41,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun DinNoteApp() {
     var selectedTab by remember { mutableIntStateOf(0) }
+    var openNewNote by remember { mutableStateOf(false) }
     val islamicScheme = lightColorScheme(
         primary = Color(0xFF145A45),
         onPrimary = Color.White,
@@ -96,8 +97,8 @@ fun DinNoteApp() {
             }
         ) { padding ->
             when (selectedTab) {
-                0 -> HomeScreen(Modifier.padding(padding), onOpenNotes = { selectedTab = 1 }, onOpenLibrary = { selectedTab = 2 })
-                1 -> NotesScreen(Modifier.padding(padding))
+                0 -> HomeScreen(Modifier.padding(padding), onOpenNotes = { openNewNote = true; selectedTab = 1 }, onOpenLibrary = { selectedTab = 2 })
+                1 -> NotesScreen(Modifier.padding(padding), openNewNote = openNewNote, onNewNoteOpened = { openNewNote = false })
                 2 -> LibraryScreen2(Modifier.padding(padding))
             }
         }
@@ -223,7 +224,11 @@ fun HomeScreen(
 }
 
 @Composable
-fun NotesScreen(modifier: Modifier = Modifier) {
+fun NotesScreen(
+    modifier: Modifier = Modifier,
+    openNewNote: Boolean = false,
+    onNewNoteOpened: () -> Unit = {}
+) {
     val context = LocalContext.current
     val database = remember {
         NoteDatabase(context).also { it.migrateOldSingleNote(context) }
@@ -244,11 +249,17 @@ fun NotesScreen(modifier: Modifier = Modifier) {
     var renamedCategory by remember { mutableStateOf("") }
     var categoryToDelete by remember { mutableStateOf<String?>(null) }
     var noteToDelete by remember { mutableStateOf<DinNote?>(null) }
-    val builtInCategories = listOf("Agama", "Pengajian", "Peribadi", "Kerja", "Idea", "Lain-lain")
+    val defaultCategories = listOf("Agama", "Pengajian", "Kitab", "Peribadi", "Kerja", "Idea", "Lain-lain")
+    val categoryPrefs = remember { context.getSharedPreferences("dinnote_categories", android.content.Context.MODE_PRIVATE) }
+    val builtInCategories = remember {
+        mutableStateListOf<String>().apply {
+            val saved = categoryPrefs.getString("built_in_order", null)
+            addAll(if (saved.isNullOrBlank()) defaultCategories else saved.split("|").filter { it.isNotBlank() })
+        }
+    }
     val customCategories = remember {
         mutableStateListOf<String>().apply {
-            addAll(context.getSharedPreferences("dinnote_categories", android.content.Context.MODE_PRIVATE)
-                .getStringSet("custom", emptySet()).orEmpty().sorted())
+            addAll(categoryPrefs.getStringSet("custom", emptySet()).orEmpty().sorted())
         }
     }
     val allCategories = builtInCategories + customCategories
@@ -295,6 +306,18 @@ fun NotesScreen(modifier: Modifier = Modifier) {
     }
 
     LaunchedEffect(Unit) { refreshNotes() }
+
+    LaunchedEffect(openNewNote) {
+        if (openNewNote) {
+            editingId = null
+            title = ""
+            body = TextFieldValue("")
+            selectedColor = "green"
+            if (selectedCategory == "Semua" || selectedCategory !in allCategories) selectedCategory = "Lain-lain"
+            showEditor = true
+            onNewNoteOpened()
+        }
+    }
 
     val visibleNotes = notes.filter {
         it.archived == showArchived &&
@@ -354,9 +377,7 @@ fun NotesScreen(modifier: Modifier = Modifier) {
                 )
             }
             AssistChip(onClick = { showAddCategory = true }, label = { Text("+ Kategori") })
-            if (customCategories.isNotEmpty()) {
-                AssistChip(onClick = { showManageCategories = true }, label = { Text("Urus kategori") })
-            }
+            AssistChip(onClick = { showManageCategories = true }, label = { Text("Urus kategori") })
         }
 
         OutlinedTextField(
@@ -519,10 +540,10 @@ fun NotesScreen(modifier: Modifier = Modifier) {
     if (showManageCategories) {
         AlertDialog(
             onDismissRequest = { showManageCategories = false },
-            title = { Text("Urus kategori sendiri") },
+            title = { Text("Urus kategori nota") },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    customCategories.forEach { category ->
+                    allCategories.forEach { category ->
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
@@ -533,10 +554,12 @@ fun NotesScreen(modifier: Modifier = Modifier) {
                                 renamedCategory = category
                                 showManageCategories = false
                             }) { Text("Tukar nama") }
-                            TextButton(onClick = {
-                                categoryToDelete = category
-                                showManageCategories = false
-                            }) { Text("Padam") }
+                            if (category in customCategories) {
+                                TextButton(onClick = {
+                                    categoryToDelete = category
+                                    showManageCategories = false
+                                }) { Text("Padam") }
+                            }
                         }
                     }
                 }
@@ -562,14 +585,17 @@ fun NotesScreen(modifier: Modifier = Modifier) {
             confirmButton = {
                 TextButton(onClick = {
                     val newName = renamedCategory.trim()
-                    if (newName.isNotBlank() && newName !in builtInCategories &&
-                        (newName == oldName || newName !in customCategories)
-                    ) {
+                    if (newName.isNotBlank() && newName != oldName && newName !in allCategories) {
                         database.renameCategory(oldName, newName)
-                        val index = customCategories.indexOf(oldName)
-                        if (index >= 0) customCategories[index] = newName
-                        context.getSharedPreferences("dinnote_categories", android.content.Context.MODE_PRIVATE)
-                            .edit().putStringSet("custom", customCategories.toSet()).apply()
+                        val customIndex = customCategories.indexOf(oldName)
+                        if (customIndex >= 0) {
+                            customCategories[customIndex] = newName
+                        } else {
+                            val builtInIndex = builtInCategories.indexOf(oldName)
+                            if (builtInIndex >= 0) builtInCategories[builtInIndex] = newName
+                            categoryPrefs.edit().putString("built_in_order", builtInCategories.joinToString("|")).apply()
+                        }
+                        categoryPrefs.edit().putStringSet("custom", customCategories.toSet()).apply()
                         if (selectedCategory == oldName) selectedCategory = newName
                         refreshNotes()
                     }
