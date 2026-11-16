@@ -236,6 +236,7 @@ fun NotesScreen(
     val notes = remember { mutableStateListOf<DinNote>() }
     var search by remember { mutableStateOf("") }
     var showEditor by remember { mutableStateOf(false) }
+    var readingMode by remember { mutableStateOf(false) }
     val undoStack = remember { mutableStateListOf<TextFieldValue>() }
     val redoStack = remember { mutableStateListOf<TextFieldValue>() }
     var editingId by remember { mutableStateOf<Long?>(null) }
@@ -317,7 +318,7 @@ fun NotesScreen(
             undoStack.clear(); redoStack.clear()
             selectedColor = "green"
             if (selectedCategory == "Semua" || selectedCategory !in allCategories) selectedCategory = "Lain-lain"
-            showEditor = true
+            readingMode = false; showEditor = true
             onNewNoteOpened()
         }
     }
@@ -347,7 +348,7 @@ fun NotesScreen(
                 undoStack.clear(); redoStack.clear()
                 selectedColor = "green"
                 selectedCategory = if (selectedCategory == "Semua") "Lain-lain" else selectedCategory
-                showEditor = true
+                readingMode = false; showEditor = true
                 }) { Text("+ Nota") }
             }
         }
@@ -474,7 +475,7 @@ fun NotesScreen(
                                     undoStack.clear(); redoStack.clear()
                                     selectedColor = item.colorTag
                                     selectedCategory = item.category
-                                    showEditor = true
+                                    readingMode = true; showEditor = true
                                 },
                                 verticalArrangement = Arrangement.spacedBy(6.dp)
                             ) {
@@ -655,11 +656,23 @@ fun NotesScreen(
             onDismissRequest = { persistNote(); showEditor = false },
             properties = androidx.compose.ui.window.DialogProperties(
                 usePlatformDefaultWidth = false,
-                decorFitsSystemWindows = false
+                decorFitsSystemWindows = true
             )
         ) {
             Surface(modifier = Modifier.fillMaxSize(), color = Color.White) {
                 Column(Modifier.fillMaxSize()) {
+                    if (readingMode) {
+                        Row(Modifier.fillMaxWidth().padding(12.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+                            TextButton(onClick = { showEditor = false }) { Text("← Kembali") }
+                            TextButton(onClick = { readingMode = false }) { Text("✎ Edit") }
+                        }
+                        HorizontalDivider()
+                        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp)) {
+                            Text(title.ifBlank { "Tanpa tajuk" }, fontSize = 27.sp, fontWeight = FontWeight.Bold)
+                            Spacer(Modifier.height(16.dp))
+                            Text(formattedNoteText(body.text), fontSize = 19.sp, lineHeight = 30.sp)
+                        }
+                    } else {
                     Row(
                         Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 10.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -685,7 +698,7 @@ fun NotesScreen(
                     }
                     HorizontalDivider(color = Color(0xFFF0F0F0))
                     Row(
-                        Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 8.dp),
+                        Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 3.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
                     ) {
@@ -712,7 +725,7 @@ fun NotesScreen(
                     androidx.compose.foundation.text.BasicTextField(
                         value = title,
                         onValueChange = { title = it },
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 12.dp),
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 5.dp),
                         singleLine = true,
                         textStyle = androidx.compose.ui.text.TextStyle(fontSize = 28.sp, color = Color(0xFF263B3E)),
                         decorationBox = { inner ->
@@ -756,6 +769,7 @@ fun NotesScreen(
                                 }
                             }) { Text(label, color = Color(0xFF4F9BC9), fontSize = 21.sp) }
                         }
+                    }
                     }
                 }
             }
