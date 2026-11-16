@@ -70,7 +70,7 @@ fun GlobalSearchScreen(modifier: Modifier = Modifier) {
         }
         Text("${hits.size} hasil", style = MaterialTheme.typography.labelMedium)
         LazyColumn(verticalArrangement = Arrangement.spacedBy(7.dp)) {
-            items(hits, key = { it.key }) { hit ->
+            items(hits, key = { "${it.source}:${it.key}" }) { hit ->
                 Surface(modifier = Modifier.fillMaxWidth(),
                     shape = androidx.compose.foundation.shape.RoundedCornerShape(10.dp),
                     color = MaterialTheme.colorScheme.surface,
