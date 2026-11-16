@@ -43,19 +43,19 @@ fun DinNoteApp() {
     var selectedTab by remember { mutableIntStateOf(0) }
     var openNewNote by remember { mutableStateOf(false) }
     val islamicScheme = lightColorScheme(
-        primary = Color(0xFF145A45),
+        primary = Color(0xFF087F8C),
         onPrimary = Color.White,
-        primaryContainer = Color(0xFFD7E9DF),
-        onPrimaryContainer = Color(0xFF103D30),
-        secondary = Color(0xFF9A7845),
+        primaryContainer = Color(0xFFD9F2F3),
+        onPrimaryContainer = Color(0xFF064E57),
+        secondary = Color(0xFF4D6670),
         onSecondary = Color.White,
-        secondaryContainer = Color(0xFFF0E4CB),
+        secondaryContainer = Color(0xFFEAF1F3),
         onSecondaryContainer = Color(0xFF493719),
         tertiary = Color(0xFF526B78),
-        background = Color(0xFFF6F4ED),
-        surface = Color(0xFFFFFEFA),
-        surfaceVariant = Color(0xFFE9EEE8),
-        outline = Color(0xFFD6D2C5)
+        background = Color(0xFFFFFFFF),
+        surface = Color(0xFFFFFFFF),
+        surfaceVariant = Color(0xFFF5F7F8),
+        outline = Color(0xFFD8DEE3)
     )
     MaterialTheme(colorScheme = islamicScheme) {
         Scaffold(
@@ -63,12 +63,12 @@ fun DinNoteApp() {
             topBar = {
                 Surface(color = MaterialTheme.colorScheme.surface) {
                     Row(
-                        modifier = Modifier.fillMaxWidth().height(42.dp).padding(horizontal = 14.dp),
+                        modifier = Modifier.fillMaxWidth().height(40.dp).padding(horizontal = 14.dp),
                         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         Text("📗", fontSize = 15.sp)
-                        Text("dinnote", fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
+                        Text("DinNote", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF17313A))
                     }
                 }
             },
