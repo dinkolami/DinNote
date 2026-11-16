@@ -1310,7 +1310,6 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                                 Spacer(Modifier.height(12.dp))
                                 androidx.compose.foundation.text.BasicTextField(
                                     value = libraryBody, onValueChange = { libraryBody = it },
-                                    visualTransformation = MarkdownWysiwygTransformation(),
                                     modifier = Modifier.weight(1f).fillMaxWidth()
                                         .border(BorderStroke(1.dp, Color(0xFFE0E7E6)), RoundedCornerShape(10.dp))
                                         .padding(horizontal = 14.dp, vertical = 12.dp),
