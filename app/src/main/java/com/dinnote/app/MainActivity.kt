@@ -1208,10 +1208,17 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
     var editingLibraryKey by remember { mutableStateOf<String?>(null) }
     var libraryTitle by remember { mutableStateOf("") }
     var libraryBody by remember { mutableStateOf(TextFieldValue("")) }
+    var translationDraft by remember { mutableStateOf("") }
+    var translationStatus by remember { mutableStateOf("") }
+    var translationBusy by remember { mutableStateOf(false) }
+    val translatedNoteDatabase = remember { NoteDatabase(context).also { it.migrateOldSingleNote(context) } }
+
     fun openLibraryEditor(key: String, defaultTitle: String = "", defaultBody: String = "") {
         editingLibraryKey = key
         libraryTitle = libraryPrefs.getString(key + "_title", defaultTitle) ?: defaultTitle
         libraryBody = TextFieldValue(libraryPrefs.getString(key + "_body", defaultBody) ?: defaultBody)
+        translationDraft = ""
+        translationStatus = ""
     }
     fun saveLibraryEditor() {
         editingLibraryKey?.let { key ->
@@ -1465,6 +1472,50 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                     UnifiedEditorHeading("Catatan Maktabah",
                         onBack = { saveLibraryEditor(); editingLibraryKey = null },
                         onSave = { saveLibraryEditor(); editingLibraryKey = null })
+                    Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedButton(
+                            enabled = !translationBusy && libraryBody.text.isNotBlank(),
+                            onClick = {
+                                val selection = libraryBody.selection
+                                val selected = libraryBody.text.substring(selection.min.coerceIn(0, libraryBody.text.length), selection.max.coerceIn(0, libraryBody.text.length))
+                                val source = selected.ifBlank { libraryBody.text }
+                                translationBusy = true
+                                translationStatus = "Menyediakan terjemahan (muat turun model jika perlu)..."
+                                ArabicMalayTranslator.translate(source) { result ->
+                                    translationBusy = false
+                                    result.onSuccess {
+                                        translationDraft = it
+                                        translationStatus = "Terjemahan draf tersedia. Sila semak maksud fiqh."
+                                    }.onFailure {
+                                        translationStatus = "Terjemahan gagal: ${it.localizedMessage ?: "Sila cuba lagi"}"
+                                    }
+                                }
+                            }
+                        ) { Text(if (translationBusy) "Menterjemah..." else "Terjemah Arab → Melayu", fontSize = 12.sp) }
+                        OutlinedButton(
+                            enabled = translationDraft.isNotBlank(),
+                            onClick = {
+                                val selection = libraryBody.selection
+                                val selected = libraryBody.text.substring(selection.min.coerceIn(0, libraryBody.text.length), selection.max.coerceIn(0, libraryBody.text.length))
+                                val source = selected.ifBlank { libraryBody.text }
+                                val note = "Petikan Arab:\\n" + source + "\\n\\nTerjemahan Melayu (draf):\\n" + translationDraft + "\\n\\nSumber: " + libraryTitle.ifBlank { "Maktabah DinNote" }
+                                translatedNoteDatabase.save(libraryTitle.ifBlank { "Petikan Maktabah" }, note, null)
+                                translationStatus = "Petikan dan terjemahan disimpan dalam Nota."
+                            }
+                        ) { Text("Simpan ke Nota", fontSize = 12.sp) }
+                    }
+                    if (translationStatus.isNotBlank()) {
+                        Text(translationStatus, modifier = Modifier.padding(horizontal = 14.dp), fontSize = 12.sp)
+                    }
+                    if (translationDraft.isNotBlank()) {
+                        OutlinedTextField(
+                            value = translationDraft,
+                            onValueChange = { translationDraft = it },
+                            label = { Text("Terjemahan Melayu — boleh sunting") },
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
+                            maxLines = 4
+                        )
+                    }
                     DefaultEditorFontControls(
                         fontSize = libraryFontSize,
                         onChange = { size ->
