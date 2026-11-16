@@ -183,6 +183,11 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
                 mutableIntStateOf(prefs.getInt("reading_position_${item.id}", 0)
                     .coerceIn(0, (paragraphs.size - 1).coerceAtLeast(0)))
             }
+            LaunchedEffect(item.id) {
+                if (paragraphs.isNotEmpty() && savedParagraph > 0) {
+                    readerListState.scrollToItem(savedParagraph)
+                }
+            }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text("Perenggan: ${paragraphs.size}", fontSize = 12.sp, color = Color(0xFF075B59))
                 TextButton(onClick = { readerScope.launch { readerListState.animateScrollToItem(savedParagraph) } },
