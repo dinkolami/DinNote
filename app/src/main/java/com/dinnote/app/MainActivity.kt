@@ -743,6 +743,18 @@ fun NotesScreen(
     }
 
     if (showEditor) {
+        fun formatSelection(marker: String) {
+            val start = body.selection.min.coerceIn(0, body.text.length)
+            val end = body.selection.max.coerceIn(start, body.text.length)
+            val selected = body.text.substring(start, end)
+            val replacement = marker + selected + marker
+            undoStack.add(body)
+            if (undoStack.size > 60) undoStack.removeAt(0)
+            redoStack.clear()
+            val updated = body.text.replaceRange(start, end, replacement)
+            val cursor = if (start == end) start + marker.length else start + replacement.length
+            body = TextFieldValue(updated, selection = TextRange(cursor))
+        }
         fun persistNote() {
             if (title.isNotBlank() || body.text.isNotBlank()) {
                 val id = database.save(title.trim(), body.text, editingId)
@@ -844,6 +856,26 @@ fun NotesScreen(
                             displayPrefs.edit().putInt("font_size", size.toInt()).apply()
                         }
                     )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState())
+                            .padding(horizontal = 12.dp, vertical = 2.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                    ) {
+                        OutlinedButton(
+                            onClick = { formatSelection("**") },
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp),
+                            modifier = Modifier.height(34.dp)
+                        ) { Text("B", fontWeight = FontWeight.Bold) }
+                        OutlinedButton(
+                            onClick = { formatSelection("_") },
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp),
+                            modifier = Modifier.height(34.dp)
+                        ) { Text("I", fontStyle = FontStyle.Italic) }
+                        Text("Pilih teks dahulu untuk memformat", fontSize = 11.sp,
+                            color = Color(0xFF667A7B))
+                    }
 
                     Surface(
                         modifier = Modifier.fillMaxWidth().weight(1f).padding(start = 10.dp, end = 10.dp, top = 2.dp, bottom = 8.dp),
