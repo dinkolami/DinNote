@@ -391,7 +391,7 @@ fun NotesScreen(modifier: Modifier = Modifier) {
             }
         } else {
             val orderedNotes = visibleNotes.sortedWith(
-                compareByDescending<DinNote> { it.pinned }.thenByDescending { it.timestamp }
+                compareByDescending<DinNote> { it.pinned }.thenByDescending { it.updatedAt }
             )
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
@@ -457,7 +457,7 @@ fun NotesScreen(modifier: Modifier = Modifier) {
                             }
                             Text(
                                 java.text.SimpleDateFormat("dd MMM", java.util.Locale("ms", "MY"))
-                                    .format(java.util.Date(item.timestamp)),
+                                    .format(java.util.Date(item.updatedAt)),
                                 fontSize = 10.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
