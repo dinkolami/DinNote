@@ -968,6 +968,8 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
     var searchExpanded by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val libraryPrefs = remember { context.getSharedPreferences("dinnote_library_edits", android.content.Context.MODE_PRIVATE) }
+    val libraryDisplayPrefs = remember { context.getSharedPreferences("dinnote_display", android.content.Context.MODE_PRIVATE) }
+    var libraryFontSize by remember { mutableFloatStateOf(libraryDisplayPrefs.getInt("font_size", 19).toFloat()) }
     var libraryRevision by remember { mutableIntStateOf(0) }
     var showAddCategory by remember { mutableStateOf(false) }
     var newCategoryName by remember { mutableStateOf("") }
@@ -1193,6 +1195,15 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                         onSave = { saveLibraryEditor(); editingLibraryKey = null })
                     Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal = 8.dp, vertical = 5.dp),
                         horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        TextButton(onClick = {
+                            libraryFontSize = (libraryFontSize - 2f).coerceAtLeast(14f)
+                            libraryDisplayPrefs.edit().putInt("font_size", libraryFontSize.toInt()).apply()
+                        }) { Text("A−", color = Color(0xFF087F83), fontSize = 16.sp) }
+                        Text("${libraryFontSize.toInt()} sp", modifier = Modifier.padding(top = 12.dp), color = Color(0xFF075B59), fontSize = 12.sp)
+                        TextButton(onClick = {
+                            libraryFontSize = (libraryFontSize + 2f).coerceAtMost(30f)
+                            libraryDisplayPrefs.edit().putInt("font_size", libraryFontSize.toInt()).apply()
+                        }) { Text("A+", color = Color(0xFF087F83), fontSize = 16.sp) }
                         listOf("B" to "**", "I" to "_", "U" to "__", "S" to "~~",
                             "•" to "• ", "1." to "1. ", "☑" to "☐ ", "✎" to "✍ ").forEach { (label, marker) ->
                             TextButton(onClick = {
@@ -1232,8 +1243,8 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                                 androidx.compose.foundation.text.BasicTextField(
                                     value = libraryBody, onValueChange = { libraryBody = it },
                                     modifier = Modifier.weight(1f).fillMaxWidth(),
-                                    textStyle = androidx.compose.ui.text.TextStyle(fontSize = 16.sp,
-                                        lineHeight = 24.sp, color = Color(0xFF263B3E),
+                                    textStyle = androidx.compose.ui.text.TextStyle(fontSize = libraryFontSize.sp,
+                                        lineHeight = (libraryFontSize * libraryDisplayPrefs.getFloat("line_spacing", 1.6f)).sp, color = Color(0xFF263B3E),
                                         textDirection = TextDirection.ContentOrRtl),
                                     decorationBox = { inner ->
                                         Box {
