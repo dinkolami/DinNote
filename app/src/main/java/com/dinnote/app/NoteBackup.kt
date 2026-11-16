@@ -25,6 +25,7 @@ object NoteBackup {
                             .put("colorTag", note.colorTag)
                             .put("pinned", note.pinned)
                             .put("archived", note.archived)
+                            .put("category", note.category)
                     )
                 }
             })
@@ -47,7 +48,7 @@ object NoteBackup {
         }
 
         val existing = database.allNotes().map { note ->
-            noteSignature(note.title, note.body, note.colorTag, note.pinned, note.archived)
+            noteSignature(note.title, note.body, note.colorTag, note.pinned, note.archived, note.category)
         }.toMutableSet()
         val entries = root.optJSONArray("notes") ?: JSONArray()
         var imported = 0
@@ -64,7 +65,8 @@ object NoteBackup {
                 ?: "green"
             val pinned = item.optBoolean("pinned", false)
             val archived = item.optBoolean("archived", false)
-            val signature = noteSignature(title, body, color, pinned, archived)
+            val category = item.optString("category", "Lain-lain").ifBlank { "Lain-lain" }
+            val signature = noteSignature(title, body, color, pinned, archived, category)
 
             if (signature in existing) {
                 skipped++
@@ -75,6 +77,7 @@ object NoteBackup {
             database.setColor(id, color)
             database.setPinned(id, pinned)
             database.setArchived(id, archived)
+            database.setCategory(id, category)
             imported++
         }
         return NoteImportResult(imported, skipped)
@@ -85,7 +88,8 @@ object NoteBackup {
         body: String,
         colorTag: String,
         pinned: Boolean,
-        archived: Boolean
-    ): String = listOf(title, body, colorTag, pinned.toString(), archived.toString())
+        archived: Boolean,
+        category: String
+    ): String = listOf(title, body, colorTag, pinned.toString(), archived.toString(), category)
         .joinToString(separator = "\u001F")
 }
