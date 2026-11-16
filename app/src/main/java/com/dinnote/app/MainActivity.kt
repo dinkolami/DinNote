@@ -45,6 +45,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun DinNoteApp() {
     var selectedTab by remember { mutableIntStateOf(0) }
+    var showGlobalSearch by remember { mutableStateOf(false) }
     var openNewNote by remember { mutableStateOf(false) }
     val islamicScheme = lightColorScheme(
         primary = Color(0xFF087F8C),
@@ -125,6 +126,7 @@ fun DinNoteApp() {
                                 Surface(
                                     modifier = Modifier.weight(1f).fillMaxHeight().clickable {
                                         selectedTab = tab.third
+                                        if (tab.third != 0) showGlobalSearch = false
                                     },
                                     shape = RoundedCornerShape(6.dp),
                                     color = if (active) Color(0xFFDDF4F2).copy(alpha = 0.92f)
@@ -158,7 +160,7 @@ fun DinNoteApp() {
             }
         ) { padding ->
             when (selectedTab) {
-                0 -> HomeScreen(Modifier.padding(padding), onOpenNotes = { openNewNote = true; selectedTab = 1 }, onOpenLibrary = { selectedTab = 2 })
+                0 -> if (showGlobalSearch) GlobalSearchScreen(Modifier.padding(padding)) else HomeScreen(Modifier.padding(padding), onOpenNotes = { openNewNote = true; selectedTab = 1 }, onOpenLibrary = { selectedTab = 2 }, onOpenSearch = { showGlobalSearch = true })
                 1 -> NotesScreen(Modifier.padding(padding), openNewNote = openNewNote, onNewNoteOpened = { openNewNote = false })
                 2 -> LibraryHubScreen(Modifier.padding(padding))
                 3 -> DisplaySettingsScreen(Modifier.padding(padding))
@@ -216,7 +218,8 @@ private fun HomeShortcut(label: String, symbol: String, modifier: Modifier = Mod
 fun HomeScreen(
     modifier: Modifier = Modifier,
     onOpenNotes: () -> Unit,
-    onOpenLibrary: () -> Unit
+    onOpenLibrary: () -> Unit,
+    onOpenSearch: () -> Unit
 ) {
     Column(
         modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(14.dp),
@@ -281,6 +284,12 @@ fun HomeScreen(
                     }
                 }
             }
+        }
+        Surface(modifier = Modifier.fillMaxWidth().clickable(onClick = onOpenSearch),
+            shape = RoundedCornerShape(9.dp), color = Color.White,
+            border = BorderStroke(1.dp, Color(0xFFB6D7D7))) {
+            Text("⌕  Cari seluruh DinNote & Kegemaran",
+                modifier = Modifier.padding(12.dp), color = Color(0xFF075A60))
         }
         PremiumSectionHeading("Ruang anda", "✦")
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
