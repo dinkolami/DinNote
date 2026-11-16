@@ -1202,7 +1202,7 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
     var categoryToRename by remember { mutableStateOf<String?>(null) }
     val builtinLibraryCategories = listOf("Pelbagai", "Kitab-Kitab", "Fiqh Syafi‘i", "Usul Fiqh", "Hadis", "Tafsir", "Akidah", "Tasawuf", "Bahasa Arab", "Kalam Hikmah")
     val customLibraryCategories = remember(libraryRevision) {
-        libraryPrefs.getString("custom_categories", "")!!.split("\\n").filter { it.isNotBlank() }
+        libraryPrefs.getString("custom_categories", "")!!.split("\n").filter { it.isNotBlank() }
     }
     val allLibraryCategories = builtinLibraryCategories + customLibraryCategories
     var editingLibraryKey by remember { mutableStateOf<String?>(null) }
@@ -1443,7 +1443,7 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                                 libraryPrefs.edit().putString(newKey, libraryPrefs.getString(key, "")).remove(key).apply()
                             }
                         }
-                        libraryPrefs.edit().putString("custom_categories", updated.joinToString("\\n")).apply()
+                        libraryPrefs.edit().putString("custom_categories", updated.joinToString("\n")).apply()
                         selectedCategory = name
                         libraryRevision++
                         showAddCategory = false
@@ -1498,7 +1498,7 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                                 val selection = libraryBody.selection
                                 val selected = libraryBody.text.substring(selection.min.coerceIn(0, libraryBody.text.length), selection.max.coerceIn(0, libraryBody.text.length))
                                 val source = selected.ifBlank { libraryBody.text }
-                                val note = "Petikan Arab:\\n" + source + "\\n\\nTerjemahan Melayu (draf):\\n" + translationDraft + "\\n\\nSumber: " + libraryTitle.ifBlank { "Maktabah DinNote" }
+                                val note = "Petikan Arab:\n" + source + "\n\nTerjemahan Melayu (draf):\n" + translationDraft + "\n\nSumber: " + libraryTitle.ifBlank { "Maktabah DinNote" }
                                 translatedNoteDatabase.save(libraryTitle.ifBlank { "Petikan Maktabah" }, note, null)
                                 translationStatus = "Petikan dan terjemahan disimpan dalam Nota."
                             }
