@@ -67,6 +67,22 @@ jobs:
           fi
           echo "Signing keystore validated; key contents remain private."
 
+      - name: Verify keystore matches permanent DinNote update certificate
+        env:
+          EXPECTED_SIGNER_SHA256: "2537D16917B5FC7FCB0756BB288EB4C904780A32E8F0231B21FB33595ED85F6D"
+        run: |
+          ACTUAL=$(keytool -list -v -keystore app/dinnote-debug.keystore -storepass android -alias androiddebugkey | sed -n 's/^[[:space:]]*SHA256: //p' | head -n 1 | tr '[:lower:]' '[:upper:]' | tr -d ':[:space:]')
+          if [ -z "$ACTUAL" ]; then
+            echo "::error::Could not read the signing certificate fingerprint from the configured keystore."
+            exit 1
+          fi
+          if [ "$ACTUAL" != "$EXPECTED_SIGNER_SHA256" ]; then
+            echo "::error::Configured signing key does not match the DinNote be50c92 update certificate. Refusing to build an incompatible APK."
+            exit 1
+          fi
+          echo "Signing certificate matches the permanent DinNote update certificate."
+
+
       - name: Set persistent debug signing
         run: |
           mkdir -p "$HOME/.android"
