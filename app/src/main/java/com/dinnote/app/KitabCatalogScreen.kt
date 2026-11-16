@@ -200,7 +200,8 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
                 }
             }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("Perenggan: ${paragraphs.size}", fontSize = 12.sp, color = Color(0xFF075B59))
+                Text(if (paragraphs.isEmpty()) "Tiada kandungan" else "Bacaan: ${savedParagraph + 1}/${paragraphs.size} perenggan",
+                    fontSize = 12.sp, color = if (readerBackground == "dark") Color(0xFFB9E7E1) else Color(0xFF075B59))
                 Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
                     TextButton(onClick = { readerScope.launch { readerListState.animateScrollToItem(savedParagraph) } },
                         enabled = paragraphs.isNotEmpty()) {
@@ -249,7 +250,7 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
                                 Text(paragraphs[index], fontSize = readerFontSize.sp,
                                     lineHeight = (readerFontSize * readerLineSpacing).sp,
                                     color = if (highlighted) Color(0xFF263B3E) else readerInk,
-                                    style = TextStyle(textDirection = TextDirection.ContentOrRtl),
+                                    style = TextStyle(textDirection = if (arabicParagraph) TextDirection.Rtl else TextDirection.Ltr),
                                     modifier = Modifier.fillMaxWidth().padding(4.dp),
                                     textAlign = if (arabicParagraph) TextAlign.Right else readerTextAlignment)
                             }
