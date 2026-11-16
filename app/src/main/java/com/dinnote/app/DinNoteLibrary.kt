@@ -15,6 +15,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 
 private data class DinLibraryItem(
     val id: String,
@@ -171,22 +172,32 @@ fun LibraryScreen2(modifier: Modifier = Modifier) {
     }
 
     selected?.let { entry ->
-        AlertDialog(
-            onDismissRequest = { selected = null },
-            title = { Text(entry.title) },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text(entry.arabic, fontSize = 23.sp)
-                    if (entry.transliteration.isNotBlank()) Text(entry.transliteration)
-                    if (entry.author.isNotBlank()) Text(entry.author, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.secondary)
-                    Text(entry.explanation)
-                    if (entry.note.isNotBlank()) Text(entry.note)
-                    Text("Rujukan: ${entry.reference}", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Dialog(onDismissRequest = { selected = null }, properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false)) {
+            Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+                Column(Modifier.fillMaxSize().padding(18.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text("Bacaan penuh", fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                        TextButton(onClick = { selected = null }) { Text("Tutup") }
+                    }
+                    Text(entry.title, fontSize = 23.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                    Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                        if (entry.arabic.isNotBlank()) Text(entry.arabic, fontSize = 28.sp, modifier = Modifier.fillMaxWidth())
+                        if (entry.transliteration.isNotBlank()) Text(entry.transliteration, fontSize = 17.sp)
+                        if (entry.author.isNotBlank()) Text(entry.author, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.secondary)
+                        Text(entry.explanation, fontSize = 17.sp)
+                        if (entry.note.isNotBlank()) {
+                            Text("Nota tambahan", fontWeight = FontWeight.Bold)
+                            Text(entry.note, fontSize = 16.sp)
+                        }
+                        if (entry.reference.isNotBlank()) {
+                            Text("Rujukan", fontWeight = FontWeight.Bold)
+                            Text(entry.reference, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                    Button(onClick = { editing = entry; selected = null }, modifier = Modifier.fillMaxWidth()) { Text("Edit kandungan") }
                 }
-            },
-            confirmButton = { TextButton(onClick = { selected = null }) { Text("Tutup") } },
-            dismissButton = { TextButton(onClick = { editing = entry; selected = null }) { Text("Edit") } }
-        )
+            }
+        }
     }
 
     editing?.let { item ->
