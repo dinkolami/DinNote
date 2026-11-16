@@ -209,6 +209,33 @@ private fun HomeShortcut(label: String, symbol: String, modifier: Modifier = Mod
 }
 
 @Composable
+private fun DinNoteDashboardTile(
+    title: String, subtitle: String, symbol: String,
+    modifier: Modifier = Modifier, onClick: () -> Unit
+) {
+    Surface(
+        modifier = modifier.height(124.dp).clickable(onClick = onClick),
+        shape = RoundedCornerShape(14.dp),
+        color = Color.White,
+        border = BorderStroke(1.dp, Color(0xFFB7DCD7)),
+        shadowElevation = 2.dp
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp, vertical = 12.dp),
+            horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(symbol, fontSize = 29.sp, color = Color(0xFF087F8C))
+            Spacer(Modifier.height(5.dp))
+            Text(title, fontSize = 14.sp, fontWeight = FontWeight.Bold,
+                color = Color(0xFF183A30), maxLines = 2, textAlign = TextAlign.Center)
+            Text(subtitle, fontSize = 10.sp, color = Color(0xFF53736F),
+                maxLines = 2, textAlign = TextAlign.Center)
+        }
+    }
+}
+
+@Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
     onOpenNotes: () -> Unit,
@@ -216,52 +243,69 @@ fun HomeScreen(
     onOpenSearch: () -> Unit
 ) {
     Column(
-        modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 14.dp, vertical = 10.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp)
+        modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState())
+            .padding(horizontal = 14.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Surface(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp),
-            color = Color(0xFFF2FAF8),
+            shape = RoundedCornerShape(16.dp),
+            color = Color(0xFF087F8C),
             border = BorderStroke(1.dp, Color(0xFFB7DCD7))
         ) {
-            Row(
-                Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 10.dp),
-                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
-            ) {
-                Column(Modifier.weight(1f)) {
-                    Text("Assalamualaikum", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF075B59))
-                    Text("Selamat datang ke DinNote", fontSize = 11.sp, color = Color(0xFF53736F))
-                    Text("۞  ﷽  ۞", fontSize = 17.sp, color = Color(0xFFB48B39), modifier = Modifier.padding(top = 5.dp))
-                    Text("⌒  ۞  ⌒  ۞  ⌒", fontSize = 13.sp, color = Color(0xFF087F8C), modifier = Modifier.padding(top = 2.dp))
-                }
-                OutlinedButton(onClick = onOpenNotes, shape = RoundedCornerShape(8.dp),
-                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 2.dp)) {
-                    Text("+ Nota", fontSize = 12.sp)
-                }
+            Column(Modifier.fillMaxWidth().padding(18.dp)) {
+                Text("۞  ﷽  ۞", fontSize = 22.sp, color = Color(0xFFF3D59A))
+                Text("Assalamualaikum", fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold, color = Color.White)
+                Text("DinNote • Maktabah Arab–Melayu", fontSize = 13.sp,
+                    color = Color(0xFFE1F5F3))
+                Text("⌒  ۞  ⌒  ۞  ⌒", fontSize = 16.sp,
+                    color = Color(0xFFF3D59A), modifier = Modifier.padding(top = 8.dp))
             }
         }
         Surface(
             modifier = Modifier.fillMaxWidth().clickable(onClick = onOpenSearch),
-            shape = RoundedCornerShape(8.dp),
-            color = Color.White,
-            border = BorderStroke(1.dp, Color(0xFFD5DDDC))
+            shape = RoundedCornerShape(12.dp), color = Color.White,
+            border = BorderStroke(1.dp, Color(0xFFB7DCD7))
         ) {
-            Text("⌕  Cari nota, kitab dan kegemaran",
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
-                fontSize = 13.sp, color = Color(0xFF52716E))
+            Text("⌕   Cari nota, kitab dan rujukan",
+                modifier = Modifier.padding(horizontal = 14.dp, vertical = 13.dp),
+                fontSize = 14.sp, color = Color(0xFF52716E))
         }
-        PremiumSectionHeading("Ruang anda", "✦")
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            HomeShortcut("Nota Peribadi", "✎", Modifier.weight(1f), onOpenNotes)
-            HomeShortcut("Maktabah", "۞", Modifier.weight(1f), onOpenLibrary)
+        Row(horizontalArrangement = Arrangement.spacedBy(9.dp)) {
+            DinNoteDashboardTile("Maktabah", "Kitab & rujukan", "▣",
+                Modifier.weight(1f), onOpenLibrary)
+            DinNoteDashboardTile("Nota", "Catatan & kuliah", "✎",
+                Modifier.weight(1f), onOpenNotes)
+            DinNoteDashboardTile("Carian", "Arab & Melayu", "⌕",
+                Modifier.weight(1f), onOpenSearch)
         }
-        PremiumSectionHeading("Kandungan DinNote", "۞")
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            HomeShortcut("Kitab-Kitab", "▣", Modifier.weight(1f), onOpenLibrary)
-            HomeShortcut("Kalam Hikmah", "✧", Modifier.weight(1f), onOpenLibrary)
+        Row(horizontalArrangement = Arrangement.spacedBy(9.dp)) {
+            DinNoteDashboardTile("Penanda", "Kitab & bacaan", "♧",
+                Modifier.weight(1f), onOpenLibrary)
+            DinNoteDashboardTile("Mazhab Syafi‘i", "Kitab & hukum", "۞",
+                Modifier.weight(1f), onOpenLibrary)
+            DinNoteDashboardTile("Sandaran", "Simpan & pulih", "☁",
+                Modifier.weight(1f), onOpenLibrary)
         }
-        HomeShortcut("Pelbagai", "▱", Modifier.fillMaxWidth(), onOpenLibrary)
+        Surface(
+            modifier = Modifier.fillMaxWidth().clickable(onClick = onOpenLibrary),
+            shape = RoundedCornerShape(14.dp), color = Color(0xFFF2FAF8),
+            border = BorderStroke(1.dp, Color(0xFFB7DCD7))
+        ) {
+            Row(Modifier.fillMaxWidth().padding(14.dp),
+                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                Text("▤", fontSize = 30.sp, color = Color(0xFF087F8C))
+                Spacer(Modifier.width(12.dp))
+                Column(Modifier.weight(1f)) {
+                    Text("Sambung Bacaan", fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold, color = Color(0xFF075B59))
+                    Text("Buka Maktabah untuk memilih kitab",
+                        fontSize = 12.sp, color = Color(0xFF53736F))
+                }
+                Text("Teruskan ›", fontSize = 12.sp, color = Color(0xFF087F8C))
+            }
+        }
     }
 }
 
