@@ -281,6 +281,9 @@ fun NotesScreen(
     var selectedCategory by remember { mutableStateOf("Semua") }
     var showAddCategory by remember { mutableStateOf(false) }
     var newCategoryName by remember { mutableStateOf("") }
+    var newCategoryDescription by remember { mutableStateOf("") }
+    var categoryToDescribe by remember { mutableStateOf<String?>(null) }
+    var editedCategoryDescription by remember { mutableStateOf("") }
     var showManageCategories by remember { mutableStateOf(false) }
     var categoryToRename by remember { mutableStateOf<String?>(null) }
     var renamedCategory by remember { mutableStateOf("") }
@@ -300,6 +303,7 @@ fun NotesScreen(
         }
     }
     val allCategories = builtInCategories + customCategories
+    fun categoryDescription(name: String): String = categoryPrefs.getString("description_$name", "") ?: ""
 
     fun refreshNotes() {
         notes.clear()
@@ -531,15 +535,18 @@ fun NotesScreen(
 
     if (showAddCategory) {
         AlertDialog(
-            onDismissRequest = { showAddCategory = false; newCategoryName = "" },
+            onDismissRequest = { showAddCategory = false; newCategoryName = ""; newCategoryDescription = "" },
             title = { Text("Tambah kategori") },
             text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedTextField(
                     value = newCategoryName,
                     onValueChange = { newCategoryName = it },
                     label = { Text("Nama kategori") },
                     singleLine = true
                 )
+                OutlinedTextField(value = newCategoryDescription, onValueChange = { newCategoryDescription = it }, label = { Text("Deskripsi sendiri (pilihan)") }, modifier = Modifier.fillMaxWidth(), minLines = 2)
+                }
             },
             confirmButton = {
                 TextButton(onClick = {
@@ -547,15 +554,16 @@ fun NotesScreen(
                     if (name.isNotEmpty() && name !in builtInCategories && name !in customCategories) {
                         customCategories.add(name)
                         context.getSharedPreferences("dinnote_categories", android.content.Context.MODE_PRIVATE)
-                            .edit().putStringSet("custom", customCategories.toSet()).apply()
+                            .edit().putStringSet("custom", customCategories.toSet()).putString("description_$name", newCategoryDescription.trim()).apply()
                         selectedCategory = name
                     }
                     newCategoryName = ""
+                    newCategoryDescription = ""
                     showAddCategory = false
                 }) { Text("Tambah") }
             },
             dismissButton = {
-                TextButton(onClick = { showAddCategory = false; newCategoryName = "" }) { Text("Batal") }
+                TextButton(onClick = { showAddCategory = false; newCategoryName = ""; newCategoryDescription = "" }) { Text("Batal") }
             }
         )
     }
@@ -588,7 +596,8 @@ fun NotesScreen(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text(category, modifier = Modifier.weight(1f))
+                            Column(modifier = Modifier.weight(1f)) { Text(category); val description = categoryDescription(category); if (description.isNotBlank()) Text(description, style = MaterialTheme.typography.bodySmall) }
+                            TextButton(onClick = { categoryToDescribe = category; editedCategoryDescription = categoryDescription(category); showManageCategories = false }) { Text("Deskripsi") }
                             TextButton(onClick = {
                                 categoryToRename = category
                                 renamedCategory = category
@@ -610,6 +619,10 @@ fun NotesScreen(
         )
     }
 
+    categoryToDescribe?.let { name ->
+        AlertDialog(onDismissRequest = { categoryToDescribe = null }, title = { Text("Deskripsi: $name") }, text = { OutlinedTextField(value = editedCategoryDescription, onValueChange = { editedCategoryDescription = it }, label = { Text("Deskripsi sendiri (pilihan)") }, minLines = 3, modifier = Modifier.fillMaxWidth()) }, confirmButton = { TextButton(onClick = { categoryPrefs.edit().putString("description_$name", editedCategoryDescription.trim()).apply(); categoryToDescribe = null }) { Text("Simpan") } }, dismissButton = { TextButton(onClick = { categoryToDescribe = null }) { Text("Batal") } })
+    }
+
     categoryToRename?.let { oldName ->
         AlertDialog(
             onDismissRequest = { categoryToRename = null },
@@ -627,6 +640,7 @@ fun NotesScreen(
                     val newName = renamedCategory.trim()
                     if (newName.isNotBlank() && newName != oldName && newName !in allCategories) {
                         database.renameCategory(oldName, newName)
+                        categoryPrefs.edit().putString("description_$newName", categoryDescription(oldName)).remove("description_$oldName").apply()
                         val customIndex = customCategories.indexOf(oldName)
                         if (customIndex >= 0) {
                             customCategories[customIndex] = newName
@@ -659,6 +673,7 @@ fun NotesScreen(
                 TextButton(onClick = {
                     database.moveCategoryToDefault(category)
                     customCategories.remove(category)
+                    categoryPrefs.edit().remove("description_$category").apply()
                     context.getSharedPreferences("dinnote_categories", android.content.Context.MODE_PRIVATE)
                         .edit().putStringSet("custom", customCategories.toSet()).apply()
                     if (selectedCategory == category) selectedCategory = "Semua"
