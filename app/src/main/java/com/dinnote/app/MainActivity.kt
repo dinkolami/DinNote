@@ -938,7 +938,7 @@ fun NotesScreen(
                             androidx.compose.foundation.Image(
                                 painter = androidx.compose.ui.res.painterResource(R.drawable.dinnote_mosque_ornament),
                                 contentDescription = null,
-                                modifier = Modifier.align(androidx.compose.ui.Alignment.BottomCenter).width(150.dp).height(55.dp),
+                                modifier = Modifier.align(androidx.compose.ui.Alignment.BottomCenter).width(180.dp).height(52.dp),
                                 contentScale = ContentScale.Fit
                             )
                             Row(
