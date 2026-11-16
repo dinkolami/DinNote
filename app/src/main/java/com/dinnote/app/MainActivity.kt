@@ -761,10 +761,11 @@ fun NotesScreen(
                     }
                     HorizontalDivider(color = Color(0xFFF0F0F0))
                     Row(
-                        Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal = 6.dp, vertical = 2.dp),
+                        Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 6.dp)
+                            .horizontalScroll(rememberScrollState()),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        val tools = listOf("Tᵀ" to "**", "16" to "", "B" to "**", "I" to "_", "U" to "__", "S" to "~~", "A" to "**", "✎" to "✍ ", "☷" to "• ", "☰" to "1. ", "☑" to "☐ ", "▧" to "▧ ", "📎" to "📎 ")
+                        val tools = listOf("Tᵀ" to "**", "16" to "", "B" to "**", "I" to "_", "U" to "__", "A" to "**", "✎" to "✍ ", "☰" to "• ", "⋯" to "1. ", "☑" to "☐ ", "▧" to "▧ ", "📎" to "📎 ")
                         tools.forEach { (label, insertion) ->
                             TextButton(onClick = {
                                 if (insertion.isNotEmpty()) {
@@ -787,27 +788,65 @@ fun NotesScreen(
                         border = BorderStroke(2.dp, Color(0xFFD5AD55))
                     ) {
                         Box(Modifier.fillMaxSize()) {
-                            // Decorative mosque arcade stays behind the text, at the bottom.
-                            androidx.compose.foundation.Canvas(
-                                Modifier.fillMaxWidth().height(76.dp)
-                                    .align(androidx.compose.ui.Alignment.BottomCenter)
-                            ) {
+                            // Islamic ornamental frame, turquoise waves and mosque skyline.
+                            androidx.compose.foundation.Canvas(Modifier.matchParentSize()) {
                                 val w = size.width
                                 val h = size.height
-                                drawRect(Color(0xFFE8F6F5).copy(alpha = 0.55f))
-                                val stroke = androidx.compose.ui.graphics.drawscope.Stroke(width = 1.dp.toPx())
+                                val gold = Color(0xFFD5AD55)
+                                val teal = Color(0xFF087F83)
+                                val stroke = androidx.compose.ui.graphics.drawscope.Stroke(width = 2.dp.toPx())
+                                // Corner ornaments remain outside the writing area.
+                                for (right in listOf(false, true)) {
+                                    val x = if (right) w else 0f
+                                    val direction = if (right) -1f else 1f
+                                    val corner = androidx.compose.ui.graphics.Path().apply {
+                                        moveTo(x, 70.dp.toPx())
+                                        quadraticBezierTo(x + direction * 10.dp.toPx(), 20.dp.toPx(),
+                                            x + direction * 70.dp.toPx(), 0f)
+                                        moveTo(x, 43.dp.toPx())
+                                        quadraticBezierTo(x + direction * 8.dp.toPx(), 9.dp.toPx(),
+                                            x + direction * 43.dp.toPx(), 0f)
+                                    }
+                                    drawPath(corner, gold, style = stroke)
+                                    drawCircle(teal, radius = 4.dp.toPx(),
+                                        center = androidx.compose.ui.geometry.Offset(x + direction * 22.dp.toPx(), 18.dp.toPx()))
+                                }
+                                val base = h - 4.dp.toPx()
+                                val wave = androidx.compose.ui.graphics.Path().apply {
+                                    moveTo(0f, base - 40.dp.toPx())
+                                    cubicTo(w * 0.25f, base + 8.dp.toPx(), w * 0.35f, base - 65.dp.toPx(), w * 0.58f, base - 30.dp.toPx())
+                                    cubicTo(w * 0.76f, base - 5.dp.toPx(), w * 0.88f, base - 68.dp.toPx(), w, base - 47.dp.toPx())
+                                    lineTo(w, h)
+                                    lineTo(0f, h)
+                                    close()
+                                }
+                                drawPath(wave, Color(0xFFBCE5E3).copy(alpha = 0.5f))
+                                val foreground = androidx.compose.ui.graphics.Path().apply {
+                                    moveTo(0f, base - 13.dp.toPx())
+                                    cubicTo(w * 0.28f, base - 42.dp.toPx(), w * 0.48f, base + 8.dp.toPx(), w * 0.69f, base - 18.dp.toPx())
+                                    cubicTo(w * 0.85f, base - 42.dp.toPx(), w * 0.93f, base - 12.dp.toPx(), w, base - 30.dp.toPx())
+                                    lineTo(w, h)
+                                    lineTo(0f, h)
+                                    close()
+                                }
+                                drawPath(foreground, teal)
+                                // Subtle mosque domes at the foot of the page.
                                 for (i in 0..8) {
                                     val cx = w * (i + 0.5f) / 9f
-                                    val half = w / 20f
-                                    val arch = androidx.compose.ui.graphics.Path().apply {
-                                        moveTo(cx - half, h)
-                                        lineTo(cx - half, h * 0.58f)
-                                        quadraticBezierTo(cx - half, h * 0.20f, cx, h * 0.10f)
-                                        quadraticBezierTo(cx + half, h * 0.20f, cx + half, h * 0.58f)
-                                        lineTo(cx + half, h)
+                                    val half = w / 24f
+                                    val y = base - 46.dp.toPx() - (if (i == 5) 16.dp.toPx() else 0f)
+                                    val dome = androidx.compose.ui.graphics.Path().apply {
+                                        moveTo(cx - half, base - 19.dp.toPx())
+                                        lineTo(cx - half, y + 12.dp.toPx())
+                                        quadraticBezierTo(cx - half, y + 2.dp.toPx(), cx, y)
+                                        quadraticBezierTo(cx + half, y + 2.dp.toPx(), cx + half, y + 12.dp.toPx())
+                                        lineTo(cx + half, base - 19.dp.toPx())
+                                        close()
                                     }
-                                    drawPath(arch, Color(0xFF087F83).copy(alpha = 0.22f), style = stroke)
+                                    drawPath(dome, Color(0xFF73BAB9).copy(alpha = 0.35f))
                                 }
+                                drawLine(gold, androidx.compose.ui.geometry.Offset(0f, base - 10.dp.toPx()),
+                                    androidx.compose.ui.geometry.Offset(w, base - 10.dp.toPx()), 1.dp.toPx())
                             }
                             Column(
                                 Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 14.dp)
