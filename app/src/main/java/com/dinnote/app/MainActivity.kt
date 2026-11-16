@@ -266,6 +266,61 @@ private fun DinNoteDashboardTile(
     }
 }
 
+
+/** Lightweight Islamic turquoise-and-gold geometry behind the home dashboard.
+ * Drawn in Compose: no external bitmap, network or image decoder required.
+ * Cards stay opaque white for clear Arabic and Malay reading.
+ */
+@Composable
+private fun IslamicGeometricBackground(modifier: Modifier = Modifier) {
+    androidx.compose.foundation.Canvas(modifier) {
+        val cream = Color(0xFFFFF9EF)
+        val pale = Color(0xFFE4D8C8)
+        val teal = Color(0xFF009C9B)
+        val gold = Color(0xFFD8AC61)
+        drawRect(cream)
+        val unit = 44.dp.toPx()
+        val thin = 0.65.dp.toPx()
+        val rows = (size.height / unit).toInt() + 2
+        val cols = (size.width / unit).toInt() + 2
+        for (row in 0..rows) {
+            for (col in 0..cols) {
+                val x = col * unit + if (row % 2 == 0) 0f else unit / 2f
+                val y = row * unit
+                val radius = unit * 0.30f
+                for (k in 0..7) {
+                    val a = k * Math.PI / 4.0
+                    val b = (k + 3) * Math.PI / 4.0
+                    drawLine(
+                        pale.copy(alpha = 0.34f),
+                        androidx.compose.ui.geometry.Offset(x + radius * kotlin.math.cos(a).toFloat(), y + radius * kotlin.math.sin(a).toFloat()),
+                        androidx.compose.ui.geometry.Offset(x + radius * kotlin.math.cos(b).toFloat(), y + radius * kotlin.math.sin(b).toFloat()),
+                        strokeWidth = thin
+                    )
+                }
+            }
+        }
+        fun star(cx: Float, cy: Float, radius: Float, color: Color, alpha: Float) {
+            val shape = androidx.compose.ui.graphics.Path()
+            for (i in 0..15) {
+                val angle = i * Math.PI / 8.0 - Math.PI / 2.0
+                val r = if (i % 2 == 0) radius else radius * 0.67f
+                val px = cx + r * kotlin.math.cos(angle).toFloat()
+                val py = cy + r * kotlin.math.sin(angle).toFloat()
+                if (i == 0) shape.moveTo(px, py) else shape.lineTo(px, py)
+            }
+            shape.close()
+            drawPath(shape, color.copy(alpha = alpha))
+        }
+        // Asymmetric ornaments echo the reference without obscuring content.
+        star(-8.dp.toPx(), size.height * 0.22f, 112.dp.toPx(), gold, 0.19f)
+        star(-8.dp.toPx(), size.height * 0.22f, 84.dp.toPx(), teal, 0.20f)
+        star(size.width * 0.94f, size.height * 0.12f, 44.dp.toPx(), teal, 0.12f)
+        star(size.width * 0.90f, size.height * 0.80f, 56.dp.toPx(), gold, 0.12f)
+        star(size.width * 0.90f, size.height * 0.80f, 39.dp.toPx(), teal, 0.14f)
+    }
+}
+
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
@@ -274,8 +329,10 @@ fun HomeScreen(
     onOpenSearch: () -> Unit,
     onOpenSettings: () -> Unit
 ) {
+    Box(modifier = modifier.fillMaxSize()) {
+        IslamicGeometricBackground(Modifier.matchParentSize())
     Column(
-        modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState())
+        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())
             .padding(horizontal = 14.dp, vertical = 4.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
@@ -324,6 +381,7 @@ fun HomeScreen(
                 Text("Teruskan ›", fontSize = 12.sp, color = Color(0xFF087F8C))
             }
         }
+    }
     }
 }
 
