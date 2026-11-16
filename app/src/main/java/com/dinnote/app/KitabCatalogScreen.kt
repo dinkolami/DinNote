@@ -35,6 +35,15 @@ private fun normalizedKitabText(value: String): String =
 private fun kitabMatches(value: String, query: String): Boolean =
     normalizedKitabText(value).contains(normalizedKitabText(query.trim()))
 
+private fun formatKitabCitation(title: String, author: String, volume: String, page: String, chapter: String): String =
+    listOfNotNull(
+        title.trim().takeIf { it.isNotEmpty() },
+        author.trim().takeIf { it.isNotEmpty() }?.let { "Pengarang: $it" },
+        volume.trim().takeIf { it.isNotEmpty() }?.let { "Jilid: $it" },
+        page.trim().takeIf { it.isNotEmpty() }?.let { "Halaman: $it" },
+        chapter.trim().takeIf { it.isNotEmpty() }?.let { "Bab: $it" }
+    ).joinToString(" | ")
+
 private data class KitabItem(val id: Long, val title: String, val author: String, val content: String, val category: String, val favorite: Boolean, val volume: String = "", val page: String = "", val chapter: String = "")
 
 @Composable
@@ -82,6 +91,7 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
     var page by remember { mutableStateOf("") }
     var chapter by remember { mutableStateOf("") }
     var ascending by remember { mutableStateOf(true) }
+    var copyFeedback by remember { mutableStateOf(false) }
     fun startEdit(item: KitabItem?) {
         editing = item
         title = item?.title.orEmpty()
@@ -98,7 +108,20 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
         Column(modifier.fillMaxSize().padding(16.dp)) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 TextButton(onClick = { opened = null }) { Text("‹ Kembali") }
-                TextButton(onClick = { startEdit(item) }) { Text("Edit") }
+                Row {
+                    TextButton(onClick = {
+                        val citation = formatKitabCitation(item.title, item.author, item.volume, item.page, item.chapter)
+                        val excerpt = item.content.trim()
+                        val output = if (excerpt.isEmpty()) citation else "$excerpt\\n\\nRujukan: $citation"
+                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                        clipboard.setPrimaryClip(android.content.ClipData.newPlainText("Petikan kitab DinNote", output))
+                        copyFeedback = true
+                    }) { Text("Salin & rujukan") }
+                    TextButton(onClick = { startEdit(item) }) { Text("Edit") }
+                }
+            }
+            if (copyFeedback) {
+                Text("Teks kitab dan rujukan disalin. Boleh tampal ke Nota Kuliah.", fontSize = 12.sp, color = Color(0xFF075B59))
             }
             Text(item.title, fontSize = 27.sp, fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Right, modifier = Modifier.fillMaxWidth())
