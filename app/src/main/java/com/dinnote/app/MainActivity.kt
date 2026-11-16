@@ -887,7 +887,11 @@ fun NotesScreen(
                                         body = next
                                     },
                                     modifier = Modifier.weight(1f).fillMaxWidth()
-                                        .padding(horizontal = 2.dp, vertical = 4.dp),
+                                        .border(
+                                            BorderStroke(1.dp, if (editorBackground == "dark") Color(0xFF4F7774) else Color(0xFFE0E7E6)),
+                                            RoundedCornerShape(10.dp)
+                                        )
+                                        .padding(horizontal = 14.dp, vertical = 12.dp),
                                     textStyle = androidx.compose.ui.text.TextStyle(
                                         fontSize = editorFontSize.sp,
                                         color = if (editorBackground == "dark") Color(0xFFF3F7F6) else Color(0xFF263B3E),
