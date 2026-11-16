@@ -93,6 +93,12 @@ fun DinNoteApp() {
                         icon = { Text("۞") },
                         label = { Text("Perpustakaan") }
                     )
+                    NavigationBarItem(
+                        selected = selectedTab == 3,
+                        onClick = { selectedTab = 3 },
+                        icon = { Text("⚙") },
+                        label = { Text("Tetapan") }
+                    )
                 }
             }
         ) { padding ->
@@ -100,6 +106,7 @@ fun DinNoteApp() {
                 0 -> HomeScreen(Modifier.padding(padding), onOpenNotes = { openNewNote = true; selectedTab = 1 }, onOpenLibrary = { selectedTab = 2 })
                 1 -> NotesScreen(Modifier.padding(padding), openNewNote = openNewNote, onNewNoteOpened = { openNewNote = false })
                 2 -> LibraryHubScreen(Modifier.padding(padding))
+                3 -> DisplaySettingsScreen(Modifier.padding(padding))
             }
         }
     }
@@ -230,6 +237,7 @@ fun NotesScreen(
     onNewNoteOpened: () -> Unit = {}
 ) {
     val context = LocalContext.current
+    val displayPrefs = remember { context.getSharedPreferences("dinnote_display", android.content.Context.MODE_PRIVATE) }
     val database = remember {
         NoteDatabase(context).also { it.migrateOldSingleNote(context) }
     }
@@ -659,7 +667,7 @@ fun NotesScreen(
                 decorFitsSystemWindows = true
             )
         ) {
-            Surface(modifier = Modifier.fillMaxSize(), color = Color.White) {
+            Surface(modifier = Modifier.fillMaxSize(), color = if (readingMode) readingBackground(displayPrefs.getString("background", "white") ?: "white") else Color.White) {
                 Column(Modifier.fillMaxSize()) {
                     if (readingMode) {
                         Row(Modifier.fillMaxWidth().padding(12.dp), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -670,7 +678,7 @@ fun NotesScreen(
                         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp)) {
                             Text(title.ifBlank { "Tanpa tajuk" }, fontSize = 27.sp, fontWeight = FontWeight.Bold)
                             Spacer(Modifier.height(16.dp))
-                            Text(formattedNoteText(body.text), fontSize = 19.sp, lineHeight = 30.sp)
+                            Text(formattedNoteText(body.text), fontSize = displayPrefs.getInt("font_size", 19).sp, lineHeight = (displayPrefs.getInt("font_size", 19) * displayPrefs.getFloat("line_spacing", 1.6f)).sp, color = if (displayPrefs.getString("background", "white") == "dark") Color.White else Color(0xFF263B3E))
                         }
                     } else {
                     Row(
