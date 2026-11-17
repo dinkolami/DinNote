@@ -133,36 +133,8 @@ fun DinNoteApp() {
             contentWindowInsets = WindowInsets(0, 0, 0, 0),
             containerColor = MaterialTheme.colorScheme.background,
             topBar = {
-                // Header stays neutral: the selected wallpaper is drawn only once on HomeScreen.
-                Box(Modifier.fillMaxWidth().background(Color(0xFFFFF9EF))) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().statusBarsPadding().height(48.dp).padding(horizontal = 14.dp),
-                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        Spacer(Modifier.weight(1f))
-                        androidx.compose.foundation.Image(
-                            painter = androidx.compose.ui.res.painterResource(com.dinnote.app.R.drawable.ic_dinnote_header),
-                            contentDescription = "Logo DinNote",
-                            modifier = Modifier.size(29.dp)
-                        )
-                        Text(
-                            text = buildAnnotatedString {
-                                pushStyle(SpanStyle(color = Color(0xFF103B50)))
-                                append("Din")
-                                pop()
-                                pushStyle(SpanStyle(color = Color(0xFF008E93)))
-                                append("Note")
-                                pop()
-                            },
-                            fontSize = 19.sp,
-                            fontFamily = androidx.compose.ui.text.font.FontFamily.Serif,
-                            fontStyle = FontStyle.Italic,
-                            fontWeight = FontWeight.Bold
-                        )
-
-                    }
-                }
+                // Reserve only the Android status-bar inset; no empty app header.
+                Spacer(Modifier.fillMaxWidth().statusBarsPadding())
             },
             bottomBar = {
                 Surface(
@@ -472,7 +444,35 @@ fun HomeScreen(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         if (pinnedNotes.isNotEmpty()) {
-            PremiumSectionHeading("Nota Dipinkan", "✦")
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(top = 6.dp, bottom = 3.dp),
+                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Surface(
+                    color = Color(0xFF006B5B),
+                    shape = RoundedCornerShape(12.dp),
+                    border = BorderStroke(1.dp, Color(0xFFC69A3C)),
+                    shadowElevation = 2.dp
+                ) {
+                    Row(Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text("✦", fontSize = 16.sp, color = Color(0xFFF1C86B))
+                        Text("Nota Dipinkan", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
+                    }
+                }
+                Spacer(Modifier.weight(1f))
+                androidx.compose.foundation.Image(
+                    painter = androidx.compose.ui.res.painterResource(R.drawable.ic_dinnote_header),
+                    contentDescription = "Logo DinNote",
+                    modifier = Modifier.size(25.dp)
+                )
+                Text("DinNote", fontSize = 17.sp,
+                    fontFamily = androidx.compose.ui.text.font.FontFamily.Serif,
+                    fontStyle = FontStyle.Italic, fontWeight = FontWeight.Bold,
+                    color = Color(0xFF075B59))
+            }
             pinnedNotes.forEach { note ->
                 Surface(
                     modifier = Modifier.fillMaxWidth().clickable { onOpenPinnedNote(note.id) },
