@@ -51,6 +51,39 @@ import androidx.compose.ui.unit.sp
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Save the last fatal exception locally for diagnosis without ADB.
+        // Do not include note contents or editor text in the report.
+        val previousHandler = Thread.getDefaultUncaughtExceptionHandler()
+        Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
+            try {
+                val trace = android.util.Log.getStackTraceString(throwable).take(16000)
+                java.io.File(filesDir, "dinnote_last_crash.txt").writeText(
+                    "DinNote crash\\nAndroid: ${android.os.Build.VERSION.RELEASE}\\n" +
+                        "Device: ${android.os.Build.MODEL}\\n" + trace
+                )
+            } catch (_: Throwable) { }
+            if (previousHandler != null) previousHandler.uncaughtException(thread, throwable)
+            else android.os.Process.killProcess(android.os.Process.myPid())
+        }
+        val crashReport = java.io.File(filesDir, "dinnote_last_crash.txt")
+        if (crashReport.exists()) {
+            android.app.AlertDialog.Builder(this)
+                .setTitle("Laporan ralat DinNote")
+                .setMessage("DinNote terhenti secara tiba-tiba. Kongsi laporan ralat untuk membantu pembaikan. Nota anda tidak disertakan.")
+                .setPositiveButton("Kongsi laporan") { _, _ ->
+                    val report = runCatching { crashReport.readText() }.getOrDefault("Laporan tidak dapat dibaca")
+                    val send = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                        type = "text/plain"
+                        putExtra(android.content.Intent.EXTRA_SUBJECT, "Laporan crash DinNote")
+                        putExtra(android.content.Intent.EXTRA_TEXT, report)
+                    }
+                    startActivity(android.content.Intent.createChooser(send, "Kongsi laporan ralat"))
+                    crashReport.delete()
+                }
+                .setNegativeButton("Kemudian") { _, _ -> }
+                .setNeutralButton("Padam laporan") { _, _ -> crashReport.delete() }
+                .show()
+        }
         // Keep the Android system navigation area white with a subtle divider.
         window.navigationBarColor = android.graphics.Color.WHITE
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
