@@ -379,10 +379,10 @@ fun HomeScreen(
         Text("Teroka DinNote", fontSize = 16.sp, fontWeight = FontWeight.Bold,
             color = Color(0xFF075B59))
         Row(horizontalArrangement = Arrangement.spacedBy(9.dp)) {
-            DinNoteDashboardTile("Maktabah", "Kitab & rujukan", "▣",
-                Modifier.weight(1f), onOpenLibrary)
             DinNoteDashboardTile("Nota", "Catatan & kuliah", "✎",
                 Modifier.weight(1f), onOpenNotes)
+            DinNoteDashboardTile("Maktabah", "Kitab & rujukan", "▣",
+                Modifier.weight(1f), onOpenLibrary)
             DinNoteDashboardTile("Carian", "Arab & Melayu", "⌕",
                 Modifier.weight(1f), onOpenSearch)
         }
