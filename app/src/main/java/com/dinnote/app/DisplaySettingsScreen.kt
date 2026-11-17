@@ -174,7 +174,7 @@ fun DisplaySettingsScreen(modifier: Modifier = Modifier) {
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 pair.forEach { (key, name) ->
                     Surface(
-                        modifier = Modifier.weight(1f).height(76.dp).clickable {
+                        modifier = Modifier.weight(1f).height(44.dp).clickable {
                             background = key
                             settingsStatus = "Perubahan belum disimpan"
                         },
@@ -182,8 +182,8 @@ fun DisplaySettingsScreen(modifier: Modifier = Modifier) {
                         shape = RoundedCornerShape(10.dp),
                         border = androidx.compose.foundation.BorderStroke(if (background == key) 2.dp else 1.dp, if (background == key) Color(0xFF087F83) else Color(0xFFB7DCD7))
                     ) {
-                        Box(Modifier.padding(12.dp)) {
-                            Text(name + if (background == key) " ✓" else "", color = if (key == "dark") Color.White else Color.DarkGray)
+                        Box(Modifier.padding(horizontal = 10.dp, vertical = 8.dp)) {
+                            Text(name + if (background == key) " ✓" else "", fontSize = 13.sp, color = if (key == "dark") Color.White else Color.DarkGray)
                         }
                     }
                 }
