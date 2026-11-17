@@ -448,7 +448,12 @@ fun HomeScreen(
     Box(modifier = modifier.fillMaxSize()) {
         // Never stack the geometric pattern beneath a user-selected wallpaper.
         if (homeBackgroundBitmap == null && premiumBackgroundBitmap == null) {
-            IslamicGeometricBackground(Modifier.matchParentSize())
+            androidx.compose.foundation.Image(
+                painter = androidx.compose.ui.res.painterResource(R.drawable.islamic_premium_emerald_gold),
+                contentDescription = "Hiasan masjid Islamic Premium",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.matchParentSize()
+            )
         }
         val displayedBackground = homeBackgroundBitmap ?: premiumBackgroundBitmap
         if (displayedBackground != null) {
