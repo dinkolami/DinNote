@@ -469,7 +469,7 @@ fun HomeScreen(
                 val headerContext = LocalContext.current
                 val headerLogo = remember(headerContext) {
                     runCatching {
-                        headerContext.assets.open("dinnote_logo_header.jpg").use { stream ->
+                        headerContext.assets.open("dinnote_logo_header.png").use { stream ->
                             BitmapFactory.decodeStream(stream)?.asImageBitmap()
                         }
                     }.getOrNull()
