@@ -1336,8 +1336,12 @@ fun NotesScreen(
                             DropdownMenuItem(
                                 text = { Text("Artikel Islamik: ayat, maksud dan perhatian") },
                                 onClick = {
-                                    val template = "\\nFirman Allah SWT:\\n[Tulis ayat Arab di sini]\\n\\nMaksudnya:\\n[Tulis terjemahan di sini]\\n\\nRujukan:\\n[Surah / kitab / halaman]\\n\\nPerhatian:\\n[Tulis huraian di sini]\\n"
-                                        .replace("\\\\n", "\\n")
+                                    val template = listOf(
+                                        "", "Firman Allah SWT:", "[Tulis ayat Arab di sini]",
+                                        "", "Maksudnya:", "[Tulis terjemahan di sini]",
+                                        "", "Rujukan:", "[Surah / kitab / halaman]",
+                                        "", "Perhatian:", "[Tulis huraian di sini]", ""
+                                    ).joinToString("\n")
                                     val start = body.selection.min.coerceIn(0, body.text.length)
                                     val end = body.selection.max.coerceIn(start, body.text.length)
                                     val updated = body.text.replaceRange(start, end, template)
