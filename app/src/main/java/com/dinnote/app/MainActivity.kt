@@ -996,7 +996,7 @@ fun NotesScreen(
             onDismissRequest = { persistNote(); showEditor = false },
             properties = androidx.compose.ui.window.DialogProperties(
                 usePlatformDefaultWidth = false,
-                decorFitsSystemWindows = false
+                decorFitsSystemWindows = true
             )
         ) {
             Box(Modifier.fillMaxSize().background(readingBackground(editorBackground))) {
@@ -1009,7 +1009,7 @@ fun NotesScreen(
                         modifier = Modifier.fillMaxSize()
                     )
                 }
-                Column(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding()) {
+                Column(Modifier.fillMaxSize()) {
                     if (readingMode) {
                         Box(
                             Modifier.fillMaxWidth().height(56.dp).background(Color(0xFFF5FCFA))
@@ -1599,9 +1599,9 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
         }
         androidx.compose.ui.window.Dialog(
             onDismissRequest = { saveLibraryEditor(); editingLibraryKey = null },
-            properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)
+            properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = true)
         ) {
-            Surface(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding().padding(3.dp), shape = RoundedCornerShape(10.dp),
+            Surface(Modifier.fillMaxSize().padding(3.dp), shape = RoundedCornerShape(10.dp),
                 border = BorderStroke(1.dp, Color(0xFFB7DCD7)), color = Color.White) {
                 Column(Modifier.fillMaxSize()) {
                     UnifiedEditorHeading("Catatan Maktabah",
