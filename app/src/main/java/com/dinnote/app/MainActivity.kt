@@ -1383,9 +1383,12 @@ private class NoteFormattingTransformation : VisualTransformation {
         tokens.forEach { token ->
             for (i in token.start until token.end) chars[i] = '\u2060'
         }
+        // Ignore invalid legacy formatting spans rather than crashing the editor.
         val styled = buildAnnotatedString {
             append(String(chars))
-            ranges.forEach { (start, end, style) -> addStyle(style, start, end) }
+            ranges.forEach { (start, end, style) ->
+                if (start >= 0 && end > start && end <= length) addStyle(style, start, end)
+            }
         }
         return TransformedText(styled, OffsetMapping.Identity)
     }
@@ -1415,7 +1418,7 @@ fun formattedNoteText(source: String): AnnotatedString = buildAnnotatedString {
     ranges.forEach { (start, end, style) ->
         val a = positions[start.coerceIn(0, source.length)]
         val b = positions[end.coerceIn(0, source.length)]
-        if (a < b) addStyle(style, a, b)
+        if (a >= 0 && b > a && b <= length) addStyle(style, a, b)
     }
 }
 @Composable
