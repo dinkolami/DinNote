@@ -1331,7 +1331,7 @@ private fun noteFormatRanges(source: String): Pair<List<NoteFormatToken>, List<T
     }
     // Only paired delimiters are hidden. Unmatched or malformed markers
     // remain editable, preventing invisible stray content and lost characters.
-    return recognized.sortedBy { it.start } to ranges
+    return recognized.sortedBy { it.start } to ranges.sortedWith(compareBy<Triple<Int, Int, SpanStyle>> { it.first }.thenByDescending { it.second })
 }
 
 /** Same-length editor transformation preserves cursor offsets and supports combined styles. */
