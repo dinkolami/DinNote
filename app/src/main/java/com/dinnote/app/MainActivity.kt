@@ -1147,7 +1147,7 @@ fun NotesScreen(
                             Modifier.fillMaxSize()
                                 .padding(horizontal = 8.dp, vertical = 8.dp)
                                 .verticalScroll(rememberScrollState())
-                                .padding(horizontal = 12.dp, vertical = 10.dp)
+                                .padding(horizontal = 8.dp, vertical = 10.dp)
                         ) {
                             Row(
                                 Modifier.fillMaxWidth(),
@@ -1181,17 +1181,20 @@ fun NotesScreen(
                                 HorizontalDivider(Modifier.weight(1f), thickness = 1.dp, color = Color(0xFF008F93))
                             }
                             Spacer(Modifier.height(8.dp))
-                            Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                                body.text.split("\n").forEach { line ->
-                                    val arabic = line.any { it in '\u0600'..'\u06FF' }
-                                    Text(formattedNoteText(line), modifier = Modifier.fillMaxWidth().combinedClickable(
-                                        onClick = {}, onDoubleClick = { readingMode = false }
-                                    ), textAlign = if (arabic) TextAlign.Right else TextAlign.Left,
-                                        style = androidx.compose.ui.text.TextStyle(textDirection = if (arabic) TextDirection.Rtl else TextDirection.Ltr),
-                                        fontSize = editorFontSize.sp, lineHeight = (editorFontSize * displayPrefs.getFloat("line_spacing", 1.6f)).sp,
-                                        color = Color(0xFF263B3E))
-                                }
-                            }
+                            // Render the complete note in one text layout, matching the editor.
+                            // Compose resolves mixed Arabic/Malay direction per paragraph.
+                            Text(
+                                text = formattedNoteText(body.text),
+                                modifier = Modifier.fillMaxWidth().combinedClickable(
+                                    onClick = {}, onDoubleClick = { readingMode = false }
+                                ),
+                                style = androidx.compose.ui.text.TextStyle(
+                                    textDirection = TextDirection.ContentOrRtl,
+                                    fontSize = editorFontSize.sp,
+                                    lineHeight = (editorFontSize * displayPrefs.getFloat("line_spacing", 1.6f).coerceIn(1.2f, 2.2f)).sp,
+                                    color = Color(0xFF263B3E)
+                                )
+                            )
                         }
                     } else {
                     Surface(color = Color.White) {
