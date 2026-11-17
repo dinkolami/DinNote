@@ -471,10 +471,21 @@ fun HomeScreen(
                     contentDescription = "Logo DinNote",
                     modifier = Modifier.size(25.dp)
                 )
-                Text("DinNote", fontSize = 17.sp,
-                    fontFamily = androidx.compose.ui.text.font.FontFamily.Serif,
-                    fontStyle = FontStyle.Italic, fontWeight = FontWeight.Bold,
-                    color = Color(0xFF075B59))
+                Text(
+                    text = buildAnnotatedString {
+                        pushStyle(SpanStyle(color = Color(0xFF075B40)))
+                        append("Din")
+                        pop()
+                        pushStyle(SpanStyle(color = Color(0xFFC39A54)))
+                        append("Note")
+                        pop()
+                    },
+                    fontSize = 17.sp,
+                    fontFamily = androidx.compose.ui.text.font.FontFamily.Cursive,
+                    fontStyle = FontStyle.Italic,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1
+                )
             }
             pinnedNotes.forEach { note ->
                 Surface(
