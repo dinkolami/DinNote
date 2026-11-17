@@ -998,8 +998,7 @@ fun NotesScreen(
         // Editor is part of the Activity composition, not a separate Dialog window.
         // Android IME resizing now uses the Activity's window and shared insets.
         Box(Modifier.fillMaxSize().background(Color.White)) {
-            Box(Modifier.fillMaxSize().navigationBarsPadding().imePadding().background(readingBackground(editorBackground))
-                .padding(bottom = 8.dp)) {
+            Box(Modifier.fillMaxSize().imePadding().background(readingBackground(editorBackground))) {
                 if (noteBackgroundImage != null) {
                     androidx.compose.foundation.Image(
                         bitmap = noteBackgroundImage,
@@ -1044,7 +1043,7 @@ fun NotesScreen(
                             }
                         }
                         HorizontalDivider(thickness = 1.dp, color = Color(0xFF00999A))
-                        Column(Modifier.fillMaxSize().padding(horizontal = 8.dp, vertical = 8.dp).border(1.dp, Color(0xFF087F83), RoundedCornerShape(12.dp)).verticalScroll(rememberScrollState()).padding(horizontal = 8.dp, vertical = 12.dp).combinedClickable(onClick = {}, onDoubleClick = { readingMode = false })) {
+                        Column(Modifier.fillMaxSize().padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 0.dp).border(1.dp, Color(0xFF087F83), RoundedCornerShape(12.dp)).verticalScroll(rememberScrollState()).padding(horizontal = 8.dp, vertical = 12.dp).combinedClickable(onClick = {}, onDoubleClick = { readingMode = false })) {
                             Text(title.ifBlank { "Tanpa tajuk" }, fontSize = 23.sp, lineHeight = 28.sp, fontWeight = FontWeight.Bold)
                             Spacer(Modifier.height(10.dp))
                             Row(Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
@@ -1157,7 +1156,7 @@ fun NotesScreen(
                     }
 
                     Surface(
-                        modifier = Modifier.fillMaxWidth().weight(1f).padding(start = 0.dp, end = 0.dp, top = 2.dp, bottom = 8.dp),
+                        modifier = Modifier.fillMaxWidth().weight(1f).padding(start = 8.dp, end = 8.dp, top = 2.dp, bottom = 0.dp),
                         shape = RoundedCornerShape(12.dp),
                         color = if (noteBackgroundImage != null) Color.Transparent else readingBackground(editorBackground),
                         border = BorderStroke(1.dp, Color(0xFF087F83))
