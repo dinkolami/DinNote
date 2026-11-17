@@ -1037,17 +1037,9 @@ fun NotesScreen(
                         }
                     }
                     HorizontalDivider(color = Color(0xFFF0F0F0))
-                    DefaultEditorFontControls(
-                        fontSize = editorFontSize,
-                        onChange = { size ->
-                            editorFontSize = size
-                            displayPrefs.edit().putInt("font_size", size.toInt()).apply()
-                        }
-                    )
-
                     Row(
                         modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState())
-                            .padding(horizontal = 12.dp, vertical = 2.dp),
+                            .padding(horizontal = 12.dp, vertical = 4.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
                     ) {
@@ -1061,8 +1053,29 @@ fun NotesScreen(
                             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp),
                             modifier = Modifier.height(34.dp)
                         ) { Text("I", fontStyle = FontStyle.Italic) }
-                        Text("Pilih teks dahulu untuk memformat", fontSize = 11.sp,
-                            color = Color(0xFF667A7B))
+                        androidx.compose.material3.VerticalDivider(
+                            modifier = Modifier.height(28.dp),
+                            thickness = 1.dp,
+                            color = Color(0xFFD6DDDC)
+                        )
+                        OutlinedButton(
+                            onClick = { editorFontSize = (editorFontSize - 1f).coerceAtLeast(14f); displayPrefs.edit().putInt("font_size", editorFontSize.toInt()).apply() },
+                            enabled = editorFontSize > 14f,
+                            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 0.dp),
+                            modifier = Modifier.height(34.dp)
+                        ) { Text("A−", color = Color(0xFF087F83)) }
+                        OutlinedButton(
+                            onClick = {},
+                            enabled = false,
+                            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 0.dp),
+                            modifier = Modifier.height(34.dp)
+                        ) { Text("${editorFontSize.toInt()}", color = Color(0xFF087F83)) }
+                        OutlinedButton(
+                            onClick = { editorFontSize = (editorFontSize + 1f).coerceAtMost(30f); displayPrefs.edit().putInt("font_size", editorFontSize.toInt()).apply() },
+                            enabled = editorFontSize < 30f,
+                            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 0.dp),
+                            modifier = Modifier.height(34.dp)
+                        ) { Text("A+", color = Color(0xFF087F83)) }
                     }
 
                     Surface(
