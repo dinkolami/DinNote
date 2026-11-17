@@ -493,8 +493,8 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
                         listOf("B" to "**", "I" to "_", "U" to "__",
                             "S" to "~~", "•" to "• ", "1." to "1. ", "☑" to "☐ ").forEach { (label, marker) ->
                             TextButton(onClick = {
-                                val a = content.selection.min
-                                val b = content.selection.max
+                                val a = content.selection.min.coerceIn(0, content.text.length)
+                                val b = content.selection.max.coerceIn(a, content.text.length)
                                 val chosen = content.text.substring(a, b)
                                 val insertion = if (marker in listOf("**", "_", "__", "~~"))
                                     marker + chosen + marker else marker + chosen
@@ -525,8 +525,7 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
                         value = content, onValueChange = { content = it },
                         modifier = Modifier.fillMaxWidth().weight(1f)
                             .padding(horizontal = 16.dp, vertical = 12.dp)
-                            .border(BorderStroke(1.dp, readerBorder), RoundedCornerShape(10.dp))
-                            .background(editorBackground, RoundedCornerShape(10.dp))
+                            .background(editorBackground)
                             .padding(10.dp),
                         textStyle = TextStyle(fontSize = readerFontSize.sp,
                             lineHeight = (readerFontSize * readerLineSpacing).sp,
