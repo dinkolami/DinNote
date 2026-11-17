@@ -1226,7 +1226,7 @@ fun NotesScreen(
                                         }
                                         body = next
                                     },
-                                    visualTransformation = VisualTransformation.None,
+                                    visualTransformation = remember { NoteFormattingTransformation() },
                                     modifier = Modifier.weight(1f).fillMaxWidth()
                                         .onSizeChanged { bodyViewportHeight = it.height }
                                         .verticalScroll(bodyScrollState),
@@ -1374,23 +1374,41 @@ private fun wrapEditorSelection(value: TextFieldValue, marker: String): TextFiel
     )
 }
 
-/** Same-length editor transformation preserves cursor offsets and supports combined styles. */
+/** Hide paired legacy markup while preserving selection/cursor mapping. */
 private class NoteFormattingTransformation : VisualTransformation {
     override fun filter(text: AnnotatedString): TransformedText {
         val source = text.text
-        val chars = source.toCharArray()
         val (tokens, ranges) = noteFormatRanges(source)
+        val hidden = BooleanArray(source.length)
         tokens.forEach { token ->
-            for (i in token.start until token.end) chars[i] = '\u2060'
+            for (i in token.start until token.end) hidden[i] = true
         }
-        // Ignore invalid legacy formatting spans rather than crashing the editor.
+        val originalToVisual = IntArray(source.length + 1)
+        val visible = StringBuilder()
+        for (i in source.indices) {
+            originalToVisual[i] = visible.length
+            if (!hidden[i]) visible.append(source[i])
+        }
+        originalToVisual[source.length] = visible.length
+        val visualToOriginal = IntArray(visible.length + 1)
+        for (i in 0..source.length) {
+            visualToOriginal[originalToVisual[i]] = i
+        }
         val styled = buildAnnotatedString {
-            append(String(chars))
+            append(visible.toString())
             ranges.forEach { (start, end, style) ->
-                if (start >= 0 && end > start && end <= length) addStyle(style, start, end)
+                val a = originalToVisual[start.coerceIn(0, source.length)]
+                val b = originalToVisual[end.coerceIn(0, source.length)]
+                if (b > a) addStyle(style, a, b)
             }
         }
-        return TransformedText(styled, OffsetMapping.Identity)
+        val mapping = object : OffsetMapping {
+            override fun originalToTransformed(offset: Int): Int =
+                originalToVisual[offset.coerceIn(0, source.length)]
+            override fun transformedToOriginal(offset: Int): Int =
+                visualToOriginal[offset.coerceIn(0, visible.length)]
+        }
+        return TransformedText(styled, mapping)
     }
 }
 
@@ -1848,7 +1866,7 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                                 Spacer(Modifier.height(8.dp))
                                 androidx.compose.foundation.text.BasicTextField(
                                     value = libraryBody, onValueChange = { libraryBody = it },
-                                    visualTransformation = VisualTransformation.None,
+                                    visualTransformation = remember { NoteFormattingTransformation() },
                                     modifier = Modifier.weight(1f).fillMaxWidth()
                                         .padding(horizontal = 2.dp, vertical = 4.dp)
                                         .onSizeChanged { libraryBodyViewport = it.height }
