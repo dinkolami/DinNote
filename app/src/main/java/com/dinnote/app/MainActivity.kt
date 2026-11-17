@@ -290,10 +290,10 @@ private fun DinNoteDashboardTile(
 ) {
     Surface(
         modifier = modifier.height(92.dp).clickable(onClick = onClick),
-        shape = RoundedCornerShape(12.dp),
-        color = Color.White,
-        border = BorderStroke(1.dp, Color(0xFFD5E5E4)),
-        shadowElevation = 1.dp
+        shape = RoundedCornerShape(10.dp),
+        color = Color(0xFFFFFEFA),
+        border = BorderStroke(1.dp, Color(0xFFD6E3DE)),
+        shadowElevation = 2.dp
     ) {
         Column(
             modifier = Modifier.fillMaxSize().padding(horizontal = 5.dp, vertical = 5.dp),
@@ -301,6 +301,8 @@ private fun DinNoteDashboardTile(
             verticalArrangement = Arrangement.Center
         ) {
             Text(symbol, fontSize = 23.sp, color = Color(0xFF087F8C))
+            Spacer(Modifier.height(3.dp))
+            Box(Modifier.width(25.dp).height(1.dp).background(Color(0xFFD3AE65)))
             Spacer(Modifier.height(3.dp))
             Text(title, fontSize = 13.sp, fontWeight = FontWeight.Bold,
                 color = Color(0xFF183A30), maxLines = 2, textAlign = TextAlign.Center)
