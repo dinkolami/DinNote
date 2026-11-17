@@ -10,7 +10,7 @@ import androidx.compose.ui.unit.dp
 
 /** Keep both original offline collections and the editable book catalogue. */
 @Composable
-fun LibraryHubScreen(modifier: Modifier = Modifier) {
+fun LibraryHubScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {}) {
     var section by remember { mutableStateOf("Koleksi DinNote") }
     Column(modifier = modifier.fillMaxSize()) {
         Row(
@@ -32,7 +32,7 @@ fun LibraryHubScreen(modifier: Modifier = Modifier) {
         HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
         when (section) {
             "Kitab" -> KitabCatalogScreen(Modifier.weight(1f))
-            else -> LibraryScreen(Modifier.weight(1f))
+            else -> LibraryScreen(Modifier.weight(1f), onNavigate = onNavigate)
         }
     }
 }
