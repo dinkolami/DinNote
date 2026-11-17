@@ -1204,7 +1204,7 @@ fun NotesScreen(
                                 LaunchedEffect(body.selection, bodyTextLayout, bodyViewportHeight, keyboardVisible) {
                                     val layout = bodyTextLayout ?: return@LaunchedEffect
                                     if (bodyViewportHeight <= 0) return@LaunchedEffect
-                                    val caret = layout.getCursorRect(body.selection.end.coerceIn(0, body.text.length))
+                                    val caret = runCatching { layout.getCursorRect(body.selection.end.coerceIn(0, body.text.length) }.getOrNull() ?: return@LaunchedEffect)
                                     val target = when {
                                         caret.bottom > bodyScrollState.value + bodyViewportHeight - 24f ->
                                             (caret.bottom - bodyViewportHeight + 48f).toInt()
@@ -1273,7 +1273,7 @@ private fun resizeEditorTextSelection(value: TextFieldValue, delta: Int, default
     val end = value.selection.max.coerceIn(start, value.text.length)
     if (start == end) return value
     val source = value.text
-    val opening = Regex("""\\{\\{size:(\\d{1,2})\\}\\}""")
+    val opening = Regex("""\{\{size:(\d{1,2})\}\}""")
     // Replace an existing exact selection wrapper instead of nesting size spans.
     val preceding = opening.findAll(source.substring(0, start)).lastOrNull()
     val existing = preceding?.takeIf {
@@ -1720,7 +1720,7 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
         LaunchedEffect(libraryBody.selection, libraryBodyLayout, libraryBodyViewport, WindowInsets.ime.getBottom(androidx.compose.ui.platform.LocalDensity.current)) {
             val layout = libraryBodyLayout ?: return@LaunchedEffect
             if (libraryBodyViewport <= 0) return@LaunchedEffect
-            val caret = layout.getCursorRect(libraryBody.selection.end.coerceIn(0, libraryBody.text.length))
+            val caret = runCatching { layout.getCursorRect(libraryBody.selection.end.coerceIn(0, libraryBody.text.length) }.getOrNull() ?: return@LaunchedEffect)
             val target = when {
                 caret.bottom > libraryBodyScroll.value + libraryBodyViewport - 48f ->
                     (caret.bottom - libraryBodyViewport + 64f).toInt()
