@@ -462,23 +462,23 @@ fun HomeScreen(
             pinnedNotes.forEach { note ->
                 Surface(
                     modifier = Modifier.fillMaxWidth().clickable { onOpenPinnedNote(note.id) },
-                    color = Color(0xFFFCFFFE),
-                    shape = RoundedCornerShape(11.dp),
-                    border = BorderStroke(1.dp, Color(0xFFB7DCD7)),
-                    shadowElevation = 1.dp
+                    color = Color(0xFFFFFEFA),
+                    shape = RoundedCornerShape(14.dp),
+                    border = BorderStroke(1.dp, Color(0xFFB9D6CE)),
+                    shadowElevation = 2.dp
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(horizontal = 11.dp, vertical = 8.dp),
                         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(7.dp)
                     ) {
-                        Text("✦", fontSize = 12.sp, color = Color(0xFFCCA35B))
+                        Text("✦", fontSize = 12.sp, color = Color(0xFFC49A48))
                         Text(note.title.ifBlank { "Tanpa tajuk" },
                             modifier = Modifier.weight(1f),
                             fontSize = 12.sp, fontWeight = FontWeight.Medium,
                             color = Color(0xFF075B59), maxLines = 1,
                             overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
-                        Text("›", fontSize = 16.sp, color = Color(0xFF087F8C))
+                        Text("›", fontSize = 16.sp, color = Color(0xFF08766C))
                     }
                 }
             }
@@ -488,23 +488,23 @@ fun HomeScreen(
             recentlyAddedNotes.forEach { note ->
                 Surface(
                     modifier = Modifier.fillMaxWidth().clickable { onOpenPinnedNote(note.id) },
-                    color = Color(0xFFFCFFFE),
-                    shape = RoundedCornerShape(11.dp),
-                    border = BorderStroke(1.dp, Color(0xFFB7DCD7)),
-                    shadowElevation = 1.dp
+                    color = Color(0xFFFFFEFA),
+                    shape = RoundedCornerShape(14.dp),
+                    border = BorderStroke(1.dp, Color(0xFFB9D6CE)),
+                    shadowElevation = 2.dp
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(horizontal = 11.dp, vertical = 8.dp),
                         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(7.dp)
                     ) {
-                        Text("✎", fontSize = 12.sp, color = Color(0xFF087F8C))
+                        Text("✎", fontSize = 12.sp, color = Color(0xFF08766C))
                         Text(note.title.ifBlank { "Tanpa tajuk" },
                             modifier = Modifier.weight(1f),
                             fontSize = 12.sp, fontWeight = FontWeight.Medium,
                             color = Color(0xFF075B59), maxLines = 1,
                             overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
-                        Text("›", fontSize = 16.sp, color = Color(0xFF087F8C))
+                        Text("›", fontSize = 16.sp, color = Color(0xFF08766C))
                     }
                 }
             }
@@ -514,10 +514,10 @@ fun HomeScreen(
                 modifier = Modifier.fillMaxWidth().clickable { expandedReminder = true },
                 shape = RoundedCornerShape(10.dp),
                 color = Color.White,
-                border = BorderStroke(1.dp, Color(0xFFB7DCD7))
+                border = BorderStroke(1.dp, Color(0xFFB9D6CE))
             ) {
                 Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
-                    Text("Ingatan", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color(0xFF087F8C))
+                    Text("Ingatan", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color(0xFF08766C))
                     Text(entry.arabic, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Right,
                         fontSize = 18.sp, color = Color(0xFF183A30))
                     Text(entry.meaning, fontSize = 13.sp, color = Color(0xFF52666A))
