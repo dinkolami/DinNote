@@ -1146,7 +1146,6 @@ fun NotesScreen(
                         Column(
                             Modifier.fillMaxSize()
                                 .padding(horizontal = 8.dp, vertical = 8.dp)
-                                .border(1.dp, Color(0xFF087F83), RoundedCornerShape(12.dp))
                                 .verticalScroll(rememberScrollState())
                                 .padding(horizontal = 12.dp, vertical = 10.dp)
                         ) {
@@ -1171,7 +1170,8 @@ fun NotesScreen(
                                 ),
                                 textAlign = TextAlign.Center,
                                 fontSize = 19.sp,
-                                lineHeight = 24.sp,
+                                lineHeight = 26.sp,
+                                color = IslamicPremiumPalette.Emerald,
                                 fontWeight = FontWeight.Bold
                             )
                             Spacer(Modifier.height(4.dp))
