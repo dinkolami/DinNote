@@ -1169,8 +1169,7 @@ fun NotesScreen(
                     Surface(
                         modifier = Modifier.fillMaxWidth().weight(1f).padding(start = 8.dp, end = 8.dp, top = 2.dp, bottom = 0.dp),
                         shape = RoundedCornerShape(0.dp),
-                        color = if (noteBackgroundImage != null) Color.Transparent else readingBackground(editorBackground),
-                        border = BorderStroke(1.dp, Color(0xFF087F83))
+                        color = if (noteBackgroundImage != null) Color.Transparent else readingBackground(editorBackground)
                     ) {
                         Box(Modifier.fillMaxSize()) {
                             Column(
@@ -1748,8 +1747,7 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
         }
         // Inline editor shares the Activity Scaffold, so its bottom navigation
         // remains visible and the editor cannot cover Android's navigation area.
-        Surface(Modifier.fillMaxSize().padding(3.dp), shape = RoundedCornerShape(0.dp),
-            border = BorderStroke(1.dp, Color(0xFFB7DCD7)), color = Color.White) {
+        Surface(Modifier.fillMaxSize(), shape = RoundedCornerShape(0.dp), color = Color.White) {
                 Column(Modifier.fillMaxSize()) {
                     UnifiedEditorHeading("Catatan Maktabah",
                         onBack = { saveLibraryEditor(); editingLibraryKey = null },
@@ -1826,8 +1824,7 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                         )
                     }
                     Surface(Modifier.fillMaxWidth().weight(1f).padding(horizontal = 3.dp, vertical = 0.dp),
-                        shape = RoundedCornerShape(0.dp), color = Color.White,
-                        border = BorderStroke(1.dp, Color(0xFFDDE2E3))) {
+                        shape = RoundedCornerShape(0.dp), color = Color.White) {
                         Box(Modifier.fillMaxSize()) {
                             // Keep the writing surface unobstructed; decoration belongs to reading cards.
                             Column(Modifier.fillMaxSize().padding(horizontal = 12.dp, vertical = 10.dp)) {
