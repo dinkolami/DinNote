@@ -97,28 +97,8 @@ fun DinNoteApp() {
         Scaffold(
             containerColor = MaterialTheme.colorScheme.background,
             topBar = {
-                val headerContext = LocalContext.current
-                val headerPrefs = remember { headerContext.getSharedPreferences("dinnote_display", android.content.Context.MODE_PRIVATE) }
-                val headerUri = headerPrefs.getString("background_image_uri", "") ?: ""
-                val headerOpacity = headerPrefs.getFloat("background_image_opacity", 0.18f)
-                val headerBitmap = remember(headerUri) {
-                    if (headerUri.isBlank()) null else runCatching {
-                        headerContext.contentResolver.openInputStream(Uri.parse(headerUri))?.use {
-                            BitmapFactory.decodeStream(it)?.asImageBitmap()
-                        }
-                    }.getOrNull()
-                }
-                Box(Modifier.fillMaxWidth()) {
-                    IslamicGeometricBackground(Modifier.matchParentSize())
-                    if (headerBitmap != null) {
-                        androidx.compose.foundation.Image(
-                            bitmap = headerBitmap,
-                            contentDescription = null,
-                            contentScale = ContentScale.Crop,
-                            alpha = headerOpacity.coerceIn(0.05f, 1f),
-                            modifier = Modifier.matchParentSize()
-                        )
-                    }
+                // Header stays neutral: the selected wallpaper is drawn only once on HomeScreen.
+                Box(Modifier.fillMaxWidth().background(Color(0xFFFFF9EF))) {
                     Row(
                         modifier = Modifier.fillMaxWidth().statusBarsPadding().height(48.dp).padding(horizontal = 14.dp),
                         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
@@ -374,7 +354,10 @@ fun HomeScreen(
     val pinnedDatabase = remember { NoteDatabase(context).also { it.migrateOldSingleNote(context) } }
     LaunchedEffect(Unit) { pinnedNotes.clear(); pinnedNotes.addAll(pinnedDatabase.allNotes().filter { it.pinned && !it.archived }.sortedByDescending { it.updatedAt }) }
     Box(modifier = modifier.fillMaxSize()) {
-        IslamicGeometricBackground(Modifier.matchParentSize())
+        // Never stack the geometric pattern beneath a user-selected wallpaper.
+        if (homeBackgroundBitmap == null) {
+            IslamicGeometricBackground(Modifier.matchParentSize())
+        }
         if (homeBackgroundBitmap != null) {
             androidx.compose.foundation.Image(
                 bitmap = homeBackgroundBitmap,
