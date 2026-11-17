@@ -420,6 +420,7 @@ fun HomeScreen(
     val pinnedNotes = remember { mutableStateListOf<DinNote>() }
     val recentlyAddedNotes = remember { mutableStateListOf<DinNote>() }
     val reminder = remember { kalimahEntries.randomOrNull() }
+    var expandedReminder by remember { mutableStateOf(false) }
     val pinnedDatabase = remember { NoteDatabase(context).also { it.migrateOldSingleNote(context) } }
     LaunchedEffect(Unit) {
         val activeNotes = pinnedDatabase.allNotes().filter { !it.archived }
@@ -510,7 +511,7 @@ fun HomeScreen(
         }
         reminder?.let { entry ->
             Surface(
-                modifier = Modifier.fillMaxWidth().clickable(onClick = onOpenLibrary),
+                modifier = Modifier.fillMaxWidth().clickable { expandedReminder = true },
                 shape = RoundedCornerShape(10.dp),
                 color = Color.White,
                 border = BorderStroke(1.dp, Color(0xFFB7DCD7))
@@ -522,6 +523,44 @@ fun HomeScreen(
                     Text(entry.meaning, fontSize = 13.sp, color = Color(0xFF52666A))
                 }
             }
+        }
+        if (expandedReminder && reminder != null) {
+            val entry = reminder
+            AlertDialog(
+                onDismissRequest = { expandedReminder = false },
+                shape = RoundedCornerShape(12.dp),
+                containerColor = Color.White,
+                title = { Text(entry.title, color = Color(0xFF075B59)) },
+                text = {
+                    Column(
+                        modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Text(
+                            entry.arabic,
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.Right,
+                            style = androidx.compose.ui.text.TextStyle(textDirection = TextDirection.Rtl),
+                            fontSize = 22.sp,
+                            lineHeight = 36.sp
+                        )
+                        UnifiedEditorDivider()
+                        Text(entry.meaning, fontSize = 16.sp, lineHeight = 25.sp)
+                        if (entry.transliteration.isNotBlank()) {
+                            Text(entry.transliteration, fontWeight = FontWeight.Medium)
+                        }
+                        if (entry.reference.isNotBlank()) {
+                            Text("Rujukan: ${entry.reference}", fontSize = 13.sp)
+                        }
+                        if (entry.notes.isNotBlank()) {
+                            Text(entry.notes, fontSize = 14.sp)
+                        }
+                    }
+                },
+                confirmButton = {
+                    TextButton(onClick = { expandedReminder = false }) { Text("Tutup") }
+                }
+            )
         }
         Text("Teroka DinNote", fontSize = 16.sp, fontWeight = FontWeight.Bold,
             color = Color(0xFF075B59))
