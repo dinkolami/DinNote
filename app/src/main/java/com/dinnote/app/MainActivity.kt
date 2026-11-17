@@ -284,40 +284,64 @@ private fun HomeShortcut(label: String, symbol: String, modifier: Modifier = Mod
 }
 
 @Composable
+private fun DashboardLineIcon(kind: String) {
+    androidx.compose.foundation.Canvas(Modifier.size(25.dp)) {
+        val ink = Color(0xFF087F80)
+        val stroke = 1.8.dp.toPx()
+        val w = size.width
+        val h = size.height
+        fun line(x1: Float, y1: Float, x2: Float, y2: Float) {
+            drawLine(ink, androidx.compose.ui.geometry.Offset(w*x1,h*y1),
+                androidx.compose.ui.geometry.Offset(w*x2,h*y2), strokeWidth=stroke,
+                cap=androidx.compose.ui.graphics.StrokeCap.Round)
+        }
+        fun rect(x: Float,y: Float,r: Float,b: Float) {
+            drawRoundRect(ink, topLeft=androidx.compose.ui.geometry.Offset(w*x,h*y),
+                size=androidx.compose.ui.geometry.Size(w*(r-x),h*(b-y)),
+                cornerRadius=androidx.compose.ui.geometry.CornerRadius(2.dp.toPx()),
+                style=androidx.compose.ui.graphics.drawscope.Stroke(stroke))
+        }
+        when(kind) {
+            "note" -> { rect(.19f,.1f,.81f,.9f); line(.32f,.32f,.68f,.32f); line(.32f,.48f,.68f,.48f); line(.32f,.64f,.55f,.64f) }
+            "library" -> { rect(.13f,.18f,.33f,.83f); rect(.39f,.12f,.59f,.83f); rect(.65f,.24f,.85f,.83f) }
+            "search" -> { drawCircle(ink,w*.23f,androidx.compose.ui.geometry.Offset(w*.42f,h*.4f),style=androidx.compose.ui.graphics.drawscope.Stroke(stroke)); line(.59f,.59f,.85f,.85f) }
+            "bookmark" -> { line(.27f,.12f,.73f,.12f); line(.27f,.12f,.27f,.9f); line(.73f,.12f,.73f,.9f); line(.27f,.9f,.5f,.72f); line(.5f,.72f,.73f,.9f) }
+            "school" -> { rect(.13f,.22f,.87f,.81f); line(.5f,.22f,.5f,.81f); line(.22f,.36f,.4f,.36f); line(.6f,.36f,.78f,.36f); line(.22f,.51f,.4f,.51f); line(.6f,.51f,.78f,.51f) }
+            "settings" -> { drawCircle(ink,w*.3f,androidx.compose.ui.geometry.Offset(w*.5f,h*.5f),style=androidx.compose.ui.graphics.drawscope.Stroke(stroke)); drawCircle(ink,w*.09f,androidx.compose.ui.geometry.Offset(w*.5f,h*.5f),style=androidx.compose.ui.graphics.drawscope.Stroke(stroke)); for(i in 0..7) { val a=i*Math.PI/4; val dx=kotlin.math.cos(a).toFloat(); val dy=kotlin.math.sin(a).toFloat(); line(.5f+.33f*dx,.5f+.33f*dy,.5f+.44f*dx,.5f+.44f*dy) } }
+        }
+    }
+}
+
+@Composable
 private fun DinNoteDashboardTile(
     title: String, subtitle: String, symbol: String,
     modifier: Modifier = Modifier, onClick: () -> Unit
 ) {
     Surface(
-        modifier = modifier.height(92.dp).clickable(onClick = onClick),
+        modifier = modifier.height(104.dp).clickable(onClick = onClick),
         shape = RoundedCornerShape(10.dp),
         color = Color(0xFFFFFEFA),
         border = BorderStroke(1.dp, Color(0xFFD6E3DE)),
         shadowElevation = 2.dp
     ) {
         Column(
-            modifier = Modifier.fillMaxSize().padding(horizontal = 5.dp, vertical = 5.dp),
+            modifier = Modifier.fillMaxSize().padding(horizontal = 4.dp, vertical = 7.dp),
             horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Box(
-                modifier = Modifier.size(30.dp)
-                    .background(Color(0xFFE9F4F0), RoundedCornerShape(8.dp)),
-                contentAlignment = androidx.compose.ui.Alignment.Center
-            ) {
-                Text(symbol, fontSize = 20.sp, color = Color(0xFF087F8C))
-            }
-            Spacer(Modifier.height(3.dp))
+            DashboardLineIcon(symbol)
+            Spacer(Modifier.height(5.dp))
             Box(Modifier.width(25.dp).height(1.dp).background(Color(0xFFD3AE65)))
-            Spacer(Modifier.height(3.dp))
-            Text(title, fontSize = 13.sp, fontWeight = FontWeight.Bold,
-                color = Color(0xFF183A30), maxLines = 2, textAlign = TextAlign.Center)
+            Spacer(Modifier.height(5.dp))
+            Text(title, fontSize = 12.sp, fontWeight = FontWeight.Bold,
+                color = Color(0xFF183A30), maxLines = 2, lineHeight = 14.sp,
+                textAlign = TextAlign.Center)
+            Spacer(Modifier.height(2.dp))
             Text(subtitle, fontSize = 10.sp, color = Color(0xFF53736F),
-                maxLines = 2, textAlign = TextAlign.Center)
+                maxLines = 2, lineHeight = 12.sp, textAlign = TextAlign.Center)
         }
     }
 }
-
 
 /** Lightweight Islamic turquoise-and-gold geometry behind the home dashboard.
  * Drawn in Compose: no external bitmap, network or image decoder required.
@@ -502,19 +526,19 @@ fun HomeScreen(
         Text("Teroka DinNote", fontSize = 16.sp, fontWeight = FontWeight.Bold,
             color = Color(0xFF075B59))
         Row(horizontalArrangement = Arrangement.spacedBy(9.dp)) {
-            DinNoteDashboardTile("Nota", "Catatan & kuliah", "✎",
+            DinNoteDashboardTile("Nota", "Catatan & kuliah", "note",
                 Modifier.weight(1f), onOpenNotes)
-            DinNoteDashboardTile("Maktabah", "Kitab & rujukan", "▣",
+            DinNoteDashboardTile("Maktabah", "Kitab & rujukan", "library",
                 Modifier.weight(1f), onOpenLibrary)
-            DinNoteDashboardTile("Carian", "Arab & Melayu", "⌕",
+            DinNoteDashboardTile("Carian", "Arab & Melayu", "search",
                 Modifier.weight(1f), onOpenSearch)
         }
         Row(horizontalArrangement = Arrangement.spacedBy(9.dp)) {
-            DinNoteDashboardTile("Penanda", "Kitab & bacaan", "♧",
+            DinNoteDashboardTile("Penanda", "Kitab & bacaan", "bookmark",
                 Modifier.weight(1f), onOpenLibrary)
-            DinNoteDashboardTile("Mazhab Syafi‘i", "Kitab & hukum", "۞",
+            DinNoteDashboardTile("Mazhab Syafi‘i", "Kitab & hukum", "school",
                 Modifier.weight(1f), onOpenLibrary)
-            DinNoteDashboardTile("Tetapan", "Paparan & data", "⚙",
+            DinNoteDashboardTile("Tetapan", "Paparan & data", "settings",
                 Modifier.weight(1f), onOpenSettings)
         }
         Surface(
