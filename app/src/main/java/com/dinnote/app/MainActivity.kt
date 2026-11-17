@@ -218,7 +218,7 @@ fun DinNoteApp() {
 @Composable
 private fun PremiumSectionHeading(title: String, ornament: String) {
     Row(
-        modifier = Modifier.fillMaxWidth().padding(top = 6.dp, bottom = 3.dp),
+        modifier = Modifier.fillMaxWidth().padding(top = 3.dp, bottom = 1.dp),
         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
@@ -229,12 +229,12 @@ private fun PremiumSectionHeading(title: String, ornament: String) {
             shadowElevation = 2.dp
         ) {
             Row(
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
                 verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text(ornament, fontSize = 16.sp, color = Color(0xFFF1C86B))
-                Text(title, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
+                Text(ornament, fontSize = 14.sp, color = Color(0xFFF1C86B))
+                Text(title, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
             }
         }
         androidx.compose.material3.HorizontalDivider(
@@ -444,11 +444,11 @@ fun HomeScreen(
     Column(
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())
             .padding(horizontal = 14.dp, vertical = 4.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(5.dp)
     ) {
         if (pinnedNotes.isNotEmpty()) {
             Row(
-                modifier = Modifier.fillMaxWidth().padding(top = 6.dp, bottom = 3.dp),
+                modifier = Modifier.fillMaxWidth().padding(top = 3.dp, bottom = 1.dp),
                 verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
@@ -458,11 +458,11 @@ fun HomeScreen(
                     border = BorderStroke(1.dp, Color(0xFFC69A3C)),
                     shadowElevation = 2.dp
                 ) {
-                    Row(Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                    Row(Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
                         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text("✦", fontSize = 16.sp, color = Color(0xFFF1C86B))
-                        Text("Nota Dipinkan", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
+                        Text("✦", fontSize = 14.sp, color = Color(0xFFF1C86B))
+                        Text("Nota Dipinkan", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
                     }
                 }
                 Spacer(Modifier.weight(1f))
