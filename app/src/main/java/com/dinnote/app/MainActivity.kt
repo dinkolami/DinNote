@@ -24,6 +24,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -1111,48 +1114,41 @@ fun NotesScreen(
             Box(Modifier.fillMaxSize().background(Color.White)) {
                 Column(Modifier.fillMaxSize()) {
                     if (readingMode) {
-                        Box(
-                            Modifier.fillMaxWidth().height(56.dp).background(Color(0xFFF5FCFA))
+                        Column(
+                            Modifier.fillMaxSize()
+                                .padding(horizontal = 8.dp, vertical = 8.dp)
+                                .border(1.dp, Color(0xFF087F83), RoundedCornerShape(12.dp))
+                                .verticalScroll(rememberScrollState())
+                                .padding(horizontal = 12.dp, vertical = 10.dp)
                         ) {
-                            androidx.compose.foundation.Image(
-                                painter = androidx.compose.ui.res.painterResource(R.drawable.dinnote_mosque_ornament),
-                                contentDescription = null,
-                                modifier = Modifier.align(androidx.compose.ui.Alignment.BottomCenter).width(180.dp).height(52.dp),
-                                contentScale = ContentScale.Fit
-                            )
                             Row(
-                                Modifier.fillMaxSize().padding(horizontal = 8.dp),
+                                Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
                             ) {
-                                OutlinedButton(
-                                    onClick = { showEditor = false },
-                                    modifier = Modifier.height(36.dp),
-                                    shape = RoundedCornerShape(0.dp),
-                                    border = BorderStroke(1.dp, Color(0xFF00999A)),
-                                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp),
-                                    colors = ButtonDefaults.outlinedButtonColors(containerColor = Color.White)
-                                ) { Text("← Kembali", fontSize = 13.sp, color = Color(0xFF007C80)) }
-                                OutlinedButton(
-                                    onClick = { readingMode = false },
-                                    modifier = Modifier.height(36.dp),
-                                    shape = RoundedCornerShape(0.dp),
-                                    border = BorderStroke(1.dp, Color(0xFF00999A)),
-                                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp),
-                                    colors = ButtonDefaults.outlinedButtonColors(containerColor = Color.White)
-                                ) { Text("✎ Edit", fontSize = 13.sp, color = Color(0xFF007C80)) }
+                                IconButton(onClick = { showEditor = false }, modifier = Modifier.size(40.dp)) {
+                                    Icon(androidx.compose.material.icons.Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali", tint = Color(0xFF007C80))
+                                }
+                                IconButton(onClick = { readingMode = false }, modifier = Modifier.size(40.dp)) {
+                                    Icon(androidx.compose.material.icons.Icons.Default.Edit, contentDescription = "Edit", tint = Color(0xFF007C80))
+                                }
                             }
-                        }
-                        HorizontalDivider(thickness = 1.dp, color = Color(0xFF00999A))
-                        Column(Modifier.fillMaxSize().padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 0.dp).border(1.dp, Color(0xFF087F83), RoundedCornerShape(12.dp)).verticalScroll(rememberScrollState()).padding(horizontal = 8.dp, vertical = 12.dp).combinedClickable(onClick = {}, onDoubleClick = { readingMode = false })) {
-                            Text(title.ifBlank { "Tanpa tajuk" }, fontSize = 23.sp, lineHeight = 28.sp, fontWeight = FontWeight.Bold)
-                            Spacer(Modifier.height(10.dp))
+                            Spacer(Modifier.height(2.dp))
+                            Text(
+                                title.ifBlank { "Tanpa tajuk" },
+                                modifier = Modifier.fillMaxWidth(),
+                                textAlign = TextAlign.Center,
+                                fontSize = 19.sp,
+                                lineHeight = 24.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Spacer(Modifier.height(4.dp))
                             Row(Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                                 HorizontalDivider(Modifier.weight(1f), thickness = 1.dp, color = Color(0xFF008F93))
                                 Text(" ۞ ", fontSize = 19.sp, color = Color(0xFF008F93))
                                 HorizontalDivider(Modifier.weight(1f), thickness = 1.dp, color = Color(0xFF008F93))
                             }
-                            Spacer(Modifier.height(12.dp))
+                            Spacer(Modifier.height(8.dp))
                             Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
                                 body.text.split("\n").forEach { line ->
                                     val arabic = line.any { it in '\u0600'..'\u06FF' }
