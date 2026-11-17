@@ -300,7 +300,13 @@ private fun DinNoteDashboardTile(
             horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Text(symbol, fontSize = 23.sp, color = Color(0xFF087F8C))
+            Box(
+                modifier = Modifier.size(30.dp)
+                    .background(Color(0xFFE9F4F0), RoundedCornerShape(8.dp)),
+                contentAlignment = androidx.compose.ui.Alignment.Center
+            ) {
+                Text(symbol, fontSize = 20.sp, color = Color(0xFF087F8C))
+            }
             Spacer(Modifier.height(3.dp))
             Box(Modifier.width(25.dp).height(1.dp).background(Color(0xFFD3AE65)))
             Spacer(Modifier.height(3.dp))
