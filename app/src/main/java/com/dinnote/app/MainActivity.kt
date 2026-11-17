@@ -1411,7 +1411,7 @@ private fun noteFormatRanges(source: String): Pair<List<NoteFormatToken>, List<T
         val stack = active.getOrPut(token.kind) { mutableListOf() }
         // A size opener always starts a new scope, even inside another size scope.
         // Symmetric emphasis markers close their latest matching scope.
-        if (token.closing || (token.kind != "size" && stack.isNotEmpty())) {
+        if (token.closing || (token.kind in listOf("bold", "underline", "italic") && stack.isNotEmpty())) {
             if (stack.isNotEmpty()) {
                 val opener = stack.removeAt(stack.lastIndex)
                 val style = opener.style
@@ -1452,32 +1452,16 @@ private class NoteFormattingTransformation : VisualTransformation {
         tokens.forEach { token ->
             for (i in token.start until token.end) hidden[i] = true
         }
-        val originalToVisual = IntArray(source.length + 1)
-        val visible = StringBuilder()
-        for (i in source.indices) {
-            originalToVisual[i] = visible.length
-            if (!hidden[i]) visible.append(source[i])
-        }
-        originalToVisual[source.length] = visible.length
-        val visualToOriginal = IntArray(visible.length + 1)
-        for (i in 0..source.length) {
-            visualToOriginal[originalToVisual[i]] = i
-        }
+        // Preserve 1:1 cursor offsets to avoid Compose IME mapping crashes.
+        val display = StringBuilder(source.length)
+        for (i in source.indices) display.append(if (hidden[i]) '\u2060' else source[i])
         val styled = buildAnnotatedString {
-            append(visible.toString())
+            append(display.toString())
             ranges.forEach { (start, end, style) ->
-                val a = originalToVisual[start.coerceIn(0, source.length)]
-                val b = originalToVisual[end.coerceIn(0, source.length)]
-                if (b > a) addStyle(style, a, b)
+                if (end > start) addStyle(style, start, end)
             }
         }
-        val mapping = object : OffsetMapping {
-            override fun originalToTransformed(offset: Int): Int =
-                originalToVisual[offset.coerceIn(0, source.length)]
-            override fun transformedToOriginal(offset: Int): Int =
-                visualToOriginal[offset.coerceIn(0, visible.length)]
-        }
-        return TransformedText(styled, mapping)
+        return TransformedText(styled, OffsetMapping.Identity)
     }
 }
 
