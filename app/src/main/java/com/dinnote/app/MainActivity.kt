@@ -350,9 +350,16 @@ fun HomeScreen(
         }.getOrNull()
     }
     val pinnedNotes = remember { mutableStateListOf<DinNote>() }
+    val recentlyAddedNotes = remember { mutableStateListOf<DinNote>() }
     val reminder = remember { kalimahEntries.randomOrNull() }
     val pinnedDatabase = remember { NoteDatabase(context).also { it.migrateOldSingleNote(context) } }
-    LaunchedEffect(Unit) { pinnedNotes.clear(); pinnedNotes.addAll(pinnedDatabase.allNotes().filter { it.pinned && !it.archived }.sortedByDescending { it.updatedAt }) }
+    LaunchedEffect(Unit) {
+        val activeNotes = pinnedDatabase.allNotes().filter { !it.archived }
+        pinnedNotes.clear()
+        pinnedNotes.addAll(activeNotes.filter { it.pinned }.sortedByDescending { it.updatedAt })
+        recentlyAddedNotes.clear()
+        recentlyAddedNotes.addAll(activeNotes.sortedByDescending { it.id }.take(3))
+    }
     Box(modifier = modifier.fillMaxSize()) {
         // Never stack the geometric pattern beneath a user-selected wallpaper.
         if (homeBackgroundBitmap == null) {
@@ -394,6 +401,25 @@ fun HomeScreen(
                         Text("📌  " + note.title.ifBlank { "Tanpa tajuk" },
                             fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF075B59),
                             maxLines = 2)
+                        Text(formattedNoteText(note.body).text,
+                            fontSize = 12.sp, color = Color(0xFF52666A), maxLines = 2)
+                    }
+                }
+            }
+        }
+        if (recentlyAddedNotes.isNotEmpty()) {
+            PremiumSectionHeading("Terakhir Ditambah", "✎")
+            recentlyAddedNotes.forEach { note ->
+                Surface(
+                    modifier = Modifier.fillMaxWidth().clickable { onOpenPinnedNote(note.id) },
+                    color = Color.White,
+                    shape = RoundedCornerShape(10.dp),
+                    border = BorderStroke(1.dp, Color(0xFFB7DCD7))
+                ) {
+                    Column(Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                        Text(note.title.ifBlank { "Tanpa tajuk" },
+                            fontSize = 14.sp, fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFF075B59), maxLines = 1)
                         Text(formattedNoteText(note.body).text,
                             fontSize = 12.sp, color = Color(0xFF52666A), maxLines = 2)
                     }
