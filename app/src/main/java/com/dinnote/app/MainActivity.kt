@@ -1004,7 +1004,7 @@ fun NotesScreen(
                             }
                         }
                         HorizontalDivider(thickness = 1.dp, color = Color(0xFF00999A))
-                        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 6.dp, vertical = 12.dp).combinedClickable(onClick = {}, onDoubleClick = { readingMode = false })) {
+                        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 7.dp, vertical = 12.dp).combinedClickable(onClick = {}, onDoubleClick = { readingMode = false })) {
                             Text(title.ifBlank { "Tanpa tajuk" }, fontSize = 23.sp, lineHeight = 28.sp, fontWeight = FontWeight.Bold)
                             Spacer(Modifier.height(10.dp))
                             Row(Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
@@ -1123,7 +1123,7 @@ fun NotesScreen(
                     ) {
                         Box(Modifier.fillMaxSize()) {
                             Column(
-                                Modifier.fillMaxSize().padding(horizontal = 6.dp, vertical = 18.dp)
+                                Modifier.fillMaxSize().padding(horizontal = 7.dp, vertical = 18.dp)
                             ) {
                                 androidx.compose.foundation.text.BasicTextField(
                                     value = title,
