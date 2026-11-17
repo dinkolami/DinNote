@@ -994,9 +994,9 @@ fun NotesScreen(
                                 Text("←", color = Color(0xFF087F83), fontSize = 23.sp)
                             }
                             Text(
-                                if (editingId == null) "Catatan Baharu" else "Edit Catatan",
+                                "Edit",
                                 modifier = Modifier.weight(1f),
-                                color = Color(0xFF103B50), fontSize = 15.sp,
+                                color = Color(0xFF103B50), fontSize = 13.sp,
                                 fontWeight = FontWeight.SemiBold, maxLines = 1
                             )
                             TextButton(enabled = undoStack.isNotEmpty(), onClick = {
@@ -1012,7 +1012,7 @@ fun NotesScreen(
                     }
                     HorizontalDivider(color = Color(0xFFF0F0F0))
                     Row(
-                        Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 3.dp),
+                        Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 0.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
                     ) {
@@ -1024,7 +1024,7 @@ fun NotesScreen(
                         var categoryExpanded by remember { mutableStateOf(false) }
                         Box {
                             TextButton(onClick = { categoryExpanded = true }) {
-                                Text("◇  Kategori: $selectedCategory  ▾", color = Color(0xFF006E70), fontSize = 13.sp)
+                                Text("◇  Kategori  ▾", color = Color(0xFF009F9A), fontSize = 13.sp)
                             }
                             DropdownMenu(expanded = categoryExpanded, onDismissRequest = { categoryExpanded = false }) {
                                 allCategories.forEach { category ->
@@ -1053,6 +1053,11 @@ fun NotesScreen(
                             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp),
                             modifier = Modifier.height(34.dp)
                         ) { Text("I", fontStyle = FontStyle.Italic) }
+                        OutlinedButton(
+                            onClick = { formatSelection("++") },
+                            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 0.dp),
+                            modifier = Modifier.height(34.dp)
+                        ) { Text("U", textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline) }
                         androidx.compose.material3.VerticalDivider(
                             modifier = Modifier.height(28.dp),
                             thickness = 1.dp,
