@@ -1166,19 +1166,23 @@ private class NoteFormattingTransformation : VisualTransformation {
         val source = text.text
         val chars = source.toCharArray()
         val spans = mutableListOf<Triple<Int, Int, SpanStyle>>()
-        val regex = Regex("""\*\*(.+?)\*\*|(?<!_)_([^_\n]+)_(?!_)""")
+        val regex = Regex("""\\*\\*([^*\\n]+)\\*\\*|\\+\\+([^+\\n]+)\\+\\+|(?<!_)_([^_\\n]+)_(?!_)""")
         regex.findAll(source).forEach { match ->
-            val bold = match.value.startsWith("**")
-            val markerLength = if (bold) 2 else 1
+            val bold = match.groups[1] != null
+            val underline = match.groups[2] != null
+            val markerLength = if (bold || underline) 2 else 1
             val start = match.range.first
             val endExclusive = match.range.last + 1
             repeat(markerLength) { i ->
                 chars[start + i] = '\u2060'
                 chars[endExclusive - markerLength + i] = '\u2060'
             }
-            spans.add(Triple(start + markerLength, endExclusive - markerLength,
-                if (bold) SpanStyle(fontWeight = FontWeight.Bold)
-                else SpanStyle(fontStyle = FontStyle.Italic)))
+            val style = when {
+                bold -> SpanStyle(fontWeight = FontWeight.Bold)
+                underline -> SpanStyle(textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline)
+                else -> SpanStyle(fontStyle = FontStyle.Italic)
+            }
+            spans.add(Triple(start + markerLength, endExclusive - markerLength, style))
         }
         val styled = buildAnnotatedString {
             append(String(chars))
@@ -1188,22 +1192,26 @@ private class NoteFormattingTransformation : VisualTransformation {
     }
 }
 
-// Formatting is applied only in read mode; editing keeps the original text and cursor offsets.
 fun formattedNoteText(source: String): AnnotatedString = buildAnnotatedString {
-    val pattern = Regex("""\*\*(.+?)\*\*|_(.+?)_""")
+    val pattern = Regex("""\\*\\*([^*\\n]+)\\*\\*|\\+\\+([^+\\n]+)\\+\\+|(?<!_)_([^_\\n]+)_(?!_)""")
     var cursor = 0
     pattern.findAll(source).forEach { match ->
         append(source.substring(cursor, match.range.first))
-        val boldText = match.groups[1]?.value
-        if (boldText != null) {
-            pushStyle(SpanStyle(fontWeight = FontWeight.Bold))
-            append(boldText)
-            pop()
-        } else {
-            pushStyle(SpanStyle(fontStyle = FontStyle.Italic))
-            append(match.groups[2]?.value.orEmpty())
-            pop()
+        when {
+            match.groups[1] != null -> {
+                pushStyle(SpanStyle(fontWeight = FontWeight.Bold))
+                append(match.groups[1]!!.value)
+            }
+            match.groups[2] != null -> {
+                pushStyle(SpanStyle(textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline))
+                append(match.groups[2]!!.value)
+            }
+            else -> {
+                pushStyle(SpanStyle(fontStyle = FontStyle.Italic))
+                append(match.groups[3]?.value.orEmpty())
+            }
         }
+        pop()
         cursor = match.range.last + 1
     }
     append(source.substring(cursor))
