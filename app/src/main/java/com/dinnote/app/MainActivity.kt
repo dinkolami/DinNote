@@ -1302,22 +1302,30 @@ private fun noteFormatTokens(source: String): List<NoteFormatToken> {
 }
 
 private fun noteFormatRanges(source: String): Pair<List<NoteFormatToken>, List<Triple<Int, Int, SpanStyle>>> {
-    val tokens = noteFormatTokens(source)
-    val active = mutableMapOf<String, Pair<Int, SpanStyle>>()
+    val active = mutableMapOf<String, MutableList<NoteFormatToken>>()
     val ranges = mutableListOf<Triple<Int, Int, SpanStyle>>()
     val recognized = mutableListOf<NoteFormatToken>()
-    tokens.forEach { token ->
-        val opened = active[token.kind]
-        if (opened != null && (token.closing || token.kind != "size")) {
-            if (opened.first < token.start) ranges.add(Triple(opened.first, token.start, opened.second))
-            active.remove(token.kind)
-            recognized.add(token)
-        } else if (!token.closing && token.style != null) {
-            active[token.kind] = token.end to token.style
-            recognized.add(token)
+    noteFormatTokens(source).forEach { token ->
+        val stack = active.getOrPut(token.kind) { mutableListOf() }
+        // A size opener always starts a new scope, even inside another size scope.
+        // Symmetric emphasis markers close their latest matching scope.
+        if (token.closing || (token.kind != "size" && stack.isNotEmpty())) {
+            if (stack.isNotEmpty()) {
+                val opener = stack.removeAt(stack.lastIndex)
+                val style = opener.style
+                if (style != null && opener.end < token.start) {
+                    ranges.add(Triple(opener.end, token.start, style))
+                }
+                recognized.add(opener)
+                recognized.add(token)
+            }
+        } else if (token.style != null) {
+            stack.add(token)
         }
     }
-    return recognized to ranges
+    // Only paired delimiters are hidden. Unmatched or malformed markers
+    // remain editable, preventing invisible stray content and lost characters.
+    return recognized.sortedBy { it.start } to ranges
 }
 
 /** Same-length editor transformation preserves cursor offsets and supports combined styles. */
