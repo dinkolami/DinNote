@@ -1671,11 +1671,29 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
             kotlinx.coroutines.delay(650)
             if (libraryTitle.isNotBlank() || libraryBody.text.isNotBlank()) saveLibraryEditor()
         }
+        val libraryBodyScroll = rememberScrollState()
+        var libraryBodyLayout by remember { mutableStateOf<androidx.compose.ui.text.TextLayoutResult?>(null) }
+        var libraryBodyViewport by remember { mutableIntStateOf(0) }
+        LaunchedEffect(libraryBody.selection, libraryBodyLayout, libraryBodyViewport) {
+            val layout = libraryBodyLayout ?: return@LaunchedEffect
+            if (libraryBodyViewport <= 0) return@LaunchedEffect
+            val caret = layout.getCursorRect(libraryBody.selection.end.coerceIn(0, libraryBody.text.length))
+            val target = when {
+                caret.bottom > libraryBodyScroll.value + libraryBodyViewport - 48f ->
+                    (caret.bottom - libraryBodyViewport + 64f).toInt()
+                caret.top < libraryBodyScroll.value + 16f ->
+                    (caret.top - 24f).toInt()
+                else -> libraryBodyScroll.value
+            }
+            if (target != libraryBodyScroll.value) {
+                libraryBodyScroll.animateScrollTo(target.coerceIn(0, libraryBodyScroll.maxValue))
+            }
+        }
         androidx.compose.ui.window.Dialog(
             onDismissRequest = { saveLibraryEditor(); editingLibraryKey = null },
             properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = true)
         ) {
-            Surface(Modifier.fillMaxSize().padding(3.dp), shape = RoundedCornerShape(10.dp),
+            Surface(Modifier.fillMaxSize().imePadding().padding(3.dp), shape = RoundedCornerShape(10.dp),
                 border = BorderStroke(1.dp, Color(0xFFB7DCD7)), color = Color.White) {
                 Column(Modifier.fillMaxSize()) {
                     UnifiedEditorHeading("Catatan Maktabah",
@@ -1759,7 +1777,10 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                                     value = libraryBody, onValueChange = { libraryBody = it },
                                     modifier = Modifier.weight(1f).fillMaxWidth()
                                         .border(BorderStroke(1.dp, Color(0xFFDDE2E3)), RoundedCornerShape(12.dp))
-                                        .padding(horizontal = 8.dp, vertical = 12.dp),
+                                        .padding(horizontal = 8.dp, vertical = 12.dp)
+                                        .onSizeChanged { libraryBodyViewport = it.height }
+                                        .verticalScroll(libraryBodyScroll),
+                                    onTextLayout = { libraryBodyLayout = it },
                                     textStyle = androidx.compose.ui.text.TextStyle(fontSize = libraryFontSize.sp,
                                         lineHeight = (libraryFontSize * libraryDisplayPrefs.getFloat("line_spacing", 1.6f).coerceIn(1.2f, 2.2f)).sp,
                                         color = Color(0xFF263B3E),
@@ -1773,7 +1794,7 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                                         }
                                     }
                                 )
-                                Spacer(Modifier.height(64.dp))
+                                Spacer(Modifier.height(8.dp))
                             }
                         }
                     }
