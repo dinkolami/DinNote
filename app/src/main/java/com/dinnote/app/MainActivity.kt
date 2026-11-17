@@ -980,8 +980,29 @@ fun NotesScreen(
             if (undoStack.size > 60) undoStack.removeAt(0)
             redoStack.clear()
             val updated = body.text.replaceRange(start, end, replacement)
-            val cursor = if (start == end) start + marker.length else start + replacement.length
-            body = TextFieldValue(updated, selection = TextRange(cursor))
+            val selectionStart = start + marker.length
+            val selectionEnd = selectionStart + selected.length
+            body = TextFieldValue(updated, selection = TextRange(selectionStart, selectionEnd))
+        }
+        fun resizeSelection(delta: Int) {
+            val start = body.selection.min.coerceIn(0, body.text.length)
+            val end = body.selection.max.coerceIn(start, body.text.length)
+            if (start == end) {
+                editorFontSize = (editorFontSize + delta).coerceIn(14f, 30f)
+                displayPrefs.edit().putInt("font_size", editorFontSize.toInt()).apply()
+                return
+            }
+            val selected = body.text.substring(start, end)
+            val size = (editorFontSize.toInt() + delta).coerceIn(14, 30)
+            val prefix = "{{size:$size}}"
+            val suffix = "{{/size}}"
+            undoStack.add(body)
+            if (undoStack.size > 60) undoStack.removeAt(0)
+            redoStack.clear()
+            body = TextFieldValue(
+                body.text.replaceRange(start, end, prefix + selected + suffix),
+                selection = TextRange(start + prefix.length, start + prefix.length + selected.length)
+            )
         }
         fun persistNote() {
             if (title.isNotBlank() || body.text.isNotBlank()) {
@@ -1137,7 +1158,7 @@ fun NotesScreen(
                             modifier = Modifier.weight(1f).height(34.dp)
                         ) { Text("U", textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline) }
                         OutlinedButton(
-                            onClick = { editorFontSize = (editorFontSize - 1f).coerceAtLeast(14f); displayPrefs.edit().putInt("font_size", editorFontSize.toInt()).apply() },
+                            onClick = { resizeSelection(-1) },
                             enabled = editorFontSize > 14f,
                             contentPadding = PaddingValues(horizontal = 0.dp, vertical = 0.dp),
                             modifier = Modifier.weight(1f).height(34.dp)
@@ -1149,7 +1170,7 @@ fun NotesScreen(
                             modifier = Modifier.weight(1f).height(34.dp)
                         ) { Text("${editorFontSize.toInt()}", color = Color(0xFF087F83)) }
                         OutlinedButton(
-                            onClick = { editorFontSize = (editorFontSize + 1f).coerceAtMost(30f); displayPrefs.edit().putInt("font_size", editorFontSize.toInt()).apply() },
+                            onClick = { resizeSelection(1) },
                             enabled = editorFontSize < 30f,
                             contentPadding = PaddingValues(horizontal = 0.dp, vertical = 0.dp),
                             modifier = Modifier.weight(1f).height(34.dp)
@@ -1258,60 +1279,90 @@ fun NotesScreen(
  * character; formatting delimiters become invisible word-joiners.
  * This avoids the offset-mapping crashes seen with shrinking transformations.
  */
+private data class NoteFormatToken(val start: Int, val end: Int, val style: SpanStyle?, val closing: Boolean, val kind: String)
+
+private fun noteFormatTokens(source: String): List<NoteFormatToken> {
+    val pattern = Regex("""\\{\\{size:(\\d{1,2})\\}\\}|\\{\\{/size\\}\\}|\\*\\*|\\+\\+|_""")
+    return pattern.findAll(source).map { m ->
+        val token = m.value
+        val kind = when {
+            token.startsWith("{{") -> "size"
+            token == "**" -> "bold"
+            token == "++" -> "underline"
+            else -> "italic"
+        }
+        val style = when (kind) {
+            "bold" -> SpanStyle(fontWeight = FontWeight.Bold)
+            "underline" -> SpanStyle(textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline)
+            "italic" -> SpanStyle(fontStyle = FontStyle.Italic)
+            else -> m.groups[1]?.value?.toIntOrNull()?.let { SpanStyle(fontSize = it.coerceIn(14, 30).sp) }
+        }
+        NoteFormatToken(m.range.first, m.range.last + 1, style, token == "{{/size}}", kind)
+    }.toList()
+}
+
+private fun noteFormatRanges(source: String): Pair<List<NoteFormatToken>, List<Triple<Int, Int, SpanStyle>>> {
+    val tokens = noteFormatTokens(source)
+    val active = mutableMapOf<String, Pair<Int, SpanStyle>>()
+    val ranges = mutableListOf<Triple<Int, Int, SpanStyle>>()
+    val recognized = mutableListOf<NoteFormatToken>()
+    tokens.forEach { token ->
+        val opened = active[token.kind]
+        if (opened != null && (token.closing || token.kind != "size")) {
+            if (opened.first < token.start) ranges.add(Triple(opened.first, token.start, opened.second))
+            active.remove(token.kind)
+            recognized.add(token)
+        } else if (!token.closing && token.style != null) {
+            active[token.kind] = token.end to token.style
+            recognized.add(token)
+        }
+    }
+    return recognized to ranges
+}
+
+/** Same-length editor transformation preserves cursor offsets and supports combined styles. */
 private class NoteFormattingTransformation : VisualTransformation {
     override fun filter(text: AnnotatedString): TransformedText {
         val source = text.text
         val chars = source.toCharArray()
-        val spans = mutableListOf<Triple<Int, Int, SpanStyle>>()
-        val regex = Regex("""\*\*([^*\n]+)\*\*|\+\+([^+\n]+)\+\+|(?<!_)_([^_\n]+)_(?!_)""")
-        regex.findAll(source).forEach { match ->
-            val bold = match.groups[1] != null
-            val underline = match.groups[2] != null
-            val markerLength = if (bold || underline) 2 else 1
-            val start = match.range.first
-            val endExclusive = match.range.last + 1
-            repeat(markerLength) { i ->
-                chars[start + i] = '\u2060'
-                chars[endExclusive - markerLength + i] = '\u2060'
-            }
-            val style = when {
-                bold -> SpanStyle(fontWeight = FontWeight.Bold)
-                underline -> SpanStyle(textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline)
-                else -> SpanStyle(fontStyle = FontStyle.Italic)
-            }
-            spans.add(Triple(start + markerLength, endExclusive - markerLength, style))
+        val (tokens, ranges) = noteFormatRanges(source)
+        tokens.forEach { token ->
+            for (i in token.start until token.end) chars[i] = '\\u2060'
         }
         val styled = buildAnnotatedString {
             append(String(chars))
-            spans.forEach { (start, end, style) -> addStyle(style, start, end) }
+            ranges.forEach { (start, end, style) -> addStyle(style, start, end) }
         }
         return TransformedText(styled, OffsetMapping.Identity)
     }
 }
 
 fun formattedNoteText(source: String): AnnotatedString = buildAnnotatedString {
-    val pattern = Regex("""\*\*([^*\n]+)\*\*|\+\+([^+\n]+)\+\+|(?<!_)_([^_\n]+)_(?!_)""")
+    val (tokens, ranges) = noteFormatRanges(source)
     var cursor = 0
-    pattern.findAll(source).forEach { match ->
-        append(source.substring(cursor, match.range.first))
-        when {
-            match.groups[1] != null -> {
-                pushStyle(SpanStyle(fontWeight = FontWeight.Bold))
-                append(match.groups[1]!!.value)
-            }
-            match.groups[2] != null -> {
-                pushStyle(SpanStyle(textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline))
-                append(match.groups[2]!!.value)
-            }
-            else -> {
-                pushStyle(SpanStyle(fontStyle = FontStyle.Italic))
-                append(match.groups[3]?.value.orEmpty())
-            }
+    val positions = IntArray(source.length + 1)
+    tokens.forEach { token ->
+        while (cursor < token.start) {
+            positions[cursor] = length
+            append(source[cursor])
+            cursor++
         }
-        pop()
-        cursor = match.range.last + 1
+        while (cursor < token.end) {
+            positions[cursor] = length
+            cursor++
+        }
     }
-    append(source.substring(cursor))
+    while (cursor < source.length) {
+        positions[cursor] = length
+        append(source[cursor])
+        cursor++
+    }
+    positions[source.length] = length
+    ranges.forEach { (start, end, style) ->
+        val a = positions[start.coerceIn(0, source.length)]
+        val b = positions[end.coerceIn(0, source.length)]
+        if (a < b) addStyle(style, a, b)
+    }
 }
 @Composable
 fun noteColor(tag: String): Color = when (tag) {
