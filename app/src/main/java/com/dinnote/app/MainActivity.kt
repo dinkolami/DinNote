@@ -1740,7 +1740,11 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                     UnifiedEditorHeading("Catatan Maktabah",
                         onBack = { saveLibraryEditor(); editingLibraryKey = null },
                         onSave = { saveLibraryEditor(); editingLibraryKey = null })
-                    Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 0.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Row(
+                        Modifier.fillMaxWidth().padding(horizontal = 6.dp, vertical = 3.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                    ) {
                         OutlinedButton(
                             enabled = !translationBusy && libraryBody.text.isNotBlank(),
                             onClick = {
@@ -1759,7 +1763,30 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                                     }
                                 }
                             }
-                        ) { Text(if (translationBusy) "Menterjemah..." else "Terjemah Arab → Melayu", fontSize = 12.sp) }
+                        ) { Text("ع⇄A", fontSize = 14.sp) }
+                        listOf("B" to "**", "I" to "_", "U" to "++").forEach { (label, marker) ->
+                            OutlinedButton(
+                                enabled = !libraryBody.selection.collapsed,
+                                onClick = { libraryBody = wrapEditorSelection(libraryBody, marker) },
+                                contentPadding = PaddingValues(horizontal = 4.dp, vertical = 0.dp),
+                                modifier = Modifier.width(43.dp)
+                            ) { Text(label, fontSize = 13.sp) }
+                        }
+                        OutlinedButton(onClick = {
+                            val size = (libraryFontSize - 1f).coerceAtLeast(12f)
+                            if (libraryBody.selection.collapsed) {
+                                libraryFontSize = size
+                                libraryDisplayPrefs.edit().putInt("font_size", size.toInt()).apply()
+                            } else libraryBody = resizeEditorTextSelection(libraryBody, -1, libraryFontSize.toInt())
+                        }, contentPadding = PaddingValues(horizontal = 3.dp), modifier = Modifier.width(43.dp)) { Text("A−") }
+                        Text(libraryFontSize.toInt().toString(), fontSize = 12.sp)
+                        OutlinedButton(onClick = {
+                            val size = (libraryFontSize + 1f).coerceAtMost(36f)
+                            if (libraryBody.selection.collapsed) {
+                                libraryFontSize = size
+                                libraryDisplayPrefs.edit().putInt("font_size", size.toInt()).apply()
+                            } else libraryBody = resizeEditorTextSelection(libraryBody, 1, libraryFontSize.toInt())
+                        }, contentPadding = PaddingValues(horizontal = 3.dp), modifier = Modifier.width(43.dp)) { Text("A+") }
                         OutlinedButton(
                             enabled = translationDraft.isNotBlank(),
                             onClick = {
@@ -1770,7 +1797,7 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                                 translatedNoteDatabase.save(libraryTitle.ifBlank { "Petikan Maktabah" }, note, null)
                                 translationStatus = "Petikan dan terjemahan disimpan dalam Nota."
                             }
-                        ) { Text("Simpan ke Nota", fontSize = 12.sp) }
+                        ) { Text("▤+", fontSize = 14.sp) }
                     }
                     if (translationStatus.isNotBlank()) {
                         Text(translationStatus, modifier = Modifier.padding(horizontal = 14.dp), fontSize = 12.sp)
@@ -1784,31 +1811,6 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                             maxLines = 4
                         )
                     }
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        listOf("B" to "**", "I" to "_", "U" to "++").forEach { (label, marker) ->
-                            OutlinedButton(
-                                enabled = !libraryBody.selection.collapsed,
-                                onClick = { libraryBody = wrapEditorSelection(libraryBody, marker) },
-                                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 0.dp)
-                            ) { Text(label, fontSize = 13.sp) }
-                        }
-                    }
-                    DefaultEditorFontControls(
-                        fontSize = libraryFontSize,
-                        onChange = { size ->
-                            if (libraryBody.selection.collapsed) {
-                                libraryFontSize = size
-                                libraryDisplayPrefs.edit().putInt("font_size", size.toInt()).apply()
-                            } else {
-                                val delta = if (size > libraryFontSize) 1 else -1
-                                libraryBody = resizeEditorTextSelection(libraryBody, delta, libraryFontSize.toInt())
-                            }
-                        },
-                        hasSelection = !libraryBody.selection.collapsed
-                    )
                     Surface(Modifier.fillMaxWidth().weight(1f).padding(horizontal = 3.dp, vertical = 0.dp),
                         shape = RoundedCornerShape(12.dp), color = Color.White,
                         border = BorderStroke(1.dp, Color(0xFFDDE2E3))) {
