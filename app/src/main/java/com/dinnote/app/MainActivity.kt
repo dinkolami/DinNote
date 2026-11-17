@@ -1146,6 +1146,15 @@ fun NotesScreen(
                             contentPadding = PaddingValues(horizontal = 0.dp, vertical = 0.dp),
                             modifier = Modifier.weight(1f).height(32.dp)
                         ) { Text("U", textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline) }
+                        EditorColorPicker { selectedColor ->
+                            val updated = colorEditorSelection(body, selectedColor)
+                            if (updated != body) {
+                                undoStack.add(body)
+                                if (undoStack.size > 60) undoStack.removeAt(0)
+                                redoStack.clear()
+                                body = updated
+                            }
+                        }
                         OutlinedButton(shape = RoundedCornerShape(0.dp), 
                             onClick = { resizeSelection(-1) },
                             enabled = !body.selection.collapsed || editorFontSize > 14f,
@@ -1312,13 +1321,58 @@ private fun resizeEditorTextSelection(value: TextFieldValue, delta: Int, default
     )
 }
 
+private val editorPalette = listOf(
+    0xFF222222, 0xFF777777, 0xFFD32F2F, 0xFFE87924,
+    0xFFB68A27, 0xFF16804A, 0xFF008C91, 0xFF2563C7
+)
+
+private fun colorEditorSelection(value: TextFieldValue, color: Long): TextFieldValue {
+    val start = value.selection.min.coerceIn(0, value.text.length)
+    val end = value.selection.max.coerceIn(start, value.text.length)
+    if (start == end) return value
+    val hex = "#%06X".format(color and 0xFFFFFF)
+    val prefix = "{{color:$hex}}"
+    val selected = value.text.substring(start, end)
+    return value.copy(
+        text = value.text.replaceRange(start, end, prefix + selected + "{{/color}}"),
+        selection = TextRange(start + prefix.length, end + prefix.length)
+    )
+}
+
+@Composable
+private fun EditorColorPicker(onPick: (Long) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    Box {
+        OutlinedButton(
+            onClick = { expanded = true },
+            shape = RoundedCornerShape(0.dp),
+            contentPadding = PaddingValues(horizontal = 5.dp, vertical = 0.dp),
+            modifier = Modifier.width(43.dp).height(32.dp)
+        ) { Text("🎨", fontSize = 16.sp) }
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            editorPalette.chunked(4).forEach { row ->
+                Row(Modifier.padding(horizontal = 8.dp)) {
+                    row.forEach { argb ->
+                        Box(
+                            Modifier.size(42.dp).padding(5.dp)
+                                .background(Color(argb), RoundedCornerShape(6.dp))
+                                .clickable { expanded = false; onPick(argb) }
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
 private data class NoteFormatToken(val start: Int, val end: Int, val style: SpanStyle?, val closing: Boolean, val kind: String)
 
 private fun noteFormatTokens(source: String): List<NoteFormatToken> {
-    val pattern = Regex("""\{\{size:(\d{1,2})\}\}|\{\{/size\}\}|\*\*|\+\+|_""")
+    val pattern = Regex("""\{\{size:(\d{1,2})\}\}|\{\{/size\}\}|\{\{color:(#[0-9A-Fa-f]{6})\}\}|\{\{/color\}\}|\*\*|\+\+|_""")
     return pattern.findAll(source).map { m ->
         val token = m.value
         val kind = when {
+            token.startsWith("{{color:") || token == "{{/color}}" -> "color"
             token.startsWith("{{") -> "size"
             token == "**" -> "bold"
             token == "++" -> "underline"
@@ -1328,9 +1382,10 @@ private fun noteFormatTokens(source: String): List<NoteFormatToken> {
             "bold" -> SpanStyle(fontWeight = FontWeight.Bold)
             "underline" -> SpanStyle(textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline)
             "italic" -> SpanStyle(fontStyle = FontStyle.Italic)
+            "color" -> m.groups[2]?.value?.let { SpanStyle(color = Color(android.graphics.Color.parseColor(it))) }
             else -> m.groups[1]?.value?.toIntOrNull()?.let { SpanStyle(fontSize = it.coerceIn(14, 30).sp) }
         }
-        NoteFormatToken(m.range.first, m.range.last + 1, style, token == "{{/size}}", kind)
+        NoteFormatToken(m.range.first, m.range.last + 1, style, (token == "{{/size}}" || token == "{{/color}}"), kind)
     }.toList()
 }
 
@@ -1804,6 +1859,9 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                                 contentPadding = PaddingValues(horizontal = 4.dp, vertical = 0.dp),
                                 modifier = Modifier.width(43.dp)
                             ) { Text(label, fontSize = 13.sp) }
+                        }
+                        EditorColorPicker { selectedColor ->
+                            libraryBody = colorEditorSelection(libraryBody, selectedColor)
                         }
                         OutlinedButton(shape = RoundedCornerShape(0.dp), onClick = {
                             val size = (libraryFontSize - 1f).coerceAtLeast(12f)
