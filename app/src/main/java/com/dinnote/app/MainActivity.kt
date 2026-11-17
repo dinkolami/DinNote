@@ -1271,7 +1271,7 @@ private fun selectedEditorFontSize(value: TextFieldValue, fallback: Int): Int {
     val start = value.selection.min.coerceIn(0, value.text.length)
     val end = value.selection.max.coerceIn(start, value.text.length)
     if (start == end) return fallback
-    val opening = Regex("""\\{\\{size:(\\d{1,2})\\}\\}""")
+    val opening = Regex("""\{\{size:(\d{1,2})\}\}""")
     val preceding = opening.findAll(value.text.substring(0, start)).lastOrNull()
     val exact = preceding?.takeIf { it.range.last + 1 == start && value.text.startsWith("{{/size}}", end) }
     return exact?.groupValues?.get(1)?.toIntOrNull()
