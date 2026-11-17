@@ -89,7 +89,31 @@ fun DisplaySettingsScreen(modifier: Modifier = Modifier) {
     val referenceMadhhab = "Syafi‘i"
     var bookLayout by remember { mutableStateOf(prefs.getString("book_layout", "Arab di atas, Melayu di bawah") ?: "Arab di atas, Melayu di bawah") }
     Column(modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 14.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text("Tetapan DinNote", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF075B59))
+        Row(Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+            Text("Tetapan DinNote", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF075B59))
+            Button(onClick = {
+                val saved = prefs.edit()
+                    .putString("background", background)
+                    .putString("background_image_uri", imageUri)
+                    .putFloat("background_image_opacity", imageOpacity)
+                    .putInt("font_size", fontSize.toInt())
+                    .putFloat("line_spacing", spacing)
+                    .putBoolean("full_screen", fullScreen)
+                    .putString("border_shape", borderShape)
+                    .putString("border_color", borderColor)
+                    .putFloat("border_width", borderWidth)
+                    .putString("selected_symbol", selectedSymbol)
+                    .putString("font", fontChoice)
+                    .putString("primary_language", primaryLanguage)
+                    .putString("reference_madhhab", referenceMadhhab)
+                    .putString("book_layout", bookLayout)
+                    .commit()
+                settingsStatus = if (saved) "Tetapan berjaya disimpan" else "Gagal menyimpan tetapan"
+            }) { Text("Simpan", fontSize = 13.sp) }
+        }
+        if (settingsStatus.isNotBlank()) {
+            Text(settingsStatus, fontSize = 13.sp, color = Color(0xFF075B59))
+        }
         Text("Sesuaikan paparan nota dan Maktabah Arab–Melayu.", fontSize = 13.sp, color = Color(0xFF526B78))
         Text("Tema Bacaan", fontWeight = FontWeight.SemiBold, color = Color(0xFF075B59))
         Text("Pilih gaya putih, turquoise, krim atau malam untuk bacaan.", fontSize = 12.sp)
@@ -253,31 +277,6 @@ fun DisplaySettingsScreen(modifier: Modifier = Modifier) {
                 HorizontalDivider(color = Color(0xFFB7DCD7))
                 Text("$selectedSymbol Contoh terjemahan dan nota kajian kitab mazhab Syafi‘i.", fontSize = fontSize.sp, lineHeight = (fontSize * spacing).sp, color = if (background == "dark") Color.White else Color.DarkGray)
             }
-        }
-        Button(
-            onClick = {
-                val saved = prefs.edit()
-                    .putString("background", background)
-                    .putString("background_image_uri", imageUri)
-                    .putFloat("background_image_opacity", imageOpacity)
-                    .putInt("font_size", fontSize.toInt())
-                    .putFloat("line_spacing", spacing)
-                    .putBoolean("full_screen", fullScreen)
-                    .putString("border_shape", borderShape)
-                    .putString("border_color", borderColor)
-                    .putFloat("border_width", borderWidth)
-                    .putString("selected_symbol", selectedSymbol)
-                    .putString("font", fontChoice)
-                    .putString("primary_language", primaryLanguage)
-                    .putString("reference_madhhab", referenceMadhhab)
-                    .putString("book_layout", bookLayout)
-                    .commit()
-                settingsStatus = if (saved) "Tetapan berjaya disimpan" else "Gagal menyimpan tetapan"
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) { Text("Simpan Tetapan") }
-        if (settingsStatus.isNotBlank()) {
-            Text(settingsStatus, fontSize = 13.sp, color = Color(0xFF075B59))
         }
         HorizontalDivider(color = Color(0xFFE1E3E5))
         Text("Simpan & Pulihkan Data", fontWeight = FontWeight.Bold, fontSize = 18.sp)
