@@ -1369,7 +1369,7 @@ private fun colorEditorSelection(value: TextFieldValue, color: Long): TextFieldV
     val prefix = "{{color:$hex}}"
     val source = value.text
     // Recolor an existing selection without nesting color markers.
-    val opening = Regex("""\\{\\{color:#[0-9A-Fa-f]{6}\\}\\}""")
+    val opening = Regex("""\{\{color:#[0-9A-Fa-f]{6}\}\}""")
     val previous = opening.findAll(source.substring(0, start)).lastOrNull()
     val existing = previous?.takeIf {
         it.range.last + 1 == start && source.startsWith("{{/color}}", end)
