@@ -97,7 +97,28 @@ fun DinNoteApp() {
         Scaffold(
             containerColor = MaterialTheme.colorScheme.background,
             topBar = {
-                Surface(color = Color.White) {
+                val headerContext = LocalContext.current
+                val headerPrefs = remember { headerContext.getSharedPreferences("dinnote_display", android.content.Context.MODE_PRIVATE) }
+                val headerUri = headerPrefs.getString("background_image_uri", "") ?: ""
+                val headerOpacity = headerPrefs.getFloat("background_image_opacity", 0.18f)
+                val headerBitmap = remember(headerUri) {
+                    if (headerUri.isBlank()) null else runCatching {
+                        headerContext.contentResolver.openInputStream(Uri.parse(headerUri))?.use {
+                            BitmapFactory.decodeStream(it)?.asImageBitmap()
+                        }
+                    }.getOrNull()
+                }
+                Box(Modifier.fillMaxWidth()) {
+                    IslamicGeometricBackground(Modifier.matchParentSize())
+                    if (headerBitmap != null) {
+                        androidx.compose.foundation.Image(
+                            bitmap = headerBitmap,
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            alpha = headerOpacity.coerceIn(0.05f, 1f),
+                            modifier = Modifier.matchParentSize()
+                        )
+                    }
                     Row(
                         modifier = Modifier.fillMaxWidth().statusBarsPadding().height(48.dp).padding(horizontal = 14.dp),
                         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
