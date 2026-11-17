@@ -338,12 +338,31 @@ fun HomeScreen(
     onOpenSettings: () -> Unit
 ) {
     val context = LocalContext.current
+    val homePrefs = remember { context.getSharedPreferences("dinnote_display", android.content.Context.MODE_PRIVATE) }
+    val savedBackgroundUri = homePrefs.getString("background_image_uri", "") ?: ""
+    val savedBackgroundOpacity = homePrefs.getFloat("background_image_opacity", 0.18f)
+    val homeBackgroundBitmap = remember(savedBackgroundUri) {
+        if (savedBackgroundUri.isBlank()) null else runCatching {
+            context.contentResolver.openInputStream(Uri.parse(savedBackgroundUri))?.use {
+                BitmapFactory.decodeStream(it)?.asImageBitmap()
+            }
+        }.getOrNull()
+    }
     val pinnedNotes = remember { mutableStateListOf<DinNote>() }
     val reminder = remember { kalimahEntries.randomOrNull() }
     val pinnedDatabase = remember { NoteDatabase(context).also { it.migrateOldSingleNote(context) } }
     LaunchedEffect(Unit) { pinnedNotes.clear(); pinnedNotes.addAll(pinnedDatabase.allNotes().filter { it.pinned && !it.archived }.sortedByDescending { it.updatedAt }) }
     Box(modifier = modifier.fillMaxSize()) {
         IslamicGeometricBackground(Modifier.matchParentSize())
+        if (homeBackgroundBitmap != null) {
+            androidx.compose.foundation.Image(
+                bitmap = homeBackgroundBitmap,
+                contentDescription = "Latar pilihan pengguna",
+                contentScale = ContentScale.Crop,
+                alpha = savedBackgroundOpacity.coerceIn(0.05f, 1f),
+                modifier = Modifier.matchParentSize()
+            )
+        }
     Column(
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())
             .padding(horizontal = 14.dp, vertical = 4.dp),
