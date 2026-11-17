@@ -14,6 +14,8 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.verticalScroll
@@ -1183,11 +1185,21 @@ fun NotesScreen(
                             Spacer(Modifier.height(8.dp))
                             // Render the complete note in one text layout, matching the editor.
                             // Compose resolves mixed Arabic/Malay direction per paragraph.
+                            var readingTextLayout by remember { mutableStateOf<androidx.compose.ui.text.TextLayoutResult?>(null) }
                             Text(
                                 text = formattedNoteText(body.text),
-                                modifier = Modifier.fillMaxWidth().combinedClickable(
-                                    onClick = {}, onDoubleClick = { readingMode = false }
-                                ),
+                                modifier = Modifier.fillMaxWidth().pointerInput(body.text) {
+                                    detectTapGestures(onDoubleTap = { position ->
+                                        val layout = readingTextLayout
+                                        if (layout != null) {
+                                            val visibleOffset = layout.getOffsetForPosition(position)
+                                            val sourceOffset = sourceOffsetForFormattedText(body.text, visibleOffset)
+                                            body = body.copy(selection = TextRange(sourceOffset))
+                                        }
+                                        readingMode = false
+                                    })
+                                },
+                                onTextLayout = { readingTextLayout = it },
                                 style = androidx.compose.ui.text.TextStyle(
                                     textDirection = TextDirection.ContentOrRtl,
                                     fontSize = editorFontSize.sp,
@@ -1601,6 +1613,27 @@ private class NoteFormattingTransformation : VisualTransformation {
         }
         return TransformedText(styled, OffsetMapping.Identity)
     }
+}
+
+/** Convert a position in the markup-free reader back to the stored editor text. */
+private fun sourceOffsetForFormattedText(source: String, visibleOffset: Int): Int {
+    val (tokens, _) = noteFormatRanges(source)
+    var sourceIndex = 0
+    var displayedIndex = 0
+    val target = visibleOffset.coerceAtLeast(0)
+    for (token in tokens) {
+        while (sourceIndex < token.start && displayedIndex < target) {
+            sourceIndex++
+            displayedIndex++
+        }
+        if (displayedIndex >= target) return sourceIndex.coerceIn(0, source.length)
+        sourceIndex = token.end
+    }
+    while (sourceIndex < source.length && displayedIndex < target) {
+        sourceIndex++
+        displayedIndex++
+    }
+    return sourceIndex.coerceIn(0, source.length)
 }
 
 fun formattedNoteText(source: String): AnnotatedString = buildAnnotatedString {
