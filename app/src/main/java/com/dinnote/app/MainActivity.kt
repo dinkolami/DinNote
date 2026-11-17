@@ -1066,13 +1066,13 @@ fun NotesScreen(
                     }
 
                     Surface(
-                        modifier = Modifier.fillMaxWidth().weight(1f).padding(start = 10.dp, end = 10.dp, top = 2.dp, bottom = 8.dp),
+                        modifier = Modifier.fillMaxWidth().weight(1f).padding(start = 0.dp, end = 0.dp, top = 2.dp, bottom = 8.dp),
                         shape = RoundedCornerShape(10.dp),
                         color = if (noteBackgroundImage != null) Color.Transparent else readingBackground(editorBackground)
                     ) {
                         Box(Modifier.fillMaxSize()) {
                             Column(
-                                Modifier.fillMaxSize().padding(horizontal = 18.dp, vertical = 18.dp)
+                                Modifier.fillMaxSize().padding(horizontal = 5.dp, vertical = 18.dp)
                             ) {
                                 androidx.compose.foundation.text.BasicTextField(
                                     value = title,
