@@ -96,7 +96,7 @@ fun DinNoteApp() {
     )
     MaterialTheme(colorScheme = islamicScheme) {
         Scaffold(
-            modifier = Modifier.navigationBarsPadding(),
+            modifier = Modifier.navigationBarsPadding().imePadding(),
             contentWindowInsets = WindowInsets(0, 0, 0, 0),
             containerColor = MaterialTheme.colorScheme.background,
             topBar = {
@@ -1026,7 +1026,7 @@ fun NotesScreen(
         // Editor is part of the Activity composition, not a separate Dialog window.
         // Android IME resizing now uses the Activity's window and shared insets.
         Box(Modifier.fillMaxSize().background(Color.White)) {
-            Box(Modifier.fillMaxSize().imePadding().background(readingBackground(editorBackground))) {
+            Box(Modifier.fillMaxSize().background(readingBackground(editorBackground))) {
                 if (noteBackgroundImage != null) {
                     androidx.compose.foundation.Image(
                         bitmap = noteBackgroundImage,
@@ -1690,7 +1690,7 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
         val libraryBodyScroll = rememberScrollState()
         var libraryBodyLayout by remember { mutableStateOf<androidx.compose.ui.text.TextLayoutResult?>(null) }
         var libraryBodyViewport by remember { mutableIntStateOf(0) }
-        LaunchedEffect(libraryBody.selection, libraryBodyLayout, libraryBodyViewport) {
+        LaunchedEffect(libraryBody.selection, libraryBodyLayout, libraryBodyViewport, WindowInsets.ime.getBottom(androidx.compose.ui.platform.LocalDensity.current)) {
             val layout = libraryBodyLayout ?: return@LaunchedEffect
             if (libraryBodyViewport <= 0) return@LaunchedEffect
             val caret = layout.getCursorRect(libraryBody.selection.end.coerceIn(0, libraryBody.text.length))
