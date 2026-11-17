@@ -80,19 +80,19 @@ fun DinNoteApp() {
         }
     }
     val islamicScheme = lightColorScheme(
-        primary = Color(0xFF087F8C),
+        primary = Color(0xFF167E80),
         onPrimary = Color.White,
-        primaryContainer = Color(0xFFD9F2F3),
-        onPrimaryContainer = Color(0xFF064E57),
-        secondary = Color(0xFF4D6670),
+        primaryContainer = Color(0xFFE5F3F0),
+        onPrimaryContainer = Color(0xFF15575B),
+        secondary = Color(0xFF6B7777),
         onSecondary = Color.White,
-        secondaryContainer = Color(0xFFEAF1F3),
+        secondaryContainer = Color(0xFFF4F0E7),
         onSecondaryContainer = Color(0xFF493719),
-        tertiary = Color(0xFF526B78),
-        background = Color(0xFFFFFFFF),
+        tertiary = Color(0xFFC8A66B),
+        background = Color(0xFFFCF9F2),
         surface = Color(0xFFFFFFFF),
-        surfaceVariant = Color(0xFFF5F7F8),
-        outline = Color(0xFFD8DEE3)
+        surfaceVariant = Color(0xFFF7F6F2),
+        outline = Color(0xFFD7DEDA)
     )
     MaterialTheme(colorScheme = islamicScheme) {
         Scaffold(
@@ -1144,36 +1144,36 @@ fun NotesScreen(
                     }
                     HorizontalDivider(color = Color(0xFFF0F0F0))
                     Row(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 6.dp, vertical = 4.dp),
-                        horizontalArrangement = Arrangement.spacedBy(3.dp),
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 5.dp),
+                        horizontalArrangement = Arrangement.spacedBy(5.dp),
                         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
                     ) {
                         OutlinedButton(
                             onClick = { formatSelection("**") },
                             contentPadding = PaddingValues(horizontal = 0.dp, vertical = 0.dp),
-                            modifier = Modifier.weight(1f).height(34.dp)
+                            modifier = Modifier.weight(1f).height(32.dp)
                         ) { Text("B", fontWeight = FontWeight.Bold) }
                         OutlinedButton(
                             onClick = { formatSelection("_") },
                             contentPadding = PaddingValues(horizontal = 0.dp, vertical = 0.dp),
-                            modifier = Modifier.weight(1f).height(34.dp)
+                            modifier = Modifier.weight(1f).height(32.dp)
                         ) { Text("I", fontStyle = FontStyle.Italic) }
                         OutlinedButton(
                             onClick = { formatSelection("++") },
                             contentPadding = PaddingValues(horizontal = 0.dp, vertical = 0.dp),
-                            modifier = Modifier.weight(1f).height(34.dp)
+                            modifier = Modifier.weight(1f).height(32.dp)
                         ) { Text("U", textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline) }
                         OutlinedButton(
                             onClick = { resizeSelection(-1) },
                             enabled = editorFontSize > 14f,
                             contentPadding = PaddingValues(horizontal = 0.dp, vertical = 0.dp),
-                            modifier = Modifier.weight(1f).height(34.dp)
+                            modifier = Modifier.weight(1f).height(32.dp)
                         ) { Text("A−", color = Color(0xFF087F83)) }
                         OutlinedButton(
                             onClick = {},
                             enabled = false,
                             contentPadding = PaddingValues(horizontal = 0.dp, vertical = 0.dp),
-                            modifier = Modifier.weight(1f).height(34.dp)
+                            modifier = Modifier.weight(1f).height(32.dp)
                         ) { Text("${editorFontSize.toInt()}", color = Color(0xFF087F83)) }
                         OutlinedButton(
                             onClick = { resizeSelection(1) },
