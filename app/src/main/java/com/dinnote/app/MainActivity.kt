@@ -129,7 +129,7 @@ fun DinNoteApp() {
             },
             bottomBar = {
                 Surface(
-                    modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = 10.dp, top = 3.dp, bottom = 6.dp),
+                    modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(start = 10.dp, end = 10.dp, top = 3.dp, bottom = 6.dp),
                     shape = RoundedCornerShape(10.dp),
                     color = Color.White,
                     border = BorderStroke(1.dp, Color(0xFFD8DEE3)),
