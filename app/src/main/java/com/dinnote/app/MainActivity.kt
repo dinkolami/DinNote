@@ -1322,6 +1322,74 @@ fun NotesScreen(
                         ) { Text("A+", color = Color(0xFF087F83)) }
                     }
 
+                    // Smart Touch: only appears for an explicit text selection.
+                    var smartMenu by remember { mutableStateOf(false) }
+                    var smartSource by remember { mutableStateOf("") }
+                    var smartResult by remember { mutableStateOf("") }
+                    var smartLabel by remember { mutableStateOf("") }
+                    var smartDialog by remember { mutableStateOf(false) }
+                    var smartBusy by remember { mutableStateOf(false) }
+                    if (!body.selection.collapsed) {
+                        Box(Modifier.fillMaxWidth().padding(horizontal = 12.dp)) {
+                            TextButton(onClick = { smartMenu = true }) {
+                                Text("✦ Smart Touch", color = Color(0xFF087F83), fontSize = 13.sp)
+                            }
+                            DropdownMenu(expanded = smartMenu, onDismissRequest = { smartMenu = false }) {
+                                listOf("Terjemah", "Tambah syarah", "Simpan petikan").forEach { action ->
+                                    DropdownMenuItem(text = { Text(action) }, onClick = {
+                                        smartMenu = false
+                                        val start = body.selection.min.coerceIn(0, body.text.length)
+                                        val end = body.selection.max.coerceIn(start, body.text.length)
+                                        smartSource = body.text.substring(start, end)
+                                        smartLabel = action
+                                        smartResult = ""
+                                        smartDialog = smartSource.isNotBlank()
+                                        if (smartDialog && action == "Terjemah") {
+                                            smartBusy = true
+                                            ArabicMalayTranslator.translate(smartSource) { result ->
+                                                smartBusy = false
+                                                smartResult = result.getOrElse { "" }
+                                            }
+                                        }
+                                    })
+                                }
+                            }
+                        }
+                    }
+                    if (smartDialog) {
+                        AlertDialog(
+                            onDismissRequest = { if (!smartBusy) smartDialog = false },
+                            title = { Text(smartLabel) },
+                            text = {
+                                Column {
+                                    Text(smartSource.take(500), fontSize = 14.sp)
+                                    if (smartBusy) Text("Menyediakan terjemahan...")
+                                    else if (smartLabel != "Simpan petikan") {
+                                        if (smartLabel == "Terjemah") Text("Draf terjemahan — semak maksud sebelum menyimpan.", fontSize = 12.sp)
+                                        OutlinedTextField(value = smartResult, onValueChange = { smartResult = it }, label = { Text("Huraian / terjemahan") })
+                                    }
+                                }
+                            },
+                            confirmButton = {
+                                TextButton(enabled = !smartBusy && (smartLabel == "Simpan petikan" || smartResult.isNotBlank()), onClick = {
+                                    if (smartLabel == "Simpan petikan") {
+                                        database.save("Petikan: " + title.ifBlank { "Nota" }, smartSource, null)
+                                        refreshNotes()
+                                    } else {
+                                        val insertion = "\n\n" + (if (smartLabel == "Terjemah") "Maksudnya (draf):" else "Syarah:") + "\n" + smartResult + "\n"
+                                        val offset = body.selection.max.coerceIn(0, body.text.length)
+                                        undoStack.add(body)
+                                        if (undoStack.size > 60) undoStack.removeAt(0)
+                                        redoStack.clear()
+                                        body = TextFieldValue(body.text.substring(0, offset) + insertion + body.text.substring(offset), selection = TextRange(offset + insertion.length))
+                                    }
+                                    smartDialog = false
+                                }) { Text("Simpan") }
+                            },
+                            dismissButton = { TextButton(enabled = !smartBusy, onClick = { smartDialog = false }) { Text("Batal") } }
+                        )
+                    }
+
                     // Starter structure for Islamic notes. Insert plain editable text only:
                     // no markup tokens, database migrations, or external assets.
                     var showNoteTemplateMenu by remember { mutableStateOf(false) }
