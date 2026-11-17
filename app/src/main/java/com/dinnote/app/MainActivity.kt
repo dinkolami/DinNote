@@ -197,7 +197,7 @@ fun DinNoteApp() {
             when (selectedTab) {
                 0 -> HomeScreen(Modifier.padding(padding), onOpenNotes = { openNewNote = false; selectedTab = 1 }, onOpenPinnedNote = { id -> openPinnedNoteId = id; selectedTab = 1 }, onOpenLibrary = { selectedTab = 2 }, onOpenSearch = { selectedTab = 3 }, onOpenSettings = { selectedTab = 4 })
                 1 -> NotesScreen(Modifier.padding(padding), openNewNote = openNewNote, onNewNoteOpened = { openNewNote = false }, openNoteId = openPinnedNoteId, onNoteOpened = { openPinnedNoteId = null })
-                2 -> LibraryHubScreen(Modifier.padding(padding))
+                2 -> LibraryHubScreen(Modifier.padding(padding), onNavigate = { tab -> selectedTab = tab; if (tab == 1) openNewNote = false })
                 3 -> GlobalSearchScreen(Modifier.padding(padding))
                 4 -> DisplaySettingsScreen(Modifier.padding(padding))
             }
@@ -1393,7 +1393,7 @@ private fun matchesMaktabahSearch(value: String, query: String): Boolean =
     normalizeArabicSearch(value).contains(normalizeArabicSearch(query.trim()))
 
 @Composable
-fun LibraryScreen(modifier: Modifier = Modifier) {
+fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {}) {
     var selectedCategory by remember { mutableStateOf("Ingatan") }
     var selectedEntry by remember { mutableStateOf<KalimahEntry?>(null) }
     var editingKalimah by remember { mutableStateOf<KalimahEntry?>(null) }
@@ -1829,7 +1829,7 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                                     thickness = 1.dp,
                                     color = Color(0xFFE3ECEC)
                                 )
-                                val active = selectedTab == tab.third
+                                val active = tab.third == 2
                                 Column(
                                     modifier = Modifier.weight(1f).fillMaxHeight()
                                         .background(
@@ -1839,8 +1839,7 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                                         .clickable {
                                             saveLibraryEditor()
                                             editingLibraryKey = null
-                                            selectedTab = tab.third
-                                            if (tab.third == 1) openNewNote = false
+                                            onNavigate(tab.third)
                                         },
                                     verticalArrangement = Arrangement.Center,
                                     horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
