@@ -140,6 +140,7 @@ fun DinNoteApp() {
                         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
+                        Spacer(Modifier.weight(1f))
                         androidx.compose.foundation.Image(
                             painter = androidx.compose.ui.res.painterResource(com.dinnote.app.R.drawable.ic_dinnote_header),
                             contentDescription = "Logo DinNote",
