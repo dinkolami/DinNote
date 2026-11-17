@@ -639,7 +639,7 @@ fun NotesScreen(
         var notesCategoryExpanded by remember { mutableStateOf(false) }
         Box(Modifier.fillMaxWidth()) {
             Surface(modifier = Modifier.fillMaxWidth().clickable { notesCategoryExpanded = true },
-                shape = RoundedCornerShape(10.dp), color = Color.White,
+                shape = RoundedCornerShape(0.dp), color = Color.White,
                 border = BorderStroke(1.dp, Color(0xFFB7DCD7))) {
                 Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 9.dp),
                     verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
@@ -734,7 +734,7 @@ fun NotesScreen(
                             }
                         ),
                         colors = CardDefaults.cardColors(containerColor = Color.White),
-                        shape = RoundedCornerShape(10.dp),
+                        shape = RoundedCornerShape(0.dp),
                         border = BorderStroke(1.dp, Color(0xFFB7DCD7))
                     ) {
                         Column(Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 5.dp), verticalArrangement = Arrangement.spacedBy(1.dp)) {
@@ -793,7 +793,7 @@ fun NotesScreen(
 
     if (showAddCategory) {
         AlertDialog(
-            shape = RoundedCornerShape(10.dp),
+            shape = RoundedCornerShape(0.dp),
             containerColor = Color.White,
             tonalElevation = 0.dp,
             titleContentColor = Color(0xFF075B59),
@@ -833,7 +833,7 @@ fun NotesScreen(
 
     noteToDelete?.let { note ->
         AlertDialog(
-            shape = RoundedCornerShape(10.dp),
+            shape = RoundedCornerShape(0.dp),
             containerColor = Color.White,
             tonalElevation = 0.dp,
             titleContentColor = Color(0xFF075B59),
@@ -855,7 +855,7 @@ fun NotesScreen(
     }
     if (showManageCategories) {
         AlertDialog(
-            shape = RoundedCornerShape(10.dp),
+            shape = RoundedCornerShape(0.dp),
             containerColor = Color.White,
             tonalElevation = 0.dp,
             titleContentColor = Color(0xFF075B59),
@@ -893,12 +893,12 @@ fun NotesScreen(
     }
 
     categoryToDescribe?.let { name ->
-        AlertDialog(shape = RoundedCornerShape(10.dp), containerColor = Color.White, tonalElevation = 0.dp, titleContentColor = Color(0xFF075B59), textContentColor = Color(0xFF263B3E), onDismissRequest = { categoryToDescribe = null }, title = { Text("Deskripsi: $name") }, text = { OutlinedTextField(value = editedCategoryDescription, onValueChange = { editedCategoryDescription = it }, label = { Text("Deskripsi sendiri (pilihan)") }, minLines = 3, modifier = Modifier.fillMaxWidth()) }, confirmButton = { TextButton(onClick = { categoryPrefs.edit().putString("description_$name", editedCategoryDescription.trim()).apply(); categoryToDescribe = null }) { Text("Simpan") } }, dismissButton = { TextButton(onClick = { categoryToDescribe = null }) { Text("Batal") } })
+        AlertDialog(shape = RoundedCornerShape(0.dp), containerColor = Color.White, tonalElevation = 0.dp, titleContentColor = Color(0xFF075B59), textContentColor = Color(0xFF263B3E), onDismissRequest = { categoryToDescribe = null }, title = { Text("Deskripsi: $name") }, text = { OutlinedTextField(value = editedCategoryDescription, onValueChange = { editedCategoryDescription = it }, label = { Text("Deskripsi sendiri (pilihan)") }, minLines = 3, modifier = Modifier.fillMaxWidth()) }, confirmButton = { TextButton(onClick = { categoryPrefs.edit().putString("description_$name", editedCategoryDescription.trim()).apply(); categoryToDescribe = null }) { Text("Simpan") } }, dismissButton = { TextButton(onClick = { categoryToDescribe = null }) { Text("Batal") } })
     }
 
     categoryToRename?.let { oldName ->
         AlertDialog(
-            shape = RoundedCornerShape(10.dp),
+            shape = RoundedCornerShape(0.dp),
             containerColor = Color.White,
             tonalElevation = 0.dp,
             titleContentColor = Color(0xFF075B59),
@@ -942,7 +942,7 @@ fun NotesScreen(
 
     categoryToDelete?.let { category ->
         AlertDialog(
-            shape = RoundedCornerShape(10.dp),
+            shape = RoundedCornerShape(0.dp),
             containerColor = Color.White,
             tonalElevation = 0.dp,
             titleContentColor = Color(0xFF075B59),
@@ -1035,18 +1035,18 @@ fun NotesScreen(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
                             ) {
-                                OutlinedButton(
+                                OutlinedButton(shape = RoundedCornerShape(0.dp), 
                                     onClick = { showEditor = false },
                                     modifier = Modifier.height(36.dp),
-                                    shape = RoundedCornerShape(22.dp),
+                                    shape = RoundedCornerShape(0.dp),
                                     border = BorderStroke(1.dp, Color(0xFF00999A)),
                                     contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp),
                                     colors = ButtonDefaults.outlinedButtonColors(containerColor = Color.White)
                                 ) { Text("← Kembali", fontSize = 13.sp, color = Color(0xFF007C80)) }
-                                OutlinedButton(
+                                OutlinedButton(shape = RoundedCornerShape(0.dp), 
                                     onClick = { readingMode = false },
                                     modifier = Modifier.height(36.dp),
-                                    shape = RoundedCornerShape(22.dp),
+                                    shape = RoundedCornerShape(0.dp),
                                     border = BorderStroke(1.dp, Color(0xFF00999A)),
                                     contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp),
                                     colors = ButtonDefaults.outlinedButtonColors(containerColor = Color.White)
@@ -1131,34 +1131,34 @@ fun NotesScreen(
                         horizontalArrangement = Arrangement.spacedBy(5.dp),
                         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
                     ) {
-                        OutlinedButton(
+                        OutlinedButton(shape = RoundedCornerShape(0.dp), 
                             onClick = { formatSelection("**") },
                             contentPadding = PaddingValues(horizontal = 0.dp, vertical = 0.dp),
                             modifier = Modifier.weight(1f).height(32.dp)
                         ) { Text("B", fontWeight = FontWeight.Bold) }
-                        OutlinedButton(
+                        OutlinedButton(shape = RoundedCornerShape(0.dp), 
                             onClick = { formatSelection("_") },
                             contentPadding = PaddingValues(horizontal = 0.dp, vertical = 0.dp),
                             modifier = Modifier.weight(1f).height(32.dp)
                         ) { Text("I", fontStyle = FontStyle.Italic) }
-                        OutlinedButton(
+                        OutlinedButton(shape = RoundedCornerShape(0.dp), 
                             onClick = { formatSelection("++") },
                             contentPadding = PaddingValues(horizontal = 0.dp, vertical = 0.dp),
                             modifier = Modifier.weight(1f).height(32.dp)
                         ) { Text("U", textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline) }
-                        OutlinedButton(
+                        OutlinedButton(shape = RoundedCornerShape(0.dp), 
                             onClick = { resizeSelection(-1) },
                             enabled = !body.selection.collapsed || editorFontSize > 14f,
                             contentPadding = PaddingValues(horizontal = 0.dp, vertical = 0.dp),
                             modifier = Modifier.weight(1f).height(32.dp)
                         ) { Text("A−", color = Color(0xFF087F83)) }
-                        OutlinedButton(
+                        OutlinedButton(shape = RoundedCornerShape(0.dp), 
                             onClick = {},
                             enabled = false,
                             contentPadding = PaddingValues(horizontal = 0.dp, vertical = 0.dp),
                             modifier = Modifier.weight(1f).height(32.dp)
-                        ) { Text("${editorFontSize.toInt()}", color = Color(0xFF087F83)) }
-                        OutlinedButton(
+                        ) { Text("${selectedEditorFontSize(body, editorFontSize.toInt())}", color = Color(0xFF087F83)) }
+                        OutlinedButton(shape = RoundedCornerShape(0.dp), 
                             onClick = { resizeSelection(1) },
                             enabled = !body.selection.collapsed || editorFontSize < 30f,
                             contentPadding = PaddingValues(horizontal = 0.dp, vertical = 0.dp),
@@ -1168,7 +1168,7 @@ fun NotesScreen(
 
                     Surface(
                         modifier = Modifier.fillMaxWidth().weight(1f).padding(start = 8.dp, end = 8.dp, top = 2.dp, bottom = 0.dp),
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RoundedCornerShape(0.dp),
                         color = if (noteBackgroundImage != null) Color.Transparent else readingBackground(editorBackground),
                         border = BorderStroke(1.dp, Color(0xFF087F83))
                     ) {
@@ -1268,6 +1268,20 @@ fun NotesScreen(
  * character; formatting delimiters become invisible word-joiners.
  * This avoids the offset-mapping crashes seen with shrinking transformations.
  */
+private fun selectedEditorFontSize(value: TextFieldValue, fallback: Int): Int {
+    val start = value.selection.min.coerceIn(0, value.text.length)
+    val end = value.selection.max.coerceIn(start, value.text.length)
+    if (start == end) return fallback
+    val opening = Regex("""\\{\\{size:(\\d{1,2})\\}\\}""")
+    val preceding = opening.findAll(value.text.substring(0, start)).lastOrNull()
+    val exact = preceding?.takeIf { it.range.last + 1 == start && value.text.startsWith("{{/size}}", end) }
+    return exact?.groupValues?.get(1)?.toIntOrNull()
+        ?: noteFormatRanges(value.text).second
+            .filter { (a, b, style) -> a <= start && b >= end && style.fontSize.isSp }
+            .lastOrNull()?.third?.fontSize?.value?.toInt()
+        ?: fallback
+}
+
 private fun resizeEditorTextSelection(value: TextFieldValue, delta: Int, defaultSize: Int): TextFieldValue {
     val start = value.selection.min.coerceIn(0, value.text.length)
     val end = value.selection.max.coerceIn(start, value.text.length)
@@ -1734,7 +1748,7 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
         }
         // Inline editor shares the Activity Scaffold, so its bottom navigation
         // remains visible and the editor cannot cover Android's navigation area.
-        Surface(Modifier.fillMaxSize().padding(3.dp), shape = RoundedCornerShape(10.dp),
+        Surface(Modifier.fillMaxSize().padding(3.dp), shape = RoundedCornerShape(0.dp),
             border = BorderStroke(1.dp, Color(0xFFB7DCD7)), color = Color.White) {
                 Column(Modifier.fillMaxSize()) {
                     UnifiedEditorHeading("Catatan Maktabah",
@@ -1745,7 +1759,7 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                         horizontalArrangement = Arrangement.SpaceEvenly,
                         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
                     ) {
-                        OutlinedButton(
+                        OutlinedButton(shape = RoundedCornerShape(0.dp), 
                             enabled = !translationBusy && libraryBody.text.isNotBlank(),
                             onClick = {
                                 val selection = libraryBody.selection
@@ -1765,29 +1779,29 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                             }
                         ) { Text("ع⇄A", fontSize = 14.sp) }
                         listOf("B" to "**", "I" to "_", "U" to "++").forEach { (label, marker) ->
-                            OutlinedButton(
+                            OutlinedButton(shape = RoundedCornerShape(0.dp), 
                                 enabled = !libraryBody.selection.collapsed,
                                 onClick = { libraryBody = wrapEditorSelection(libraryBody, marker) },
                                 contentPadding = PaddingValues(horizontal = 4.dp, vertical = 0.dp),
                                 modifier = Modifier.width(43.dp)
                             ) { Text(label, fontSize = 13.sp) }
                         }
-                        OutlinedButton(onClick = {
+                        OutlinedButton(shape = RoundedCornerShape(0.dp), onClick = {
                             val size = (libraryFontSize - 1f).coerceAtLeast(12f)
                             if (libraryBody.selection.collapsed) {
                                 libraryFontSize = size
                                 libraryDisplayPrefs.edit().putInt("font_size", size.toInt()).apply()
                             } else libraryBody = resizeEditorTextSelection(libraryBody, -1, libraryFontSize.toInt())
                         }, contentPadding = PaddingValues(horizontal = 3.dp), modifier = Modifier.width(43.dp)) { Text("A−") }
-                        Text(libraryFontSize.toInt().toString(), fontSize = 12.sp)
-                        OutlinedButton(onClick = {
+                        Text(selectedEditorFontSize(libraryBody, libraryFontSize.toInt()).toString(), fontSize = 12.sp)
+                        OutlinedButton(shape = RoundedCornerShape(0.dp), onClick = {
                             val size = (libraryFontSize + 1f).coerceAtMost(36f)
                             if (libraryBody.selection.collapsed) {
                                 libraryFontSize = size
                                 libraryDisplayPrefs.edit().putInt("font_size", size.toInt()).apply()
                             } else libraryBody = resizeEditorTextSelection(libraryBody, 1, libraryFontSize.toInt())
                         }, contentPadding = PaddingValues(horizontal = 3.dp), modifier = Modifier.width(43.dp)) { Text("A+") }
-                        OutlinedButton(
+                        OutlinedButton(shape = RoundedCornerShape(0.dp), 
                             enabled = translationDraft.isNotBlank(),
                             onClick = {
                                 val selection = libraryBody.selection
@@ -1812,7 +1826,7 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                         )
                     }
                     Surface(Modifier.fillMaxWidth().weight(1f).padding(horizontal = 3.dp, vertical = 0.dp),
-                        shape = RoundedCornerShape(12.dp), color = Color.White,
+                        shape = RoundedCornerShape(0.dp), color = Color.White,
                         border = BorderStroke(1.dp, Color(0xFFDDE2E3))) {
                         Box(Modifier.fillMaxSize()) {
                             // Keep the writing surface unobstructed; decoration belongs to reading cards.
@@ -2009,9 +2023,9 @@ private fun DefaultEditorFontControls(fontSize: Float, onChange: (Float) -> Unit
 
 @Composable
 private fun UnifiedEditorHeading(title: String, onBack: () -> Unit, onSave: () -> Unit) {
-    Surface(color = Color(0xFF006E70), shape = RoundedCornerShape(topStart = 10.dp, topEnd = 10.dp),
+    Surface(color = Color(0xFF006E70), shape = RoundedCornerShape(0.dp),
         border = BorderStroke(1.dp, Color(0xFFB7DCD7))) {
-        Row(Modifier.fillMaxWidth().height(52.dp).padding(horizontal = 8.dp),
+        Row(Modifier.fillMaxWidth().height(42.dp).padding(horizontal = 8.dp),
             verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
             TextButton(onClick = onBack) { Text("←", color = Color.White, fontSize = 24.sp) }
             Text("✎  " + title, modifier = Modifier.weight(1f), fontSize = 15.sp,
