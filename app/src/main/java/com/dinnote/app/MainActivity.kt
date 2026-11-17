@@ -1843,10 +1843,39 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                         onBack = { saveLibraryEditor(); editingLibraryKey = null },
                         onSave = { saveLibraryEditor(); editingLibraryKey = null })
                     Row(
-                        Modifier.fillMaxWidth().padding(horizontal = 6.dp, vertical = 3.dp),
-                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 5.dp),
+                        horizontalArrangement = Arrangement.spacedBy(5.dp),
                         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
                     ) {
+                        listOf("B" to "**", "I" to "_", "U" to "++").forEach { (label, marker) ->
+                            OutlinedButton(shape = RoundedCornerShape(0.dp),
+                                enabled = !libraryBody.selection.collapsed,
+                                onClick = { libraryBody = wrapEditorSelection(libraryBody, marker) },
+                                contentPadding = PaddingValues(0.dp),
+                                modifier = Modifier.weight(1f).height(32.dp)
+                            ) { Text(label, fontSize = 13.sp) }
+                        }
+                        EditorColorPicker { selectedColor ->
+                            libraryBody = colorEditorSelection(libraryBody, selectedColor)
+                        }
+                        OutlinedButton(shape = RoundedCornerShape(0.dp), onClick = {
+                            if (libraryBody.selection.collapsed) {
+                                libraryFontSize = (libraryFontSize - 1f).coerceAtLeast(14f)
+                                libraryDisplayPrefs.edit().putInt("font_size", libraryFontSize.toInt()).apply()
+                            } else libraryBody = resizeEditorTextSelection(libraryBody, -1, libraryFontSize.toInt())
+                        }, contentPadding = PaddingValues(0.dp), modifier = Modifier.weight(1f).height(32.dp)) { Text("A−") }
+                        Box(Modifier.weight(1f), contentAlignment = androidx.compose.ui.Alignment.Center) {
+                            Text(selectedEditorFontSize(libraryBody, libraryFontSize.toInt()).toString(), fontSize = 13.sp)
+                        }
+                        OutlinedButton(shape = RoundedCornerShape(0.dp), onClick = {
+                            if (libraryBody.selection.collapsed) {
+                                libraryFontSize = (libraryFontSize + 1f).coerceAtMost(30f)
+                                libraryDisplayPrefs.edit().putInt("font_size", libraryFontSize.toInt()).apply()
+                            } else libraryBody = resizeEditorTextSelection(libraryBody, 1, libraryFontSize.toInt())
+                        }, contentPadding = PaddingValues(0.dp), modifier = Modifier.weight(1f).height(32.dp)) { Text("A+") }
+                    }
+                    Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         OutlinedButton(shape = RoundedCornerShape(0.dp), 
                             enabled = !translationBusy && libraryBody.text.isNotBlank(),
                             onClick = {
@@ -1866,32 +1895,6 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                                 }
                             }
                         ) { Text("ع⇄A", fontSize = 14.sp) }
-                        listOf("B" to "**", "I" to "_", "U" to "++").forEach { (label, marker) ->
-                            OutlinedButton(shape = RoundedCornerShape(0.dp), 
-                                enabled = !libraryBody.selection.collapsed,
-                                onClick = { libraryBody = wrapEditorSelection(libraryBody, marker) },
-                                contentPadding = PaddingValues(horizontal = 4.dp, vertical = 0.dp),
-                                modifier = Modifier.width(43.dp)
-                            ) { Text(label, fontSize = 13.sp) }
-                        }
-                        EditorColorPicker { selectedColor ->
-                            libraryBody = colorEditorSelection(libraryBody, selectedColor)
-                        }
-                        OutlinedButton(shape = RoundedCornerShape(0.dp), onClick = {
-                            val size = (libraryFontSize - 1f).coerceAtLeast(12f)
-                            if (libraryBody.selection.collapsed) {
-                                libraryFontSize = size
-                                libraryDisplayPrefs.edit().putInt("font_size", size.toInt()).apply()
-                            } else libraryBody = resizeEditorTextSelection(libraryBody, -1, libraryFontSize.toInt())
-                        }, contentPadding = PaddingValues(horizontal = 3.dp), modifier = Modifier.width(43.dp)) { Text("A−") }
-                        Text(selectedEditorFontSize(libraryBody, libraryFontSize.toInt()).toString(), fontSize = 12.sp)
-                        OutlinedButton(shape = RoundedCornerShape(0.dp), onClick = {
-                            val size = (libraryFontSize + 1f).coerceAtMost(36f)
-                            if (libraryBody.selection.collapsed) {
-                                libraryFontSize = size
-                                libraryDisplayPrefs.edit().putInt("font_size", size.toInt()).apply()
-                            } else libraryBody = resizeEditorTextSelection(libraryBody, 1, libraryFontSize.toInt())
-                        }, contentPadding = PaddingValues(horizontal = 3.dp), modifier = Modifier.width(43.dp)) { Text("A+") }
                         OutlinedButton(shape = RoundedCornerShape(0.dp), 
                             enabled = translationDraft.isNotBlank(),
                             onClick = {
