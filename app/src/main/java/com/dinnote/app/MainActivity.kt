@@ -1035,7 +1035,7 @@ fun NotesScreen(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
                             ) {
-                                OutlinedButton(shape = RoundedCornerShape(0.dp), 
+                                OutlinedButton(
                                     onClick = { showEditor = false },
                                     modifier = Modifier.height(36.dp),
                                     shape = RoundedCornerShape(0.dp),
@@ -1043,7 +1043,7 @@ fun NotesScreen(
                                     contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp),
                                     colors = ButtonDefaults.outlinedButtonColors(containerColor = Color.White)
                                 ) { Text("← Kembali", fontSize = 13.sp, color = Color(0xFF007C80)) }
-                                OutlinedButton(shape = RoundedCornerShape(0.dp), 
+                                OutlinedButton(
                                     onClick = { readingMode = false },
                                     modifier = Modifier.height(36.dp),
                                     shape = RoundedCornerShape(0.dp),
