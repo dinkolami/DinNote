@@ -424,7 +424,7 @@ fun HomeScreen(
         }
         reminder?.let { entry ->
             Surface(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().clickable(onClick = onOpenLibrary),
                 shape = RoundedCornerShape(10.dp),
                 color = Color.White,
                 border = BorderStroke(1.dp, Color(0xFFB7DCD7))
