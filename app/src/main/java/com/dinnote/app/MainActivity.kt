@@ -980,30 +980,18 @@ fun NotesScreen(
             body = updated
         }
         fun resizeSelection(delta: Int) {
-            val start = body.selection.min.coerceIn(0, body.text.length)
-            val end = body.selection.max.coerceIn(start, body.text.length)
-            if (start == end) {
+            if (body.selection.collapsed) {
                 editorFontSize = (editorFontSize + delta).coerceIn(14f, 30f)
                 displayPrefs.edit().putInt("font_size", editorFontSize.toInt()).apply()
-                return
+            } else {
+                val updated = resizeEditorTextSelection(body, delta, editorFontSize.toInt())
+                if (updated != body) {
+                    undoStack.add(body)
+                    if (undoStack.size > 60) undoStack.removeAt(0)
+                    redoStack.clear()
+                    body = updated
+                }
             }
-            // Use the size already applied to the selection, not the global editor default.
-            // This allows repeated A+/A- presses to change the same word incrementally.
-            val selected = body.text.substring(start, end)
-            val enclosingSize = noteFormatRanges(body.text).second
-                .filter { (a, b, style) ->
-                    a <= start && b >= end && style.fontSize.isSp
-                }.lastOrNull()?.third?.fontSize?.value?.toInt()
-            val size = ((enclosingSize ?: editorFontSize.toInt()) + delta).coerceIn(14, 30)
-            val prefix = "{{size:$size}}"
-            val suffix = "{{/size}}"
-            undoStack.add(body)
-            if (undoStack.size > 60) undoStack.removeAt(0)
-            redoStack.clear()
-            body = TextFieldValue(
-                body.text.replaceRange(start, end, prefix + selected + suffix),
-                selection = TextRange(start + prefix.length, start + prefix.length + selected.length)
-            )
         }
         fun persistNote() {
             if (title.isNotBlank() || body.text.isNotBlank()) {
@@ -1160,7 +1148,7 @@ fun NotesScreen(
                         ) { Text("U", textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline) }
                         OutlinedButton(
                             onClick = { resizeSelection(-1) },
-                            enabled = editorFontSize > 14f,
+                            enabled = !body.selection.collapsed || editorFontSize > 14f,
                             contentPadding = PaddingValues(horizontal = 0.dp, vertical = 0.dp),
                             modifier = Modifier.weight(1f).height(32.dp)
                         ) { Text("A−", color = Color(0xFF087F83)) }
@@ -1172,7 +1160,7 @@ fun NotesScreen(
                         ) { Text("${editorFontSize.toInt()}", color = Color(0xFF087F83)) }
                         OutlinedButton(
                             onClick = { resizeSelection(1) },
-                            enabled = editorFontSize < 30f,
+                            enabled = !body.selection.collapsed || editorFontSize < 30f,
                             contentPadding = PaddingValues(horizontal = 0.dp, vertical = 0.dp),
                             modifier = Modifier.weight(1f).height(34.dp)
                         ) { Text("A+", color = Color(0xFF087F83)) }
@@ -1280,6 +1268,37 @@ fun NotesScreen(
  * character; formatting delimiters become invisible word-joiners.
  * This avoids the offset-mapping crashes seen with shrinking transformations.
  */
+private fun resizeEditorTextSelection(value: TextFieldValue, delta: Int, defaultSize: Int): TextFieldValue {
+    val start = value.selection.min.coerceIn(0, value.text.length)
+    val end = value.selection.max.coerceIn(start, value.text.length)
+    if (start == end) return value
+    val source = value.text
+    val opening = Regex("""\\{\\{size:(\\d{1,2})\\}\\}""")
+    // Replace an existing exact selection wrapper instead of nesting size spans.
+    val preceding = opening.findAll(source.substring(0, start)).lastOrNull()
+    val existing = preceding?.takeIf {
+        it.range.last + 1 == start && source.startsWith("{{/size}}", end)
+    }
+    val current = existing?.groupValues?.get(1)?.toIntOrNull()
+        ?: noteFormatRanges(source).second
+            .filter { (a, b, style) -> a <= start && b >= end && style.fontSize.isSp }
+            .lastOrNull()?.third?.fontSize?.value?.toInt()
+        ?: defaultSize
+    val size = (current + delta).coerceIn(14, 30)
+    if (size == current) return value
+    if (existing != null) {
+        val replacement = "{{size:$size}}"
+        val updated = source.replaceRange(existing.range, replacement)
+        val shift = replacement.length - existing.value.length
+        return TextFieldValue(updated, selection = TextRange(start + shift, end + shift))
+    }
+    val prefix = "{{size:$size}}"
+    return TextFieldValue(
+        source.replaceRange(start, end, prefix + source.substring(start, end) + "{{/size}}"),
+        selection = TextRange(start + prefix.length, end + prefix.length)
+    )
+}
+
 private data class NoteFormatToken(val start: Int, val end: Int, val style: SpanStyle?, val closing: Boolean, val kind: String)
 
 private fun noteFormatTokens(source: String): List<NoteFormatToken> {
@@ -1780,9 +1799,15 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                     DefaultEditorFontControls(
                         fontSize = libraryFontSize,
                         onChange = { size ->
-                            libraryFontSize = size
-                            libraryDisplayPrefs.edit().putInt("font_size", size.toInt()).apply()
-                        }
+                            if (libraryBody.selection.collapsed) {
+                                libraryFontSize = size
+                                libraryDisplayPrefs.edit().putInt("font_size", size.toInt()).apply()
+                            } else {
+                                val delta = if (size > libraryFontSize) 1 else -1
+                                libraryBody = resizeEditorTextSelection(libraryBody, delta, libraryFontSize.toInt())
+                            }
+                        },
+                        hasSelection = !libraryBody.selection.collapsed
                     )
                     Surface(Modifier.fillMaxWidth().weight(1f).padding(horizontal = 3.dp, vertical = 0.dp),
                         shape = RoundedCornerShape(12.dp), color = Color.White,
@@ -1953,7 +1978,7 @@ private fun DefaultEditorTextField(
 
 // Shared default editor controls: formatting markers are never inserted into content.
 @Composable
-private fun DefaultEditorFontControls(fontSize: Float, onChange: (Float) -> Unit) {
+private fun DefaultEditorFontControls(fontSize: Float, onChange: (Float) -> Unit, hasSelection: Boolean = false) {
     Row(
         Modifier.fillMaxWidth().height(42.dp).padding(horizontal = 8.dp),
         horizontalArrangement = Arrangement.End,
@@ -1964,7 +1989,7 @@ private fun DefaultEditorFontControls(fontSize: Float, onChange: (Float) -> Unit
         TextButton(
             modifier = Modifier.height(36.dp),
             onClick = { onChange((fontSize - 1f).coerceAtLeast(14f)) },
-            enabled = fontSize > 14f
+            enabled = hasSelection || fontSize > 14f
         ) {
             Text("A−", color = Color(0xFF087F83), fontSize = 16.sp)
         }
@@ -1973,7 +1998,7 @@ private fun DefaultEditorFontControls(fontSize: Float, onChange: (Float) -> Unit
         TextButton(
             modifier = Modifier.height(36.dp),
             onClick = { onChange((fontSize + 1f).coerceAtMost(30f)) },
-            enabled = fontSize < 30f
+            enabled = hasSelection || fontSize < 30f
         ) {
             Text("A+", color = Color(0xFF087F83), fontSize = 16.sp)
         }
