@@ -253,19 +253,19 @@ private fun DinNoteDashboardTile(
     modifier: Modifier = Modifier, onClick: () -> Unit
 ) {
     Surface(
-        modifier = modifier.height(112.dp).clickable(onClick = onClick),
+        modifier = modifier.height(92.dp).clickable(onClick = onClick),
         shape = RoundedCornerShape(12.dp),
         color = Color.White,
         border = BorderStroke(1.dp, Color(0xFFD5E5E4)),
         shadowElevation = 1.dp
     ) {
         Column(
-            modifier = Modifier.fillMaxSize().padding(horizontal = 5.dp, vertical = 8.dp),
+            modifier = Modifier.fillMaxSize().padding(horizontal = 5.dp, vertical = 5.dp),
             horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Text(symbol, fontSize = 27.sp, color = Color(0xFF087F8C))
-            Spacer(Modifier.height(5.dp))
+            Text(symbol, fontSize = 23.sp, color = Color(0xFF087F8C))
+            Spacer(Modifier.height(3.dp))
             Text(title, fontSize = 13.sp, fontWeight = FontWeight.Bold,
                 color = Color(0xFF183A30), maxLines = 2, textAlign = TextAlign.Center)
             Text(subtitle, fontSize = 10.sp, color = Color(0xFF53736F),
@@ -397,13 +397,11 @@ fun HomeScreen(
                     shape = RoundedCornerShape(10.dp),
                     border = BorderStroke(1.dp, Color(0xFFB7DCD7))
                 ) {
-                    Column(Modifier.padding(13.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text("📌  " + note.title.ifBlank { "Tanpa tajuk" },
-                            fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF075B59),
-                            maxLines = 2)
-                        Text(formattedNoteText(note.body).text,
-                            fontSize = 12.sp, color = Color(0xFF52666A), maxLines = 2)
-                    }
+                    Text("📌  " + note.title.ifBlank { "Tanpa tajuk" },
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 9.dp),
+                        fontSize = 14.sp, fontWeight = FontWeight.SemiBold,
+                        color = Color(0xFF075B59), maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
                 }
             }
         }
@@ -416,13 +414,11 @@ fun HomeScreen(
                     shape = RoundedCornerShape(10.dp),
                     border = BorderStroke(1.dp, Color(0xFFB7DCD7))
                 ) {
-                    Column(Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                        Text(note.title.ifBlank { "Tanpa tajuk" },
-                            fontSize = 14.sp, fontWeight = FontWeight.SemiBold,
-                            color = Color(0xFF075B59), maxLines = 1)
-                        Text(formattedNoteText(note.body).text,
-                            fontSize = 12.sp, color = Color(0xFF52666A), maxLines = 2)
-                    }
+                    Text(note.title.ifBlank { "Tanpa tajuk" },
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 9.dp),
+                        fontSize = 14.sp, fontWeight = FontWeight.SemiBold,
+                        color = Color(0xFF075B59), maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
                 }
             }
         }
