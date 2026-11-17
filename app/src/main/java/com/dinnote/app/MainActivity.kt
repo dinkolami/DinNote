@@ -611,8 +611,9 @@ fun NotesScreen(
                 it.body.contains(search, ignoreCase = true))
     }
 
+    Box(modifier = modifier.fillMaxSize()) {
     Column(
-        modifier = modifier.fillMaxSize().padding(horizontal = 14.dp, vertical = 10.dp),
+        modifier = Modifier.fillMaxSize().padding(horizontal = 14.dp, vertical = 10.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Row(
@@ -994,22 +995,9 @@ fun NotesScreen(
             kotlinx.coroutines.delay(650)
             persistNote()
         }
-        androidx.compose.ui.window.Dialog(
-            onDismissRequest = { persistNote(); showEditor = false },
-            properties = androidx.compose.ui.window.DialogProperties(
-                usePlatformDefaultWidth = false,
-                // Let the dialog window reserve Android system-bar space itself.
-                // This avoids applying the navigation inset twice on full-screen notes.
-                decorFitsSystemWindows = false
-            )
-        ) {
-            // The note editor is a separate Dialog window, not the Activity window.
-            // Apply keyboard resize to this window and consume its IME inset here.
-            val dialogView = androidx.compose.ui.platform.LocalView.current
-            SideEffect {
-                (dialogView.parent as? androidx.compose.ui.window.DialogWindowProvider)
-                    ?.window?.setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
-            }
+        // Editor is part of the Activity composition, not a separate Dialog window.
+        // Android IME resizing now uses the Activity's window and shared insets.
+        Box(Modifier.fillMaxSize().background(Color.White)) {
             Box(Modifier.fillMaxSize().navigationBarsPadding().imePadding().background(readingBackground(editorBackground))
                 .padding(bottom = 8.dp)) {
                 if (noteBackgroundImage != null) {
@@ -1239,6 +1227,7 @@ fun NotesScreen(
             }
         }
     }
+    } // NotesScreen root Box
 }
 
 /**
