@@ -972,17 +972,12 @@ fun NotesScreen(
 
     if (showEditor) {
         fun formatSelection(marker: String) {
-            val start = body.selection.min.coerceIn(0, body.text.length)
-            val end = body.selection.max.coerceIn(start, body.text.length)
-            val selected = body.text.substring(start, end)
-            val replacement = marker + selected + marker
+            val updated = wrapEditorSelection(body, marker)
+            if (updated == body) return
             undoStack.add(body)
             if (undoStack.size > 60) undoStack.removeAt(0)
             redoStack.clear()
-            val updated = body.text.replaceRange(start, end, replacement)
-            val selectionStart = start + marker.length
-            val selectionEnd = selectionStart + selected.length
-            body = TextFieldValue(updated, selection = TextRange(selectionStart, selectionEnd))
+            body = updated
         }
         fun resizeSelection(delta: Int) {
             val start = body.selection.min.coerceIn(0, body.text.length)
@@ -1332,6 +1327,19 @@ private fun noteFormatRanges(source: String): Pair<List<NoteFormatToken>, List<T
     // Only paired delimiters are hidden. Unmatched or malformed markers
     // remain editable, preventing invisible stray content and lost characters.
     return recognized.sortedBy { it.start } to ranges.sortedWith(compareBy<Triple<Int, Int, SpanStyle>> { it.first }.thenByDescending { it.second })
+}
+
+/** Apply inline emphasis to the selected span without changing unrelated words. */
+private fun wrapEditorSelection(value: TextFieldValue, marker: String): TextFieldValue {
+    val start = value.selection.min.coerceIn(0, value.text.length)
+    val end = value.selection.max.coerceIn(start, value.text.length)
+    if (start == end) return value
+    val selected = value.text.substring(start, end)
+    val replacement = marker + selected + marker
+    return value.copy(
+        text = value.text.replaceRange(start, end, replacement),
+        selection = TextRange(start + marker.length, start + marker.length + selected.length)
+    )
 }
 
 /** Same-length editor transformation preserves cursor offsets and supports combined styles. */
@@ -1757,6 +1765,18 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                             maxLines = 4
                         )
                     }
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        listOf("B" to "**", "I" to "_", "U" to "++").forEach { (label, marker) ->
+                            OutlinedButton(
+                                enabled = !libraryBody.selection.collapsed,
+                                onClick = { libraryBody = wrapEditorSelection(libraryBody, marker) },
+                                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 0.dp)
+                            ) { Text(label, fontSize = 13.sp) }
+                        }
+                    }
                     DefaultEditorFontControls(
                         fontSize = libraryFontSize,
                         onChange = { size ->
@@ -1787,6 +1807,7 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                                 Spacer(Modifier.height(8.dp))
                                 androidx.compose.foundation.text.BasicTextField(
                                     value = libraryBody, onValueChange = { libraryBody = it },
+                                    visualTransformation = remember { NoteFormattingTransformation() },
                                     modifier = Modifier.weight(1f).fillMaxWidth()
                                         .padding(horizontal = 2.dp, vertical = 4.dp)
                                         .onSizeChanged { libraryBodyViewport = it.height }
