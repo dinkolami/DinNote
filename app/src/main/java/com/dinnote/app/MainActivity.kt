@@ -424,6 +424,15 @@ fun HomeScreen(
             }
         }.getOrNull()
     }
+    // Prefer the bundled Islamic Premium artwork when present; never crash on older APKs.
+    // A user-selected wallpaper always takes precedence over the bundled design.
+    val premiumBackgroundBitmap = remember(context) {
+        runCatching {
+            context.assets.open("islamic_premium_background.webp").use { stream ->
+                BitmapFactory.decodeStream(stream)?.asImageBitmap()
+            }
+        }.getOrNull()
+    }
     val pinnedNotes = remember { mutableStateListOf<DinNote>() }
     val recentlyAddedNotes = remember { mutableStateListOf<DinNote>() }
     val reminder = remember { kalimahEntries.randomOrNull() }
@@ -438,15 +447,16 @@ fun HomeScreen(
     }
     Box(modifier = modifier.fillMaxSize()) {
         // Never stack the geometric pattern beneath a user-selected wallpaper.
-        if (homeBackgroundBitmap == null) {
+        if (homeBackgroundBitmap == null && premiumBackgroundBitmap == null) {
             IslamicGeometricBackground(Modifier.matchParentSize())
         }
-        if (homeBackgroundBitmap != null) {
+        val displayedBackground = homeBackgroundBitmap ?: premiumBackgroundBitmap
+        if (displayedBackground != null) {
             androidx.compose.foundation.Image(
-                bitmap = homeBackgroundBitmap,
-                contentDescription = "Latar pilihan pengguna",
+                bitmap = displayedBackground,
+                contentDescription = if (homeBackgroundBitmap != null) "Latar pilihan pengguna" else "Latar Islamic Premium",
                 contentScale = ContentScale.Crop,
-                alpha = savedBackgroundOpacity.coerceIn(0.05f, 1f),
+                alpha = if (homeBackgroundBitmap != null) savedBackgroundOpacity.coerceIn(0.05f, 1f) else 0.28f,
                 modifier = Modifier.matchParentSize()
             )
         }
