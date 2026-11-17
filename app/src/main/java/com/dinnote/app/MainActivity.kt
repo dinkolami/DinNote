@@ -1158,8 +1158,9 @@ fun NotesScreen(
 
                     Surface(
                         modifier = Modifier.fillMaxWidth().weight(1f).padding(start = 0.dp, end = 0.dp, top = 2.dp, bottom = 8.dp),
-                        shape = RoundedCornerShape(10.dp),
-                        color = if (noteBackgroundImage != null) Color.Transparent else readingBackground(editorBackground)
+                        shape = RoundedCornerShape(12.dp),
+                        color = if (noteBackgroundImage != null) Color.Transparent else readingBackground(editorBackground),
+                        border = BorderStroke(1.dp, Color(0xFFDDE2E3))
                     ) {
                         Box(Modifier.fillMaxSize()) {
                             Column(
@@ -1658,8 +1659,8 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                         }
                     )
                     Surface(Modifier.fillMaxWidth().weight(1f).padding(horizontal = 12.dp, vertical = 8.dp),
-                        shape = RoundedCornerShape(10.dp), color = Color.White,
-                        border = BorderStroke(1.dp, Color(0xFFB7DCD7))) {
+                        shape = RoundedCornerShape(12.dp), color = Color.White,
+                        border = BorderStroke(1.dp, Color(0xFFDDE2E3))) {
                         Box(Modifier.fillMaxSize()) {
                             // Keep the writing surface unobstructed; decoration belongs to reading cards.
                             Column(Modifier.fillMaxSize().padding(horizontal = 18.dp, vertical = 16.dp)) {
@@ -1683,8 +1684,8 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                                 androidx.compose.foundation.text.BasicTextField(
                                     value = libraryBody, onValueChange = { libraryBody = it },
                                     modifier = Modifier.weight(1f).fillMaxWidth()
-                                        .border(BorderStroke(1.dp, Color(0xFFE0E7E6)), RoundedCornerShape(10.dp))
-                                        .padding(horizontal = 14.dp, vertical = 12.dp),
+                                        .border(BorderStroke(1.dp, Color(0xFFDDE2E3)), RoundedCornerShape(12.dp))
+                                        .padding(horizontal = 8.dp, vertical = 12.dp),
                                     textStyle = androidx.compose.ui.text.TextStyle(fontSize = libraryFontSize.sp,
                                         lineHeight = (libraryFontSize * libraryDisplayPrefs.getFloat("line_spacing", 1.6f).coerceIn(1.2f, 2.2f)).sp,
                                         color = Color(0xFF263B3E),
