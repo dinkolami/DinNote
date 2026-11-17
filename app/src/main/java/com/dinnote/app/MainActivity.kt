@@ -339,6 +339,7 @@ fun HomeScreen(
 ) {
     val context = LocalContext.current
     val pinnedNotes = remember { mutableStateListOf<DinNote>() }
+    val reminder = remember { kalimahEntries.randomOrNull() }
     val pinnedDatabase = remember { NoteDatabase(context).also { it.migrateOldSingleNote(context) } }
     LaunchedEffect(Unit) { pinnedNotes.clear(); pinnedNotes.addAll(pinnedDatabase.allNotes().filter { it.pinned && !it.archived }.sortedByDescending { it.updatedAt }) }
     Box(modifier = modifier.fillMaxSize()) {
@@ -373,6 +374,21 @@ fun HomeScreen(
                         Text(formattedNoteText(note.body).text,
                             fontSize = 12.sp, color = Color(0xFF52666A), maxLines = 2)
                     }
+                }
+            }
+        }
+        reminder?.let { entry ->
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(10.dp),
+                color = Color.White,
+                border = BorderStroke(1.dp, Color(0xFFB7DCD7))
+            ) {
+                Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                    Text("Ingatan", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color(0xFF087F8C))
+                    Text(entry.arabic, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Right,
+                        fontSize = 18.sp, color = Color(0xFF183A30))
+                    Text(entry.meaning, fontSize = 13.sp, color = Color(0xFF52666A))
                 }
             }
         }
@@ -1232,7 +1248,7 @@ private fun matchesMaktabahSearch(value: String, query: String): Boolean =
 
 @Composable
 fun LibraryScreen(modifier: Modifier = Modifier) {
-    var selectedCategory by remember { mutableStateOf("Pelbagai") }
+    var selectedCategory by remember { mutableStateOf("Ingatan") }
     var selectedEntry by remember { mutableStateOf<KalimahEntry?>(null) }
     var editingKalimah by remember { mutableStateOf<KalimahEntry?>(null) }
     var kalimahArabic by remember { mutableStateOf("") }
@@ -1255,7 +1271,7 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
     var showAddCategory by remember { mutableStateOf(false) }
     var newCategoryName by remember { mutableStateOf("") }
     var categoryToRename by remember { mutableStateOf<String?>(null) }
-    val builtinLibraryCategories = listOf("Pelbagai", "Kitab-Kitab", "Fiqh Syafi‘i", "Usul Fiqh", "Hadis", "Tafsir", "Akidah", "Tasawuf", "Bahasa Arab", "Kalam Hikmah")
+    val builtinLibraryCategories = listOf("Ingatan", "Kitab-Kitab", "Fiqh Syafi‘i", "Usul Fiqh", "Hadis", "Tafsir", "Akidah", "Tasawuf", "Bahasa Arab", "Kalam Hikmah")
     val customLibraryCategories = remember(libraryRevision) {
         libraryPrefs.getString("custom_categories", "")!!.split("\n").filter { it.isNotBlank() }
     }
@@ -1389,7 +1405,7 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
         }
 
         when (selectedCategory) {
-            "Pelbagai" -> {
+            "Ingatan" -> {
                 Text("الكلمات الطيبة", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Right, style = androidx.compose.ui.text.TextStyle(textDirection = TextDirection.Rtl), fontSize = 22.sp)
 
                 Text("${filteredEntries.size} kalimah tersedia", color = MaterialTheme.colorScheme.primary)
