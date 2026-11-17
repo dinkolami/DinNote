@@ -17,6 +17,7 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -1186,6 +1187,25 @@ fun NotesScreen(
                                 Spacer(Modifier.height(12.dp))
                                 HorizontalDivider(color = Color(0xFFD5DADD), thickness = 1.dp)
                                 Spacer(Modifier.height(12.dp))
+                                val bodyScrollState = rememberScrollState()
+                                var bodyTextLayout by remember { mutableStateOf<androidx.compose.ui.text.TextLayoutResult?>(null) }
+                                var bodyViewportHeight by remember { mutableIntStateOf(0) }
+                                val keyboardVisible = WindowInsets.ime.getBottom(androidx.compose.ui.platform.LocalDensity.current) > 0
+                                LaunchedEffect(body.selection, bodyTextLayout, bodyViewportHeight, keyboardVisible) {
+                                    val layout = bodyTextLayout ?: return@LaunchedEffect
+                                    if (bodyViewportHeight <= 0) return@LaunchedEffect
+                                    val caret = layout.getCursorRect(body.selection.end.coerceIn(0, body.text.length))
+                                    val target = when {
+                                        caret.bottom > bodyScrollState.value + bodyViewportHeight - 24f ->
+                                            (caret.bottom - bodyViewportHeight + 48f).toInt()
+                                        caret.top < bodyScrollState.value + 16f ->
+                                            (caret.top - 24f).toInt()
+                                        else -> bodyScrollState.value
+                                    }
+                                    if (target != bodyScrollState.value) {
+                                        bodyScrollState.animateScrollTo(target.coerceIn(0, bodyScrollState.maxValue))
+                                    }
+                                }
                                 androidx.compose.foundation.text.BasicTextField(
                                     value = body,
                                     // Same-length transformation keeps IME cursor offsets stable.
@@ -1198,7 +1218,10 @@ fun NotesScreen(
                                         body = next
                                     },
                                     visualTransformation = remember { NoteFormattingTransformation() },
-                                    modifier = Modifier.weight(1f).fillMaxWidth(),
+                                    modifier = Modifier.weight(1f).fillMaxWidth()
+                                        .onSizeChanged { bodyViewportHeight = it.height }
+                                        .verticalScroll(bodyScrollState),
+                                    onTextLayout = { bodyTextLayout = it },
                                     textStyle = androidx.compose.ui.text.TextStyle(
                                         fontSize = editorFontSize.sp,
                                         color = if (editorBackground == "dark") Color(0xFFF3F7F6) else Color(0xFF263B3E),
