@@ -106,7 +106,7 @@ fun DinNoteApp() {
                         androidx.compose.foundation.Image(
                             painter = androidx.compose.ui.res.painterResource(com.dinnote.app.R.drawable.ic_dinnote_header),
                             contentDescription = "Logo DinNote",
-                            modifier = Modifier.size(34.dp)
+                            modifier = Modifier.size(29.dp)
                         )
                         Text(
                             text = buildAnnotatedString {
