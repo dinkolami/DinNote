@@ -610,20 +610,20 @@ fun HomeScreen(
         }
         Surface(
             modifier = Modifier.fillMaxWidth().clickable(onClick = onOpenLibrary),
-            shape = RoundedCornerShape(14.dp), color = Color(0xFFF2FAF8),
-            border = BorderStroke(1.dp, Color(0xFFB7DCD7))
+            color = Color(0xFF006B5B),
+            shape = RoundedCornerShape(12.dp),
+            border = BorderStroke(1.dp, Color(0xFFC69A3C)),
+            shadowElevation = 2.dp
         ) {
-            Row(Modifier.fillMaxWidth().padding(14.dp),
-                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                Text("▤", fontSize = 30.sp, color = Color(0xFF087F8C))
-                Spacer(Modifier.width(12.dp))
-                Column(Modifier.weight(1f)) {
-                    Text("Sambung Bacaan", fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold, color = Color(0xFF075B59))
-                    Text("Buka Maktabah untuk memilih kitab",
-                        fontSize = 12.sp, color = Color(0xFF53736F))
-                }
-                Text("Teruskan ›", fontSize = 12.sp, color = Color(0xFF087F8C))
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 6.dp),
+                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text("▤", fontSize = 14.sp, color = Color(0xFFF1C86B))
+                Text("Sambung Bacaan", modifier = Modifier.weight(1f),
+                    fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
+                Text("Teruskan ›", fontSize = 12.sp, color = Color.White)
             }
         }
     }
