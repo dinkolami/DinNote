@@ -1226,7 +1226,7 @@ fun NotesScreen(
                                         }
                                         body = next
                                     },
-                                    visualTransformation = remember { NoteFormattingTransformation() },
+                                    visualTransformation = VisualTransformation.None,
                                     modifier = Modifier.weight(1f).fillMaxWidth()
                                         .onSizeChanged { bodyViewportHeight = it.height }
                                         .verticalScroll(bodyScrollState),
@@ -1848,7 +1848,7 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                                 Spacer(Modifier.height(8.dp))
                                 androidx.compose.foundation.text.BasicTextField(
                                     value = libraryBody, onValueChange = { libraryBody = it },
-                                    visualTransformation = remember { NoteFormattingTransformation() },
+                                    visualTransformation = VisualTransformation.None,
                                     modifier = Modifier.weight(1f).fillMaxWidth()
                                         .padding(horizontal = 2.dp, vertical = 4.dp)
                                         .onSizeChanged { libraryBodyViewport = it.height }
