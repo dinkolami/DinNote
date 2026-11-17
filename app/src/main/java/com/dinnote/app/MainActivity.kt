@@ -1003,9 +1003,14 @@ fun NotesScreen(
                 decorFitsSystemWindows = true
             )
         ) {
-            // Dialog window fits system bars; keep only a small visual border gap.
-            // The window handles IME resizing instead of stacking fixed bottom padding.
-            Box(Modifier.fillMaxSize().background(readingBackground(editorBackground))
+            // The note editor is a separate Dialog window, not the Activity window.
+            // Apply keyboard resize to this window and consume its IME inset here.
+            val dialogView = androidx.compose.ui.platform.LocalView.current
+            SideEffect {
+                (dialogView.parent as? androidx.compose.ui.window.DialogWindowProvider)
+                    ?.window?.setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+            }
+            Box(Modifier.fillMaxSize().imePadding().background(readingBackground(editorBackground))
                 .padding(bottom = 8.dp)) {
                 if (noteBackgroundImage != null) {
                     androidx.compose.foundation.Image(
