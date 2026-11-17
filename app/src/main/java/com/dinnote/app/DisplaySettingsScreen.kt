@@ -114,6 +114,34 @@ fun DisplaySettingsScreen(modifier: Modifier = Modifier) {
         if (settingsStatus.isNotBlank()) {
             Text(settingsStatus, fontSize = 13.sp, color = Color(0xFF075B59))
         }
+        HorizontalDivider(color = Color(0xFFE1E3E5))
+        Text("Latar Halaman Utama", fontWeight = FontWeight.Bold)
+        Text("Pilih gambar daripada telefon untuk menggantikan corak Islamik di halaman Utama. Tekan Simpan di atas selepas memilih.", fontSize = 12.sp)
+        OutlinedButton(onClick = { imagePicker.launch(arrayOf("image/*")) }, modifier = Modifier.fillMaxWidth()) {
+            Text("Pilih Gambar Latar Utama")
+        }
+        if (imageUri.isNotBlank()) {
+            OutlinedButton(onClick = { imageUri = ""; settingsStatus = "Perubahan belum disimpan" }) {
+                Text("Gunakan latar Islamik asal")
+            }
+            Text("Kelegapan gambar: ${(imageOpacity * 100).toInt()}%", fontSize = 13.sp)
+            Slider(value = imageOpacity, onValueChange = { imageOpacity = it; settingsStatus = "Perubahan belum disimpan" }, valueRange = 0.05f..0.65f)
+            val bitmap = remember(imageUri) {
+                runCatching {
+                    context.contentResolver.openInputStream(Uri.parse(imageUri))?.use {
+                        BitmapFactory.decodeStream(it)?.asImageBitmap()
+                    }
+                }.getOrNull()
+            }
+            if (bitmap != null) {
+                Box(Modifier.fillMaxWidth().height(110.dp)) {
+                    Image(bitmap = bitmap, contentDescription = "Pratonton gambar latar", contentScale = ContentScale.Crop, alpha = imageOpacity, modifier = Modifier.fillMaxSize())
+                }
+            } else {
+                Text("Gambar tidak dapat dibaca. Sila pilih semula.", fontSize = 12.sp, color = Color.Red)
+            }
+        }
+
         Text("Sesuaikan paparan nota dan Maktabah Arab–Melayu.", fontSize = 13.sp, color = Color(0xFF526B78))
         Text("Tema Bacaan", fontWeight = FontWeight.SemiBold, color = Color(0xFF075B59))
         Text("Pilih gaya putih, turquoise, krim atau malam untuk bacaan.", fontSize = 12.sp)
@@ -160,33 +188,6 @@ fun DisplaySettingsScreen(modifier: Modifier = Modifier) {
                     }
                 }
                 if (pair.size == 1) Spacer(Modifier.weight(1f))
-            }
-        }
-        HorizontalDivider(color = Color(0xFFE1E3E5))
-        Text("Gambar Latar Belakang", fontWeight = FontWeight.Bold)
-        Text("Pilih gambar daripada galeri telefon. Gambar disimpan sebagai pilihan paparan.", fontSize = 12.sp)
-        OutlinedButton(onClick = { imagePicker.launch(arrayOf("image/*")) }, modifier = Modifier.fillMaxWidth()) {
-            Text("Pilih gambar daripada galeri")
-        }
-        if (imageUri.isNotBlank()) {
-            OutlinedButton(onClick = { imageUri = ""; settingsStatus = "Perubahan belum disimpan" }) {
-                Text("Buang gambar latar")
-            }
-            Text("Kelegapan gambar: ${(imageOpacity * 100).toInt()}%", fontSize = 13.sp)
-            Slider(value = imageOpacity, onValueChange = { imageOpacity = it; settingsStatus = "Perubahan belum disimpan" }, valueRange = 0.05f..0.65f)
-            val bitmap = remember(imageUri) {
-                runCatching {
-                    context.contentResolver.openInputStream(Uri.parse(imageUri))?.use {
-                        BitmapFactory.decodeStream(it)?.asImageBitmap()
-                    }
-                }.getOrNull()
-            }
-            if (bitmap != null) {
-                Box(Modifier.fillMaxWidth().height(110.dp)) {
-                    Image(bitmap = bitmap, contentDescription = "Pratonton gambar latar", contentScale = ContentScale.Crop, alpha = imageOpacity, modifier = Modifier.fillMaxSize())
-                }
-            } else {
-                Text("Gambar tidak dapat dibaca. Sila pilih semula.", fontSize = 12.sp, color = Color.Red)
             }
         }
         Text("Border item terpilih", fontWeight = FontWeight.Bold)
