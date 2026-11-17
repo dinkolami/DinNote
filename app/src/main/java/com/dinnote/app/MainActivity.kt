@@ -1333,25 +1333,30 @@ fun NotesScreen(
                             expanded = showNoteTemplateMenu,
                             onDismissRequest = { showNoteTemplateMenu = false }
                         ) {
-                            DropdownMenuItem(
-                                text = { Text("Artikel Islamik: ayat, maksud dan perhatian") },
-                                onClick = {
-                                    val template = listOf(
-                                        "", "Firman Allah SWT:", "[Tulis ayat Arab di sini]",
-                                        "", "Maksudnya:", "[Tulis terjemahan di sini]",
-                                        "", "Rujukan:", "[Surah / kitab / halaman]",
-                                        "", "Perhatian:", "[Tulis huraian di sini]", ""
-                                    ).joinToString("\n")
-                                    val start = body.selection.min.coerceIn(0, body.text.length)
-                                    val end = body.selection.max.coerceIn(start, body.text.length)
-                                    val updated = body.text.replaceRange(start, end, template)
-                                    undoStack.add(body)
-                                    if (undoStack.size > 60) undoStack.removeAt(0)
-                                    redoStack.clear()
-                                    body = TextFieldValue(updated, selection = TextRange(start + template.length))
-                                    showNoteTemplateMenu = false
-                                }
+                            val templates = listOf(
+                                "Artikel Islamik: ayat, maksud dan perhatian" to listOf("Firman Allah SWT:", "[Ayat Arab]", "Maksudnya:", "[Terjemahan]", "Rujukan:", "[Surah dan nombor ayat]", "Perhatian:", "[Huraian]"),
+                                "Hadis dan pengajaran" to listOf("Sabda Rasulullah SAW:", "[Matan hadis]", "Maksudnya:", "[Terjemahan]", "Riwayat:", "[Sumber dan nombor hadis]", "Pengajaran:", "[Huraian]"),
+                                "Petikan kitab dan syarah" to listOf("Petikan kitab:", "[Teks Arab]", "Maksudnya:", "[Terjemahan]", "Rujukan:", "[Kitab, pengarang, jilid dan halaman]", "Syarah:", "[Huraian]"),
+                                "Faedah dan kesimpulan" to listOf("Faedah:", "[Isi utama]", "Kesimpulan:", "[Rumusan]")
                             )
+                            templates.forEach { (label, lines) ->
+                                DropdownMenuItem(
+                                    text = { Text(label) },
+                                    onClick = {
+                                        val template = lines.chunked(2).joinToString("\n\n", prefix = "\n\n", postfix = "\n\n") { it.joinToString("\n") }
+                                        val start = body.selection.max.coerceIn(0, body.text.length)
+                                        val updated = body.text.substring(0, start) + template + body.text.substring(start)
+                                        undoStack.add(body)
+                                        if (undoStack.size > 60) undoStack.removeAt(0)
+                                        redoStack.clear()
+                                        val placeholderStart = template.indexOf('[')
+                                        val placeholderEnd = template.indexOf(']', placeholderStart)
+                                        val selection = if (placeholderStart >= 0 && placeholderEnd >= placeholderStart) TextRange(start + placeholderStart, start + placeholderEnd + 1) else TextRange(start + template.length)
+                                        body = TextFieldValue(updated, selection = selection)
+                                        showNoteTemplateMenu = false
+                                    }
+                                )
+                            }
                         }
                     }
 
