@@ -1356,23 +1356,38 @@ private fun colorEditorSelection(value: TextFieldValue, color: Long): TextFieldV
 @Composable
 private fun EditorColorPicker(onPick: (Long) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
-    Box {
-        OutlinedButton(
-            onClick = { expanded = true },
-            shape = RoundedCornerShape(0.dp),
-            contentPadding = PaddingValues(horizontal = 5.dp, vertical = 0.dp),
-            modifier = Modifier.width(43.dp).height(32.dp)
-        ) { Text("🎨", fontSize = 16.sp) }
-        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            editorPalette.chunked(4).forEach { row ->
-                Row(Modifier.padding(horizontal = 8.dp)) {
-                    row.forEach { argb ->
-                        Box(
-                            Modifier.size(42.dp).padding(5.dp)
-                                .background(Color(argb), RoundedCornerShape(6.dp))
-                                .clickable { expanded = false; onPick(argb) }
-                        )
+    OutlinedButton(
+        onClick = { expanded = true },
+        shape = RoundedCornerShape(0.dp),
+        contentPadding = PaddingValues(horizontal = 5.dp, vertical = 0.dp),
+        modifier = Modifier.width(43.dp).height(32.dp)
+    ) { Text("🎨", fontSize = 16.sp) }
+    // Use an in-window dialog instead of a popup DropdownMenu. Popup
+    // positioning has caused crashes on some foldable/IME configurations.
+    if (expanded) {
+        androidx.compose.ui.window.Dialog(onDismissRequest = { expanded = false }) {
+            Surface(
+                color = Color.White,
+                shape = RoundedCornerShape(12.dp),
+                tonalElevation = 4.dp
+            ) {
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text("Warna tulisan", color = Color(0xFF087F83), fontWeight = FontWeight.SemiBold)
+                    editorPalette.chunked(4).forEach { paletteRow ->
+                        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                            paletteRow.forEach { argb ->
+                                Box(
+                                    Modifier.size(48.dp)
+                                        .background(Color(argb), RoundedCornerShape(8.dp))
+                                        .clickable {
+                                            expanded = false
+                                            onPick(argb)
+                                        }
+                                )
+                            }
+                        }
                     }
+                    TextButton(onClick = { expanded = false }) { Text("Batal") }
                 }
             }
         }
