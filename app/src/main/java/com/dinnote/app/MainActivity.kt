@@ -1282,7 +1282,7 @@ fun NotesScreen(
 private data class NoteFormatToken(val start: Int, val end: Int, val style: SpanStyle?, val closing: Boolean, val kind: String)
 
 private fun noteFormatTokens(source: String): List<NoteFormatToken> {
-    val pattern = Regex("""\\{\\{size:(\\d{1,2})\\}\\}|\\{\\{/size\\}\\}|\\*\\*|\\+\\+|_""")
+    val pattern = Regex("""\{\{size:(\d{1,2})\}\}|\{\{/size\}\}|\*\*|\+\+|_""")
     return pattern.findAll(source).map { m ->
         val token = m.value
         val kind = when {
