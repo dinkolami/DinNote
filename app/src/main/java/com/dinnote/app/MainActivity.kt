@@ -242,22 +242,29 @@ fun DinNoteApp() {
 @Composable
 private fun PremiumSectionHeading(title: String, ornament: String) {
     Row(
-        modifier = Modifier.fillMaxWidth().padding(top = 3.dp, bottom = 2.dp),
+        modifier = Modifier.fillMaxWidth().padding(top = 6.dp, bottom = 3.dp),
         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(9.dp)
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        Text(ornament, fontSize = 17.sp, color = Color(0xFFC69A3C))
-        Text(
-            title,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.SemiBold,
-            fontStyle = FontStyle.Italic,
-            color = Color(0xFF087F83)
-        )
+        Surface(
+            color = Color(0xFF006B5B),
+            shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp, bottomEnd = 12.dp, bottomStart = 3.dp),
+            border = BorderStroke(1.dp, Color(0xFFC69A3C)),
+            shadowElevation = 2.dp
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(ornament, fontSize = 16.sp, color = Color(0xFFF1C86B))
+                Text(title, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
+            }
+        }
         androidx.compose.material3.HorizontalDivider(
             modifier = Modifier.weight(1f),
             thickness = 1.dp,
-            color = Color(0xFFD9B86B)
+            color = Color(0xFFC69A3C)
         )
     }
 }
