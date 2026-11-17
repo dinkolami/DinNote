@@ -466,26 +466,27 @@ fun HomeScreen(
                     }
                 }
                 Spacer(Modifier.weight(1f))
-                androidx.compose.foundation.Image(
-                    painter = androidx.compose.ui.res.painterResource(R.drawable.ic_dinnote_header),
-                    contentDescription = "Logo DinNote",
-                    modifier = Modifier.size(25.dp)
-                )
-                Text(
-                    text = buildAnnotatedString {
-                        pushStyle(SpanStyle(color = Color(0xFF075B40)))
-                        append("Din")
-                        pop()
-                        pushStyle(SpanStyle(color = Color(0xFFC39A54)))
-                        append("Note")
-                        pop()
-                    },
-                    fontSize = 17.sp,
-                    fontFamily = androidx.compose.ui.text.font.FontFamily.Cursive,
-                    fontStyle = FontStyle.Italic,
-                    fontWeight = FontWeight.SemiBold,
-                    maxLines = 1
-                )
+                val headerContext = LocalContext.current
+                val headerLogo = remember(headerContext) {
+                    runCatching {
+                        headerContext.assets.open("dinnote_logo_header.jpg").use { stream ->
+                            BitmapFactory.decodeStream(stream)?.asImageBitmap()
+                        }
+                    }.getOrNull()
+                }
+                if (headerLogo != null) {
+                    androidx.compose.foundation.Image(
+                        bitmap = headerLogo,
+                        contentDescription = "Logo DinNote asal",
+                        contentScale = ContentScale.Fit,
+                        modifier = Modifier.width(112.dp).height(38.dp)
+                    )
+                } else {
+                    Text("DinNote", fontSize = 17.sp,
+                        fontFamily = androidx.compose.ui.text.font.FontFamily.Serif,
+                        fontStyle = FontStyle.Italic, fontWeight = FontWeight.Bold,
+                        color = Color(0xFF075B59))
+                }
             }
             pinnedNotes.forEach { note ->
                 Surface(
