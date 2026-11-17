@@ -1010,7 +1010,7 @@ fun NotesScreen(
                 (dialogView.parent as? androidx.compose.ui.window.DialogWindowProvider)
                     ?.window?.setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
             }
-            Box(Modifier.fillMaxSize().imePadding().background(readingBackground(editorBackground))
+            Box(Modifier.fillMaxSize().background(readingBackground(editorBackground))
                 .padding(bottom = 8.dp)) {
                 if (noteBackgroundImage != null) {
                     androidx.compose.foundation.Image(
