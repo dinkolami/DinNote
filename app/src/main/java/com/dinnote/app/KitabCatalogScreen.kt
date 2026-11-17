@@ -10,6 +10,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.selection.SelectionContainer
@@ -521,12 +523,31 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
                     }
                     OutlinedTextField(chapter, { chapter = it }, modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
                         label = { Text("Bab / fasal") }, singleLine = true)
+                    val kitabEditorScroll = rememberScrollState()
+                    var kitabTextLayout by remember { mutableStateOf<androidx.compose.ui.text.TextLayoutResult?>(null) }
+                    var kitabViewportHeight by remember { mutableIntStateOf(0) }
+                    val kitabImeVisible = WindowInsets.ime.getBottom(androidx.compose.ui.platform.LocalDensity.current) > 0
+                    LaunchedEffect(content.selection, kitabTextLayout, kitabViewportHeight, kitabImeVisible) {
+                        kotlinx.coroutines.delay(80)
+                        val layout = kitabTextLayout ?: return@LaunchedEffect
+                        if (kitabViewportHeight <= 0) return@LaunchedEffect
+                        val caret = runCatching { layout.getCursorRect(content.selection.end.coerceIn(0, content.text.length)) }.getOrNull() ?: return@LaunchedEffect
+                        val target = when {
+                            caret.bottom > kitabEditorScroll.value + kitabViewportHeight - 24f -> (caret.bottom - kitabViewportHeight + 48f).toInt()
+                            caret.top < kitabEditorScroll.value + 16f -> (caret.top - 24f).toInt()
+                            else -> kitabEditorScroll.value
+                        }
+                        if (target != kitabEditorScroll.value) kitabEditorScroll.scrollTo(target.coerceIn(0, kitabEditorScroll.maxValue))
+                    }
                     BasicTextField(
                         value = content, onValueChange = { content = it },
+                        onTextLayout = { kitabTextLayout = it },
                         modifier = Modifier.fillMaxWidth().weight(1f)
                             .padding(horizontal = 16.dp, vertical = 12.dp)
                             .background(editorBackground)
-                            .padding(10.dp),
+                            .padding(10.dp)
+                            .onSizeChanged { kitabViewportHeight = it.height }
+                            .verticalScroll(kitabEditorScroll),
                         textStyle = TextStyle(fontSize = readerFontSize.sp,
                             lineHeight = (readerFontSize * readerLineSpacing).sp,
                             color = editorInk, textDirection = TextDirection.ContentOrRtl),
