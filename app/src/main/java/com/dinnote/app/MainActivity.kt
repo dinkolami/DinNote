@@ -1764,12 +1764,12 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                             libraryDisplayPrefs.edit().putInt("font_size", size.toInt()).apply()
                         }
                     )
-                    Surface(Modifier.fillMaxWidth().weight(1f).padding(horizontal = 12.dp, vertical = 8.dp),
+                    Surface(Modifier.fillMaxWidth().weight(1f).padding(horizontal = 3.dp, vertical = 2.dp),
                         shape = RoundedCornerShape(12.dp), color = Color.White,
                         border = BorderStroke(1.dp, Color(0xFFDDE2E3))) {
                         Box(Modifier.fillMaxSize()) {
                             // Keep the writing surface unobstructed; decoration belongs to reading cards.
-                            Column(Modifier.fillMaxSize().padding(horizontal = 18.dp, vertical = 16.dp)) {
+                            Column(Modifier.fillMaxSize().padding(horizontal = 12.dp, vertical = 10.dp)) {
                                 androidx.compose.foundation.text.BasicTextField(
                                     value = libraryTitle, onValueChange = { libraryTitle = it },
                                     modifier = Modifier.fillMaxWidth(), singleLine = true,
@@ -1784,14 +1784,11 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                                         }
                                     }
                                 )
-                                Spacer(Modifier.height(12.dp))
-                                UnifiedEditorDivider()
-                                Spacer(Modifier.height(12.dp))
+                                Spacer(Modifier.height(8.dp))
                                 androidx.compose.foundation.text.BasicTextField(
                                     value = libraryBody, onValueChange = { libraryBody = it },
                                     modifier = Modifier.weight(1f).fillMaxWidth()
-                                        .border(BorderStroke(1.dp, Color(0xFFDDE2E3)), RoundedCornerShape(12.dp))
-                                        .padding(horizontal = 8.dp, vertical = 12.dp)
+                                        .padding(horizontal = 2.dp, vertical = 4.dp)
                                         .onSizeChanged { libraryBodyViewport = it.height }
                                         .verticalScroll(libraryBodyScroll),
                                     onTextLayout = { libraryBodyLayout = it },
