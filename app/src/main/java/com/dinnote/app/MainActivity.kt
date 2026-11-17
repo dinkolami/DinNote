@@ -992,8 +992,14 @@ fun NotesScreen(
                 displayPrefs.edit().putInt("font_size", editorFontSize.toInt()).apply()
                 return
             }
+            // Use the size already applied to the selection, not the global editor default.
+            // This allows repeated A+/A- presses to change the same word incrementally.
             val selected = body.text.substring(start, end)
-            val size = (editorFontSize.toInt() + delta).coerceIn(14, 30)
+            val enclosingSize = noteFormatRanges(body.text).second
+                .filter { (a, b, style) ->
+                    a <= start && b >= end && style.fontSize.isSp
+                }.lastOrNull()?.third?.fontSize?.value?.toInt()
+            val size = ((enclosingSize ?: editorFontSize.toInt()) + delta).coerceIn(14, 30)
             val prefix = "{{size:$size}}"
             val suffix = "{{/size}}"
             undoStack.add(body)
