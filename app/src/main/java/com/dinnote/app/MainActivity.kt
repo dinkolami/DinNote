@@ -1166,7 +1166,7 @@ private class NoteFormattingTransformation : VisualTransformation {
         val source = text.text
         val chars = source.toCharArray()
         val spans = mutableListOf<Triple<Int, Int, SpanStyle>>()
-        val regex = Regex("""\\*\\*([^*\\n]+)\\*\\*|\\+\\+([^+\\n]+)\\+\\+|(?<!_)_([^_\\n]+)_(?!_)""")
+        val regex = Regex("""\*\*([^*\n]+)\*\*|\+\+([^+\n]+)\+\+|(?<!_)_([^_\n]+)_(?!_)""")
         regex.findAll(source).forEach { match ->
             val bold = match.groups[1] != null
             val underline = match.groups[2] != null
@@ -1193,7 +1193,7 @@ private class NoteFormattingTransformation : VisualTransformation {
 }
 
 fun formattedNoteText(source: String): AnnotatedString = buildAnnotatedString {
-    val pattern = Regex("""\\*\\*([^*\\n]+)\\*\\*|\\+\\+([^+\\n]+)\\+\\+|(?<!_)_([^_\\n]+)_(?!_)""")
+    val pattern = Regex("""\*\*([^*\n]+)\*\*|\+\+([^+\n]+)\+\+|(?<!_)_([^_\n]+)_(?!_)""")
     var cursor = 0
     pattern.findAll(source).forEach { match ->
         append(source.substring(cursor, match.range.first))
