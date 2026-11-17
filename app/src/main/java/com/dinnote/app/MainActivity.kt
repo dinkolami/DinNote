@@ -95,6 +95,8 @@ fun DinNoteApp() {
     )
     MaterialTheme(colorScheme = islamicScheme) {
         Scaffold(
+            modifier = Modifier.navigationBarsPadding(),
+            contentWindowInsets = WindowInsets(0, 0, 0, 0),
             containerColor = MaterialTheme.colorScheme.background,
             topBar = {
                 // Header stays neutral: the selected wallpaper is drawn only once on HomeScreen.
@@ -129,7 +131,7 @@ fun DinNoteApp() {
             },
             bottomBar = {
                 Surface(
-                    modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(start = 10.dp, end = 10.dp, top = 3.dp, bottom = 6.dp),
+                    modifier = Modifier.fillMaxWidth().padding(start = 10.dp, end = 10.dp, top = 3.dp, bottom = 6.dp),
                     shape = RoundedCornerShape(10.dp),
                     color = Color.White,
                     border = BorderStroke(1.dp, Color(0xFFD8DEE3)),
