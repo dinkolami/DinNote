@@ -1705,9 +1705,11 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
         }
         androidx.compose.ui.window.Dialog(
             onDismissRequest = { saveLibraryEditor(); editingLibraryKey = null },
-            properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = true)
+            properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)
         ) {
-            Surface(Modifier.fillMaxSize().imePadding().padding(3.dp), shape = RoundedCornerShape(10.dp),
+            // The dialog owns a separate window: apply its system-bar and IME insets
+            // explicitly so the DinNote navigation stays above Android navigation.
+            Surface(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding().imePadding().padding(3.dp), shape = RoundedCornerShape(10.dp),
                 border = BorderStroke(1.dp, Color(0xFFB7DCD7)), color = Color.White) {
                 Column(Modifier.fillMaxSize()) {
                     UnifiedEditorHeading("Catatan Maktabah",
