@@ -1000,7 +1000,7 @@ fun NotesScreen(
                 usePlatformDefaultWidth = false,
                 // Let the dialog window reserve Android system-bar space itself.
                 // This avoids applying the navigation inset twice on full-screen notes.
-                decorFitsSystemWindows = true
+                decorFitsSystemWindows = false
             )
         ) {
             // The note editor is a separate Dialog window, not the Activity window.
@@ -1010,7 +1010,7 @@ fun NotesScreen(
                 (dialogView.parent as? androidx.compose.ui.window.DialogWindowProvider)
                     ?.window?.setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
             }
-            Box(Modifier.fillMaxSize().background(readingBackground(editorBackground))
+            Box(Modifier.fillMaxSize().navigationBarsPadding().imePadding().background(readingBackground(editorBackground))
                 .padding(bottom = 8.dp)) {
                 if (noteBackgroundImage != null) {
                     androidx.compose.foundation.Image(
