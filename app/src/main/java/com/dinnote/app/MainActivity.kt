@@ -393,15 +393,24 @@ fun HomeScreen(
             pinnedNotes.forEach { note ->
                 Surface(
                     modifier = Modifier.fillMaxWidth().clickable { onOpenPinnedNote(note.id) },
-                    color = Color.White,
-                    shape = RoundedCornerShape(10.dp),
-                    border = BorderStroke(1.dp, Color(0xFFB7DCD7))
+                    color = Color(0xFFFCFFFE),
+                    shape = RoundedCornerShape(11.dp),
+                    border = BorderStroke(1.dp, Color(0xFFB7DCD7)),
+                    shadowElevation = 1.dp
                 ) {
-                    Text("📌  " + note.title.ifBlank { "Tanpa tajuk" },
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 9.dp),
-                        fontSize = 14.sp, fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFF075B59), maxLines = 1,
-                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 11.dp, vertical = 8.dp),
+                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(7.dp)
+                    ) {
+                        Text("✦", fontSize = 12.sp, color = Color(0xFFCCA35B))
+                        Text(note.title.ifBlank { "Tanpa tajuk" },
+                            modifier = Modifier.weight(1f),
+                            fontSize = 12.sp, fontWeight = FontWeight.Medium,
+                            color = Color(0xFF075B59), maxLines = 1,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                        Text("›", fontSize = 16.sp, color = Color(0xFF087F8C))
+                    }
                 }
             }
         }
@@ -410,15 +419,24 @@ fun HomeScreen(
             recentlyAddedNotes.forEach { note ->
                 Surface(
                     modifier = Modifier.fillMaxWidth().clickable { onOpenPinnedNote(note.id) },
-                    color = Color.White,
-                    shape = RoundedCornerShape(10.dp),
-                    border = BorderStroke(1.dp, Color(0xFFB7DCD7))
+                    color = Color(0xFFFCFFFE),
+                    shape = RoundedCornerShape(11.dp),
+                    border = BorderStroke(1.dp, Color(0xFFB7DCD7)),
+                    shadowElevation = 1.dp
                 ) {
-                    Text(note.title.ifBlank { "Tanpa tajuk" },
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 9.dp),
-                        fontSize = 14.sp, fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFF075B59), maxLines = 1,
-                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 11.dp, vertical = 8.dp),
+                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(7.dp)
+                    ) {
+                        Text("✎", fontSize = 12.sp, color = Color(0xFF087F8C))
+                        Text(note.title.ifBlank { "Tanpa tajuk" },
+                            modifier = Modifier.weight(1f),
+                            fontSize = 12.sp, fontWeight = FontWeight.Medium,
+                            color = Color(0xFF075B59), maxLines = 1,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                        Text("›", fontSize = 16.sp, color = Color(0xFF087F8C))
+                    }
                 }
             }
         }
