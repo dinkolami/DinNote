@@ -295,5 +295,16 @@ fun DisplaySettingsScreen(modifier: Modifier = Modifier) {
             Text(backupStatus, fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
         }
         Text("Tekan Simpan Tetapan untuk menyimpan perubahan pada telefon ini.", fontSize = 12.sp, color = Color.Gray)
+        HorizontalDivider(color = Color(0xFFE1E3E5))
+        Text("About Us · Tentang DinNote", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
+            horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            Text("DinNote", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color(0xFF075B59))
+            Text("مِنَ التَّدْوِينِ إِلَى كُنُوزِ الْعِلْمِ", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center, fontSize = 20.sp, color = Color(0xFF075B59))
+            Text("Daripada catatan kepada khazanah ilmu.", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center, fontSize = 14.sp, fontStyle = androidx.compose.ui.text.font.FontStyle.Italic, color = Color(0xFF075B59))
+        }
     }
 }
