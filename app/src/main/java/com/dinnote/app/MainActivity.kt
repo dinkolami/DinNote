@@ -1327,7 +1327,7 @@ private class NoteFormattingTransformation : VisualTransformation {
         val chars = source.toCharArray()
         val (tokens, ranges) = noteFormatRanges(source)
         tokens.forEach { token ->
-            for (i in token.start until token.end) chars[i] = '\\u2060'
+            for (i in token.start until token.end) chars[i] = '\u2060'
         }
         val styled = buildAnnotatedString {
             append(String(chars))
