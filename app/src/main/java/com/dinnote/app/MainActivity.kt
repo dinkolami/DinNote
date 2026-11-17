@@ -1713,7 +1713,7 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                     UnifiedEditorHeading("Catatan Maktabah",
                         onBack = { saveLibraryEditor(); editingLibraryKey = null },
                         onSave = { saveLibraryEditor(); editingLibraryKey = null })
-                    Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 0.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         OutlinedButton(
                             enabled = !translationBusy && libraryBody.text.isNotBlank(),
                             onClick = {
@@ -1764,7 +1764,7 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                             libraryDisplayPrefs.edit().putInt("font_size", size.toInt()).apply()
                         }
                     )
-                    Surface(Modifier.fillMaxWidth().weight(1f).padding(horizontal = 3.dp, vertical = 2.dp),
+                    Surface(Modifier.fillMaxWidth().weight(1f).padding(horizontal = 3.dp, vertical = 0.dp),
                         shape = RoundedCornerShape(12.dp), color = Color.White,
                         border = BorderStroke(1.dp, Color(0xFFDDE2E3))) {
                         Box(Modifier.fillMaxSize()) {
@@ -1934,13 +1934,14 @@ private fun DefaultEditorTextField(
 @Composable
 private fun DefaultEditorFontControls(fontSize: Float, onChange: (Float) -> Unit) {
     Row(
-        Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 3.dp),
+        Modifier.fillMaxWidth().height(42.dp).padding(horizontal = 8.dp),
         horizontalArrangement = Arrangement.End,
         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
     ) {
         Text("Saiz tulisan", fontSize = 12.sp, color = Color(0xFF53736F))
         Spacer(Modifier.width(8.dp))
         TextButton(
+            modifier = Modifier.height(36.dp),
             onClick = { onChange((fontSize - 1f).coerceAtLeast(14f)) },
             enabled = fontSize > 14f
         ) {
@@ -1949,6 +1950,7 @@ private fun DefaultEditorFontControls(fontSize: Float, onChange: (Float) -> Unit
         Text("${fontSize.toInt()}", color = Color(0xFF075B59), fontSize = 13.sp,
             fontWeight = FontWeight.SemiBold)
         TextButton(
+            modifier = Modifier.height(36.dp),
             onClick = { onChange((fontSize + 1f).coerceAtMost(30f)) },
             enabled = fontSize < 30f
         ) {
