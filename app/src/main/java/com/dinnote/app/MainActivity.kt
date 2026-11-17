@@ -470,14 +470,38 @@ fun HomeScreen(
             .padding(horizontal = 14.dp, vertical = 4.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Surface(
-            modifier = Modifier.fillMaxWidth().clickable(onClick = onOpenSearch),
-            shape = RoundedCornerShape(12.dp), color = Color.White,
-            border = BorderStroke(1.dp, Color(0xFFB7DCD7))
-        ) {
-            Text("⌕   Cari nota, kitab dan rujukan",
-                modifier = Modifier.padding(horizontal = 14.dp, vertical = 13.dp),
-                fontSize = 14.sp, color = Color(0xFF52716E))
+        var homeSearchExpanded by remember { mutableStateOf(false) }
+        Box(Modifier.fillMaxWidth()) {
+            Surface(
+                modifier = Modifier.fillMaxWidth().clickable { homeSearchExpanded = true },
+                shape = RoundedCornerShape(12.dp), color = Color.White,
+                border = BorderStroke(1.dp, Color(0xFFB7DCD7))
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 13.dp),
+                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                ) {
+                    Text("⌕   Cari nota, kitab dan rujukan",
+                        modifier = Modifier.weight(1f),
+                        fontSize = 14.sp, color = Color(0xFF52716E))
+                    Text("⌄", fontSize = 18.sp, color = Color(0xFF08766C))
+                }
+            }
+            DropdownMenu(
+                expanded = homeSearchExpanded,
+                onDismissRequest = { homeSearchExpanded = false }
+            ) {
+                listOf("Semua", "Nota", "Maktabah", "Kalam Hikmah", "Mazhab Syafi‘i").forEach { category ->
+                    DropdownMenuItem(
+                        text = { Text(category, color = Color(0xFF075B59)) },
+                        onClick = {
+                            homeSearchExpanded = false
+                            // Open the existing search screen; its data and navigation remain intact.
+                            onOpenSearch()
+                        }
+                    )
+                }
+            }
         }
         if (pinnedNotes.isNotEmpty()) {
             PremiumSectionHeading("Nota Dipinkan", "✦")
