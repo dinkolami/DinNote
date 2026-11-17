@@ -1204,7 +1204,7 @@ fun NotesScreen(
                                 LaunchedEffect(body.selection, bodyTextLayout, bodyViewportHeight, keyboardVisible) {
                                     val layout = bodyTextLayout ?: return@LaunchedEffect
                                     if (bodyViewportHeight <= 0) return@LaunchedEffect
-                                    val caret = runCatching { layout.getCursorRect(body.selection.end.coerceIn(0, body.text.length) }.getOrNull() ?: return@LaunchedEffect
+                                    val caret = runCatching { layout.getCursorRect(body.selection.end.coerceIn(0, body.text.length)) }.getOrNull() ?: return@LaunchedEffect
                                     val target = when {
                                         caret.bottom > bodyScrollState.value + bodyViewportHeight - 24f ->
                                             (caret.bottom - bodyViewportHeight + 48f).toInt()
@@ -1720,7 +1720,7 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
         LaunchedEffect(libraryBody.selection, libraryBodyLayout, libraryBodyViewport, WindowInsets.ime.getBottom(androidx.compose.ui.platform.LocalDensity.current)) {
             val layout = libraryBodyLayout ?: return@LaunchedEffect
             if (libraryBodyViewport <= 0) return@LaunchedEffect
-            val caret = runCatching { layout.getCursorRect(libraryBody.selection.end.coerceIn(0, libraryBody.text.length) }.getOrNull() ?: return@LaunchedEffect
+            val caret = runCatching { layout.getCursorRect(libraryBody.selection.end.coerceIn(0, libraryBody.text.length)) }.getOrNull() ?: return@LaunchedEffect
             val target = when {
                 caret.bottom > libraryBodyScroll.value + libraryBodyViewport - 48f ->
                     (caret.bottom - libraryBodyViewport + 64f).toInt()
