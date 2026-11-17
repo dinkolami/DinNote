@@ -1002,7 +1002,7 @@ fun NotesScreen(
             // Full-screen dialogs on Android 15+ must explicitly respect system bars.
             // Keep the note border and editor above the navigation buttons and IME.
             Box(Modifier.fillMaxSize().background(readingBackground(editorBackground))
-                .statusBarsPadding().navigationBarsPadding().imePadding()) {
+                .statusBarsPadding().navigationBarsPadding().imePadding().padding(bottom = 28.dp)) {
                 if (noteBackgroundImage != null) {
                     androidx.compose.foundation.Image(
                         bitmap = noteBackgroundImage,
