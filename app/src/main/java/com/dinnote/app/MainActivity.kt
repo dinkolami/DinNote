@@ -1657,7 +1657,7 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                     Card(modifier = Modifier.fillMaxWidth().clickable { openLibraryEditor(key) }, border = BorderStroke(1.dp, Color(0xFFB7DCD7)), shape = RoundedCornerShape(10.dp), colors = CardDefaults.cardColors(containerColor = Color.White)) {
                         Column(Modifier.padding(16.dp)) {
                             Text(libraryPrefs.getString(key + "_title", "Tanpa tajuk") ?: "Tanpa tajuk", fontWeight = FontWeight.Bold)
-                            Text((libraryPrefs.getString(key + "_body", "") ?: "").take(130), modifier = Modifier.fillMaxWidth(), style = androidx.compose.ui.text.TextStyle(textDirection = TextDirection.ContentOrLtr), maxLines = 3)
+                            Text(formattedNoteText(libraryPrefs.getString(key + "_body", "") ?: ""), modifier = Modifier.fillMaxWidth(), style = androidx.compose.ui.text.TextStyle(textDirection = TextDirection.ContentOrLtr), maxLines = 3, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
                             IslamicCardFooter()
                         }
                     }
@@ -1672,7 +1672,7 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                     Card(modifier = Modifier.fillMaxWidth().clickable { openLibraryEditor(key) }, border = BorderStroke(1.dp, Color(0xFFB7DCD7)), shape = RoundedCornerShape(10.dp), colors = CardDefaults.cardColors(containerColor = Color.White)) {
                         Column(Modifier.padding(16.dp)) {
                             Text(libraryPrefs.getString(key + "_title", "Tanpa tajuk") ?: "Tanpa tajuk", fontWeight = FontWeight.Bold)
-                            Text((libraryPrefs.getString(key + "_body", "") ?: "").take(130), modifier = Modifier.fillMaxWidth(), style = androidx.compose.ui.text.TextStyle(textDirection = TextDirection.ContentOrLtr), maxLines = 3)
+                            Text(formattedNoteText(libraryPrefs.getString(key + "_body", "") ?: ""), modifier = Modifier.fillMaxWidth(), style = androidx.compose.ui.text.TextStyle(textDirection = TextDirection.ContentOrLtr), maxLines = 3, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
                             IslamicCardFooter()
                         }
                     }
