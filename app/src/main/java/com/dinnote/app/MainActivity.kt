@@ -1210,6 +1210,8 @@ fun NotesScreen(
                                 var bodyViewportHeight by remember { mutableIntStateOf(0) }
                                 val keyboardVisible = WindowInsets.ime.getBottom(androidx.compose.ui.platform.LocalDensity.current) > 0
                                 LaunchedEffect(body.selection, bodyTextLayout, bodyViewportHeight, keyboardVisible) {
+                                    // Allow IME resize and text layout to settle before positioning the caret.
+                                    kotlinx.coroutines.delay(80)
                                     val layout = bodyTextLayout ?: return@LaunchedEffect
                                     if (bodyViewportHeight <= 0) return@LaunchedEffect
                                     val caret = runCatching { layout.getCursorRect(body.selection.end.coerceIn(0, body.text.length)) }.getOrNull() ?: return@LaunchedEffect
@@ -1332,9 +1334,21 @@ private fun colorEditorSelection(value: TextFieldValue, color: Long): TextFieldV
     if (start == end) return value
     val hex = "#%06X".format(color and 0xFFFFFF)
     val prefix = "{{color:$hex}}"
-    val selected = value.text.substring(start, end)
-    return value.copy(
-        text = value.text.replaceRange(start, end, prefix + selected + "{{/color}}"),
+    val source = value.text
+    // Recolor an existing selection without nesting color markers.
+    val opening = Regex("""\\{\\{color:#[0-9A-Fa-f]{6}\\}\\}""")
+    val previous = opening.findAll(source.substring(0, start)).lastOrNull()
+    val existing = previous?.takeIf {
+        it.range.last + 1 == start && source.startsWith("{{/color}}", end)
+    }
+    if (existing != null) {
+        val updated = source.replaceRange(existing.range, prefix)
+        val shift = prefix.length - existing.value.length
+        return TextFieldValue(updated, selection = TextRange(start + shift, end + shift))
+    }
+    val selected = source.substring(start, end)
+    return TextFieldValue(
+        source.replaceRange(start, end, prefix + selected + "{{/color}}"),
         selection = TextRange(start + prefix.length, end + prefix.length)
     )
 }
