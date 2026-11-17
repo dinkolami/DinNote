@@ -95,6 +95,9 @@ class MainActivity : ComponentActivity() {
         @Suppress("DEPRECATION")
         window.decorView.systemUiVisibility = window.decorView.systemUiVisibility or
             android.view.View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+        // Use dark system status-bar icons (including the clock) on the light DinNote background.
+        androidx.core.view.WindowCompat.getInsetsController(window, window.decorView)
+            .isAppearanceLightStatusBars = true
         setContent { DinNoteApp() }
     }
 }
