@@ -1487,8 +1487,9 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
             matchesMaktabahSearch(entry.arabic, search)
     }
 
+    Box(modifier.fillMaxSize()) {
     Column(
-        modifier = modifier.fillMaxSize().padding(horizontal = 12.dp, vertical = 8.dp),
+        modifier = Modifier.fillMaxSize().padding(horizontal = 12.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
         Text("Maktabah", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF075B59))
@@ -1640,6 +1641,7 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
         }
     }
 
+
     if (showAddCategory || categoryToRename != null) {
         AlertDialog(
             shape = RoundedCornerShape(10.dp),
@@ -1703,14 +1705,10 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                 libraryBodyScroll.animateScrollTo(target.coerceIn(0, libraryBodyScroll.maxValue))
             }
         }
-        androidx.compose.ui.window.Dialog(
-            onDismissRequest = { saveLibraryEditor(); editingLibraryKey = null },
-            properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)
-        ) {
-            // The dialog owns a separate window: apply its system-bar and IME insets
-            // explicitly so the DinNote navigation stays above Android navigation.
-            Surface(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding().imePadding().padding(3.dp), shape = RoundedCornerShape(10.dp),
-                border = BorderStroke(1.dp, Color(0xFFB7DCD7)), color = Color.White) {
+        // Inline editor shares the Activity Scaffold, so its bottom navigation
+        // remains visible and the editor cannot cover Android's navigation area.
+        Surface(Modifier.fillMaxSize().padding(3.dp), shape = RoundedCornerShape(10.dp),
+            border = BorderStroke(1.dp, Color(0xFFB7DCD7)), color = Color.White) {
                 Column(Modifier.fillMaxSize()) {
                     UnifiedEditorHeading("Catatan Maktabah",
                         onBack = { saveLibraryEditor(); editingLibraryKey = null },
@@ -1814,57 +1812,11 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                             }
                         }
                     }
-                    // Keep the four DinNote destinations accessible in the Maktabah editor.
-                    // This bar is inside the editor window, above Android navigation/IME.
-                    Surface(
-                        modifier = Modifier.fillMaxWidth().padding(start = 10.dp, end = 10.dp, top = 3.dp, bottom = 6.dp),
-                        shape = RoundedCornerShape(10.dp),
-                        color = Color.White,
-                        border = BorderStroke(1.dp, Color(0xFFD8DEE3))
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth().height(48.dp).padding(3.dp),
-                            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
-                        ) {
-                            listOf(
-                                Triple("Utama", "⌂", 0),
-                                Triple("Nota", "✎", 1),
-                                Triple("Maktabah", "▤", 2),
-                                Triple("Tetapan", "⚙", 4)
-                            ).forEachIndexed { index, tab ->
-                                if (index > 0) VerticalDivider(
-                                    modifier = Modifier.height(24.dp),
-                                    thickness = 1.dp,
-                                    color = Color(0xFFE3ECEC)
-                                )
-                                val active = tab.third == 2
-                                Column(
-                                    modifier = Modifier.weight(1f).fillMaxHeight()
-                                        .background(
-                                            if (active) Color(0xFFDDF4F2) else Color.Transparent,
-                                            RoundedCornerShape(6.dp)
-                                        )
-                                        .clickable {
-                                            saveLibraryEditor()
-                                            editingLibraryKey = null
-                                            onNavigate(tab.third)
-                                        },
-                                    verticalArrangement = Arrangement.Center,
-                                    horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
-                                ) {
-                                    Text(tab.second, fontSize = 19.sp, lineHeight = 21.sp,
-                                        color = if (active) Color(0xFF007F83) else Color(0xFF52666A))
-                                    Text(tab.first, fontSize = 10.sp, lineHeight = 12.sp,
-                                        maxLines = 1,
-                                        color = if (active) Color(0xFF007F83) else Color(0xFF52666A))
-                                }
-                            }
-                        }
-                    }
+
                 }
             }
-        }
     }
+    } // End inline Maktabah overlay container
 
     editingKalimah?.let { entry ->
         AlertDialog(
