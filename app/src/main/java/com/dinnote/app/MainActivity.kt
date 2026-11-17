@@ -1378,7 +1378,7 @@ private fun EditorColorPicker(onPick: (Long) -> Unit) {
                             paletteRow.forEach { argb ->
                                 Box(
                                     Modifier.size(48.dp)
-                                        .background(Color(argb), RoundedCornerShape(8.dp))
+                                        .background(Color(argb.toInt()), RoundedCornerShape(8.dp))
                                         .clickable {
                                             expanded = false
                                             onPick(argb)
