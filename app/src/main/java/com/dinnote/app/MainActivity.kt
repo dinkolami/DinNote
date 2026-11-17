@@ -1322,6 +1322,35 @@ fun NotesScreen(
                         ) { Text("A+", color = Color(0xFF087F83)) }
                     }
 
+                    // Starter structure for Islamic notes. Insert plain editable text only:
+                    // no markup tokens, database migrations, or external assets.
+                    var showNoteTemplateMenu by remember { mutableStateOf(false) }
+                    Box(Modifier.fillMaxWidth().padding(horizontal = 12.dp)) {
+                        TextButton(onClick = { showNoteTemplateMenu = true }) {
+                            Text("＋ Templat artikel", color = Color(0xFF075D49), fontSize = 13.sp)
+                        }
+                        DropdownMenu(
+                            expanded = showNoteTemplateMenu,
+                            onDismissRequest = { showNoteTemplateMenu = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("Artikel Islamik: ayat, maksud dan perhatian") },
+                                onClick = {
+                                    val template = "\\nFirman Allah SWT:\\n[Tulis ayat Arab di sini]\\n\\nMaksudnya:\\n[Tulis terjemahan di sini]\\n\\nRujukan:\\n[Surah / kitab / halaman]\\n\\nPerhatian:\\n[Tulis huraian di sini]\\n"
+                                        .replace("\\\\n", "\\n")
+                                    val start = body.selection.min.coerceIn(0, body.text.length)
+                                    val end = body.selection.max.coerceIn(start, body.text.length)
+                                    val updated = body.text.replaceRange(start, end, template)
+                                    undoStack.add(body)
+                                    if (undoStack.size > 60) undoStack.removeAt(0)
+                                    redoStack.clear()
+                                    body = TextFieldValue(updated, selection = TextRange(start + template.length))
+                                    showNoteTemplateMenu = false
+                                }
+                            )
+                        }
+                    }
+
                     Surface(
                         modifier = Modifier.fillMaxWidth().weight(1f).padding(start = 8.dp, end = 8.dp, top = 2.dp, bottom = 0.dp),
                         shape = RoundedCornerShape(0.dp),
