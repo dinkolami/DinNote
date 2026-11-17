@@ -552,9 +552,6 @@ fun HomeScreen(
                         if (entry.reference.isNotBlank()) {
                             Text("Rujukan: ${entry.reference}", fontSize = 13.sp)
                         }
-                        if (entry.notes.isNotBlank()) {
-                            Text(entry.notes, fontSize = 14.sp)
-                        }
                     }
                 },
                 confirmButton = {
