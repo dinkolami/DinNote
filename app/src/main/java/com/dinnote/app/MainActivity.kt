@@ -636,23 +636,7 @@ fun NotesScreen(
     var title by remember { mutableStateOf("") }
     var body by remember { mutableStateOf(TextFieldValue("")) }
     var selectedColor by remember { mutableStateOf("green") }
-    var editorBackground by remember { mutableStateOf(displayPrefs.getString("background", "white") ?: "white") }
-    var imageUri by remember { mutableStateOf(displayPrefs.getString("background_image_uri", "") ?: "") }
-    var imageOpacity by remember { mutableFloatStateOf(displayPrefs.getFloat("background_image_opacity", 0.18f)) }
-    val noteBackgroundImage = remember(imageUri) {
-        if (imageUri.isBlank()) null else runCatching {
-            context.contentResolver.openInputStream(Uri.parse(imageUri))?.use {
-                BitmapFactory.decodeStream(it)?.asImageBitmap()
-            }
-        }.getOrNull()
-    }
-    LaunchedEffect(showEditor) {
-        if (showEditor) {
-            editorBackground = displayPrefs.getString("background", "white") ?: "white"
-            imageUri = displayPrefs.getString("background_image_uri", "") ?: ""
-            imageOpacity = displayPrefs.getFloat("background_image_opacity", 0.18f)
-        }
-    }
+    // Note backgrounds are always white; legacy background preferences are ignored.
     var editorFontSize by remember { mutableFloatStateOf(displayPrefs.getInt("font_size", 19).toFloat()) }
     var symbolMenu by remember { mutableStateOf(false) }
     var showArchived by remember { mutableStateOf(false) }
@@ -1124,16 +1108,7 @@ fun NotesScreen(
         // Editor is part of the Activity composition, not a separate Dialog window.
         // Android IME resizing now uses the Activity's window and shared insets.
         Box(Modifier.fillMaxSize().background(Color.White)) {
-            Box(Modifier.fillMaxSize().background(readingBackground(editorBackground))) {
-                if (noteBackgroundImage != null) {
-                    androidx.compose.foundation.Image(
-                        bitmap = noteBackgroundImage,
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        alpha = imageOpacity.coerceIn(0.05f, 0.65f),
-                        modifier = Modifier.fillMaxSize()
-                    )
-                }
+            Box(Modifier.fillMaxSize().background(Color.White)) {
                 Column(Modifier.fillMaxSize()) {
                     if (readingMode) {
                         Box(
@@ -1184,7 +1159,7 @@ fun NotesScreen(
                                     Text(formattedNoteText(line), modifier = Modifier.fillMaxWidth(), textAlign = if (arabic) TextAlign.Right else TextAlign.Left,
                                         style = androidx.compose.ui.text.TextStyle(textDirection = if (arabic) TextDirection.Rtl else TextDirection.Ltr),
                                         fontSize = editorFontSize.sp, lineHeight = (editorFontSize * displayPrefs.getFloat("line_spacing", 1.6f)).sp,
-                                        color = if (editorBackground == "dark") Color.White else Color(0xFF263B3E))
+                                        color = Color(0xFF263B3E))
                                 }
                             }
                         }
@@ -1293,7 +1268,7 @@ fun NotesScreen(
                     Surface(
                         modifier = Modifier.fillMaxWidth().weight(1f).padding(start = 8.dp, end = 8.dp, top = 2.dp, bottom = 0.dp),
                         shape = RoundedCornerShape(0.dp),
-                        color = if (noteBackgroundImage != null) Color.Transparent else readingBackground(editorBackground)
+                        color = Color.White
                     ) {
                         Box(Modifier.fillMaxSize()) {
                             Column(
@@ -1307,7 +1282,7 @@ fun NotesScreen(
                                     textStyle = androidx.compose.ui.text.TextStyle(
                                         fontSize = 18.sp,
                                         fontWeight = FontWeight.SemiBold,
-                                        color = if (editorBackground == "dark") Color(0xFFB9E7E1) else Color(0xFF087F83),
+                                        color = Color(0xFF087F83),
                                         textDirection = TextDirection.ContentOrRtl
                                     ),
                                     decorationBox = { inner ->
@@ -1359,7 +1334,7 @@ fun NotesScreen(
                                     onTextLayout = { bodyTextLayout = it },
                                     textStyle = androidx.compose.ui.text.TextStyle(
                                         fontSize = editorFontSize.sp,
-                                        color = if (editorBackground == "dark") Color(0xFFF3F7F6) else Color(0xFF263B3E),
+                                        color = Color(0xFF263B3E),
                                         lineHeight = (editorFontSize * displayPrefs.getFloat("line_spacing", 1.6f).coerceIn(1.2f, 2.2f)).sp,
                                         textDirection = TextDirection.ContentOrRtl
                                     ),
@@ -1369,7 +1344,7 @@ fun NotesScreen(
                                                 "Sentuh di sini untuk menulis...",
                                                 fontSize = 16.sp,
                                                 fontStyle = FontStyle.Italic,
-                                                color = if (editorBackground == "dark") Color(0xFFB8CECB) else Color(0xFF667A7B)
+                                                color = Color(0xFF667A7B)
                                             )
                                             inner()
                                         }
