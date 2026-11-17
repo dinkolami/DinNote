@@ -576,8 +576,22 @@ fun HomeScreen(
                 }
             )
         }
-        Text("Teroka DinNote", fontSize = 16.sp, fontWeight = FontWeight.Bold,
-            color = Color(0xFF075B59))
+        Surface(
+            color = Color(0xFF006B5B),
+            shape = RoundedCornerShape(12.dp),
+            border = BorderStroke(1.dp, Color(0xFFC69A3C)),
+            shadowElevation = 2.dp
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text("✦", fontSize = 14.sp, color = Color(0xFFF1C86B))
+                Text("Teroka DinNote", fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold, color = Color.White)
+            }
+        }
         Row(horizontalArrangement = Arrangement.spacedBy(9.dp)) {
             DinNoteDashboardTile("Nota", "Catatan & kuliah", "note",
                 Modifier.weight(1f), onOpenNotes)
