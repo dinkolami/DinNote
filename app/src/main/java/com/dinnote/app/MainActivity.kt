@@ -16,6 +16,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.verticalScroll
@@ -664,6 +666,8 @@ fun NotesScreen(
     var search by remember { mutableStateOf("") }
     var showEditor by remember { mutableStateOf(false) }
     var readingMode by remember { mutableStateOf(false) }
+    val noteBodyFocusRequester = remember { FocusRequester() }
+    var focusBodyAfterDoubleTap by remember { mutableStateOf(false) }
     val undoStack = remember { mutableStateListOf<TextFieldValue>() }
     val redoStack = remember { mutableStateListOf<TextFieldValue>() }
     var editingId by remember { mutableStateOf<Long?>(null) }
@@ -1196,6 +1200,7 @@ fun NotesScreen(
                                             val sourceOffset = sourceOffsetForFormattedText(body.text, visibleOffset)
                                             body = body.copy(selection = TextRange(sourceOffset))
                                         }
+                                        focusBodyAfterDoubleTap = true
                                         readingMode = false
                                     })
                                 },
@@ -1209,6 +1214,13 @@ fun NotesScreen(
                             )
                         }
                     } else {
+                    LaunchedEffect(focusBodyAfterDoubleTap) {
+                        if (focusBodyAfterDoubleTap) {
+                            kotlinx.coroutines.delay(100)
+                            noteBodyFocusRequester.requestFocus()
+                            focusBodyAfterDoubleTap = false
+                        }
+                    }
                     Surface(color = Color.White) {
                         Row(
                             Modifier.fillMaxWidth().height(46.dp).padding(horizontal = 8.dp),
@@ -1374,6 +1386,7 @@ fun NotesScreen(
                                     },
                                     visualTransformation = remember { NoteFormattingTransformation() },
                                     modifier = Modifier.weight(1f).fillMaxWidth()
+                                        .focusRequester(noteBodyFocusRequester)
                                         .onSizeChanged { bodyViewportHeight = it.height }
                                         .verticalScroll(bodyScrollState),
                                     onTextLayout = { bodyTextLayout = it },
