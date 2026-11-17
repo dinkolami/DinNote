@@ -129,7 +129,7 @@ fun DinNoteApp() {
             },
             bottomBar = {
                 Surface(
-                    modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = 10.dp, vertical = 3.dp),
+                    modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = 10.dp, top = 3.dp, bottom = 6.dp),
                     shape = RoundedCornerShape(10.dp),
                     color = Color.White,
                     border = BorderStroke(1.dp, Color(0xFFD8DEE3)),
@@ -1044,7 +1044,7 @@ fun NotesScreen(
                             }
                         }
                         HorizontalDivider(thickness = 1.dp, color = Color(0xFF00999A))
-                        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 8.dp, vertical = 12.dp).combinedClickable(onClick = {}, onDoubleClick = { readingMode = false })) {
+                        Column(Modifier.fillMaxSize().padding(horizontal = 8.dp, vertical = 8.dp).border(1.dp, Color(0xFF087F83), RoundedCornerShape(12.dp)).verticalScroll(rememberScrollState()).padding(horizontal = 8.dp, vertical = 12.dp).combinedClickable(onClick = {}, onDoubleClick = { readingMode = false })) {
                             Text(title.ifBlank { "Tanpa tajuk" }, fontSize = 23.sp, lineHeight = 28.sp, fontWeight = FontWeight.Bold)
                             Spacer(Modifier.height(10.dp))
                             Row(Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
@@ -1157,7 +1157,7 @@ fun NotesScreen(
                     }
 
                     Surface(
-                        modifier = Modifier.fillMaxWidth().weight(1f).padding(start = 0.dp, end = 0.dp, top = 2.dp, bottom = 32.dp),
+                        modifier = Modifier.fillMaxWidth().weight(1f).padding(start = 0.dp, end = 0.dp, top = 2.dp, bottom = 8.dp),
                         shape = RoundedCornerShape(12.dp),
                         color = if (noteBackgroundImage != null) Color.Transparent else readingBackground(editorBackground),
                         border = BorderStroke(1.dp, Color(0xFF087F83))
@@ -1601,9 +1601,9 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
             onDismissRequest = { saveLibraryEditor(); editingLibraryKey = null },
             properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)
         ) {
-            Surface(Modifier.fillMaxSize().padding(3.dp), shape = RoundedCornerShape(10.dp),
+            Surface(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding().padding(3.dp), shape = RoundedCornerShape(10.dp),
                 border = BorderStroke(1.dp, Color(0xFFB7DCD7)), color = Color.White) {
-                Column(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding()) {
+                Column(Modifier.fillMaxSize()) {
                     UnifiedEditorHeading("Catatan Maktabah",
                         onBack = { saveLibraryEditor(); editingLibraryKey = null },
                         onSave = { saveLibraryEditor(); editingLibraryKey = null })
