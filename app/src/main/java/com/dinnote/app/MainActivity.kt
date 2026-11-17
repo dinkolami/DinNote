@@ -1806,6 +1806,54 @@ fun LibraryScreen(modifier: Modifier = Modifier) {
                             }
                         }
                     }
+                    // Keep the four DinNote destinations accessible in the Maktabah editor.
+                    // This bar is inside the editor window, above Android navigation/IME.
+                    Surface(
+                        modifier = Modifier.fillMaxWidth().padding(start = 10.dp, end = 10.dp, top = 3.dp, bottom = 6.dp),
+                        shape = RoundedCornerShape(10.dp),
+                        color = Color.White,
+                        border = BorderStroke(1.dp, Color(0xFFD8DEE3))
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().height(48.dp).padding(3.dp),
+                            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                        ) {
+                            listOf(
+                                Triple("Utama", "⌂", 0),
+                                Triple("Nota", "✎", 1),
+                                Triple("Maktabah", "▤", 2),
+                                Triple("Tetapan", "⚙", 4)
+                            ).forEachIndexed { index, tab ->
+                                if (index > 0) VerticalDivider(
+                                    modifier = Modifier.height(24.dp),
+                                    thickness = 1.dp,
+                                    color = Color(0xFFE3ECEC)
+                                )
+                                val active = selectedTab == tab.third
+                                Column(
+                                    modifier = Modifier.weight(1f).fillMaxHeight()
+                                        .background(
+                                            if (active) Color(0xFFDDF4F2) else Color.Transparent,
+                                            RoundedCornerShape(6.dp)
+                                        )
+                                        .clickable {
+                                            saveLibraryEditor()
+                                            editingLibraryKey = null
+                                            selectedTab = tab.third
+                                            if (tab.third == 1) openNewNote = false
+                                        },
+                                    verticalArrangement = Arrangement.Center,
+                                    horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
+                                ) {
+                                    Text(tab.second, fontSize = 19.sp, lineHeight = 21.sp,
+                                        color = if (active) Color(0xFF007F83) else Color(0xFF52666A))
+                                    Text(tab.first, fontSize = 10.sp, lineHeight = 12.sp,
+                                        maxLines = 1,
+                                        color = if (active) Color(0xFF007F83) else Color(0xFF52666A))
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
