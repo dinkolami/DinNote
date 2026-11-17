@@ -1667,7 +1667,6 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
     var kalimahNote by remember { mutableStateOf("") }
     var showKalimahSettings by remember { mutableStateOf(false) }
     var search by remember { mutableStateOf("") }
-    var searchExpanded by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val libraryPrefs = remember { context.getSharedPreferences("dinnote_library_edits", android.content.Context.MODE_PRIVATE) }
     val libraryDisplayPrefs = remember { context.getSharedPreferences("dinnote_display", android.content.Context.MODE_PRIVATE) }
@@ -1792,26 +1791,6 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
             TextButton(onClick = { categoryToRename = selectedCategory; newCategoryName = selectedCategory }) {
                 Text("✎ Ubah nama kategori")
             }
-        }
-
-        Row(Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween) {
-            Text("Carian", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            TextButton(onClick = { searchExpanded = !searchExpanded }) {
-                Text(if (searchExpanded) "⌃ Tutup carian" else "⌕ Buka carian", fontSize = 13.sp)
-            }
-        }
-        if (searchExpanded) {
-            OutlinedTextField(
-                value = search,
-                onValueChange = { search = it },
-                placeholder = { Text("Cari dalam " + selectedCategory, fontSize = 13.sp) },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth().height(54.dp),
-                trailingIcon = {
-                    if (search.isNotEmpty()) TextButton(onClick = { search = "" }) { Text("✕") }
-                }
-            )
         }
 
         when (selectedCategory) {
