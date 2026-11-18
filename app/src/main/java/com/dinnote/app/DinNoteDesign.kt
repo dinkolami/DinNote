@@ -71,7 +71,7 @@ fun DinNoteBilingualCard(
                 if (arabic.isBlank() && malay.isBlank()) {
                     Text(
                         text = "Tiada kandungan untuk dipaparkan.",
-                        fontSize = 13.sp,
+                        fontSize = DinNoteDesign.EmptyStateSize,
                         color = DinNoteDesign.SecondaryInk
                     )
                 }
