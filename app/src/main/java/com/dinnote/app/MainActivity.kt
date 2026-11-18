@@ -434,7 +434,7 @@ fun HomeScreen(
         pinnedNotes.clear()
         pinnedNotes.addAll(activeNotes.filter { it.pinned }.sortedByDescending { it.updatedAt })
         recentlyAddedNotes.clear()
-        recentlyAddedNotes.addAll(activeNotes.sortedByDescending { it.id }.take(1))
+        recentlyAddedNotes.addAll(activeNotes.sortedByDescending { it.updatedAt }.take(3))
     }
     Box(modifier = modifier.fillMaxSize()) {
         // Never stack the geometric pattern beneath a user-selected wallpaper.
