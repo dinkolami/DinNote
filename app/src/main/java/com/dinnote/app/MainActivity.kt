@@ -2166,8 +2166,8 @@ fun noteColor(tag: String): Color = when (tag) {
 }
 
 private fun normalizeArabicSearch(value: String): String =
-    value.lowercase(java.util.Locale.ROOT)
-        .replace(Regex("[\\u064B-\\u065F\\u0670\\u0640]"), "")
+    java.text.Normalizer.normalize(value, java.text.Normalizer.Form.NFKC).lowercase(java.util.Locale.ROOT)
+        .replace(Regex("[\\u0610-\\u061A\\u064B-\\u065F\\u0670\\u0640\\u06D6-\\u06DC\\u06DF-\\u06E4\\u06E7-\\u06E8\\u06EA-\\u06ED]"), "")
         .replace(Regex("[أإآٱ]"), "ا")
         .replace('ى', 'ي')
         .replace('ؤ', 'و')
