@@ -550,9 +550,9 @@ fun HomeScreen(
                 Surface(
                     modifier = Modifier.fillMaxWidth().clickable { onOpenPinnedNote(note.id) },
                     color = Color(0xFFFFFEFA),
-                    shape = RoundedCornerShape(14.dp),
+                    shape = RoundedCornerShape(12.dp),
                     border = BorderStroke(1.dp, Color(0xFFB9D6CE)),
-                    shadowElevation = 2.dp
+                    shadowElevation = 1.dp
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(horizontal = 11.dp, vertical = 8.dp),
@@ -576,9 +576,9 @@ fun HomeScreen(
                 Surface(
                     modifier = Modifier.fillMaxWidth().clickable { onOpenPinnedNote(note.id) },
                     color = Color(0xFFFFFEFA),
-                    shape = RoundedCornerShape(14.dp),
+                    shape = RoundedCornerShape(12.dp),
                     border = BorderStroke(1.dp, Color(0xFFB9D6CE)),
-                    shadowElevation = 2.dp
+                    shadowElevation = 1.dp
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(horizontal = 11.dp, vertical = 8.dp),
