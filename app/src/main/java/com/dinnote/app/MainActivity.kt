@@ -329,7 +329,7 @@ private fun DinNoteDashboardTile(
         ) {
             DashboardLineIcon(symbol)
             Spacer(Modifier.height(5.dp))
-            Box(Modifier.width(25.dp).height(1.dp).background(Color(0xFFD3AE65)))
+            Box(Modifier.width(38.dp).height(2.dp).background(Color(0xFFD3AE65)))
             Spacer(Modifier.height(5.dp))
             Text(title, fontSize = 14.sp, fontWeight = FontWeight.Bold,
                 color = Color(0xFF183A30), maxLines = 2, lineHeight = 17.sp,
