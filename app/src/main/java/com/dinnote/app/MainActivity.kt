@@ -4174,7 +4174,7 @@ private fun TurathStarterCard(search: String, assetPath: String = "turath/arba_i
                                     Text(if (assetPath.contains("al_hikam")) "HIKMAH ${selected+1} / ${entries.size}" else "BACAAN ${selected+1} / ${entries.size}", fontSize = 11.sp, color = Color(0xFF075B49), fontWeight = FontWeight.Medium)
                                     Text(e.optString("titleMalay"),fontWeight=FontWeight.Bold,fontSize=17.sp,lineHeight=23.sp,color=Color(0xFF171717))
                                 }
-                                val arabicStyle = androidx.compose.ui.text.TextStyle(fontSize=(20+readerScale).sp,lineHeight=((20+readerScale)*1.6f).sp,textDirection=TextDirection.ContentOrRtl,textAlign=TextAlign.End,color=MaterialTheme.colorScheme.onSurface)
+                                val arabicStyle = androidx.compose.ui.text.TextStyle(fontSize=(20+readerScale).sp,lineHeight=((20+readerScale)*1.6f).sp,textDirection=TextDirection.Rtl,textAlign=TextAlign.Right,color=MaterialTheme.colorScheme.onSurface)
                                 val malayStyle = androidx.compose.ui.text.TextStyle(fontSize=(16+readerScale).sp,lineHeight=((16+readerScale)*1.5f).sp,textDirection=TextDirection.Ltr,color=Color(0xFF171717))
                                 if (language == "Hikmah" && assetPath.contains("al_hikam")) {
                                     val parts = e.optString("malay").split("\n\nHURAIAN TEMATIK (bukan petikan syarah Ibn Ajibah):\n", limit = 2)
