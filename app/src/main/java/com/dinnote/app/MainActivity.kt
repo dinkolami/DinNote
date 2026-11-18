@@ -2573,7 +2573,6 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                         onBack = { saveLibraryEditor(); editingLibraryKey = null },
                         onSave = { saveLibraryEditor(); editingLibraryKey = null })
                     var libraryToolsExpanded by remember { mutableStateOf(false) }
-                    var libraryTranslationExpanded by remember { mutableStateOf(false) }
                     Surface(Modifier.fillMaxWidth().weight(1f).padding(horizontal = 3.dp, vertical = 0.dp),
                         shape = RoundedCornerShape(0.dp), color = Color.White) {
                         Box(Modifier.fillMaxSize()) {
@@ -2628,12 +2627,6 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                                 libraryDisplayPrefs.edit().putInt("font_size", libraryFontSize.toInt()).apply()
                             } else libraryBody = resizeEditorTextSelection(libraryBody, delta, libraryFontSize.toInt())
                         })
-                    SharedParagraphTools(libraryBody) { libraryBody = it }
-                    Row(Modifier.fillMaxWidth().height(36.dp), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                        TextButton(onClick = { libraryTranslationExpanded = !libraryTranslationExpanded }) {
-                            Text(if (libraryTranslationExpanded) "Tutup terjemahan" else "Terjemahan", fontSize = 12.sp)
-                        }
-                    }
                     if (false) {
                         Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                     var clearLibraryFormatConfirm by remember { mutableStateOf(false) }
@@ -2688,23 +2681,7 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
 
                         }
                     }
-                    if (libraryTranslationExpanded) {
-                        Column(Modifier.fillMaxWidth().heightIn(max = 120.dp).verticalScroll(rememberScrollState())) {
-                    if (translationStatus.isNotBlank()) {
-                        Text(translationStatus, modifier = Modifier.padding(horizontal = 14.dp), fontSize = 12.sp)
-                    }
-                    if (translationDraft.isNotBlank()) {
-                        OutlinedTextField(
-                            value = translationDraft,
-                            onValueChange = { translationDraft = it },
-                            label = { Text("Terjemahan Melayu — boleh sunting") },
-                            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
-                            maxLines = 4
-                        )
-                    }
 
-                        }
-                    }
 
 
                 }
