@@ -23,7 +23,7 @@ object DinNoteDesign {
     val Turquoise = Color(0xFF075B50)
     val Border = Color(0xFFE3DAC5)
     val Gold = Color(0xFFB48B39)
-    val Corner = 14.dp
+    val Corner = 12.dp
     val Cream = Color(0xFFFFFDF7)
     val Ink = Color(0xFF183A30)
 }
@@ -37,7 +37,7 @@ fun DinNoteContentCard(
         modifier = modifier.fillMaxWidth(),
         color = DinNoteDesign.Cream,
         tonalElevation = 0.dp,
-        shadowElevation = 2.dp,
+        shadowElevation = 1.dp,
         shape = RoundedCornerShape(DinNoteDesign.Corner),
         border = BorderStroke(1.dp, DinNoteDesign.Border)
     ) {
