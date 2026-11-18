@@ -2308,13 +2308,20 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
         modifier = Modifier.fillMaxSize().padding(horizontal = 12.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        Surface(color = Color(0xFF075B59), shape = RoundedCornerShape(14.dp), modifier = Modifier.fillMaxWidth()) {
-            Row(Modifier.padding(horizontal = 12.dp, vertical = 6.dp), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                Column(Modifier.weight(1f)) {
-                    Text("Maktabah DinNote", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+        Surface(shape = RoundedCornerShape(16.dp), modifier = Modifier.fillMaxWidth(),
+            border = BorderStroke(1.dp, Color(0xFFB99A54)), shadowElevation = 2.dp) {
+            Row(Modifier.fillMaxWidth()
+                .background(Brush.horizontalGradient(listOf(Color(0xFF073C35), Color(0xFF096B57))))
+                .padding(horizontal = 14.dp, vertical = 12.dp),
+                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text("Maktabah DinNote", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
                     Text("Perpustakaan Digital Islam", fontSize = 12.sp, color = Color(0xFFE8CF91))
+                    Box(Modifier.width(64.dp).height(2.dp).background(Color(0xFFD3B66F)))
                 }
-                TextButton(onClick = { libraryTrashOpen = true }) { Text("Tong Sampah", color = Color.White, fontSize = 11.sp) }
+                TextButton(onClick = { libraryTrashOpen = true }) {
+                    Icon(Icons.Default.Delete, contentDescription = "Tong Sampah", tint = Color(0xFFE8CF91), modifier = Modifier.size(21.dp))
+                }
             }
         }
 
@@ -2323,13 +2330,13 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
         Box(Modifier.fillMaxWidth()) {
             Surface(
                 modifier = Modifier.fillMaxWidth().clickable { libraryCategoryExpanded = true },
-                shape = RoundedCornerShape(10.dp),
-                color = Color.White,
-                border = BorderStroke(1.dp, Color(0xFFB7DCD7))
+                shape = RoundedCornerShape(14.dp),
+                color = Color(0xFFFFFCF4),
+                border = BorderStroke(1.dp, Color(0xFFD3B66F))
             ) {
                 Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 9.dp),
                     verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                    Text("▤", fontSize = 19.sp, color = Color(0xFF087F8C))
+                    Text("▤", fontSize = 19.sp, color = Color(0xFF075B49))
                     Spacer(Modifier.width(9.dp))
                     Text("Kategori: $selectedCategory", modifier = Modifier.weight(1f),
                         fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF20262B))
