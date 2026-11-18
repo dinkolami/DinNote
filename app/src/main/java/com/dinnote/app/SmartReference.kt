@@ -291,13 +291,58 @@ fun SmartReferenceSettings() {
             }); Text(label,Modifier.padding(top=12.dp)) }
         }
     }
-    OutlinedButton(onClick = { editing = SmartReferenceEntry(title="",category="Ulama",aliases=emptyList(),description="") }) { Text("+ Tambah rujukan") }
-    entries.forEach { entry ->
-        Row(Modifier.fillMaxWidth()) {
-            Text(entry.title, Modifier.weight(1f))
-            TextButton(onClick={editing=entry}) { Text("Edit") }
-            TextButton(onClick={deleting=entry}) { Text("Padam") }
+    var managerOpen by remember { mutableStateOf(false) }
+    var query by remember { mutableStateOf("") }
+    var filter by remember { mutableStateOf("Semua") }
+    var ascending by remember { mutableStateOf(true) }
+    OutlinedButton(onClick={managerOpen=true},modifier=Modifier.fillMaxWidth()) {
+        Text("Urus koleksi rujukan • "+entries.size)
+    }
+    if(managerOpen && editing==null && deleting==null) {
+        val normalize: (String)->String = { value ->
+            Normalizer.normalize(value,Normalizer.Form.NFD).lowercase(Locale.ROOT)
+                .replace(Regex("[\\p{M}ـ]"),"")
         }
+        val needle=normalize(query.trim())
+        val filtered=remember(entries,query,filter,ascending) {
+            entries.filter { entry ->
+                (filter=="Semua" || entry.category.equals(filter,ignoreCase=true)) &&
+                    (needle.isBlank() || (listOf(entry.title,entry.description)+entry.aliases+entry.details.values).any { normalize(it).contains(needle) })
+            }.sortedBy { normalize(it.title) }.let { if(ascending) it else it.reversed() }
+        }
+        AlertDialog(onDismissRequest={managerOpen=false},title={Text("مكتبة المراجع • Smart Reference")},text={
+            Column(verticalArrangement=Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(query,{query=it},modifier=Modifier.fillMaxWidth(),label={Text("Cari Arab / Melayu")},singleLine=true)
+                listOf("Semua","Ulama","Kitab","Istilah","Tempat","Tokoh Islam").chunked(3).forEach { group ->
+                    Row(horizontalArrangement=Arrangement.spacedBy(4.dp)) {
+                        group.forEach { category -> FilterChip(selected=filter==category,onClick={filter=category},label={Text(category)}) }
+                    }
+                }
+                Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween) {
+                    Text("${filtered.size} / ${entries.size} profil")
+                    TextButton(onClick={ascending=!ascending}) { Text(if(ascending) "A–Z" else "Z–A") }
+                }
+                OutlinedButton(onClick={editing=SmartReferenceEntry(title="",category=if(filter=="Semua") "Ulama" else filter,aliases=emptyList(),description="")}) { Text("+ Tambah rujukan") }
+                androidx.compose.foundation.lazy.LazyColumn(Modifier.heightIn(max=320.dp)) {
+                    filtered.forEach { entry ->
+                        item(key=entry.id) {
+                            Column {
+                                Row(Modifier.fillMaxWidth()) {
+                                    Column(Modifier.weight(1f)) {
+                                        Text(entry.title,style=MaterialTheme.typography.bodyMedium)
+                                        Text(entry.category,style=MaterialTheme.typography.labelSmall,color=Color(0xFF075B59))
+                                    }
+                                    TextButton(onClick={editing=entry}) { Text("Edit") }
+                                    TextButton(onClick={deleting=entry}) { Text("Padam") }
+                                }
+                                HorizontalDivider()
+                            }
+                        }
+                    }
+                    if(filtered.isEmpty()) item { Text("Tiada rujukan dijumpai.") }
+                }
+            }
+        },confirmButton={TextButton(onClick={managerOpen=false}){Text("Tutup")}})
     }
     deleting?.let { entry ->
         AlertDialog(onDismissRequest={deleting=null},title={Text("Padam rujukan?")},text={Text(entry.title)},
