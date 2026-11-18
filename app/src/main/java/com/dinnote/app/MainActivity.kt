@@ -610,7 +610,7 @@ fun HomeScreen(
                         fontSize = 18.sp, lineHeight = 30.sp,
                         style = androidx.compose.ui.text.TextStyle(textDirection = TextDirection.Rtl),
                         color = Color(0xFF183A30))
-                    Text(formattedNoteText(entry.meaning), fontSize = 13.sp, color = Color(0xFF52666A))
+                    Text(formattedNoteText(entry.meaning), fontSize = 14.sp, lineHeight = 21.sp, color = Color(0xFF52666A))
                 }
             }
         }
