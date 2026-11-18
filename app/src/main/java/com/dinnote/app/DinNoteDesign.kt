@@ -32,6 +32,7 @@ object DinNoteDesign {
     val ReaderParagraphSpacing = 6.dp
     val ReaderArabicSize = 18.sp
     val ReaderMalaySize = 14.sp
+    val ReaderArabicLineHeight = 31.sp
 }
 
 @Composable
