@@ -2416,7 +2416,28 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                 }
             }
             else -> {
-                Text(selectedCategory, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF075B59))
+                if (selectedCategory == "Kalam Hikmah") {
+                    val banner = remember(context) {
+                        runCatching { context.assets.open("kalam_hikmah_bg.webp").use { BitmapFactory.decodeStream(it)?.asImageBitmap() } }.getOrNull()
+                    }
+                    Surface(shape = RoundedCornerShape(14.dp), color = Color(0xFFFFF9EC),
+                        modifier = Modifier.fillMaxWidth().height(66.dp)) {
+                        Box(Modifier.fillMaxSize()) {
+                            banner?.let {
+                                androidx.compose.foundation.Image(bitmap = it, contentDescription = null,
+                                    modifier = Modifier.fillMaxSize(), contentScale = androidx.compose.ui.layout.ContentScale.FillBounds)
+                            }
+                            Row(Modifier.fillMaxSize().padding(horizontal = 16.dp),
+                                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                                Text("▤", fontSize = 25.sp, color = Color(0xFF087F83))
+                                Spacer(Modifier.width(10.dp))
+                                Text("Kalam Hikmah", fontSize = 19.sp, fontWeight = FontWeight.Bold, color = Color(0xFF20332F))
+                            }
+                        }
+                    }
+                } else {
+                    Text(selectedCategory, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF075B59))
+                }
 
                 Button(onClick = { openLibraryEditor("entry_" + selectedCategory + "_" + System.currentTimeMillis()) }) { Text("+ Tambah Kandungan") }
                 libraryItems.filter { matchesMaktabahSearch(libraryPrefs.getString(it + "_title", "") ?: "", search) ||
