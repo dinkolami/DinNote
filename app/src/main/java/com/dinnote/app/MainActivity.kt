@@ -462,6 +462,14 @@ fun HomeScreen(
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         DinNoteFrontHeader()
+        Text(
+            "Catat ilmu • Teroka kitab • Simpan hikmah",
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Medium,
+            color = Color(0xFF075B50)
+        )
         if (pinnedNotes.isNotEmpty()) {
             Row(
                 modifier = Modifier.fillMaxWidth().padding(top = 3.dp, bottom = 1.dp),
