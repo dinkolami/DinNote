@@ -3009,6 +3009,55 @@ private fun SmartVaultDialog(onDismiss: () -> Unit, onInsert: (String) -> Unit) 
         .map { it.trim().lowercase(java.util.Locale.ROOT) }.filter { it.isNotBlank() }.toSet()
     var graphOpen by remember { mutableStateOf(false) }
     var graphTheme by remember { mutableStateOf<String?>(null) }
+    var atlasOpen by remember { mutableStateOf(false) }
+    var atlasField by remember { mutableStateOf(0) }
+    var atlasSelection by remember { mutableStateOf<String?>(null) }
+    if (atlasOpen) {
+        val groups = remember(references, atlasField) {
+            items.mapNotNull { block ->
+                references[block]?.getOrNull(atlasField)?.trim()?.takeIf { it.isNotEmpty() }?.let { it to block }
+            }.groupBy({ it.first }, { it.second })
+        }
+        val selected = atlasSelection
+        AlertDialog(onDismissRequest = { atlasOpen = false; atlasSelection = null },
+            title = { Text("Smart Knowledge Atlas · " + (selected ?: referenceLabels[atlasField])) },
+            text = {
+                Column(Modifier.heightIn(max = 420.dp)) {
+                    Row {
+                        TextButton(onClick = { atlasField = 0; atlasSelection = null }) { Text("Kitab") }
+                        TextButton(onClick = { atlasField = 1; atlasSelection = null }) { Text("Pengarang") }
+                    }
+                    HorizontalDivider()
+                    if (selected == null) {
+                        Text("Jumlah sumber: " + groups.size, fontSize = 12.sp)
+                        if (groups.isEmpty()) Text("Isikan maklumat kitab atau pengarang melalui Smart Reference.")
+                        LazyColumn(Modifier.heightIn(max = 340.dp)) {
+                            items(groups.entries.sortedByDescending { it.value.size }, key = { it.key }) { entry ->
+                                TextButton(onClick = { atlasSelection = entry.key }, modifier = Modifier.fillMaxWidth()) {
+                                    Text(entry.key, Modifier.weight(1f))
+                                    Text(entry.value.size.toString())
+                                }
+                            }
+                        }
+                    } else {
+                        LazyColumn(Modifier.heightIn(max = 340.dp)) {
+                            items(groups[selected].orEmpty(), key = { it }) { block ->
+                                Column(Modifier.padding(vertical = 6.dp)) {
+                                    TextButton(onClick = { atlasOpen = false; atlasSelection = null; relatedBlock = block }) {
+                                        Text(formattedNoteText(block), maxLines = 4)
+                                    }
+                                    Text(referenceText(references[block].orEmpty()), fontSize = 12.sp)
+                                    TextButton(onClick = { onInsert(block); onDismiss() }) { Text("Tampal petikan") }
+                                    HorizontalDivider()
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = { TextButton(onClick = { if (selected != null) atlasSelection = null else atlasOpen = false }) { Text("Kembali") } })
+        return
+    }
     if (graphOpen) {
         val themeIndex = remember(tags) {
             items.flatMap { block -> themeSet(block).map { it to block } }
@@ -3175,6 +3224,9 @@ private fun SmartVaultDialog(onDismiss: () -> Unit, onInsert: (String) -> Unit) 
             Column(Modifier.heightIn(max = 480.dp).verticalScroll(rememberScrollState())) {
                 OutlinedTextField(value = query, onValueChange = { query = it },
                     label = { Text("Cari teks, tema atau rujukan") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                TextButton(onClick = { atlasSelection = null; atlasOpen = true }) {
+                    Text("Smart Knowledge Atlas", color = Color(0xFF087F83))
+                }
                 TextButton(onClick = { graphTheme = null; graphOpen = true }) {
                     Text("Smart Knowledge Graph", color = Color(0xFF087F83))
                 }
