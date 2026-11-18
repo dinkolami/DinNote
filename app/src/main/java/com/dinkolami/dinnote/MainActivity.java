@@ -124,8 +124,8 @@ public class MainActivity extends Activity {
     page.addView(text("📁  "+categoryName,24));
     Button add=new Button(this);add.setText("+ Tambah kitab");page.addView(add);add.setOnClickListener(v->editBook(-1,categoryId,categoryName));
     EditText bookSearch=new EditText(this);bookSearch.setSingleLine(true);bookSearch.setHint("Cari kitab dalam kategori…");page.addView(bookSearch);
-    bookSearch.addTextChangedListener(new TextWatcher(){public void beforeTextChanged(CharSequence s,int a,int c,int f){}public void onTextChanged(CharSequence s,int a,int b,int c){populateBooks(items,categoryId,categoryName,s.toString());}public void afterTextChanged(Editable e){}});
     ScrollView scroll=new ScrollView(this);LinearLayout items=new LinearLayout(this);items.setOrientation(1);scroll.addView(items);page.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
+    bookSearch.addTextChangedListener(new TextWatcher(){public void beforeTextChanged(CharSequence s,int a,int c,int f){}public void onTextChanged(CharSequence s,int a,int b,int c){populateBooks(items,categoryId,categoryName,s.toString());}public void afterTextChanged(Editable e){}});
     populateBooks(items,categoryId,categoryName,"");
   }
   void populateBooks(LinearLayout items,int categoryId,String categoryName,String query){
