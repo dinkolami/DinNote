@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.Image
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import android.graphics.BitmapFactory
 import androidx.compose.ui.layout.ContentScale
@@ -88,10 +90,14 @@ fun DisplaySettingsScreen(modifier: Modifier = Modifier) {
     var primaryLanguage by remember { mutableStateOf(prefs.getString("primary_language", "Arab & Melayu") ?: "Arab & Melayu") }
     val referenceMadhhab = "Syafi‘i"
     var bookLayout by remember { mutableStateOf(prefs.getString("book_layout", "Arab di atas, Melayu di bawah") ?: "Arab di atas, Melayu di bawah") }
-    Column(modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 14.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Row(Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-            Text("Tetapan DinNote", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF075B59))
-            Button(onClick = {
+    Column(modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 14.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Surface(color = Color(0xFF075B59), shape = RoundedCornerShape(16.dp)) {
+        Row(Modifier.fillMaxWidth().padding(12.dp), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+            Column(Modifier.weight(1f)) {
+                Text("Tetapan DinNote", fontSize = 19.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                Text("Sesuaikan aplikasi anda", fontSize = 11.sp, color = Color(0xFFDDF4F2))
+            }
+            Button(colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEAD39B), contentColor = Color(0xFF164641)), onClick = {
                 val saved = prefs.edit()
                     .putString("background", background)
                     .putString("background_image_uri", imageUri)
@@ -111,19 +117,22 @@ fun DisplaySettingsScreen(modifier: Modifier = Modifier) {
                 settingsStatus = if (saved) "Tetapan berjaya disimpan" else "Gagal menyimpan tetapan"
             }) { Text("Simpan", fontSize = 13.sp) }
         }
+        }
         if (settingsStatus.isNotBlank()) {
             Text(settingsStatus, fontSize = 13.sp, color = Color(0xFF075B59))
         }
-        HorizontalDivider(color = Color(0xFFE1E3E5))
-        Text("Latar Halaman Utama", fontWeight = FontWeight.Bold)
-        Text("Pilih gambar daripada telefon untuk menggantikan corak Islamik di halaman Utama. Tekan Simpan di atas selepas memilih.", fontSize = 12.sp)
-        OutlinedButton(onClick = { imagePicker.launch(arrayOf("image/*")) }, modifier = Modifier.fillMaxWidth()) {
-            Text("Pilih Gambar Latar Utama")
+        SettingsPanel {
+        Text("Latar Halaman Utama", fontWeight = FontWeight.Bold, color = Color(0xFF075B59))
+        Text("Pilih gambar latar atau gunakan corak asal.", fontSize = 12.sp)
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        OutlinedButton(onClick = { imagePicker.launch(arrayOf("image/*")) }, modifier = Modifier.weight(1f)) {
+            Text("Pilih gambar")
+        }
+            OutlinedButton(modifier = Modifier.weight(1f), onClick = { imageUri = ""; settingsStatus = "Perubahan belum disimpan" }) {
+                Text("Latar asal")
+            }
         }
         if (imageUri.isNotBlank()) {
-            OutlinedButton(onClick = { imageUri = ""; settingsStatus = "Perubahan belum disimpan" }) {
-                Text("Gunakan latar Islamik asal")
-            }
             Text("Kelegapan gambar: ${(imageOpacity * 100).toInt()}%", fontSize = 13.sp)
             Slider(value = imageOpacity, onValueChange = { imageOpacity = it; settingsStatus = "Perubahan belum disimpan" }, valueRange = 0.05f..0.65f)
             val bitmap = remember(imageUri) {
@@ -134,7 +143,7 @@ fun DisplaySettingsScreen(modifier: Modifier = Modifier) {
                 }.getOrNull()
             }
             if (bitmap != null) {
-                Box(Modifier.fillMaxWidth().height(110.dp)) {
+                Box(Modifier.fillMaxWidth().height(60.dp).clip(RoundedCornerShape(10.dp))) {
                     Image(bitmap = bitmap, contentDescription = "Pratonton gambar latar", contentScale = ContentScale.Crop, alpha = imageOpacity, modifier = Modifier.fillMaxSize())
                 }
             } else {
@@ -142,11 +151,32 @@ fun DisplaySettingsScreen(modifier: Modifier = Modifier) {
             }
         }
 
-        Text("Sesuaikan paparan nota dan Maktabah Arab–Melayu.", fontSize = 13.sp, color = Color(0xFF526B78))
-        Text("Tema Bacaan", fontWeight = FontWeight.SemiBold, color = Color(0xFF075B59))
-        Text("Pilih gaya putih, turquoise, krim atau malam untuk bacaan.", fontSize = 12.sp)
-        HorizontalDivider(color = Color(0xFFE1E3E5))
-        Text("Keutamaan Maktabah", fontWeight = FontWeight.SemiBold, color = Color(0xFF075B59), fontSize = 17.sp)
+        }
+        SettingsPanel {
+        Text("Tema Bacaan", fontWeight = FontWeight.Bold, color = Color(0xFF075B59))
+        listOf("white" to "Putih", "turquoise" to "Turquoise", "cream" to "Krim", "green" to "Hijau lembut", "sepia" to "Sepia", "dark" to "Gelap", "pink" to "Merah jambu", "blue" to "Biru lembut", "purple" to "Ungu", "nature" to "Alam").chunked(3).forEach { pair ->
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                pair.forEach { (key, name) ->
+                    Surface(
+                        modifier = Modifier.weight(1f).height(44.dp).clickable {
+                            background = key
+                            settingsStatus = "Perubahan belum disimpan"
+                        },
+                        color = readingBackground(key),
+                        shape = RoundedCornerShape(10.dp),
+                        border = androidx.compose.foundation.BorderStroke(if (background == key) 2.dp else 1.dp, if (background == key) Color(0xFF087F83) else Color(0xFFB7DCD7))
+                    ) {
+                        Box(Modifier.padding(horizontal = 5.dp, vertical = 5.dp)) {
+                            Text(name + if (background == key) " ✓" else "", fontSize = 11.sp, color = if (key == "dark") Color.White else Color.DarkGray)
+                        }
+                    }
+                }
+                repeat(3 - pair.size) { Spacer(Modifier.weight(1f)) }
+            }
+        }
+        }
+        SettingsPanel {
+        Text("Keutamaan Maktabah", fontWeight = FontWeight.Bold, color = Color(0xFF075B59), fontSize = 17.sp)
         Text("Bahasa utama", fontWeight = FontWeight.Medium)
         Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             listOf("Arab & Melayu", "Arab", "Melayu").forEach { option ->
@@ -168,28 +198,8 @@ fun DisplaySettingsScreen(modifier: Modifier = Modifier) {
             }
         }
         Text("Pilihan ini disimpan sebagai keutamaan Maktabah. Paparan kitab yang menyokong susunan ini akan disepadukan secara berperingkat.", fontSize = 12.sp, color = Color.Gray)
-        HorizontalDivider(color = Color(0xFFE1E3E5))
-        Text("Latar Belakang Bacaan", fontWeight = FontWeight.Bold)
-        listOf("white" to "Putih", "turquoise" to "Turquoise Premium", "cream" to "Krim", "green" to "Hijau lembut", "sepia" to "Sepia", "dark" to "Gelap", "pink" to "Merah jambu", "blue" to "Biru lembut", "purple" to "Ungu", "nature" to "Alam").chunked(2).forEach { pair ->
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                pair.forEach { (key, name) ->
-                    Surface(
-                        modifier = Modifier.weight(1f).height(44.dp).clickable {
-                            background = key
-                            settingsStatus = "Perubahan belum disimpan"
-                        },
-                        color = readingBackground(key),
-                        shape = RoundedCornerShape(10.dp),
-                        border = androidx.compose.foundation.BorderStroke(if (background == key) 2.dp else 1.dp, if (background == key) Color(0xFF087F83) else Color(0xFFB7DCD7))
-                    ) {
-                        Box(Modifier.padding(horizontal = 10.dp, vertical = 8.dp)) {
-                            Text(name + if (background == key) " ✓" else "", fontSize = 13.sp, color = if (key == "dark") Color.White else Color.DarkGray)
-                        }
-                    }
-                }
-                if (pair.size == 1) Spacer(Modifier.weight(1f))
-            }
         }
+        SettingsPanel {
         Text("Border item terpilih", fontWeight = FontWeight.Bold)
         Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             listOf("rounded" to "Bucu bulat", "pill" to "Pill", "square" to "Petak", "dashed" to "Putus").forEach { (key, label) ->
@@ -221,6 +231,8 @@ fun DisplaySettingsScreen(modifier: Modifier = Modifier) {
                 )
             }
         }
+        }
+        SettingsPanel {
         Text("Saiz Tulisan: ${fontSize.toInt()} sp", fontWeight = FontWeight.Bold)
         Slider(value = fontSize, onValueChange = {
             fontSize = it
@@ -279,7 +291,9 @@ fun DisplaySettingsScreen(modifier: Modifier = Modifier) {
                 Text("$selectedSymbol Contoh terjemahan dan nota kajian kitab mazhab Syafi‘i.", fontSize = fontSize.sp, lineHeight = (fontSize * spacing).sp, color = if (background == "dark") Color.White else Color.DarkGray)
             }
         }
+        }
         HorizontalDivider(color = Color(0xFFE1E3E5))
+        SettingsPanel {
         Text("Simpan & Pulihkan Data", fontWeight = FontWeight.Bold, fontSize = 18.sp)
         Text("Simpan fail data DinNote dalam folder khas pilihan anda, contohnya Dokumen/DinNote Backup. Fail ini boleh diimport semula apabila diperlukan.", fontSize = 13.sp)
         Button(onClick = {
@@ -294,6 +308,7 @@ fun DisplaySettingsScreen(modifier: Modifier = Modifier) {
         if (backupStatus.isNotBlank()) {
             Text(backupStatus, fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
         }
+        }
         Text("Tekan Simpan Tetapan untuk menyimpan perubahan pada telefon ini.", fontSize = 12.sp, color = Color.Gray)
         HorizontalDivider(color = Color(0xFFE1E3E5))
         Text("About Us · Tentang DinNote", fontWeight = FontWeight.Bold, fontSize = 18.sp)
@@ -306,5 +321,12 @@ fun DisplaySettingsScreen(modifier: Modifier = Modifier) {
             Text("مِنَ التَّدْوِينِ إِلَى كُنُوزِ الْعِلْمِ", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center, fontSize = 20.sp, color = Color(0xFF075B59))
             Text("Daripada catatan kepada khazanah ilmu.", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center, fontSize = 14.sp, fontStyle = androidx.compose.ui.text.font.FontStyle.Italic, color = Color(0xFF075B59))
         }
+    }
+}
+
+@Composable
+private fun SettingsPanel(content: @Composable ColumnScope.() -> Unit) {
+    Surface(modifier = Modifier.fillMaxWidth(), color = Color(0xFFFFFDF8), shape = RoundedCornerShape(16.dp), border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE5E1D7))) {
+        Column(Modifier.fillMaxWidth().padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp), content = content)
     }
 }
