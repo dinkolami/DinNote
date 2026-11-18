@@ -45,7 +45,7 @@ fun DinNoteContentCard(
         border = BorderStroke(1.dp, DinNoteDesign.Border)
     ) {
         Column(
-            modifier = Modifier.padding(horizontal = DinNoteDesign.CardHorizontalPadding, vertical = 10.dp),
+            modifier = Modifier.padding(horizontal = DinNoteDesign.CardHorizontalPadding, vertical = DinNoteDesign.CardVerticalPadding),
             verticalArrangement = Arrangement.spacedBy(6.dp),
             content = content
         )
