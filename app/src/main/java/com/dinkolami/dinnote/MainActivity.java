@@ -137,9 +137,9 @@ public class MainActivity extends Activity {
         body.addView(text("Koleksi nota dalam notebook ini",13,false));
         body.addView(action("+ Nota dalam notebook",()->{currentNotebook=id;openNote(-1);}));
         body.addView(action("Namakan semula",()->renameNotebook(id,name)));
-        body.addView(action("Padam notebook",()->new AlertDialog.Builder(this).setMessage("Padam notebook dan semua notanya?")
+        body.addView(action("Padam notebook",()->{if(id==1){Toast.makeText(this,"Notebook utama tidak boleh dipadam",Toast.LENGTH_SHORT).show();return;}new AlertDialog.Builder(this).setMessage("Padam notebook dan semua notanya?")
             .setPositiveButton("Padam",(d,w)->{store.getWritableDatabase().delete("notebooks","id=?",new String[]{""+id});currentNotebook=1;showHome();})
-            .setNegativeButton("Batal",null).show()));
+            .setNegativeButton("Batal",null).show();}));
         Cursor c=store.getReadableDatabase().rawQuery("SELECT id,title FROM notes WHERE notebook_id=? ORDER BY updated DESC",new String[]{""+id});
         try {while(c.moveToNext()){long noteId=c.getLong(0);body.addView(action("✎ "+c.getString(1),()->openNote(noteId)));}}finally{c.close();}
     }
@@ -171,6 +171,8 @@ public class MainActivity extends Activity {
         toolbar.addView(action("☑",()->insertChecklist()));
         toolbar.addView(action("• Senarai",()->insertPrefix("• ")));
         toolbar.addView(action("Cari/Ganti",this::findReplace));
+        toolbar.addView(action("Pautan nota",this::insertNoteLink));
+        toolbar.addView(action("Buka pautan",this::openLinkedNote));
         toolbar.addView(action("Baca",this::readingMode));
         toolbar.addView(action("Salin",this::copyNote));
         toolbar.addView(action("Fokus",this::focusWriting));
@@ -201,6 +203,37 @@ public class MainActivity extends Activity {
         };
         titleEdit.addTextChangedListener(watcher);contentEdit.addTextChangedListener(watcher);
         loading=false;
+    }
+    private void insertNoteLink() {
+        if(contentEdit==null)return;
+        ArrayList<Long> ids=new ArrayList<>();
+        ArrayList<String> titles=new ArrayList<>();
+        Cursor c=store.getReadableDatabase().rawQuery("SELECT id,title FROM notes WHERE title<>'' ORDER BY title COLLATE NOCASE",null);
+        try {while(c.moveToNext()){ids.add(c.getLong(0));titles.add(c.getString(1));}} finally {c.close();}
+        if(titles.isEmpty()){Toast.makeText(this,"Cipta nota bertajuk dahulu",Toast.LENGTH_SHORT).show();return;}
+        new AlertDialog.Builder(this).setTitle("Pautan ke nota")
+            .setItems(titles.toArray(new String[0]),(d,w)->{
+                int pos=Math.max(0,contentEdit.getSelectionStart());
+                contentEdit.getText().insert(pos,"[["+titles.get(w)+"]]");
+                scheduleSave();
+            }).setNegativeButton("Batal",null).show();
+    }
+    private void openLinkedNote() {
+        if(contentEdit==null)return;
+        String source=contentEdit.getText().toString();
+        int cursor=Math.max(0,contentEdit.getSelectionStart());
+        int start=source.lastIndexOf("[[",Math.min(cursor,source.length()));
+        int end=start<0?-1:source.indexOf("]]",start+2);
+        if(start<0||end<0||cursor>end+2){
+            Toast.makeText(this,"Letakkan kursor pada [[tajuk nota]]",Toast.LENGTH_LONG).show();return;
+        }
+        String title=source.substring(start+2,end);
+        Cursor c=store.getReadableDatabase().rawQuery("SELECT id FROM notes WHERE title=? LIMIT 1",new String[]{title});
+        long id=-1;
+        try {if(c.moveToFirst())id=c.getLong(0);}finally{c.close();}
+        if(id<0){Toast.makeText(this,"Nota pautan tidak ditemui",Toast.LENGTH_SHORT).show();return;}
+        saveNow();
+        openNote(id);
     }
     private void resizeText(int delta) {
         if(contentEdit==null)return;
