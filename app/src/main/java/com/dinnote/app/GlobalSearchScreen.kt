@@ -144,7 +144,13 @@ fun GlobalSearchScreen(modifier: Modifier = Modifier) {
     }
     searchIndex.firstOrNull { "${it.source}:${it.key}" == openedKey }?.let { hit ->
         AlertDialog(onDismissRequest = { openedKey = null },
-            title = { Text(cleanSearchText(hit.title)) },
+            title = {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(hit.source, style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary)
+                    Text(cleanSearchText(hit.title))
+                }
+            },
             text = {
                 Column(Modifier.heightIn(max = 480.dp)
                     .verticalScroll(rememberScrollState())) {
@@ -160,6 +166,9 @@ fun GlobalSearchScreen(modifier: Modifier = Modifier) {
                 TextButton(onClick = {
                     val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
                     clipboard.setPrimaryClip(android.content.ClipData.newPlainText("DinNote", cleanSearchText(hit.content)))
+                    if (android.os.Build.VERSION.SDK_INT < 33) {
+                        android.widget.Toast.makeText(context, "Teks disalin", android.widget.Toast.LENGTH_SHORT).show()
+                    }
                 }) { Text("Salin teks") }
             },
             confirmButton = { TextButton(onClick = { openedKey = null }) { Text("Tutup") } })
