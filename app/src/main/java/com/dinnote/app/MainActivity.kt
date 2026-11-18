@@ -1235,24 +1235,17 @@ fun NotesScreen(
                             Spacer(Modifier.height(8.dp))
                             // Render the complete note in one text layout, matching the editor.
                             // Compose resolves mixed Arabic/Malay direction per paragraph.
-                            var readingTextLayout by remember { mutableStateOf<androidx.compose.ui.text.TextLayoutResult?>(null) }
                             if (body.text.contains("{{block:")) {
                                 IslamicStructuredReader(body.text, editorFontSize) { readingMode = false }
-                            } else Text(
+                            } else ReferenceReaderText(
                                 text = formattedNoteText(body.text),
-                                modifier = Modifier.fillMaxWidth().pointerInput(body.text) {
-                                    detectTapGestures(onDoubleTap = { position ->
-                                        val layout = readingTextLayout
-                                        if (layout != null) {
-                                            val visibleOffset = layout.getOffsetForPosition(position)
-                                            val sourceOffset = sourceOffsetForFormattedText(body.text, visibleOffset)
-                                            body = body.copy(selection = TextRange(sourceOffset))
-                                        }
-                                        focusBodyAfterDoubleTap = true
-                                        readingMode = false
-                                    })
+                                modifier = Modifier.fillMaxWidth(),
+                                onDoubleTap = { visibleOffset ->
+                                    val sourceOffset = sourceOffsetForFormattedText(body.text, visibleOffset)
+                                    body = body.copy(selection = TextRange(sourceOffset))
+                                    focusBodyAfterDoubleTap = true
+                                    readingMode = false
                                 },
-                                onTextLayout = { readingTextLayout = it },
                                 style = androidx.compose.ui.text.TextStyle(
                                     textDirection = TextDirection.ContentOrRtl,
                                     fontSize = editorFontSize.sp,
