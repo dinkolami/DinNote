@@ -3619,6 +3619,34 @@ private fun IslamicCardFooter() {
 
 @Composable
 private fun DinNoteFrontHeader() {
+    val context = LocalContext.current
+    val banner = remember(context) {
+        runCatching {
+            context.assets.open("dinnote_header.webp").use {
+                BitmapFactory.decodeStream(it)?.asImageBitmap()
+            }
+        }.getOrNull()
+    }
+    if (banner != null) {
+        BoxWithConstraints(Modifier.fillMaxWidth(), contentAlignment = androidx.compose.ui.Alignment.Center) {
+            val bannerWidth = minOf(maxWidth, 540.dp)
+            androidx.compose.foundation.Image(
+                bitmap = banner,
+                contentDescription = "DinNote — Daripada catatan kepada khazanah ilmu.",
+                contentScale = ContentScale.Fit,
+                alpha = 1f,
+                modifier = Modifier.width(bannerWidth)
+                    .aspectRatio(banner.width.toFloat() / banner.height.toFloat())
+                    .clip(RoundedCornerShape(12.dp))
+            )
+        }
+    } else {
+        DinNoteFrontHeaderFallback()
+    }
+}
+
+@Composable
+private fun DinNoteFrontHeaderFallback() {
     Box(Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Brush.verticalGradient(listOf(Color(0xFF003C35), Color(0xFF08675D), Color(0xFF00483F))))) {
             Canvas(Modifier.matchParentSize()) {
                 val w = size.width
