@@ -1322,6 +1322,12 @@ fun NotesScreen(
                         ) { Text("A+", color = Color(0xFF087F83)) }
                     }
 
+                                        var smartMenu by remember { mutableStateOf(false) }
+                    var smartSource by remember { mutableStateOf("") }
+                    var smartResult by remember { mutableStateOf("") }
+                    var smartLabel by remember { mutableStateOf("") }
+                    var smartDialog by remember { mutableStateOf(false) }
+                    var smartBusy by remember { mutableStateOf(false) }
                     // Smart Block: select the paragraph at the cursor without changing stored text.
                     var smartBlockMenu by remember { mutableStateOf(false) }
                     val blockText = body.text
@@ -1333,12 +1339,12 @@ fun NotesScreen(
                         TextButton(enabled = canSelectBlock, onClick = { smartBlockMenu = true }) {
                             Text("▤ Smart Block", color = if (canSelectBlock) Color(0xFF087F83) else Color.Gray, fontSize = 13.sp)
                         }
-                        DropdownMenu(expanded = smartBlockMenu, onDismissRequest = { smartBlockMenu = false }) {
-                            DropdownMenuItem(text = { Text("Pilih perenggan") }, onClick = {
+                        DropdownMenu(expanded = smartBlockMenu, onDismissRequest = { smartBlockMenu = false }, containerColor = Color.White, shape = RoundedCornerShape(12.dp)) {
+                            DropdownMenuItem(modifier = Modifier.height(48.dp), leadingIcon = { Text("▤", color = Color(0xFF087F83), fontSize = 22.sp) }, text = { Text("Pilih perenggan", fontSize = 14.sp) }, onClick = {
                                 smartBlockMenu = false
                                 body = body.copy(selection = TextRange(blockStart, blockEnd), composition = null)
                             })
-                            DropdownMenuItem(text = { Text("Duplikasi perenggan") }, onClick = {
+                            DropdownMenuItem(modifier = Modifier.height(48.dp), leadingIcon = { Text("⧉", color = Color(0xFF087F83), fontSize = 22.sp) }, text = { Text("Duplikasi perenggan", fontSize = 14.sp) }, onClick = {
                                 smartBlockMenu = false
                                 val paragraph = blockText.substring(blockStart, blockEnd)
                                 undoStack.add(body)
@@ -1347,7 +1353,7 @@ fun NotesScreen(
                                 val updated = blockText.substring(0, blockEnd) + "\n" + paragraph + blockText.substring(blockEnd)
                                 body = TextFieldValue(updated, selection = TextRange(blockEnd + 1, blockEnd + 1 + paragraph.length))
                             })
-                            DropdownMenuItem(text = { Text("Pindah ke atas") }, enabled = blockStart > 0, onClick = {
+                            DropdownMenuItem(modifier = Modifier.height(48.dp), leadingIcon = { Text("↑", color = Color(0xFF087F83), fontSize = 22.sp) }, text = { Text("Pindah ke atas", fontSize = 14.sp) }, enabled = blockStart > 0, onClick = {
                                 smartBlockMenu = false
                                 val previousEnd = blockStart - 1
                                 val previousStart = if (previousEnd == 0) 0 else blockText.lastIndexOf('\n', previousEnd - 1) + 1
@@ -1358,7 +1364,7 @@ fun NotesScreen(
                                 redoStack.clear()
                                 body = TextFieldValue(blockText.substring(0, previousStart) + paragraph + "\n" + previous + blockText.substring(blockEnd), selection = TextRange(previousStart, previousStart + paragraph.length))
                             })
-                            DropdownMenuItem(text = { Text("Pindah ke bawah") }, enabled = blockEnd < blockText.length, onClick = {
+                            DropdownMenuItem(modifier = Modifier.height(48.dp), leadingIcon = { Text("↓", color = Color(0xFF087F83), fontSize = 22.sp) }, text = { Text("Pindah ke bawah", fontSize = 14.sp) }, enabled = blockEnd < blockText.length, onClick = {
                                 smartBlockMenu = false
                                 val nextStart = blockEnd + 1
                                 val nextEnd = blockText.indexOf('\n', nextStart).let { if (it < 0) blockText.length else it }
@@ -1370,29 +1376,44 @@ fun NotesScreen(
                                 val newStart = blockStart + next.length + 1
                                 body = TextFieldValue(blockText.substring(0, blockStart) + next + "\n" + paragraph + blockText.substring(nextEnd), selection = TextRange(newStart, newStart + paragraph.length))
                             })
-                            DropdownMenuItem(text = { Text("Simpan sebagai petikan") }, onClick = {
+                            DropdownMenuItem(modifier = Modifier.height(48.dp), leadingIcon = { Text("❞", color = Color(0xFF087F83), fontSize = 22.sp) }, text = { Text("Simpan sebagai petikan", fontSize = 14.sp) }, onClick = {
                                 smartBlockMenu = false
                                 database.save("Petikan: " + title.ifBlank { "Nota" }, blockText.substring(blockStart, blockEnd), null)
                                 refreshNotes()
+                            })
+                            HorizontalDivider(color = Color(0xFFE7EEEE))
+                            DropdownMenuItem(modifier = Modifier.height(48.dp), leadingIcon = { Text("文", color = Color(0xFF087F83), fontSize = 20.sp) }, text = { Text("Terjemah perenggan", fontSize = 14.sp) }, onClick = {
+                                smartBlockMenu = false
+                                body = body.copy(selection = TextRange(blockStart, blockEnd), composition = null)
+                                smartSource = blockText.substring(blockStart, blockEnd)
+                                smartLabel = "Terjemah"
+                                smartResult = ""
+                                smartDialog = true
+                                smartBusy = true
+                                ArabicMalayTranslator.translate(smartSource) { result ->
+                                    smartBusy = false
+                                    smartResult = result.getOrElse { "" }
+                                }
+                            })
+                            DropdownMenuItem(modifier = Modifier.height(48.dp), leadingIcon = { Text("▧", color = Color(0xFF087F83), fontSize = 22.sp) }, text = { Text("Warnakan perenggan", fontSize = 14.sp) }, onClick = {
+                                smartBlockMenu = false
+                                undoStack.add(body)
+                                if (undoStack.size > 60) undoStack.removeAt(0)
+                                redoStack.clear()
+                                body = colorEditorSelection(body.copy(selection = TextRange(blockStart, blockEnd), composition = null), 0xFF087F83L)
                             })
                         }
                     }
 
                     // Smart Touch: only appears for an explicit text selection.
-                    var smartMenu by remember { mutableStateOf(false) }
-                    var smartSource by remember { mutableStateOf("") }
-                    var smartResult by remember { mutableStateOf("") }
-                    var smartLabel by remember { mutableStateOf("") }
-                    var smartDialog by remember { mutableStateOf(false) }
-                    var smartBusy by remember { mutableStateOf(false) }
                     if (!body.selection.collapsed) {
                         Box(Modifier.fillMaxWidth().padding(horizontal = 12.dp)) {
                             TextButton(onClick = { smartMenu = true }) {
                                 Text("☝ ✦ Smart Touch", color = Color(0xFF087F83), fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
                             }
-                            DropdownMenu(expanded = smartMenu, onDismissRequest = { smartMenu = false }) {
+                            DropdownMenu(expanded = smartMenu, onDismissRequest = { smartMenu = false }, containerColor = Color.White, shape = RoundedCornerShape(12.dp)) {
                                 listOf("Terjemah", "Tambah syarah", "Simpan petikan").forEach { action ->
-                                    DropdownMenuItem(text = { Text(action) }, onClick = {
+                                    DropdownMenuItem(modifier = Modifier.height(48.dp), leadingIcon = { Text(when (action) { "Terjemah" -> "文"; "Tambah syarah" -> "✎"; else -> "❞" }, color = Color(0xFF087F83), fontSize = 20.sp) }, text = { Text(action, fontSize = 14.sp) }, onClick = {
                                         smartMenu = false
                                         val start = body.selection.min.coerceIn(0, body.text.length)
                                         val end = body.selection.max.coerceIn(start, body.text.length)
