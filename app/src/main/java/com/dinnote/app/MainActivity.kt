@@ -323,7 +323,7 @@ private fun DinNoteDashboardTile(
         shadowElevation = 3.dp
     ) {
         Column(
-            modifier = Modifier.fillMaxSize().padding(horizontal = 4.dp, vertical = 7.dp),
+            modifier = Modifier.fillMaxSize().padding(horizontal = 10.dp, vertical = 10.dp),
             horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
