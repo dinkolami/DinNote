@@ -56,30 +56,37 @@ object NoteBackup {
         var imported = 0
         var skipped = 0
 
-        for (index in 0 until entries.length()) {
-            val item = entries.optJSONObject(index) ?: continue
-            val title = item.optString("title")
-            val body = item.optString("body")
-            if (title.isBlank() && body.isBlank()) continue
-
-            val color = item.optString("colorTag", "green")
-                .takeIf { it in setOf("green", "yellow", "blue", "pink", "purple") }
-                ?: "green"
-            val pinned = item.optBoolean("pinned", false)
-            val archived = item.optBoolean("archived", false)
-            val category = item.optString("category", "Lain-lain").ifBlank { "Lain-lain" }
-            val signature = noteSignature(title, body, color, pinned, archived, category)
-
-            if (signature in existing) {
-                skipped++
-                continue
+        val db = database.writableDatabase
+        db.beginTransaction()
+        try {
+            for (index in 0 until entries.length()) {
+                val item = entries.optJSONObject(index) ?: continue
+                val title = item.optString("title")
+                val body = item.optString("body")
+                if (title.isBlank() && body.isBlank()) continue
+    
+                val color = item.optString("colorTag", "green")
+                    .takeIf { it in setOf("green", "yellow", "blue", "pink", "purple") }
+                    ?: "green"
+                val pinned = item.optBoolean("pinned", false)
+                val archived = item.optBoolean("archived", false)
+                val category = item.optString("category", "Lain-lain").ifBlank { "Lain-lain" }
+                val signature = noteSignature(title, body, color, pinned, archived, category)
+    
+                if (signature in existing) {
+                    skipped++
+                    continue
+                }
+    
+                val id = database.save(title, body, colorTag = color, category = category)
+                database.setPinned(id, pinned)
+                database.setArchived(id, archived)
+                existing.add(signature)
+                imported++
             }
-
-            val id = database.save(title, body, colorTag = color, category = category)
-            database.setPinned(id, pinned)
-            database.setArchived(id, archived)
-            existing.add(signature)
-            imported++
+            db.setTransactionSuccessful()
+        } finally {
+            db.endTransaction()
         }
         if (root.optInt("version") >= 2) restorePreferences(context, root.optJSONObject("preferences"))
         return NoteImportResult(imported, skipped)
