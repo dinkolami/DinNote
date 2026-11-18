@@ -123,21 +123,42 @@ public class MainActivity extends Activity {
   }
   void editBook(int id,int categoryId,String categoryName){
     LinearLayout page=column();setContentView(page);
-    Button back=new Button(this);back.setText("← Kitab");page.addView(back);
-    EditText title=new EditText(this);title.setHint("Tajuk kitab");title.setSingleLine(true);page.addView(title);
-    EditText body=new EditText(this);body.setHint("Kandungan kitab (Arab / Rumi)…");body.setTextSize(17);body.setGravity(Gravity.TOP|Gravity.START);body.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);page.addView(body,new LinearLayout.LayoutParams(-1,0,1));
+    Button back=new Button(this);back.setText("← Maktabah");page.addView(back);
+    EditText title=new EditText(this);title.setHint("Tajuk kitab");title.setSingleLine(true);title.setTextSize(20);page.addView(title);
+    EditText body=new EditText(this);body.setHint("Tulis kandungan kitab (Arab / Rumi)…");body.setTextSize(16);
+    body.setGravity(Gravity.TOP|Gravity.START);body.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
+    page.addView(body,new LinearLayout.LayoutParams(-1,0,1));
     final int[] bookId={id};final boolean[] loading={true};
-    if(id>=0)try(Cursor c=db.getReadableDatabase().rawQuery("SELECT title,body FROM books WHERE id=?",new String[]{""+id})){if(c.moveToFirst()){title.setText(c.getString(0));body.setText(c.getString(1));}}
+    if(id>=0)try(Cursor c=db.getReadableDatabase().rawQuery("SELECT title,body FROM books WHERE id=?",new String[]{""+id})){
+      if(c.moveToFirst()){title.setText(c.getString(0));body.setText(c.getString(1));}
+    }
+    LinearLayout toolbar=new LinearLayout(this);toolbar.setOrientation(LinearLayout.HORIZONTAL);
+    page.addView(toolbar,new LinearLayout.LayoutParams(-1,-2));
+    Button check=new Button(this);check.setText("☐");toolbar.addView(check,new LinearLayout.LayoutParams(0,-2,1));
+    Button bold=new Button(this);bold.setText("B");bold.setTypeface(null,Typeface.BOLD);toolbar.addView(bold,new LinearLayout.LayoutParams(0,-2,1));
+    Button italic=new Button(this);italic.setText("I");italic.setTypeface(null,Typeface.ITALIC);toolbar.addView(italic,new LinearLayout.LayoutParams(0,-2,1));
+    check.setOnClickListener(v->body.getText().insert(Math.max(0,body.getSelectionStart()),"☐ "));
+    bold.setOnClickListener(v->styleSelection(body,Typeface.BOLD));
+    italic.setOnClickListener(v->styleSelection(body,Typeface.ITALIC));
     loading[0]=false;
-    Runnable save=()->{if(loading[0])return;String t=title.getText().toString(),b=body.getText().toString();if(bookId[0]<0&&t.trim().isEmpty()&&b.trim().isEmpty())return;
-      ContentValues cv=new ContentValues();cv.put("title",t);cv.put("body",b);cv.put("category_id",categoryId);cv.put("updated",System.currentTimeMillis());
-      if(bookId[0]<0)bookId[0]=(int)db.getWritableDatabase().insertOrThrow("books",null,cv);else db.getWritableDatabase().update("books",cv,"id=?",new String[]{""+bookId[0]});
+    Runnable save=()->{if(loading[0])return;String t=title.getText().toString(),content=body.getText().toString();
+      if(bookId[0]<0&&t.trim().isEmpty()&&content.trim().isEmpty())return;
+      ContentValues cv=new ContentValues();cv.put("title",t);cv.put("body",content);
+      cv.put("category_id",categoryId);cv.put("updated",System.currentTimeMillis());
+      if(bookId[0]<0)bookId[0]=(int)db.getWritableDatabase().insertOrThrow("books",null,cv);
+      else db.getWritableDatabase().update("books",cv,"id=?",new String[]{""+bookId[0]});
     };
-    TextWatcher watcher=new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){save.run();}public void afterTextChanged(Editable e){}};
+    TextWatcher watcher=new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}
+      public void onTextChanged(CharSequence s,int st,int before,int count){save.run();}
+      public void afterTextChanged(Editable e){}};
     title.addTextChangedListener(watcher);body.addTextChangedListener(watcher);
     back.setOnClickListener(v->{save.run();showBooks(categoryId,categoryName);});
     Button delete=new Button(this);delete.setText("Padam kitab");page.addView(delete);
-    delete.setOnClickListener(v->new AlertDialog.Builder(this).setMessage("Padam kitab ini?").setNegativeButton("Batal",null).setPositiveButton("Padam",(d,w)->{if(bookId[0]>=0)db.getWritableDatabase().delete("books","id=?",new String[]{""+bookId[0]});showBooks(categoryId,categoryName);}).show());
+    delete.setOnClickListener(v->new AlertDialog.Builder(this).setMessage("Padam kitab ini?")
+      .setNegativeButton("Batal",null).setPositiveButton("Padam",(d,w)->{
+        if(bookId[0]>=0)db.getWritableDatabase().delete("books","id=?",new String[]{""+bookId[0]});
+        showBooks(categoryId,categoryName);
+      }).show());
   }
   void saveColor(int id,int color){if(id<0)return;ContentValues v=new ContentValues();v.put("color",color);db.getWritableDatabase().update("notes",v,"id=?",new String[]{""+id});}
   void styleSelection(EditText edit,int style){int a=edit.getSelectionStart(),b=edit.getSelectionEnd();if(a<0||b<=a){Toast.makeText(this,"Pilih teks dahulu",Toast.LENGTH_SHORT).show();return;}SpannableStringBuilder t=new SpannableStringBuilder(edit.getText());t.setSpan(new StyleSpan(style),a,b,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);edit.setText(t);edit.setSelection(b);}
