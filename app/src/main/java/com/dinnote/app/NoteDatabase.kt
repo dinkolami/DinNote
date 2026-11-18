@@ -19,6 +19,8 @@ data class DinNote(
 class NoteDatabase(context: Context) :
     SQLiteOpenHelper(context, "dinnote_notes.db", null, 3) {
 
+    private val defaultCategory = "Lain-lain"
+
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL(
             """
