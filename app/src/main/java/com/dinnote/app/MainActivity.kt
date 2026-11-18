@@ -482,7 +482,7 @@ fun HomeScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text("✦", fontSize = 14.sp, color = Color(0xFFF1C86B))
-                Text("Teroka DinNote", fontSize = 13.sp,
+                Text("Pintasan Utama", fontSize = 13.sp,
                     fontWeight = FontWeight.SemiBold, color = Color.White)
             }
         }
