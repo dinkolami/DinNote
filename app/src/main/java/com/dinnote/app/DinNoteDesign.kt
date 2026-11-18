@@ -3,6 +3,7 @@ package com.dinnote.app
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -55,7 +56,9 @@ fun DinNoteBilingualCard(
     modifier: Modifier = Modifier
 ) {
     DinNoteContentCard(modifier) {
-        Text(
+        SelectionContainer {
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(
             text = arabic,
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Right,
@@ -64,13 +67,14 @@ fun DinNoteBilingualCard(
             style = TextStyle(textDirection = TextDirection.Rtl),
             color = Color(0xFF183A30)
         )
-        Spacer(Modifier.height(4.dp))
-        Text(
+                Text(
             text = malay,
             fontSize = 15.sp,
             lineHeight = 24.sp,
             color = Color(0xFF334B4A)
-        )
+                )
+            }
+        }
     }
 }
 
