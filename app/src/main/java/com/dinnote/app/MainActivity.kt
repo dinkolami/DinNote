@@ -433,8 +433,15 @@ fun HomeScreen(
     var showRecent by remember { mutableStateOf(homePrefs.getBoolean("home_showRecent", true)) }
     var showWisdom by remember { mutableStateOf(homePrefs.getBoolean("home_showWisdom", true)) }
     var compactMode by remember { mutableStateOf(homePrefs.getBoolean("home_compactMode", false)) }
-    var allPinned by remember { mutableStateOf(false) }
-    var allRecent by remember { mutableStateOf(false) }
+    var allPinned by remember { mutableStateOf(homePrefs.getBoolean("home_allPinned", false)) }
+    var allRecent by remember { mutableStateOf(homePrefs.getBoolean("home_allRecent", false)) }
+    var homeFilter by remember { mutableStateOf("") }
+    var showSearchFilter by remember { mutableStateOf(false) }
+    var sortOldestFirst by remember { mutableStateOf(false) }
+    var showCategoryLabels by remember { mutableStateOf(true) }
+    var showCollectionStats by remember { mutableStateOf(true) }
+    var showQuickActions by remember { mutableStateOf(true) }
+    var showSectionTitles by remember { mutableStateOf(true) }
     var wisdomPage by remember { mutableIntStateOf(0) }
     var noteCount by remember { mutableIntStateOf(0) }
     var pinnedCount by remember { mutableIntStateOf(0) }
@@ -488,7 +495,7 @@ fun HomeScreen(
             fontWeight = FontWeight.Medium,
             color = Color(0xFF064B41)
         )
-        Surface(
+        if (showSectionTitles) Surface(
             color = Color(0xFF006B5B),
             shape = RoundedCornerShape(12.dp),
             border = BorderStroke(1.dp, Color(0xFFC69A3C)),
@@ -524,7 +531,7 @@ fun HomeScreen(
                 Modifier.weight(1f), onOpenSettings)
         }
         }
-        if (!compactMode) Surface(
+        if (!compactMode && showQuickActions) Surface(
             modifier = Modifier.fillMaxWidth().clickable(onClick = onOpenNotes),
             shape = RoundedCornerShape(14.dp),
             color = Color(0xFF075B50),
@@ -541,7 +548,7 @@ fun HomeScreen(
                 Text("›", fontSize = 22.sp, color = Color.White)
             }
         }
-        if (!compactMode) Surface(
+        if (!compactMode && showQuickActions) Surface(
             modifier = Modifier.fillMaxWidth().clickable(onClick = onOpenLibrary),
             shape = RoundedCornerShape(14.dp),
             color = Color(0xFFFFFDF7),
@@ -558,10 +565,10 @@ fun HomeScreen(
                 Text("›", fontSize = 22.sp, color = Color(0xFF075B50))
             }
         }
-        Surface(shape = RoundedCornerShape(14.dp), color = Color(0xFFFFFDF7),
+        if (showCollectionStats) Surface(shape = RoundedCornerShape(14.dp), color = Color(0xFFFFFDF7),
             border = BorderStroke(1.dp, Color(0xFFA9CCBC))) {
             Column(Modifier.fillMaxWidth().padding(10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text("Ringkasan Koleksi", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color(0xFF075B50))
+                Text("Statistik Koleksi Saya", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color(0xFF075B50))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text("$noteCount nota", Modifier.weight(1f), fontSize = 12.sp)
                     Text("$pinnedCount dipinkan", Modifier.weight(1f), fontSize = 12.sp)
@@ -589,7 +596,52 @@ fun HomeScreen(
                     Text("Mulakan catatan pertama", fontWeight = FontWeight.Bold, color = Color(0xFF075B50))
                     Text("Simpan ilmu, nota kuliah dan rujukan peribadi dalam DinNote.",
                         fontSize = 13.sp, color = Color(0xFF395C53))
-                    Text("Buka Nota Saya ›", fontWeight = FontWeight.SemiBold, color = Color(0xFF08766C))
+                    Text("Mulakan catatan ›", fontWeight = FontWeight.SemiBold, color = Color(0xFF08766C))
+                }
+            }
+        }
+        Surface(shape = RoundedCornerShape(12.dp), color = Color(0xFFFFFDF7),
+            border = BorderStroke(1.dp, Color(0xFFB9D6CE))) {
+            Column(Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 6.dp)) {
+                Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                    Text("Susun Paparan", Modifier.weight(1f), fontSize = 13.sp,
+                        fontWeight = FontWeight.SemiBold, color = Color(0xFF075B50))
+                    TextButton(onClick = { showSearchFilter = !showSearchFilter }) {
+                        Text(if (showSearchFilter) "Tutup carian" else "Cari nota", fontSize = 11.sp)
+                    }
+                    TextButton(onClick = { sortOldestFirst = !sortOldestFirst }) {
+                        Text(if (sortOldestFirst) "Terkini dulu" else "Terlama dulu", fontSize = 11.sp)
+                    }
+                }
+                if (showSearchFilter) {
+                    androidx.compose.material3.OutlinedTextField(
+                        value = homeFilter,
+                        onValueChange = { homeFilter = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        label = { Text("Cari tajuk atau kategori") },
+                        trailingIcon = {
+                            if (homeFilter.isNotEmpty()) TextButton(onClick = { homeFilter = "" }) {
+                                Text("Padam", fontSize = 11.sp)
+                            }
+                        }
+                    )
+                }
+                Row {
+                    TextButton(onClick = { showCategoryLabels = !showCategoryLabels }) {
+                        Text(if (showCategoryLabels) "Sorok kategori" else "Papar kategori", fontSize = 11.sp)
+                    }
+                    TextButton(onClick = { showQuickActions = !showQuickActions }) {
+                        Text(if (showQuickActions) "Sorok pintasan besar" else "Papar pintasan besar", fontSize = 11.sp)
+                    }
+                }
+                Row {
+                    TextButton(onClick = { showCollectionStats = !showCollectionStats }) {
+                        Text(if (showCollectionStats) "Sorok statistik" else "Papar statistik", fontSize = 11.sp)
+                    }
+                    TextButton(onClick = { showSectionTitles = !showSectionTitles }) {
+                        Text(if (showSectionTitles) "Sorok tajuk" else "Papar tajuk", fontSize = 11.sp)
+                    }
                 }
             }
         }
@@ -614,8 +666,8 @@ fun HomeScreen(
                 }
 
             }
-            if (pinnedNotes.size > 3) TextButton(onClick = { allPinned = !allPinned }) { Text(if (allPinned) "Tunjuk sedikit" else "Lihat semua nota dipinkan") }
-            pinnedNotes.take(if (allPinned) pinnedNotes.size else 3).forEach { note ->
+            if (pinnedNotes.size > 3) TextButton(onClick = { allPinned = !allPinned; homePrefs.edit().putBoolean("home_allPinned", allPinned).apply() }) { Text(if (allPinned) "Tunjuk sedikit" else "Lihat semua nota dipinkan") }
+            pinnedNotes.filter { homeFilter.isBlank() || it.title.contains(homeFilter, ignoreCase = true) || it.category.contains(homeFilter, ignoreCase = true) }.let { if (sortOldestFirst) it.sortedBy { n -> n.updatedAt } else it }.take(if (allPinned) Int.MAX_VALUE else 3).forEach { note ->
                 Surface(
                     modifier = Modifier.fillMaxWidth().clickable { onOpenPinnedNote(note.id) },
                     color = Color(0xFFFFFEFA),
@@ -641,8 +693,8 @@ fun HomeScreen(
         }
         if (showRecent && recentlyAddedNotes.isNotEmpty()) {
             PremiumSectionHeading("Nota Terkini Lain", "✎")
-            if (recentlyAddedNotes.size > 3) TextButton(onClick = { allRecent = !allRecent }) { Text(if (allRecent) "Tunjuk sedikit" else "Lihat semua nota terkini") }
-            recentlyAddedNotes.take(if (allRecent) recentlyAddedNotes.size else 3).forEach { note ->
+            if (recentlyAddedNotes.size > 3) TextButton(onClick = { allRecent = !allRecent; homePrefs.edit().putBoolean("home_allRecent", allRecent).apply() }) { Text(if (allRecent) "Tunjuk sedikit" else "Lihat semua nota terkini") }
+            recentlyAddedNotes.filter { homeFilter.isBlank() || it.title.contains(homeFilter, ignoreCase = true) || it.category.contains(homeFilter, ignoreCase = true) }.let { if (sortOldestFirst) it.sortedBy { n -> n.updatedAt } else it }.take(if (allRecent) Int.MAX_VALUE else 3).forEach { note ->
                 Surface(
                     modifier = Modifier.fillMaxWidth().clickable { onOpenPinnedNote(note.id) },
                     color = Color(0xFFFFFEFA),
@@ -656,7 +708,7 @@ fun HomeScreen(
                         horizontalArrangement = Arrangement.spacedBy(7.dp)
                     ) {
                         Text("▤", fontSize = 12.sp, color = Color(0xFF08766C))
-                        if (note.category.isNotBlank()) {
+                        if (showCategoryLabels && note.category.isNotBlank()) {
                             Text(note.category.take(16), fontSize = 10.sp, color = Color(0xFF395C53),
                                 maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
                         }
@@ -683,7 +735,7 @@ fun HomeScreen(
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(11.dp)) {
                     Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                         Text("✦ Hikmah Hari Ini", modifier = Modifier.weight(1f), fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color(0xFF08766C))
-                        TextButton(onClick = { wisdomPage = (wisdomPage + 1) % kalimahEntries.size.coerceAtLeast(1) }) { Text("Hikmah lain ›", fontSize = 12.sp) }
+                        TextButton(onClick = { wisdomPage = (wisdomPage + 1) % kalimahEntries.size.coerceAtLeast(1) }) { Text("Hikmah seterusnya ›", fontSize = 12.sp) }
                     }
                     Text(formattedNoteText(entry.arabic), modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Right,
                         fontSize = 19.sp, lineHeight = 32.sp,
