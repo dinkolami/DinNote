@@ -51,7 +51,8 @@ object NoteBackup {
         val existing = database.allNotes().map { note ->
             noteSignature(note.title, note.body, note.colorTag, note.pinned, note.archived, note.category)
         }.toMutableSet()
-        val entries = root.optJSONArray("notes") ?: JSONArray()
+        val entries = root.optJSONArray("notes")
+            ?: throw IllegalArgumentException("Senarai nota dalam fail sandaran tidak sah.")
         var imported = 0
         var skipped = 0
 
@@ -74,11 +75,9 @@ object NoteBackup {
                 continue
             }
 
-            val id = database.save(title, body)
-            database.setColor(id, color)
+            val id = database.save(title, body, colorTag = color, category = category)
             database.setPinned(id, pinned)
             database.setArchived(id, archived)
-            database.setCategory(id, category)
             existing.add(signature)
             imported++
         }
@@ -164,5 +163,5 @@ object NoteBackup {
         archived: Boolean,
         category: String
     ): String = listOf(title, body, colorTag, pinned.toString(), archived.toString(), category)
-        .joinToString(separator = "\u001F")
+        .let { JSONArray(it).toString() }
 }
