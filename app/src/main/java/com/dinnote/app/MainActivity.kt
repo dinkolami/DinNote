@@ -2416,6 +2416,7 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                 Text("📚 Maktabah Kitab", fontSize = 20.sp, fontWeight = FontWeight.Bold)
                 TurathStarterCard(search, onNavigate = onNavigate)
                 TurathStarterCard(search, "turath/al_majmu.json", onNavigate)
+                TurathStarterCard(search, "turath/al_fatihah.json", onNavigate)
 
                 Button(onClick = { openLibraryEditor("entry_Kitab-Kitab_" + System.currentTimeMillis()) }) { Text("+ Tambah Kitab") }
                 libraryItems.filter { matchesMaktabahSearch(libraryPrefs.getString(it + "_title", "") ?: "", search) ||
