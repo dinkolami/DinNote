@@ -117,6 +117,7 @@ class NoteDatabase(context: Context) :
     }
 
     fun setCategory(id: Long, category: String) {
+        require(id > 0L) { "ID nota tidak sah" }
         require(category.isNotBlank()) { "Kategori nota tidak boleh kosong" }
         writableDatabase.execSQL(
             "UPDATE notes SET category = ?, updated_at = ? WHERE id = ?",
