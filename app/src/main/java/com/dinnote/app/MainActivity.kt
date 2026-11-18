@@ -36,7 +36,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -766,70 +766,59 @@ fun NotesScreen(
     Box(modifier = modifier.fillMaxSize()) {
     Column(
         modifier = Modifier.fillMaxSize().padding(horizontal = 14.dp, vertical = 10.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(5.dp)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(if (showArchived) "Arkib Nota" else "Nota Saya", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF075B59))
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                TextButton(onClick = { showArchived = !showArchived; selectedCategory = "Semua"; search = "" }) { Text(if (showArchived) "Nota Aktif" else "Arkib") }
-                if (!showArchived) Button(onClick = {
-                editingId = null
-                title = ""
-                body = TextFieldValue("")
-                undoStack.clear(); redoStack.clear()
-                selectedColor = "green"
+        var gridMode by remember { mutableStateOf(false) }
+        var sortMode by remember { mutableStateOf("Tarikh") }
+        var sortExpanded by remember { mutableStateOf(false) }
+        var notesCategoryExpanded by remember { mutableStateOf(false) }
+        Row(Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Text(if (showArchived) "Arkib Nota" else "Nota Saya", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF075B59))
+                Text("Khazanah catatan peribadi", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            IconButton(onClick = { showArchived = !showArchived; selectedCategory = "Semua"; search = "" }) {
+                Icon(Icons.Default.DateRange, contentDescription = if (showArchived) "Nota Aktif" else "Arkib")
+            }
+            if (!showArchived) FilledIconButton(onClick = {
+                editingId = null; title = ""; body = TextFieldValue("")
+                undoStack.clear(); redoStack.clear(); selectedColor = "green"
                 selectedCategory = if (selectedCategory == "Semua") "Lain-lain" else selectedCategory
                 readingMode = false; showEditor = true
-                }) { Text("+ Nota") }
-            }
+            }) { Icon(Icons.Default.Add, contentDescription = "Nota baharu") }
         }
-
-        var notesCategoryExpanded by remember { mutableStateOf(false) }
-        Box(Modifier.fillMaxWidth()) {
-            Surface(modifier = Modifier.fillMaxWidth().clickable { notesCategoryExpanded = true },
-                shape = RoundedCornerShape(0.dp), color = Color.White,
-                border = BorderStroke(1.dp, Color(0xFFB7DCD7))) {
-                Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 9.dp),
-                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                    Text(if (selectedCategory == "Semua") "Semua Kategori" else "Kategori: $selectedCategory", modifier = Modifier.weight(1f), fontSize = 13.sp)
-                    Text("⌄", fontSize = 20.sp, color = Color(0xFF087F8C))
+        TextField(value = search, onValueChange = { search = it }, placeholder = { Text("Cari nota anda...", fontSize = 13.sp) },
+            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) }, singleLine = true,
+            shape = RoundedCornerShape(16.dp), modifier = Modifier.fillMaxWidth(),
+            colors = TextFieldDefaults.colors(focusedContainerColor = Color.White, unfocusedContainerColor = Color.White,
+                focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent))
+        Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+            (listOf("Semua") + allCategories).distinct().forEach { category ->
+                FilterChip(selected = selectedCategory == category, onClick = { selectedCategory = category },
+                    label = { Text(category, fontSize = 11.sp) }, shape = RoundedCornerShape(50))
+            }
+            Box {
+                IconButton(onClick = { notesCategoryExpanded = true }) { Icon(Icons.Default.MoreVert, contentDescription = "Urus kategori") }
+                DropdownMenu(expanded = notesCategoryExpanded, onDismissRequest = { notesCategoryExpanded = false }) {
+                    DropdownMenuItem(text = { Text("+ Tambah kategori") }, onClick = { notesCategoryExpanded = false; showAddCategory = true })
+                    DropdownMenuItem(text = { Text("Urus kategori") }, onClick = { notesCategoryExpanded = false; showManageCategories = true })
                 }
             }
-            DropdownMenu(expanded = notesCategoryExpanded, onDismissRequest = { notesCategoryExpanded = false }) {
-                (listOf("Semua") + allCategories).forEach { category ->
-                    DropdownMenuItem(text = { Text(category) }, onClick = {
-                        selectedCategory = category
-                        notesCategoryExpanded = false
-                    })
-                }
-                HorizontalDivider()
-                DropdownMenuItem(text = { Text("+ Tambah kategori") }, onClick = {
-                    notesCategoryExpanded = false
-                    showAddCategory = true
-                })
-                DropdownMenuItem(text = { Text("Urus kategori") }, onClick = {
-                    notesCategoryExpanded = false
-                    showManageCategories = true
-                })
-            }
         }
-
-        OutlinedTextField(
-            value = search,
-            onValueChange = { search = it },
-            label = { Text("Cari nota") },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Text(
-            "${visibleNotes.size} nota" + if (showArchived) " dalam arkib" else " tersimpan",
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontSize = 12.sp
-        )
+        Row(Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+            Text("${visibleNotes.size} nota" + if (showArchived) " dalam arkib" else " tersimpan",
+                modifier = Modifier.weight(1f), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Box {
+                TextButton(onClick = { sortExpanded = true }) { Text(sortMode, fontSize = 11.sp) }
+                DropdownMenu(expanded = sortExpanded, onDismissRequest = { sortExpanded = false }) {
+                    listOf("Tarikh", "Tajuk", "Kategori").forEach { mode ->
+                        DropdownMenuItem(text = { Text(mode) }, onClick = { sortMode = mode; sortExpanded = false })
+                    }
+                }
+            }
+            IconButton(onClick = { gridMode = !gridMode }) { Icon(if (gridMode) Icons.Default.List else Icons.Default.Menu, contentDescription = if (gridMode) "Paparan senarai" else "Paparan grid") }
+        }
 
         if (visibleNotes.isEmpty()) {
             Card(
@@ -850,16 +839,22 @@ fun NotesScreen(
             }
         } else {
             val orderedNotes = visibleNotes.sortedWith(
-                compareByDescending<DinNote> { it.pinned }.thenByDescending { it.updatedAt }
+                compareByDescending<DinNote> { it.pinned }.let { base ->
+                    when (sortMode) {
+                        "Tajuk" -> base.thenBy { it.title.lowercase() }
+                        "Kategori" -> base.thenBy { it.category.lowercase() }.thenByDescending { it.updatedAt }
+                        else -> base.thenByDescending { it.updatedAt }
+                    }
+                }
             )
             LazyVerticalGrid(
-                columns = GridCells.Fixed(1),
+                columns = GridCells.Fixed(if (gridMode) 2 else 1),
                 modifier = Modifier.weight(1f).fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(4.dp),
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                 contentPadding = PaddingValues(bottom = 8.dp)
             ) {
-                items(orderedNotes.size) { index ->
+                items(orderedNotes.size, key = { orderedNotes[it].id }) { index ->
                     val item = orderedNotes[index]
                     var menuExpanded by remember(item.id) { mutableStateOf(false) }
                     Card(
@@ -886,21 +881,33 @@ fun NotesScreen(
                             }
                         ),
                         colors = CardDefaults.cardColors(containerColor = Color.White),
-                        shape = RoundedCornerShape(0.dp),
-                        border = BorderStroke(1.dp, Color(0xFFB7DCD7))
+                        shape = RoundedCornerShape(16.dp)
                     ) {
-                        Column(Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 5.dp), verticalArrangement = Arrangement.spacedBy(1.dp)) {
-                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                Text(item.category, color = MaterialTheme.colorScheme.primary, fontSize = 10.sp, maxLines = 1)
-                                Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                            Text(
-                                java.text.SimpleDateFormat("dd MMM", java.util.Locale("ms", "MY"))
-                                    .format(java.util.Date(item.updatedAt)),
-                                fontSize = 10.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                        Row(Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 6.dp),
+                            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            val tint = when {
+                                item.category.contains("Kuliah", true) || item.category == "Pengajian" -> Color(0xFF987333)
+                                item.category == "Idea" -> Color(0xFF8962A5)
+                                item.category == "Kitab" -> Color(0xFF477A9D)
+                                else -> Color(0xFF147A76)
+                            }
+                            if (!gridMode) Box(Modifier.size(40.dp).clip(RoundedCornerShape(12.dp)).background(tint.copy(alpha = 0.12f)),
+                                contentAlignment = androidx.compose.ui.Alignment.Center) {
+                                Icon(when(item.category) {
+                                    "Kitab" -> Icons.Default.List
+                                    "Idea" -> Icons.Default.Star
+                                    else -> Icons.Default.Edit
+                                }, contentDescription = null, tint = tint)
+                            }
+                            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                                Text(item.title.ifBlank { "Tanpa tajuk" }, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, maxLines = 2)
+                                Text((if (item.pinned) "• " else "") + item.category + " · " +
+                                    java.text.SimpleDateFormat("dd MMM", java.util.Locale("ms", "MY")).format(java.util.Date(item.updatedAt)),
+                                    color = tint, fontSize = 10.sp, maxLines = 1)
+                            }
                                 Box {
-                                    Text("⋮", modifier = Modifier.clickable { menuExpanded = true }, fontSize = 20.sp)
+                                    IconButton(onClick = { menuExpanded = true }) { Icon(Icons.Default.MoreVert, contentDescription = "Menu nota") }
                                     DropdownMenu(expanded = menuExpanded, onDismissRequest = { menuExpanded = false }) {
                                         if (!showArchived) DropdownMenuItem(
                                             text = { Text(if (item.pinned) "Lepas pin" else "Pin nota") },
@@ -928,14 +935,6 @@ fun NotesScreen(
                                         DropdownMenuItem(text = { Text("Padam") }, onClick = { noteToDelete = item; menuExpanded = false })
                                     }
                                 }
-                                }
-                            }
-                            Column(
-                                Modifier.fillMaxWidth(),
-                                verticalArrangement = Arrangement.spacedBy(2.dp)
-                            ) {
-                                Text(item.title.ifBlank { "Tanpa tajuk" }, fontWeight = FontWeight.Bold, maxLines = 2)
-                            }
                         }
                     }
                 }
