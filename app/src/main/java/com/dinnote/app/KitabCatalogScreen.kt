@@ -287,36 +287,53 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
         }
     } else {
         Column(modifier.fillMaxSize().padding(horizontal = 12.dp)) {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 OutlinedTextField(query, { query = it }, modifier = Modifier.weight(1f),
-                    placeholder = { Text("أدخل اسم الكتاب... / Cari kitab") }, singleLine = true)
-                TextButton(onClick = { ascending = !ascending }) { Text(if (ascending) "↑↓" else "↓↑") }
-            }
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-                    TextButton(onClick = { startEdit(null) }) { Text("＋ Tambah kitab") }
-                    TextButton(onClick = { showSuggestions = true }) { Text("Cadangan kitab") }
+                    placeholder = { Text("Cari kitab / اسم الكتاب", fontSize = 13.sp, maxLines = 1) },
+                    textStyle = TextStyle(fontSize = 14.sp), singleLine = true, shape = RoundedCornerShape(12.dp))
+                OutlinedButton(onClick = { ascending = !ascending }, contentPadding = PaddingValues(horizontal = 10.dp)) {
+                    Text(if (ascending) "↑ A–Z" else "↓ Z–A", fontSize = 11.sp)
                 }
-                Text("${books.size} kitab", modifier = Modifier.padding(12.dp))
             }
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-                listOf("Semua", "Kegemaran", "Penanda", "Kategori").forEach { name ->
-                    FilterChip(selected = filter == name, onClick = { filter = name }, label = { Text(name) })
+            Row(Modifier.fillMaxWidth().padding(top = 4.dp), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                Button(onClick = { startEdit(null) }, contentPadding = PaddingValues(horizontal = 12.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF17685C))) {
+                    Text("+ Tambah kitab", fontSize = 12.sp, maxLines = 1)
                 }
+                TextButton(onClick = { showSuggestions = true }, modifier = Modifier.weight(1f),
+                    contentPadding = PaddingValues(horizontal = 4.dp)) {
+                    Text("Cadangan kitab", fontSize = 12.sp, maxLines = 1)
+                }
+                Text("${books.size} kitab", fontSize = 11.sp, color = Color(0xFF53736F), maxLines = 1)
             }
             val availableCategories = listOf("Semua bidang") + books.map { it.category }
                 .filter { it.isNotBlank() }.distinct().sorted()
-            if (availableCategories.size > 1) {
-                androidx.compose.foundation.lazy.LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    items(availableCategories) { field ->
-                        FilterChip(
-                            selected = categoryFilter == field,
-                            onClick = { categoryFilter = field },
-                            label = { Text(field) }
-                        )
+            var fieldsExpanded by remember { mutableStateOf(false) }
+            Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                listOf("Semua", "Kegemaran", "Penanda").forEach { name ->
+                    FilterChip(selected = filter == name, onClick = { filter = name },
+                        label = { Text(name, fontSize = 12.sp, maxLines = 1) })
+                }
+                Box {
+                    FilterChip(selected = categoryFilter != "Semua bidang",
+                        onClick = { fieldsExpanded = true },
+                        label = { Text("Kategori ▾", fontSize = 12.sp, maxLines = 1) })
+                    DropdownMenu(expanded = fieldsExpanded, onDismissRequest = { fieldsExpanded = false }) {
+                        availableCategories.forEach { field ->
+                            DropdownMenuItem(text = { Text(field) }, onClick = {
+                                categoryFilter = field
+                                fieldsExpanded = false
+                            })
+                        }
                     }
+                }
+            }
+            if (categoryFilter != "Semua bidang") {
+                TextButton(onClick = { categoryFilter = "Semua bidang" }) {
+                    Text("$categoryFilter ×", fontSize = 12.sp)
                 }
             }
             val results = books.filter { b ->
@@ -340,30 +357,45 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
                         color = Color.White,
                         border = BorderStroke(1.dp, Color(0xFFE1E3E5))
                     ) {
-                    Column(Modifier.fillMaxWidth().clickable { opened = b }.padding(16.dp)) {
-                        Text(b.title, fontSize = 23.sp, textAlign = TextAlign.Right,
-                            modifier = Modifier.fillMaxWidth(), fontWeight = FontWeight.Medium)
-                        Spacer(Modifier.height(5.dp))
-                        Text("${b.author}  •  ${b.category}", color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Right)
-                        Text(
-                            if (b.content.isBlank()) "Rekod kitab • Teks belum dimasukkan"
-                            else "Teks kitab tersedia untuk dibaca",
-                            fontSize = 11.sp,
-                            color = if (b.content.isBlank()) Color(0xFF987333) else Color(0xFF087F8C),
-                            modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
-                            textAlign = TextAlign.Right
-                        )
-                        Row {
-                            TextButton(onClick = { startEdit(b) }) { Text("✎ Edit") }
+                    Column(Modifier.fillMaxWidth().padding(12.dp)) {
+                        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                            Surface(color = Color(0xFFE5EFE9), shape = RoundedCornerShape(10.dp)) {
+                                Text("▤", fontSize = 24.sp, color = Color(0xFF17685C),
+                                    modifier = Modifier.padding(horizontal = 13.dp, vertical = 8.dp))
+                            }
+                            Column(Modifier.weight(1f).clickable { opened = b }) {
+                                Text(b.title, fontSize = 19.sp, fontWeight = FontWeight.SemiBold,
+                                    modifier = Modifier.fillMaxWidth(),
+                                    textAlign = if (kitabParagraphIsArabic(b.title)) TextAlign.Right else TextAlign.Start)
+                                Text(listOf(b.author, b.category).filter { it.isNotBlank() }.joinToString(" • "),
+                                    fontSize = 12.sp, color = Color(0xFF53736F))
+                                Text(if (b.content.isBlank()) "Teks belum dimasukkan" else "Sedia dibaca",
+                                    fontSize = 11.sp, color = if (b.content.isBlank()) Color(0xFF987333) else Color(0xFF087F8C))
+                            }
+                            var menuOpen by remember(b.id) { mutableStateOf(false) }
+                            Box {
+                                IconButton(onClick = { menuOpen = true }) { Text("⋮", fontSize = 24.sp) }
+                                DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
+                                    DropdownMenuItem(text = { Text("Edit kitab") }, onClick = { menuOpen = false; startEdit(b) })
+                                }
+                            }
+                        }
+                        Row(Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                             TextButton(onClick = {
                                 val idx = books.indexOfFirst { it.id == b.id }
                                 if (idx >= 0) { books[idx] = b.copy(favorite = !b.favorite); persist() }
-                            }) { Text(if (b.favorite) "★" else "☆") }
-                            TextButton(onClick = { toggleBookmark(b.id) }) {
-                                Text(if (isBookmarked(b.id)) "★ Penanda" else "☆ Penanda")
+                            }, contentPadding = PaddingValues(horizontal = 6.dp)) {
+                                Text(if (b.favorite) "★" else "☆", fontSize = 20.sp)
                             }
-                            TextButton(onClick = { opened = b }) { Text("Baca penuh") }
+                            TextButton(onClick = { toggleBookmark(b.id) }, contentPadding = PaddingValues(horizontal = 6.dp)) {
+                                Text(if (isBookmarked(b.id)) "✓ Penanda" else "Penanda", fontSize = 12.sp, maxLines = 1)
+                            }
+                            Spacer(Modifier.weight(1f))
+                            FilledTonalButton(onClick = { opened = b }, contentPadding = PaddingValues(horizontal = 12.dp)) {
+                                Text("Baca kitab", fontSize = 12.sp, maxLines = 1)
+                            }
                         }
                     }
                     }
