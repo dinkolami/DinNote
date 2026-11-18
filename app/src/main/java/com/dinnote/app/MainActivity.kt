@@ -609,7 +609,7 @@ fun HomeScreen(
             }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(9.dp)) {
-            DinNoteDashboardTile("Nota", "Catatan & kuliah", "note",
+            DinNoteDashboardTile("Nota Saya", "Tulis & urus catatan", "note",
                 Modifier.weight(1f), onOpenNotes)
             DinNoteDashboardTile("Maktabah", "Kitab & rujukan", "library",
                 Modifier.weight(1f), onOpenLibrary)
