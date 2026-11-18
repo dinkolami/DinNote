@@ -71,10 +71,12 @@ class NoteDatabase(context: Context) :
         return notes
     }
 
-    fun save(title: String, body: String, id: Long? = null): Long {
+    fun save(title: String, body: String, id: Long? = null, colorTag: String? = null, category: String? = null): Long {
         val values = ContentValues().apply {
             put("title", title)
             put("body", body)
+            if (colorTag != null) put("color_tag", colorTag)
+            if (category != null) put("category", category)
             put("updated_at", System.currentTimeMillis())
         }
         return if (id == null) {
