@@ -151,4 +151,70 @@
     <path android:fillColor="#F3DA91" android:pathData="M201.2,93 l1.5,-2 l1.5,2 l-1.5,2 Z"/>
     <!-- Dome mosaic 33/33 -->
     <path android:fillColor="#D6A53F" android:pathData="M207.0,93 l1.5,-2 l1.5,2 l-1.5,2 Z"/>
+    <!-- Foreground leaf highlight 1/33 -->
+    <path android:strokeColor="#E6C879" android:strokeWidth="0.8" android:fillColor="#00000000" android:pathData="M7,115 q2,-3 4,-5"/>
+    <!-- Foreground leaf highlight 2/33 -->
+    <path android:strokeColor="#A5D7AA" android:strokeWidth="0.8" android:fillColor="#00000000" android:pathData="M36,118 q2,-4 4,-6"/>
+    <!-- Foreground leaf highlight 3/33 -->
+    <path android:strokeColor="#E6C879" android:strokeWidth="0.8" android:fillColor="#00000000" android:pathData="M65,121 q2,-5 4,-7"/>
+    <!-- Foreground leaf highlight 4/33 -->
+    <path android:strokeColor="#A5D7AA" android:strokeWidth="0.8" android:fillColor="#00000000" android:pathData="M94,124 q2,-6 4,-5"/>
+    <!-- Foreground leaf highlight 5/33 -->
+    <path android:strokeColor="#E6C879" android:strokeWidth="0.8" android:fillColor="#00000000" android:pathData="M123,115 q2,-3 4,-6"/>
+    <!-- Foreground leaf highlight 6/33 -->
+    <path android:strokeColor="#A5D7AA" android:strokeWidth="0.8" android:fillColor="#00000000" android:pathData="M152,118 q2,-4 4,-7"/>
+    <!-- Foreground leaf highlight 7/33 -->
+    <path android:strokeColor="#E6C879" android:strokeWidth="0.8" android:fillColor="#00000000" android:pathData="M181,121 q2,-5 4,-5"/>
+    <!-- Foreground leaf highlight 8/33 -->
+    <path android:strokeColor="#A5D7AA" android:strokeWidth="0.8" android:fillColor="#00000000" android:pathData="M210,124 q2,-6 4,-6"/>
+    <!-- Foreground leaf highlight 9/33 -->
+    <path android:strokeColor="#E6C879" android:strokeWidth="0.8" android:fillColor="#00000000" android:pathData="M239,115 q2,-3 4,-7"/>
+    <!-- Foreground leaf highlight 10/33 -->
+    <path android:strokeColor="#A5D7AA" android:strokeWidth="0.8" android:fillColor="#00000000" android:pathData="M268,118 q2,-4 4,-5"/>
+    <!-- Foreground leaf highlight 11/33 -->
+    <path android:strokeColor="#E6C879" android:strokeWidth="0.8" android:fillColor="#00000000" android:pathData="M297,121 q2,-5 4,-6"/>
+    <!-- Foreground leaf highlight 12/33 -->
+    <path android:strokeColor="#A5D7AA" android:strokeWidth="0.8" android:fillColor="#00000000" android:pathData="M326,124 q2,-6 4,-7"/>
+    <!-- Foreground leaf highlight 13/33 -->
+    <path android:strokeColor="#E6C879" android:strokeWidth="0.8" android:fillColor="#00000000" android:pathData="M9,115 q2,-3 4,-5"/>
+    <!-- Foreground leaf highlight 14/33 -->
+    <path android:strokeColor="#A5D7AA" android:strokeWidth="0.8" android:fillColor="#00000000" android:pathData="M38,118 q2,-4 4,-6"/>
+    <!-- Foreground leaf highlight 15/33 -->
+    <path android:strokeColor="#E6C879" android:strokeWidth="0.8" android:fillColor="#00000000" android:pathData="M67,121 q2,-5 4,-7"/>
+    <!-- Foreground leaf highlight 16/33 -->
+    <path android:strokeColor="#A5D7AA" android:strokeWidth="0.8" android:fillColor="#00000000" android:pathData="M96,124 q2,-6 4,-5"/>
+    <!-- Foreground leaf highlight 17/33 -->
+    <path android:strokeColor="#E6C879" android:strokeWidth="0.8" android:fillColor="#00000000" android:pathData="M125,115 q2,-3 4,-6"/>
+    <!-- Foreground leaf highlight 18/33 -->
+    <path android:strokeColor="#A5D7AA" android:strokeWidth="0.8" android:fillColor="#00000000" android:pathData="M154,118 q2,-4 4,-7"/>
+    <!-- Foreground leaf highlight 19/33 -->
+    <path android:strokeColor="#E6C879" android:strokeWidth="0.8" android:fillColor="#00000000" android:pathData="M183,121 q2,-5 4,-5"/>
+    <!-- Foreground leaf highlight 20/33 -->
+    <path android:strokeColor="#A5D7AA" android:strokeWidth="0.8" android:fillColor="#00000000" android:pathData="M212,124 q2,-6 4,-6"/>
+    <!-- Foreground leaf highlight 21/33 -->
+    <path android:strokeColor="#E6C879" android:strokeWidth="0.8" android:fillColor="#00000000" android:pathData="M241,115 q2,-3 4,-7"/>
+    <!-- Foreground leaf highlight 22/33 -->
+    <path android:strokeColor="#A5D7AA" android:strokeWidth="0.8" android:fillColor="#00000000" android:pathData="M270,118 q2,-4 4,-5"/>
+    <!-- Foreground leaf highlight 23/33 -->
+    <path android:strokeColor="#E6C879" android:strokeWidth="0.8" android:fillColor="#00000000" android:pathData="M299,121 q2,-5 4,-6"/>
+    <!-- Foreground leaf highlight 24/33 -->
+    <path android:strokeColor="#A5D7AA" android:strokeWidth="0.8" android:fillColor="#00000000" android:pathData="M328,124 q2,-6 4,-7"/>
+    <!-- Foreground leaf highlight 25/33 -->
+    <path android:strokeColor="#E6C879" android:strokeWidth="0.8" android:fillColor="#00000000" android:pathData="M11,115 q2,-3 4,-5"/>
+    <!-- Foreground leaf highlight 26/33 -->
+    <path android:strokeColor="#A5D7AA" android:strokeWidth="0.8" android:fillColor="#00000000" android:pathData="M40,118 q2,-4 4,-6"/>
+    <!-- Foreground leaf highlight 27/33 -->
+    <path android:strokeColor="#E6C879" android:strokeWidth="0.8" android:fillColor="#00000000" android:pathData="M69,121 q2,-5 4,-7"/>
+    <!-- Foreground leaf highlight 28/33 -->
+    <path android:strokeColor="#A5D7AA" android:strokeWidth="0.8" android:fillColor="#00000000" android:pathData="M98,124 q2,-6 4,-5"/>
+    <!-- Foreground leaf highlight 29/33 -->
+    <path android:strokeColor="#E6C879" android:strokeWidth="0.8" android:fillColor="#00000000" android:pathData="M127,115 q2,-3 4,-6"/>
+    <!-- Foreground leaf highlight 30/33 -->
+    <path android:strokeColor="#A5D7AA" android:strokeWidth="0.8" android:fillColor="#00000000" android:pathData="M156,118 q2,-4 4,-7"/>
+    <!-- Foreground leaf highlight 31/33 -->
+    <path android:strokeColor="#E6C879" android:strokeWidth="0.8" android:fillColor="#00000000" android:pathData="M185,121 q2,-5 4,-5"/>
+    <!-- Foreground leaf highlight 32/33 -->
+    <path android:strokeColor="#A5D7AA" android:strokeWidth="0.8" android:fillColor="#00000000" android:pathData="M214,124 q2,-6 4,-6"/>
+    <!-- Foreground leaf highlight 33/33 -->
+    <path android:strokeColor="#E6C879" android:strokeWidth="0.8" android:fillColor="#00000000" android:pathData="M243,115 q2,-3 4,-7"/>
 </vector>
