@@ -676,6 +676,7 @@ fun NotesScreen(
     var editedCategoryDescription by remember { mutableStateOf("") }
     var showManageCategories by remember { mutableStateOf(false) }
     var categoryToRename by remember { mutableStateOf<String?>(null) }
+    var categoryToDelete by remember { mutableStateOf<String?>(null) }
     var renamedCategory by remember { mutableStateOf("") }
     var categoryToDelete by remember { mutableStateOf<String?>(null) }
     var noteToDelete by remember { mutableStateOf<DinNote?>(null) }
@@ -2348,11 +2349,24 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
             DropdownMenu(expanded = libraryCategoryExpanded,
                 onDismissRequest = { libraryCategoryExpanded = false }) {
                 allLibraryCategories.forEach { category ->
-                    DropdownMenuItem(text = { Text(category) }, onClick = {
-                        selectedCategory = category
-                        search = ""
-                        libraryCategoryExpanded = false
-                    })
+                    DropdownMenuItem(
+                        text = { Text(category, fontSize = 14.sp) },
+                        onClick = {
+                            selectedCategory = category
+                            search = ""
+                            libraryCategoryExpanded = false
+                        },
+                        trailingIcon = if (category in customLibraryCategories) {
+                            {
+                                IconButton(onClick = {
+                                    libraryCategoryExpanded = false
+                                    categoryToDelete = category
+                                }) {
+                                    Icon(Icons.Default.Delete, contentDescription = "Padam kategori $category", tint = Color(0xFFB3261E))
+                                }
+                            }
+                        } else null
+                    )
                 }
 
                 DropdownMenuItem(text = { Text("+ Tambah kategori") }, onClick = {
@@ -2562,6 +2576,29 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                 }
             },
             confirmButton = { TextButton(onClick = { libraryTrashOpen = false }) { Text("Tutup") } }
+        )
+    }
+
+    if (categoryToDelete != null) {
+        AlertDialog(
+            onDismissRequest = { categoryToDelete = null },
+            title = { Text("Padam kategori?") },
+            text = { Text("Kategori \""+ categoryToDelete.orEmpty() +"\" dan semua kandungannya akan dipadam secara kekal. Tindakan ini tidak boleh dibatalkan.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    val target = categoryToDelete
+                    if (target != null && target in customLibraryCategories) {
+                        val editor = libraryPrefs.edit()
+                        libraryPrefs.all.keys.filter { it.startsWith("entry_" + target + "_") }.forEach { editor.remove(it) }
+                        editor.putString("custom_categories", customLibraryCategories.filterNot { it == target }.joinToString("\n"))
+                        editor.apply()
+                        if (selectedCategory == target) selectedCategory = "Kitab-Kitab"
+                        libraryRevision++
+                    }
+                    categoryToDelete = null
+                }) { Text("Padam", color = Color(0xFFB3261E)) }
+            },
+            dismissButton = { TextButton(onClick = { categoryToDelete = null }) { Text("Batal") } }
         )
     }
 
