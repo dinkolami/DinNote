@@ -2444,6 +2444,7 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                                 libraryDisplayPrefs.edit().putInt("font_size", libraryFontSize.toInt()).apply()
                             } else libraryBody = resizeEditorTextSelection(libraryBody, delta, libraryFontSize.toInt())
                         })
+                    SharedParagraphTools(libraryBody) { libraryBody = it }
                     Row(Modifier.fillMaxWidth().height(36.dp), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                         TextButton(onClick = { libraryToolsExpanded = !libraryToolsExpanded }) {
                             Text(if (libraryToolsExpanded) "Tutup alat ▴" else "⋯ Alat editor", fontSize = 12.sp)
@@ -2581,6 +2582,7 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                                 if (value.selection.collapsed) size = (size + delta).coerceIn(14f, 30f)
                                 else change(resizeEditorTextSelection(value, delta, size.toInt()))
                             })
+                        SharedParagraphTools(value, ::change)
                     }
                 }
             }
@@ -2691,6 +2693,33 @@ private fun UnifiedFocusToolbar(value: TextFieldValue, fontSize: Float, onFormat
                         ) { Text("A+", color = Color(0xFF087F83)) }
                     }
 
+}
+
+// Shared paragraph selection for library and structured content editors.
+@Composable
+private fun SharedParagraphTools(value: TextFieldValue, onChange: (TextFieldValue) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    val source = value.text
+    val cursor = value.selection.min.coerceIn(0, source.length)
+    val start = if (cursor == 0) 0 else source.lastIndexOf('\n', cursor - 1) + 1
+    val end = source.indexOf('\n', cursor).let { if (it < 0) source.length else it }
+    val enabled = end > start && formattedNoteText(smartFormattedExcerpt(source, start, end)).text.isNotBlank()
+    val selected = value.copy(selection = TextRange(start, end), composition = null)
+    Box(Modifier.wrapContentWidth()) {
+        TextButton(enabled = enabled, onClick = { expanded = true }) {
+            Text("▤ Smart Block", color = if (enabled) Color(0xFF087F83) else Color.Gray, fontSize = 13.sp)
+        }
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            DropdownMenuItem(text = { Text("Pilih perenggan") }, enabled = enabled, onClick = {
+                expanded = false
+                onChange(selected)
+            })
+            DropdownMenuItem(text = { Text("Warnakan perenggan") }, enabled = enabled, onClick = {
+                expanded = false
+                onChange(colorEditorSelection(selected, 0xFF087F83L))
+            })
+        }
+    }
 }
 
 // Default content field for all structured Kalimah editors.
