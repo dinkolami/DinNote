@@ -586,6 +586,10 @@ fun HomeScreen(
                         horizontalArrangement = Arrangement.spacedBy(7.dp)
                     ) {
                         Text("✎", fontSize = 12.sp, color = Color(0xFF08766C))
+                        if (note.category.isNotBlank()) {
+                            Text(note.category, fontSize = 10.sp, color = Color(0xFF53736F),
+                                maxLines = 1)
+                        }
                         Text(note.title.ifBlank { "Tanpa tajuk" },
                             modifier = Modifier.weight(1f),
                             fontSize = 12.sp, fontWeight = FontWeight.Medium,
