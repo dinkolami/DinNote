@@ -4,6 +4,13 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.Canvas
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
@@ -91,12 +98,40 @@ fun DisplaySettingsScreen(modifier: Modifier = Modifier) {
     val referenceMadhhab = "Syafi‘i"
     var bookLayout by remember { mutableStateOf(prefs.getString("book_layout", "Arab di atas, Melayu di bawah") ?: "Arab di atas, Melayu di bawah") }
     Column(modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 14.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Surface(color = Color(0xFF075B59), shape = RoundedCornerShape(16.dp)) {
-        Row(Modifier.fillMaxWidth().padding(12.dp), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-            Column(Modifier.weight(1f)) {
-                Text("Tetapan DinNote", fontSize = 19.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                Text("Sesuaikan aplikasi anda", fontSize = 11.sp, color = Color(0xFFDDF4F2))
+        Box(Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Brush.verticalGradient(listOf(Color(0xFF003C35), Color(0xFF08675D), Color(0xFF00483F))))) {
+            Canvas(Modifier.matchParentSize()) {
+                val w = size.width
+                val h = size.height
+                val gold = Color(0xFFE7C77E)
+                val arch = Path().apply {
+                    moveTo(0f, h * .62f)
+                    cubicTo(w * .08f, h * .32f, w * .20f, h * .34f, w * .25f, h * .32f)
+                    cubicTo(w * .30f, h * .12f, w * .43f, h * .16f, w * .50f, 2f)
+                    cubicTo(w * .57f, h * .16f, w * .70f, h * .12f, w * .75f, h * .32f)
+                    cubicTo(w * .80f, h * .34f, w * .92f, h * .32f, w, h * .62f)
+                }
+                drawPath(arch, Color(0xFF18A08A), style = Stroke(width = 7.dp.toPx()))
+                drawPath(arch, gold, style = Stroke(width = 3.dp.toPx()))
+                listOf(.11f, .89f).forEach { fraction ->
+                    val x = w * fraction
+                    val y = h * .48f
+                    val r = 7.dp.toPx()
+                    drawLine(gold, Offset(x, h * .39f), Offset(x, y), 1.dp.toPx())
+                    drawCircle(gold.copy(alpha = .12f), r * 2.4f, Offset(x, y + r))
+                    val lantern = Path().apply {
+                        moveTo(x, y); lineTo(x + r, y + r)
+                        lineTo(x + r * .65f, y + r * 2.2f)
+                        lineTo(x, y + r * 2.8f)
+                        lineTo(x - r * .65f, y + r * 2.2f)
+                        lineTo(x - r, y + r); close()
+                    }
+                    drawPath(lantern, gold)
+                }
             }
+            Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 18.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Image(painter = painterResource(R.drawable.ic_dinnote_header), contentDescription = null, modifier = Modifier.size(40.dp))
+                Text("Tetapan DinNote", fontSize = 25.sp, fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold, color = Color(0xFFFFF9E9), textAlign = TextAlign.Center)
+                Text("Sesuaikan aplikasi mengikut pilihan anda", fontSize = 11.sp, color = Color(0xFFDDF4F2), textAlign = TextAlign.Center)
             Button(colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEAD39B), contentColor = Color(0xFF164641)), onClick = {
                 val saved = prefs.edit()
                     .putString("background", background)
@@ -115,7 +150,8 @@ fun DisplaySettingsScreen(modifier: Modifier = Modifier) {
                     .putString("book_layout", bookLayout)
                     .commit()
                 settingsStatus = if (saved) "Tetapan berjaya disimpan" else "Gagal menyimpan tetapan"
-            }) { Text("Simpan", fontSize = 13.sp) }
+            }) { Text("✓  Simpan", fontSize = 13.sp) }
+            Text("────  ❖  ────", color = Color(0xFFE7C77E), fontSize = 12.sp)
         }
         }
         if (settingsStatus.isNotBlank()) {
