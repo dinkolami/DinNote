@@ -643,7 +643,7 @@ fun HomeScreen(
                 Text("▤", fontSize = 14.sp, color = Color(0xFFF1C86B))
                 Text("Sambung Bacaan", modifier = Modifier.weight(1f),
                     fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
-                Text("Teruskan ›", fontSize = 12.sp, color = Color.White)
+                Text("Buka Maktabah ›", fontSize = 12.sp, color = Color.White)
             }
         }
     }
