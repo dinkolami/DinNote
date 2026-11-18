@@ -2800,6 +2800,44 @@ private fun SmartMinbarDialog(material: String, onClose: () -> Unit) {
 }
 
 @Composable
+private fun SmartRecallDialog(items: List<String>, onClose: () -> Unit) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val prefs = remember { context.getSharedPreferences("dinnote_smart_recall", android.content.Context.MODE_PRIVATE) }
+    fun key(block: String): String = android.util.Base64.encodeToString(
+        java.security.MessageDigest.getInstance("SHA-256").digest(block.toByteArray(Charsets.UTF_8)), android.util.Base64.NO_WRAP)
+    val queue = remember(items) { items.filter { prefs.getLong(key(it), 0L) <= System.currentTimeMillis() } }
+    var position by remember { mutableStateOf(0) }
+    var revealed by remember { mutableStateOf(false) }
+    AlertDialog(onDismissRequest = onClose, title = { Text("Smart Recall · Murajaah") },
+        text = {
+            Column {
+                if (position >= queue.size) {
+                    Text(if (queue.isEmpty()) "Tiada petikan perlu diulang sekarang." else "Sesi murajaah selesai.")
+                } else {
+                    val block = queue[position]
+                    Text("Petikan " + (position + 1) + " / " + queue.size, color = Color(0xFF087F83))
+                    Column(Modifier.heightIn(max = 320.dp).verticalScroll(rememberScrollState())) {
+                        if (revealed) Text(formattedNoteText(block), fontSize = 22.sp, lineHeight = 34.sp)
+                        else Text("Cuba ingat petikan ini: " + formattedNoteText(block).text.take(45) + "…", fontSize = 18.sp)
+                    }
+                    if (!revealed) TextButton(onClick = { revealed = true }) { Text("Lihat petikan penuh") }
+                    else Row {
+                        TextButton(onClick = {
+                            prefs.edit().putLong(key(block), System.currentTimeMillis() + 10L * 60L * 1000L).apply()
+                            position++; revealed = false
+                        }) { Text("Ulang lagi") }
+                        TextButton(onClick = {
+                            prefs.edit().putLong(key(block), System.currentTimeMillis() + 24L * 60L * 60L * 1000L).apply()
+                            position++; revealed = false
+                        }) { Text("Sudah kuasai") }
+                    }
+                }
+            }
+        },
+        confirmButton = { TextButton(onClick = onClose) { Text("Tutup") } })
+}
+
+@Composable
 private fun SmartVaultDialog(onDismiss: () -> Unit, onInsert: (String) -> Unit) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val items = remember { readSmartVault(context) }
@@ -2819,6 +2857,7 @@ private fun SmartVaultDialog(onDismiss: () -> Unit, onInsert: (String) -> Unit) 
     var references by remember { mutableStateOf(items.associateWith { readReference(it) }) }
     var refEditing by remember { mutableStateOf<String?>(null) }
     var refDraft by remember { mutableStateOf(List(referenceLabels.size) { "" }) }
+    var recallOpen by remember { mutableStateOf(false) }
     var majlisMode by remember { mutableStateOf(false) }
     var majlisSelection by remember { mutableStateOf(emptyList<String>()) }
     var majlisTitle by remember { mutableStateOf("") }
@@ -2830,6 +2869,10 @@ private fun SmartVaultDialog(onDismiss: () -> Unit, onInsert: (String) -> Unit) 
         }
         val title = majlisTitle.trim()
         return (if (title.isNotBlank()) title + "\n\n" else "") + sections.joinToString("\n\n")
+    }
+    if (recallOpen) {
+        SmartRecallDialog(items, onClose = { recallOpen = false })
+        return
     }
     minbarMaterial?.let { material ->
         SmartMinbarDialog(material, onClose = { minbarMaterial = null })
@@ -2845,6 +2888,9 @@ private fun SmartVaultDialog(onDismiss: () -> Unit, onInsert: (String) -> Unit) 
             Column {
                 OutlinedTextField(value = query, onValueChange = { query = it },
                     label = { Text("Cari teks, tema atau rujukan") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                TextButton(onClick = { recallOpen = true }) {
+                    Text("Smart Recall · Murajaah", color = Color(0xFF087F83))
+                }
                 TextButton(onClick = { majlisMode = !majlisMode; majlisSelection = emptyList() }) {
                     Text(if (majlisMode) "Batal Smart Majlis" else "Smart Majlis · Pilih petikan", color = Color(0xFF087F83))
                 }
