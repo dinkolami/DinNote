@@ -1494,7 +1494,7 @@ fun NotesScreen(
                     val blockEnd = blockText.indexOf('\n', blockCursor).let { if (it < 0) blockText.length else it }
                     val canSelectBlock = blockEnd > blockStart && blockText.substring(blockStart, blockEnd).isNotBlank()
                     Box(Modifier.wrapContentWidth()) {
-                        TextButton(enabled = canSelectBlock, onClick = { smartBlockMenu = true }) {
+                        TextButton(onClick = { smartBlockMenu = true }) {
                             Text("▤ Smart Block", color = if (canSelectBlock) Color(0xFF087F83) else Color.Gray, fontSize = 13.sp)
                         }
                         DropdownMenu(expanded = smartBlockMenu, onDismissRequest = { smartBlockMenu = false }, containerColor = Color.White, shape = RoundedCornerShape(12.dp)) {
