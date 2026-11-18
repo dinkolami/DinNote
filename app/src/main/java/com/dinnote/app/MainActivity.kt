@@ -515,7 +515,7 @@ fun HomeScreen(
             border = BorderStroke(1.dp, Color(0xFFB48B39))
         ) {
             Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp),
                 verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
             ) {
                 Text("✎", fontSize = 24.sp, color = Color(0xFFF1C86B))
