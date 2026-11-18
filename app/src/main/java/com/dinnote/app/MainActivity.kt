@@ -1344,11 +1344,18 @@ fun NotesScreen(
                         TextButton(enabled = body.text.isNotEmpty(), onClick = {
                             if (body.selection.collapsed) clearFormatConfirm = true else applyClearFormat()
                         }) { Text("Tx  Buang format", color = Color(0xFF087F83), fontSize = 13.sp) }
-                        TextButton(onClick = {
+                        var pasteMenu by remember { mutableStateOf(false) }
+                        fun pasteText(keepFormat: Boolean) {
                             val clipboard = pasteContext.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                            val pasted = clipboard.primaryClip?.let { clip ->
-                                if (clip.itemCount > 0) clip.getItemAt(0).coerceToText(pasteContext)?.toString() else null
-                            }
+                            val pasted = runCatching {
+                                clipboard.primaryClip?.let { clip ->
+                                    if (clip.itemCount > 0) {
+                                        val item = clip.getItemAt(0)
+                                        if (keepFormat) clipboardEditorText(item.coerceToStyledText(pasteContext))
+                                        else item.coerceToText(pasteContext)?.toString()
+                                    } else null
+                                }
+                            }.getOrNull()
                             if (!pasted.isNullOrEmpty()) {
                                 val start = body.selection.min.coerceIn(0, body.text.length)
                                 val end = body.selection.max.coerceIn(start, body.text.length)
@@ -1361,7 +1368,16 @@ fun NotesScreen(
                             } else {
                                 android.widget.Toast.makeText(pasteContext, "Clipboard kosong", android.widget.Toast.LENGTH_SHORT).show()
                             }
-                        }) { Text("▣ Tampal", color = Color(0xFF087F83), fontSize = 13.sp) }
+                        }
+                        Box {
+                            TextButton(onClick = { pasteMenu = true }) {
+                                Text("▣ Tampal ▾", color = Color(0xFF087F83), fontSize = 13.sp)
+                            }
+                            DropdownMenu(expanded = pasteMenu, onDismissRequest = { pasteMenu = false }) {
+                                DropdownMenuItem(text = { Text("Tampal teks biasa") }, onClick = { pasteMenu = false; pasteText(false) })
+                                DropdownMenuItem(text = { Text("Tampal dengan format") }, onClick = { pasteMenu = false; pasteText(true) })
+                            }
+                        }
                     }
                     if (clearFormatConfirm) AlertDialog(
                         onDismissRequest = { clearFormatConfirm = false },
@@ -1726,6 +1742,33 @@ private class SmartSelectionToolbar(
         mode = null
         fallback.hide()
     }
+}
+
+private fun clipboardEditorText(input: CharSequence?): String? {
+    if (input == null) return null
+    if (input !is android.text.Spanned) return input.toString()
+    val out = StringBuilder()
+    var start = 0
+    while (start < input.length) {
+        val end = input.nextSpanTransition(start, input.length, android.text.style.CharacterStyle::class.java)
+        val styles = input.getSpans(start, end, android.text.style.StyleSpan::class.java)
+        val bold = styles.any { it.style and android.graphics.Typeface.BOLD != 0 }
+        val italic = styles.any { it.style and android.graphics.Typeface.ITALIC != 0 }
+        val underline = input.getSpans(start, end, android.text.style.UnderlineSpan::class.java).isNotEmpty()
+        val color = input.getSpans(start, end, android.text.style.ForegroundColorSpan::class.java).lastOrNull()
+        val hex = color?.let { String.format(java.util.Locale.ROOT, "#%06X", it.foregroundColor and 0xFFFFFF) }
+        if (hex != null) out.append("{{color:").append(hex).append("}}")
+        if (bold) out.append("**")
+        if (italic) out.append("_")
+        if (underline) out.append("++")
+        out.append(input.subSequence(start, end).toString())
+        if (underline) out.append("++")
+        if (italic) out.append("_")
+        if (bold) out.append("**")
+        if (hex != null) out.append("{{/color}}")
+        start = end
+    }
+    return out.toString()
 }
 
 private fun clearEditorFormatting(value: TextFieldValue): TextFieldValue {
