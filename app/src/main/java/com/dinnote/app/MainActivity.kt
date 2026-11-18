@@ -1393,7 +1393,7 @@ fun NotesScreen(
                             Text(if (showEditorTools) "Tutup alat ▴" else "⋯ Alat editor", fontSize = 12.sp)
                         }
                     }
-                    if (showEditorTools || smartMenu || !focusKeyboard) {
+                    if (showEditorTools || smartMenu) {
                         Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
 
                     var smartSource by remember { mutableStateOf("") }
@@ -2647,6 +2647,9 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
 
 @Composable
 private fun UnifiedFocusToolbar(value: TextFieldValue, fontSize: Float, onFormat: (String) -> Unit, onColor: (Long) -> Unit, onResize: (Int) -> Unit) {
+    val keyboardVisible = WindowInsets.ime.getBottom(androidx.compose.ui.platform.LocalDensity.current) > 0
+    if (!keyboardVisible && value.selection.collapsed) return
+
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 5.dp),
                         horizontalArrangement = Arrangement.spacedBy(5.dp),
