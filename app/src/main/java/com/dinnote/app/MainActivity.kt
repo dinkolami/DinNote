@@ -2414,6 +2414,7 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
             }
             "Kitab-Kitab" -> {
                 Text("📚 Maktabah Kitab", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                TurathStarterCard(search)
 
                 Button(onClick = { openLibraryEditor("entry_Kitab-Kitab_" + System.currentTimeMillis()) }) { Text("+ Tambah Kitab") }
                 libraryItems.filter { matchesMaktabahSearch(libraryPrefs.getString(it + "_title", "") ?: "", search) ||
@@ -3916,6 +3917,89 @@ private fun DinNoteFrontHeaderFallback() {
                 Text("DinNote", fontSize = 25.sp, fontFamily = androidx.compose.ui.text.font.FontFamily.Serif, fontWeight = FontWeight.Bold, color = Color(0xFFFFF9E9))
                 Text("Daripada catatan kepada khazanah ilmu.", fontSize = 10.sp, color = Color(0xFFFFF2D1), textAlign = TextAlign.Center)
                 Text("──── ❖ ────", color = Color(0xFFE7C77E), fontSize = 9.sp)
+            }
+        }
+    }
+}
+
+
+@Composable
+private fun TurathStarterCard(search: String) {
+    val context = LocalContext.current
+    val book = remember(context) {
+        runCatching { context.assets.open("turath/arba_in_nawawiyyah.json").bufferedReader(Charsets.UTF_8).use { org.json.JSONObject(it.readText()) } }.getOrNull()
+    } ?: return
+    val entries = remember(book) {
+        val array = book.getJSONArray("entries")
+        (0 until array.length()).map { array.getJSONObject(it) }
+    }
+    var opened by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(false) }
+    var selected by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(-1) }
+    var language by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf("Kedua-duanya") }
+    val visible = search.isBlank() || matchesMaktabahSearch(book.optString("titleArabic")+" "+book.optString("titleMalay"), search) ||
+        entries.any { matchesMaktabahSearch(it.optString("arabic")+" "+it.optString("malay"),search) }
+    if(visible) {
+        Card(onClick={opened=true;selected=-1},modifier=Modifier.fillMaxWidth(),colors=CardDefaults.cardColors(containerColor=Color(0xFFE8F2E9))) {
+            Column(Modifier.padding(16.dp)) {
+                Text(book.optString("titleArabic"),modifier=Modifier.fillMaxWidth(),textAlign=TextAlign.End,fontSize=24.sp,fontWeight=FontWeight.Bold,color=Color(0xFF075B49))
+                Text(book.optString("titleMalay"),fontWeight=FontWeight.Bold)
+                Text("${entries.size} / ${book.optInt("expectedEntries")} hadis • Contoh awal • Offline",fontSize=12.sp)
+            }
+        }
+    }
+    if(opened) {
+        androidx.compose.ui.window.Dialog(onDismissRequest={opened=false},properties=androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth=false)) {
+            Surface(modifier=Modifier.fillMaxSize().padding(12.dp),shape=RoundedCornerShape(16.dp),color=MaterialTheme.colorScheme.surface) {
+                Column(Modifier.fillMaxSize().padding(14.dp),verticalArrangement=Arrangement.spacedBy(8.dp)) {
+                    Row(Modifier.fillMaxWidth(),verticalAlignment=androidx.compose.ui.Alignment.CenterVertically) {
+                        TextButton(onClick={if(selected>=0) selected=-1 else opened=false}) { Text(if(selected>=0) "Senarai" else "Tutup") }
+                        Text(book.optString("titleArabic"),modifier=Modifier.weight(1f),textAlign=TextAlign.End,fontSize=22.sp,fontWeight=FontWeight.Bold)
+                    }
+                    if(selected !in entries.indices) {
+                        LazyColumn(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(8.dp)) {
+                            items(entries.size) { index ->
+                                val e=entries[index]
+                                Card(onClick={selected=index},modifier=Modifier.fillMaxWidth()) {
+                                    Column(Modifier.padding(14.dp)) {
+                                        Text(e.optString("titleArabic"),modifier=Modifier.fillMaxWidth(),textAlign=TextAlign.End,fontSize=20.sp)
+                                        Text(e.optString("titleMalay"))
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        val e=entries[selected]
+                        Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(4.dp)) {
+                            listOf("Arab","Melayu","Kedua-duanya").forEach { mode ->
+                                FilterChip(selected=language==mode,onClick={language=mode},label={Text(mode,fontSize=11.sp)})
+                            }
+                        }
+                        key(selected) {
+                            Column(Modifier.weight(1f).verticalScroll(rememberScrollState()),verticalArrangement=Arrangement.spacedBy(12.dp)) {
+                                Text(e.optString("titleMalay"),fontWeight=FontWeight.Bold)
+                                if(language!="Melayu") {
+                                    Surface(color=Color(0xFFF6EFDF),shape=RoundedCornerShape(12.dp)) {
+                                        ReferenceReaderText(text=AnnotatedString(e.optString("arabic")),modifier=Modifier.fillMaxWidth().padding(14.dp),style=androidx.compose.ui.text.TextStyle(fontSize=23.sp,lineHeight=39.sp,textDirection=TextDirection.ContentOrRtl,textAlign=TextAlign.End,color=Color(0xFF254D3A)))
+                                    }
+                                }
+                                if(language!="Arab") {
+                                    Text("Terjemahan Melayu • Draf",fontWeight=FontWeight.Bold)
+                                    ReferenceReaderText(text=AnnotatedString(e.optString("malay")),style=androidx.compose.ui.text.TextStyle(fontSize=17.sp,lineHeight=27.sp))
+                                }
+                                val sources=e.optJSONArray("source")
+                                if(sources!=null) for(i in 0 until sources.length()) {
+                                    val url=sources.optString(i)
+                                    TextButton(onClick={runCatching { context.startActivity(Intent(Intent.ACTION_VIEW,Uri.parse(url))) }}) { Text("Sumber asal "+(i+1)) }
+                                }
+                            }
+                        }
+                        Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=androidx.compose.ui.Alignment.CenterVertically) {
+                            TextButton(enabled=selected>0,onClick={selected--}) { Text("Sebelum") }
+                            Text("${selected+1} / ${entries.size}")
+                            TextButton(enabled=selected<entries.lastIndex,onClick={selected++}) { Text("Seterusnya") }
+                        }
+                    }
+                }
             }
         }
     }
