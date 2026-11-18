@@ -674,6 +674,9 @@ fun NotesScreen(
     var editingId by remember { mutableStateOf<Long?>(null) }
     var title by remember { mutableStateOf("") }
     var body by remember { mutableStateOf(TextFieldValue("")) }
+    val recoveryPrefs = remember { context.getSharedPreferences("dinnote_note_recovery", android.content.Context.MODE_PRIVATE) }
+    var recoveryAvailable by remember { mutableStateOf(recoveryPrefs.contains("body")) }
+
     var selectedColor by remember { mutableStateOf("green") }
     // Note backgrounds are always white; legacy background preferences are ignored.
     var editorFontSize by remember { mutableFloatStateOf(displayPrefs.getInt("font_size", 19).toFloat()) }
@@ -712,6 +715,27 @@ fun NotesScreen(
     }
 
     LaunchedEffect(Unit) { refreshNotes() }
+    if (recoveryAvailable && !showEditor) {
+        AlertDialog(onDismissRequest = { recoveryAvailable = false },
+            title = { Text("Pulihkan draf nota?") },
+            text = { Text("DinNote menemui draf yang belum disahkan tersimpan. Pulihkan sebagai nota baharu supaya nota asal tidak ditindih.") },
+            confirmButton = { TextButton(onClick = {
+                editingId = null
+                title = recoveryPrefs.getString("title", "") ?: ""
+                val recovered = recoveryPrefs.getString("body", "") ?: ""
+                body = TextFieldValue(recovered, selection = TextRange(recovered.length))
+                selectedColor = recoveryPrefs.getString("color", "green") ?: "green"
+                selectedCategory = recoveryPrefs.getString("category", "Lain-lain") ?: "Lain-lain"
+                undoStack.clear(); redoStack.clear()
+                recoveryAvailable = false
+                readingMode = false; showEditor = true
+            }) { Text("Pulihkan") } },
+            dismissButton = { TextButton(onClick = {
+                recoveryPrefs.edit().clear().apply()
+                recoveryAvailable = false
+            }) { Text("Buang draf") } })
+    }
+
 
     LaunchedEffect(openNoteId) {
         if (openNoteId != null) {
@@ -1138,11 +1162,17 @@ fun NotesScreen(
                 database.setColor(id, selectedColor)
                 database.setCategory(id, selectedCategory)
                 refreshNotes()
+                recoveryPrefs.edit().clear().apply()
+                recoveryAvailable = false
             }
         }
-        LaunchedEffect(title, body.text, selectedCategory, selectedColor) {
-            kotlinx.coroutines.delay(650)
-            persistNote()
+        LaunchedEffect(title, body.text, selectedCategory, selectedColor, readingMode) {
+            if (!readingMode && (title.isNotBlank() || body.text.isNotBlank())) {
+                recoveryPrefs.edit().putString("title", title).putString("body", body.text)
+                    .putString("color", selectedColor).putString("category", selectedCategory).apply()
+                kotlinx.coroutines.delay(650)
+                persistNote()
+            }
         }
         // Editor is part of the Activity composition, not a separate Dialog window.
         // Android IME resizing now uses the Activity's window and shared insets.
