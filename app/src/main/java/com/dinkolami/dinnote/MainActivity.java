@@ -25,6 +25,7 @@ public class MainActivity extends Activity {
     private long currentNote = -1, currentNotebook = 1;
     private boolean loading = false;
     private String filter = "";
+    private boolean sortByTitle = false;
     private boolean showingEditor = false;
     private boolean focusMode = false;
     private HorizontalScrollView editorTools;
@@ -62,7 +63,7 @@ public class MainActivity extends Activity {
         root = column(); root.setBackgroundColor(SURFACE);
         setContentView(root);
         LinearLayout top=row(); top.setBackgroundColor(Color.WHITE);
-        TextView name=text(heading,22,true); name.setTextColor(GREEN); name.setLetterSpacing(.02f);
+        TextView name=text(heading,21,true); name.setTextColor(GREEN); name.setLetterSpacing(.02f);
         top.addView(name,new LinearLayout.LayoutParams(0,dp(58),1));
         root.addView(top);
         ScrollView scroll=new ScrollView(this); scroll.setFillViewport(true);
@@ -76,9 +77,10 @@ public class MainActivity extends Activity {
         nav.addView(action("Notebook",this::chooseNotebook));
         nav.addView(action("  + Notebook",this::createNotebook));
         nav.addView(action("  + Nota",()->openNote(-1)));
+        nav.addView(action("  Susun",()->{sortByTitle=!sortByTitle;showHome();}));
         body.addView(nav);
         EditText search=new EditText(this); search.setSingleLine(true);
-        search.setTextSize(14); search.setHint("Cari semua nota...");
+        search.setTextSize(14); search.setTextColor(Color.rgb(37,49,45)); search.setHint("Cari semua nota...");
         search.setText(filter); search.setSingleLine(true); body.addView(search);
         LinearLayout results=column(); body.addView(results);
         search.addTextChangedListener(new TextWatcher() {
@@ -91,7 +93,7 @@ public class MainActivity extends Activity {
     private void renderNotes(LinearLayout results) {
         results.removeAllViews();
         Cursor c=store.getReadableDatabase().rawQuery(
-            "SELECT n.id,n.title,n.content,b.name,n.updated FROM notes n JOIN notebooks b ON b.id=n.notebook_id WHERE n.title LIKE ? OR n.content LIKE ? ORDER BY n.updated DESC",
+            "SELECT n.id,n.title,n.content,b.name,n.updated FROM notes n JOIN notebooks b ON b.id=n.notebook_id WHERE n.title LIKE ? OR n.content LIKE ? ORDER BY "+(sortByTitle?"n.title COLLATE NOCASE ASC":"n.updated DESC") ,
             new String[]{"%"+filter+"%","%"+filter+"%"});
         try {
             while(c.moveToNext()) {
@@ -99,10 +101,10 @@ public class MainActivity extends Activity {
                 String title=c.getString(1), content=c.getString(2), notebook=c.getString(3);
                 LinearLayout card=column(); card.setPadding(dp(8),dp(6),dp(8),dp(6));
                 card.setBackgroundColor(Color.WHITE); card.setElevation(dp(1));
-                TextView heading=text(title.isEmpty()?"Nota tanpa tajuk":title,17,true);
+                TextView heading=text(title.isEmpty()?"Nota tanpa tajuk":title,17,true); heading.setMaxLines(2);
                 TextView preview=text(notebook+"  ·  "+Html.fromHtml(content,Html.FROM_HTML_MODE_COMPACT).toString().replace('\n',' ').trim(),13,false);
-                preview.setMaxLines(2); preview.setEllipsize(android.text.TextUtils.TruncateAt.END); card.addView(heading); card.addView(preview);
-                card.setOnClickListener(v->openNote(id));
+                preview.setMaxLines(2); preview.setLineSpacing(dp(2),1f); preview.setEllipsize(android.text.TextUtils.TruncateAt.END); card.addView(heading); card.addView(preview);
+                card.setOnClickListener(v->openNote(id)); card.setClickable(true);
                 results.addView(card,new LinearLayout.LayoutParams(-1,-2));
                 View line=new View(this); line.setBackgroundColor(Color.rgb(230,235,231));
                 results.addView(line,new LinearLayout.LayoutParams(-1,dp(6)));
@@ -213,9 +215,9 @@ public class MainActivity extends Activity {
         saveNow();
         ScrollView scroll=new ScrollView(this);
         TextView reading=text("",19,false);
-        reading.setTextIsSelectable(true);
+        reading.setTextIsSelectable(true); reading.setPadding(dp(18),dp(18),dp(18),dp(24));
         reading.setText(Html.fromHtml(Html.toHtml(contentEdit.getText(),Html.TO_HTML_PARAGRAPH_LINES_CONSECUTIVE),Html.FROM_HTML_MODE_COMPACT));
-        reading.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
+        reading.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG); reading.setLineSpacing(dp(4),1.12f);
         scroll.addView(reading);
         new AlertDialog.Builder(this).setTitle(titleEdit.getText().toString()).setView(scroll)
             .setPositiveButton("Kembali menulis",null).show();
