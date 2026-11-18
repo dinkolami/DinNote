@@ -92,6 +92,7 @@ class NoteDatabase(context: Context) :
     }
 
     fun setColor(id: Long, colorTag: String) {
+        require(id > 0L) { "ID nota tidak sah" }
         require(colorTag.isNotBlank()) { "Warna nota tidak sah" }
         writableDatabase.execSQL(
             "UPDATE notes SET color_tag = ?, updated_at = ? WHERE id = ?",
