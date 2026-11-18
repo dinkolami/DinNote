@@ -2857,6 +2857,7 @@ private fun SmartVaultDialog(onDismiss: () -> Unit, onInsert: (String) -> Unit) 
     var references by remember { mutableStateOf(items.associateWith { readReference(it) }) }
     var refEditing by remember { mutableStateOf<String?>(null) }
     var refDraft by remember { mutableStateOf(List(referenceLabels.size) { "" }) }
+    var insightOpen by remember { mutableStateOf(false) }
     var recallOpen by remember { mutableStateOf(false) }
     var majlisMode by remember { mutableStateOf(false) }
     var majlisSelection by remember { mutableStateOf(emptyList<String>()) }
@@ -2869,6 +2870,41 @@ private fun SmartVaultDialog(onDismiss: () -> Unit, onInsert: (String) -> Unit) 
         }
         val title = majlisTitle.trim()
         return (if (title.isNotBlank()) title + "\n\n" else "") + sections.joinToString("\n\n")
+    }
+    if (insightOpen) {
+        val recallPrefs = context.getSharedPreferences("dinnote_smart_recall", android.content.Context.MODE_PRIVATE)
+        val now = System.currentTimeMillis()
+        val due = items.count { recallPrefs.getLong(tagKey(it), 0L) <= now }
+        val reviewed = items.count { recallPrefs.contains(tagKey(it)) }
+        val themes = tags.values.flatMap { it.split(",").map { tag -> tag.trim() } }
+            .filter { it.isNotEmpty() }.groupingBy { it }.eachCount().entries.sortedByDescending { it.value }
+        val referenced = items.count { referenceText(references[it].orEmpty()).isNotBlank() }
+        AlertDialog(onDismissRequest = { insightOpen = false },
+            title = { Text("Smart Insight · Statistik Ilmu") },
+            text = {
+                Column(Modifier.heightIn(max = 420.dp).verticalScroll(rememberScrollState())) {
+                    listOf("Petikan tersimpan" to items.size, "Tema ilmu" to themes.size,
+                        "Petikan dengan rujukan" to referenced, "Pernah dimurajaah" to reviewed,
+                        "Murajaah tersedia" to due).forEach { (label, count) ->
+                        Row(Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
+                            Text(label, modifier = Modifier.weight(1f))
+                            Text(count.toString(), color = Color(0xFF087F83), fontSize = 20.sp)
+                        }
+                        HorizontalDivider()
+                    }
+                    Text("Tema utama", modifier = Modifier.padding(top = 12.dp), color = Color(0xFF087F83))
+                    themes.take(10).forEach { entry ->
+                        Row(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+                            Text(entry.key, modifier = Modifier.weight(1f))
+                            Text(entry.value.toString())
+                        }
+                    }
+                    if (themes.isEmpty()) Text("Belum ada tema.")
+                }
+            },
+            confirmButton = { TextButton(onClick = { insightOpen = false; recallOpen = true }) { Text("Murajaah") } },
+            dismissButton = { TextButton(onClick = { insightOpen = false }) { Text("Tutup") } })
+        return
     }
     if (recallOpen) {
         SmartRecallDialog(items, onClose = { recallOpen = false })
@@ -2888,6 +2924,9 @@ private fun SmartVaultDialog(onDismiss: () -> Unit, onInsert: (String) -> Unit) 
             Column {
                 OutlinedTextField(value = query, onValueChange = { query = it },
                     label = { Text("Cari teks, tema atau rujukan") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                TextButton(onClick = { insightOpen = true }) {
+                    Text("Smart Insight · Statistik Ilmu", color = Color(0xFF087F83))
+                }
                 TextButton(onClick = { recallOpen = true }) {
                     Text("Smart Recall · Murajaah", color = Color(0xFF087F83))
                 }
