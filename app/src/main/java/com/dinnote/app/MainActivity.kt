@@ -409,6 +409,15 @@ private fun DinNoteReferenceShowcase(
     meaning: String,
     onRead: () -> Unit
 ) {
+    val context = LocalContext.current
+    // Reference artwork is shipped with the APK; the text and buttons below remain live.
+    val referenceArtwork = remember(context) {
+        runCatching {
+            context.assets.open("dinnote_reference.png").use { stream ->
+                BitmapFactory.decodeStream(stream)?.asImageBitmap()
+            }
+        }.getOrNull()
+    }
     val emerald = Color(0xFF004E3C)
     val gold = Color(0xFFD7A740)
     Surface(
@@ -419,6 +428,23 @@ private fun DinNoteReferenceShowcase(
         shadowElevation = 5.dp
     ) {
         Column {
+            if (referenceArtwork != null) {
+                androidx.compose.foundation.Image(
+                    bitmap = referenceArtwork,
+                    contentDescription = "Ilustrasi asal DinNote dengan bingkai emas dan gerbang Islamik",
+                    contentScale = ContentScale.FillWidth,
+                    modifier = Modifier.fillMaxWidth()
+                        .aspectRatio(referenceArtwork.width.toFloat() / referenceArtwork.height.toFloat())
+                        .clickable(onClick = onRead)
+                )
+                Text(
+                    "Ilustrasi rujukan • Sentuh untuk membaca teks sebenar",
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 5.dp),
+                    fontSize = 11.sp,
+                    textAlign = TextAlign.Center,
+                    color = Color(0xFF004E3C)
+                )
+            }
             Box(
                 modifier = Modifier.fillMaxWidth().height(140.dp)
                     .background(Brush.verticalGradient(listOf(Color(0xFF003A2C), Color(0xFF00634B)))),
