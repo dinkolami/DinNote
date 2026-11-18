@@ -2704,6 +2704,25 @@ private fun SharedParagraphTools(value: TextFieldValue, onChange: (TextFieldValu
     val start = if (cursor == 0) 0 else source.lastIndexOf('\n', cursor - 1) + 1
     val end = source.indexOf('\n', cursor).let { if (it < 0) source.length else it }
     val enabled = end > start && formattedNoteText(smartFormattedExcerpt(source, start, end)).text.isNotBlank()
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val excerpt = if (enabled) smartFormattedExcerpt(source, start, end) else ""
+    fun duplicateBlock() {
+        val before = smartFormattedExcerpt(source, 0, end)
+        val after = smartFormattedExcerpt(source, end, source.length)
+        val inserted = "\n" + excerpt
+        onChange(TextFieldValue(before + inserted + after, selection = TextRange(before.length + inserted.length)))
+    }
+    fun moveBlock(up: Boolean) {
+        if (up && start == 0 || !up && end == source.length) return
+        val left = if (up) { if (start <= 1) 0 else source.lastIndexOf('\n', start - 2) + 1 } else start
+        val right = if (up) end else source.indexOf('\n', end + 1).let { if (it < 0) source.length else it }
+        val neighbour = if (up) smartFormattedExcerpt(source, left, start - 1) else smartFormattedExcerpt(source, end + 1, right)
+        val before = smartFormattedExcerpt(source, 0, left)
+        val after = smartFormattedExcerpt(source, right, source.length)
+        val swapped = if (up) excerpt + "\n" + neighbour else neighbour + "\n" + excerpt
+        val position = before.length + if (up) excerpt.length else swapped.length
+        onChange(TextFieldValue(before + swapped + after, selection = TextRange(position)))
+    }
     val selected = value.copy(selection = TextRange(start, end), composition = null)
     Box(Modifier.wrapContentWidth()) {
         TextButton(enabled = enabled, onClick = { expanded = true }) {
@@ -2713,6 +2732,23 @@ private fun SharedParagraphTools(value: TextFieldValue, onChange: (TextFieldValu
             DropdownMenuItem(text = { Text("Pilih perenggan") }, enabled = enabled, onClick = {
                 expanded = false
                 onChange(selected)
+            })
+            DropdownMenuItem(text = { Text("Salin perenggan") }, enabled = enabled, onClick = {
+                expanded = false
+                val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                clipboard.setPrimaryClip(android.content.ClipData.newPlainText("DinNote", formattedNoteText(excerpt).text))
+            })
+            DropdownMenuItem(text = { Text("Duplikasi perenggan") }, enabled = enabled, onClick = {
+                expanded = false
+                duplicateBlock()
+            })
+            DropdownMenuItem(text = { Text("Pindah ke atas") }, enabled = enabled && start > 0, onClick = {
+                expanded = false
+                moveBlock(true)
+            })
+            DropdownMenuItem(text = { Text("Pindah ke bawah") }, enabled = enabled && end < source.length, onClick = {
+                expanded = false
+                moveBlock(false)
             })
             DropdownMenuItem(text = { Text("Warnakan perenggan") }, enabled = enabled, onClick = {
                 expanded = false
