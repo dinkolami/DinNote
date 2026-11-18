@@ -27,6 +27,7 @@ object DinNoteDesign {
     val Cream = Color(0xFFFFFDF7)
     val Ink = Color(0xFF183A30)
     val SecondaryInk = Color(0xFF334B4A)
+    val CardHorizontalPadding = 12.dp
 }
 
 @Composable
