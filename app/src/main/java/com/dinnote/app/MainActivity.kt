@@ -1378,19 +1378,21 @@ fun NotesScreen(
                             })
                             DropdownMenuItem(modifier = Modifier.height(48.dp), leadingIcon = { Text("❞", color = Color(0xFF087F83), fontSize = 22.sp) }, text = { Text("Simpan sebagai petikan", fontSize = 14.sp) }, onClick = {
                                 smartBlockMenu = false
-                                database.save("Petikan: " + title.ifBlank { "Nota" }, blockText.substring(blockStart, blockEnd), null)
-                                refreshNotes()
+                                smartSource = smartFormattedExcerpt(blockText, blockStart, blockEnd)
+                                smartLabel = "Simpan petikan"
+                                smartResult = ""
+                                smartDialog = formattedNoteText(smartSource).text.isNotBlank()
                             })
                             HorizontalDivider(color = Color(0xFFE7EEEE))
                             DropdownMenuItem(modifier = Modifier.height(48.dp), leadingIcon = { Text("文", color = Color(0xFF087F83), fontSize = 20.sp) }, text = { Text("Terjemah perenggan", fontSize = 14.sp) }, onClick = {
                                 smartBlockMenu = false
                                 body = body.copy(selection = TextRange(blockStart, blockEnd), composition = null)
-                                smartSource = blockText.substring(blockStart, blockEnd)
+                                smartSource = smartFormattedExcerpt(blockText, blockStart, blockEnd)
                                 smartLabel = "Terjemah"
                                 smartResult = ""
                                 smartDialog = true
                                 smartBusy = true
-                                ArabicMalayTranslator.translate(smartSource) { result ->
+                                ArabicMalayTranslator.translate(formattedNoteText(smartSource).text) { result ->
                                     smartBusy = false
                                     smartResult = result.getOrElse { "" }
                                 }
@@ -1417,13 +1419,13 @@ fun NotesScreen(
                                         smartMenu = false
                                         val start = body.selection.min.coerceIn(0, body.text.length)
                                         val end = body.selection.max.coerceIn(start, body.text.length)
-                                        smartSource = body.text.substring(start, end)
+                                        smartSource = smartFormattedExcerpt(body.text, start, end)
                                         smartLabel = action
                                         smartResult = ""
-                                        smartDialog = smartSource.isNotBlank()
+                                        smartDialog = formattedNoteText(smartSource).text.isNotBlank()
                                         if (smartDialog && action == "Terjemah") {
                                             smartBusy = true
-                                            ArabicMalayTranslator.translate(smartSource) { result ->
+                                            ArabicMalayTranslator.translate(formattedNoteText(smartSource).text) { result ->
                                                 smartBusy = false
                                                 smartResult = result.getOrElse { "" }
                                             }
@@ -1438,8 +1440,8 @@ fun NotesScreen(
                             onDismissRequest = { if (!smartBusy) smartDialog = false },
                             title = { Text(smartLabel) },
                             text = {
-                                Column {
-                                    Text(smartSource.take(500), fontSize = 14.sp)
+                                Column(Modifier.heightIn(max = 420.dp).verticalScroll(rememberScrollState())) {
+                                    Text(formattedNoteText(smartSource), fontSize = 14.sp, style = androidx.compose.ui.text.TextStyle(textDirection = TextDirection.ContentOrLtr))
                                     if (smartBusy) Text("Menyediakan terjemahan...")
                                     else if (smartLabel != "Simpan petikan") {
                                         if (smartLabel == "Terjemah") Text("Draf terjemahan — semak maksud sebelum menyimpan.", fontSize = 12.sp)
@@ -1822,6 +1824,49 @@ private fun noteFormatTokens(source: String): List<NoteFormatToken> {
         }
         NoteFormatToken(m.range.first, m.range.last + 1, style, (token == "{{/size}}" || token == "{{/color}}"), kind)
     }.toList()
+}
+
+/** Produce a self-contained excerpt with only effective formatting scopes. */
+private fun smartFormattedExcerpt(source: String, start: Int, end: Int): String {
+    val from = start.coerceIn(0, source.length)
+    val to = end.coerceIn(from, source.length)
+    val (paired, ranges) = noteFormatRanges(source)
+    val all = noteFormatTokens(source)
+    val hidden = BooleanArray(source.length)
+    (paired + all.filter { it.kind == "size" || it.kind == "color" }).forEach { token ->
+        for (i in token.start until token.end) hidden[i] = true
+    }
+    val openers = paired.associateBy { it.end }
+    val scopes = ranges.mapNotNull { range ->
+        openers[range.first]?.let { Triple(range.first, range.second, it) }
+    }
+    val out = StringBuilder()
+    var previous = emptyList<NoteFormatToken>()
+    fun close(tokens: List<NoteFormatToken>) {
+        tokens.asReversed().forEach { token ->
+            out.append(when (token.kind) {
+                "size" -> "{{/size}}"
+                "color" -> "{{/color}}"
+                else -> source.substring(token.start, token.end)
+            })
+        }
+    }
+    for (i in from until to) {
+        if (hidden[i]) continue
+        val current = scopes.filter { i >= it.first && i < it.second }
+            .map { it.third }.groupBy { it.kind }.values
+            .mapNotNull { it.maxByOrNull { token -> token.start } }
+            .sortedBy { it.kind }
+        // Compare actual markers rather than positions so identical nested styles collapse.
+        if (current.map { source.substring(it.start, it.end) } != previous.map { source.substring(it.start, it.end) }) {
+            close(previous)
+            current.forEach { out.append(source.substring(it.start, it.end)) }
+            previous = current
+        }
+        out.append(source[i])
+    }
+    close(previous)
+    return out.toString()
 }
 
 private fun noteFormatRanges(source: String): Pair<List<NoteFormatToken>, List<Triple<Int, Int, SpanStyle>>> {
