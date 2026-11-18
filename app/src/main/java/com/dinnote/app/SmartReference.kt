@@ -68,11 +68,11 @@ class SmartReferenceStore(context: Context) {
                     o.optJSONObject("details")?.let { d -> d.keys().asSequence().associateWith { d.optString(it) } } ?: emptyMap())
             }
         }.getOrElse { return emptyList() }
-        if (prefs.getInt("catalogue_version", 1) < 3) {
+        if (prefs.getInt("catalogue_version", 1) < 4) {
             val previousVersion = prefs.getInt("catalogue_version", 1)
             val oldIds = setOf("imam-shafii", "al-umm")
             val merged = saved + initialEntries().filter { item ->
-                (item.id.startsWith("book-") || (previousVersion < 2 && item.id !in oldIds)) && saved.none { it.id == item.id }
+                (item.id.startsWith("term-") || (previousVersion < 3 && item.id.startsWith("book-")) || (previousVersion < 2 && item.id !in oldIds)) && saved.none { it.id == item.id }
             }
             save(merged)
             return merged
@@ -87,7 +87,7 @@ class SmartReferenceStore(context: Context) {
                 .put("category", e.category).put("aliases", JSONArray(e.aliases))
                 .put("description", e.description).put("source", e.source).put("details", JSONObject(e.details)))
         }
-        prefs.edit().putString("entries", array.toString()).putInt("catalogue_version", 3).apply()
+        prefs.edit().putString("entries", array.toString()).putInt("catalogue_version", 4).apply()
     }
 
     fun upsert(entry: SmartReferenceEntry) {
@@ -167,7 +167,41 @@ class SmartReferenceStore(context: Context) {
         SmartReferenceEntry("book-mafatih", "Mafatih al-Ghayb", "Kitab", listOf("مفاتيح الغيب", "التفسير الكبير للرازي"), "Tafsir yang membincangkan bahasa, akidah dan persoalan rasional.", details = mapOf("author" to "Fakhruddin al-Razi", "subject" to "Tafsir")),
         SmartReferenceEntry("book-jalalayn", "Tafsir al-Jalalayn", "Kitab", listOf("تفسير الجلالين", "Tafsir Jalalain"), "Tafsir ringkas al-Quran yang disusun oleh dua orang ulama.", details = mapOf("author" to "Jalaluddin al-Mahalli dan Jalaluddin al-Suyuti", "subject" to "Tafsir")),
         SmartReferenceEntry("book-itqan", "al-Itqan fi ‘Ulum al-Quran", "Kitab", listOf("الإتقان في علوم القرآن"), "Karya ensiklopedik mengenai disiplin ilmu al-Quran.", details = mapOf("author" to "Imam al-Suyuti", "subject" to "Ulum al-Quran")),
-        SmartReferenceEntry("book-mustasfa", "al-Mustasfa", "Kitab", listOf("المستصفى من علم الأصول", "المستصفى"), "Karya mengenai dalil, hukum dan kaedah istinbat.", details = mapOf("author" to "Imam al-Ghazali", "subject" to "Usul fiqh"))
+        SmartReferenceEntry("book-mustasfa", "al-Mustasfa", "Kitab", listOf("المستصفى من علم الأصول", "المستصفى"), "Karya mengenai dalil, hukum dan kaedah istinbat.", details = mapOf("author" to "Imam al-Ghazali", "subject" to "Usul fiqh")),
+        SmartReferenceEntry("term-fard", "Fardu", "Istilah", listOf("الفرض", "Fardhu"), "Tuntutan syarak yang mesti dilaksanakan; meninggalkannya tanpa uzur berdosa."),
+        SmartReferenceEntry("term-wajib", "Wajib", "Istilah", listOf("الواجب"), "Tuntutan yang mesti dilakukan. Dalam mazhab Syafi‘i, pada umumnya sinonim dengan fardu."),
+        SmartReferenceEntry("term-mandub", "Mandub", "Istilah", listOf("المندوب"), "Perbuatan yang dituntut tanpa tuntutan mengikat."),
+        SmartReferenceEntry("term-makruh", "Makruh", "Istilah", listOf("المكروه"), "Perbuatan yang dituntut supaya ditinggalkan tanpa larangan mengikat."),
+        SmartReferenceEntry("term-mubah", "Mubah", "Istilah", listOf("المباح"), "Perbuatan yang pada asalnya diberikan pilihan untuk dilakukan atau ditinggalkan."),
+        SmartReferenceEntry("term-haram", "Haram", "Istilah", listOf("الحرام"), "Perbuatan yang dilarang oleh syarak secara mengikat."),
+        SmartReferenceEntry("term-ijma", "Ijmak", "Istilah", listOf("الإجماع", "Ijma‘"), "Kesepakatan para mujtahid umat Islam selepas kewafatan Nabi SAW mengenai hukum syarak pada suatu zaman."),
+        SmartReferenceEntry("term-qiyas", "Qiyas", "Istilah", listOf("القياس"), "Menghubungkan hukum suatu cabang kepada asal kerana berkongsi illah hukum."),
+        SmartReferenceEntry("term-illah", "‘Illah hukum", "Istilah", listOf("العلة الشرعية", "علة الحكم"), "Sifat yang menjadi asas pengaitan sesuatu hukum dalam perbahasan usul fiqh."),
+        SmartReferenceEntry("term-istishab", "Istishab", "Istilah", listOf("الاستصحاب"), "Mengekalkan hukum atau keadaan terdahulu sehingga terdapat dalil yang mengubahnya."),
+        SmartReferenceEntry("term-ijtihad", "Ijtihad", "Istilah", listOf("الاجتهاد"), "Pengerahan kemampuan ilmiah oleh ahli yang layak untuk memperoleh hukum syarak."),
+        SmartReferenceEntry("term-taqlid", "Taklid", "Istilah", listOf("التقليد"), "Mengikuti pandangan seseorang tanpa mengetahui dalil terperincinya."),
+        SmartReferenceEntry("term-sahih", "Hadis sahih", "Istilah", listOf("الحديث الصحيح"), "Hadis bersanad bersambung, dengan perawi adil dan dabit, tanpa syaz dan illah yang mencacatkan."),
+        SmartReferenceEntry("term-hasan", "Hadis hasan", "Istilah", listOf("الحديث الحسن"), "Hadis yang memenuhi syarat penerimaan dengan tahap ketepatan perawi lebih rendah daripada sahih, dalam definisi hasan li-dhatihi."),
+        SmartReferenceEntry("term-daif", "Hadis daif", "Istilah", listOf("الحديث الضعيف", "Hadis dhaif"), "Hadis yang tidak memenuhi syarat hadis sahih atau hasan."),
+        SmartReferenceEntry("term-mursal", "Hadis mursal", "Istilah", listOf("الحديث المرسل"), "Dalam penggunaan lazim ahli hadis, riwayat seorang tabi‘i yang disandarkan terus kepada Nabi SAW."),
+        SmartReferenceEntry("term-mutawatir", "Hadis mutawatir", "Istilah", listOf("الحديث المتواتر"), "Riwayat melalui bilangan perawi yang menurut kebiasaan mustahil bersepakat untuk berdusta, dengan syarat lain yang ditetapkan ulama."),
+        SmartReferenceEntry("term-marfu", "Hadis marfu‘", "Istilah", listOf("الحديث المرفوع"), "Riwayat yang disandarkan kepada Nabi SAW, sama ada perkataan, perbuatan, pengakuan atau sifat."),
+        SmartReferenceEntry("term-mawquf", "Hadis mawquf", "Istilah", listOf("الحديث الموقوف"), "Riwayat yang disandarkan kepada sahabat."),
+        SmartReferenceEntry("term-ikhlas", "Ikhlas", "Istilah", listOf("الإخلاص"), "Memurnikan niat dan tujuan amal kerana Allah."),
+        SmartReferenceEntry("term-tawakkul", "Tawakal", "Istilah", listOf("التوكل", "Tawakkal"), "Pergantungan hati kepada Allah dengan mengambil sebab yang dibenarkan."),
+        SmartReferenceEntry("term-zuhd", "Zuhud", "Istilah", listOf("الزهد"), "Tidak menjadikan kepentingan dunia sebagai tujuan utama hati."),
+        SmartReferenceEntry("term-muraqabah", "Muraqabah", "Istilah", listOf("المراقبة"), "Kesedaran hati bahawa Allah sentiasa mengetahui keadaan dan amalan hamba."),
+        SmartReferenceEntry("term-muhasabah", "Muhasabah", "Istilah", listOf("المحاسبة"), "Menilai dan memperbaiki diri serta amalan."),
+        SmartReferenceEntry("term-riya", "Riyak", "Istilah", listOf("الرياء", "Riya‘"), "Melakukan atau memperlihatkan ibadah dengan tujuan memperoleh pandangan atau pujian manusia."),
+        SmartReferenceEntry("term-ujub", "Ujub", "Istilah", listOf("العجب"), "Kagum terhadap diri atau amal sendiri sehingga mengabaikan kurniaan Allah."),
+        SmartReferenceEntry("term-mubtada", "Mubtada’", "Istilah", listOf("المبتدأ"), "Isim yang biasanya berada pada permulaan jumlah ismiyyah dan dihukum marfu‘."),
+        SmartReferenceEntry("term-khabar", "Khabar nahu", "Istilah", listOf("الخبر النحوي", "خبر المبتدأ"), "Unsur yang melengkapkan makna mubtada’."),
+        SmartReferenceEntry("term-idgham", "Idgham", "Istilah", listOf("الإدغام"), "Memasukkan satu huruf ke dalam huruf berikutnya menurut kaedah bacaan."),
+        SmartReferenceEntry("term-ikhfa", "Ikhfa’", "Istilah", listOf("الإخفاء"), "Menyembunyikan sebutan huruf pada kadar antara izhar dan idgham menurut kaedah tajwid."),
+        SmartReferenceEntry("term-izhar", "Izhar", "Istilah", listOf("الإظهار"), "Menyebut huruf dengan jelas menurut kaedah tajwid."),
+        SmartReferenceEntry("term-iqlab", "Iqlab", "Istilah", listOf("الإقلاب"), "Menukarkan bunyi nun sakinah atau tanwin kepada mim tersembunyi berserta dengung ketika bertemu ba."),
+        SmartReferenceEntry("term-ghunnah", "Ghunnah", "Istilah", listOf("الغنة"), "Bunyi dengung yang keluar melalui rongga hidung."),
+        SmartReferenceEntry("term-madd", "Mad tajwid", "Istilah", listOf("المد في التجويد"), "Memanjangkan suara pada huruf mad atau lin mengikut kaedah bacaan.")
     )
 }
 
