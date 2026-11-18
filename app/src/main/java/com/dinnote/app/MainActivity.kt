@@ -549,7 +549,7 @@ fun HomeScreen(
                 border = BorderStroke(1.dp, Color(0xFFB9D6CE)),
                 shadowElevation = 2.dp
             ) {
-                Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(9.dp)) {
                     Text("✦ Hikmah Hari Ini", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color(0xFF08766C))
                     Text(formattedNoteText(entry.arabic), modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Right,
                         fontSize = 18.sp, lineHeight = 30.sp,
