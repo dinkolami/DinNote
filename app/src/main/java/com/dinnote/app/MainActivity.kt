@@ -458,8 +458,8 @@ fun HomeScreen(
         }
     Column(
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())
-            .padding(horizontal = 14.dp, vertical = 4.dp),
-        verticalArrangement = Arrangement.spacedBy(5.dp)
+            .padding(horizontal = 16.dp, vertical = 10.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         DinNoteFrontHeader()
         if (pinnedNotes.isNotEmpty()) {
