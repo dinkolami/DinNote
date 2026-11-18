@@ -3629,14 +3629,16 @@ private fun DinNoteFrontHeader() {
     }
     if (banner != null) {
         BoxWithConstraints(Modifier.fillMaxWidth(), contentAlignment = androidx.compose.ui.Alignment.Center) {
-            val bannerWidth = minOf(maxWidth, 540.dp)
+            val bannerRatio = banner.width.toFloat() / banner.height.toFloat()
+            // Preserve the artwork while limiting vertical space on wide and unfolded displays.
+            val bannerWidth = minOf(maxWidth, 540.dp, 112.dp * bannerRatio)
             androidx.compose.foundation.Image(
                 bitmap = banner,
                 contentDescription = "DinNote — Daripada catatan kepada khazanah ilmu.",
                 contentScale = ContentScale.Fit,
                 alpha = 1f,
                 modifier = Modifier.width(bannerWidth)
-                    .aspectRatio(banner.width.toFloat() / banner.height.toFloat())
+                    .aspectRatio(bannerRatio)
                     .clip(RoundedCornerShape(12.dp))
             )
         }
