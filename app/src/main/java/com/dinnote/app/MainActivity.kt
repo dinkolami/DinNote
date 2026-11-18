@@ -498,14 +498,13 @@ private fun DinNoteReferenceShowcase(
                         modifier = Modifier.fillMaxWidth().padding(16.dp),
                         fontSize = 15.sp, lineHeight = 25.sp, color = Color(0xFF25382F))
                 }
-                Box(
-                    Modifier.fillMaxWidth().height(64.dp)
-                        .clip(RoundedCornerShape(topStart = 38.dp, topEnd = 38.dp))
-                        .background(Brush.verticalGradient(listOf(Color(0xFFDAE7B4), Color(0xFF00634B)))),
-                    contentAlignment = androidx.compose.ui.Alignment.Center
-                ) {
-                    Text("☪   ✦   ☪", fontSize = 27.sp, color = Color(0xFFFFDB80))
-                }
+                androidx.compose.foundation.Image(
+                    painter = androidx.compose.ui.res.painterResource(R.drawable.dinnote_mosque_landscape),
+                    contentDescription = "Ilustrasi masjid, menara, dedaun dan gelombang hijau emas",
+                    contentScale = ContentScale.FillBounds,
+                    modifier = Modifier.fillMaxWidth().height(112.dp)
+                        .clip(RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp))
+                )
                 Surface(modifier = Modifier.fillMaxWidth().clickable(onClick = onRead),
                     shape = RoundedCornerShape(12.dp), color = emerald,
                     border = BorderStroke(1.dp, gold)) {
