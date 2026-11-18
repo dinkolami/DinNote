@@ -2874,8 +2874,11 @@ private fun SmartRecallDialog(items: List<String>, onClose: () -> Unit) {
 private fun SmartDualView(items: List<String>, onClose: () -> Unit, onInsert: (String) -> Unit) {
     var selected by remember { mutableStateOf(items.firstOrNull().orEmpty()) }
     var query by remember { mutableStateOf("") }
-    var draft by remember { mutableStateOf("") }
-    val wide = androidx.compose.ui.platform.LocalConfiguration.current.screenWidthDp >= 600
+    var draft by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf("") }
+    val configuration = androidx.compose.ui.platform.LocalConfiguration.current
+    val wide = configuration.screenWidthDp >= 600 ||
+        (configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE &&
+            configuration.screenWidthDp >= 480)
     val filtered = remember(items, query) { items.filter { formattedNoteText(it).text.contains(query.trim(), ignoreCase = true) } }
     androidx.compose.ui.window.Dialog(onDismissRequest = onClose,
         properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false)) {
