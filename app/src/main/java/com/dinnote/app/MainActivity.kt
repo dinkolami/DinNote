@@ -1449,6 +1449,22 @@ fun NotesScreen(
                             DropdownMenu(expanded = pasteMenu, onDismissRequest = { pasteMenu = false }) {
                                 DropdownMenuItem(text = { Text("Tampal teks biasa") }, onClick = { pasteMenu = false; pasteText(false) })
                                 DropdownMenuItem(text = { Text("Tampal dengan format") }, onClick = { pasteMenu = false; pasteText(true) })
+                                DropdownMenuItem(text = { Text("Tampal blok DinNote") }, onClick = {
+                                    pasteMenu = false
+                                    val transfer = pasteContext.getSharedPreferences("dinnote_smart_transfer", android.content.Context.MODE_PRIVATE)
+                                    val block = transfer.getString("block", null)
+                                    if (!block.isNullOrEmpty()) {
+                                        val a = body.selection.min.coerceIn(0, body.text.length)
+                                        val b = body.selection.max.coerceIn(a, body.text.length)
+                                        val before = smartFormattedExcerpt(body.text, 0, a)
+                                        val after = smartFormattedExcerpt(body.text, b, body.text.length)
+                                        undoStack.add(body.copy(composition = null))
+                                        if (undoStack.size > 60) undoStack.removeAt(0)
+                                        redoStack.clear()
+                                        body = TextFieldValue(before + block + after, selection = TextRange(before.length + block.length))
+                                        noteBodyFocusRequester.requestFocus()
+                                    } else android.widget.Toast.makeText(pasteContext, "Tiada blok DinNote disalin", android.widget.Toast.LENGTH_SHORT).show()
+                                })
                             }
                         }
                     }
@@ -1506,6 +1522,15 @@ fun NotesScreen(
                                 redoStack.clear()
                                 val newStart = blockStart + next.length + 1
                                 body = TextFieldValue(blockText.substring(0, blockStart) + next + "\n" + paragraph + blockText.substring(nextEnd), selection = TextRange(newStart, newStart + paragraph.length))
+                            })
+                            DropdownMenuItem(text = { Text("Salin dengan format DinNote") }, enabled = canSelectBlock, onClick = {
+                                smartBlockMenu = false
+                                val block = smartFormattedExcerpt(blockText, blockStart, blockEnd)
+                                if (formattedNoteText(block).text.isNotBlank()) {
+                                    pasteContext.getSharedPreferences("dinnote_smart_transfer", android.content.Context.MODE_PRIVATE)
+                                        .edit().putString("block", block).apply()
+                                    android.widget.Toast.makeText(pasteContext, "Blok disalin dengan format", android.widget.Toast.LENGTH_SHORT).show()
+                                }
                             })
                             DropdownMenuItem(modifier = Modifier.height(48.dp), leadingIcon = { Text("❞", color = Color(0xFF087F83), fontSize = 22.sp) }, text = { Text("Simpan sebagai petikan", fontSize = 14.sp) }, onClick = {
                                 smartBlockMenu = false
