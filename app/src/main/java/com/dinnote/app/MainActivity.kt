@@ -1163,10 +1163,8 @@ fun NotesScreen(
             recoveryPrefs.edit().putString("title", title).putString("body", body.text)
                 .putString("color", selectedColor).putString("category", selectedCategory).apply()
             return try {
-                val id = database.save(title.trim(), body.text, editingId)
+                val id = database.save(title.trim(), body.text, editingId, selectedColor, selectedCategory)
                 editingId = id
-                database.setColor(id, selectedColor)
-                database.setCategory(id, selectedCategory)
                 refreshNotes()
                 recoveryPrefs.edit().clear().apply()
                 recoveryAvailable = false
