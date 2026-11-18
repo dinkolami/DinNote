@@ -2427,6 +2427,53 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                     UnifiedEditorHeading("Catatan Maktabah",
                         onBack = { saveLibraryEditor(); editingLibraryKey = null },
                         onSave = { saveLibraryEditor(); editingLibraryKey = null })
+                    var libraryToolsExpanded by remember { mutableStateOf(false) }
+                    var libraryTranslationExpanded by remember { mutableStateOf(false) }
+                    Surface(Modifier.fillMaxWidth().weight(1f).padding(horizontal = 3.dp, vertical = 0.dp),
+                        shape = RoundedCornerShape(0.dp), color = Color.White) {
+                        Box(Modifier.fillMaxSize()) {
+                            // Keep the writing surface unobstructed; decoration belongs to reading cards.
+                            Column(Modifier.fillMaxSize().padding(horizontal = 12.dp, vertical = 4.dp)) {
+                                androidx.compose.foundation.text.BasicTextField(
+                                    value = libraryTitle, onValueChange = { libraryTitle = it },
+                                    modifier = Modifier.fillMaxWidth(), singleLine = true,
+                                    textStyle = androidx.compose.ui.text.TextStyle(fontSize = 18.sp,
+                                        fontWeight = FontWeight.SemiBold, color = Color(0xFF087F83),
+                                        textDirection = TextDirection.ContentOrRtl),
+                                    decorationBox = { inner ->
+                                        Box {
+                                            if (libraryTitle.isEmpty()) Text("Tajuk catatan",
+                                                color = Color(0xFF087F83), fontSize = 18.sp)
+                                            inner()
+                                        }
+                                    }
+                                )
+                                Spacer(Modifier.height(4.dp))
+                                androidx.compose.foundation.text.BasicTextField(
+                                    value = libraryBody, onValueChange = { libraryBody = it },
+                                    visualTransformation = remember { NoteFormattingTransformation() },
+                                    modifier = Modifier.weight(1f).fillMaxWidth()
+                                        .padding(horizontal = 2.dp, vertical = 4.dp)
+                                        .onSizeChanged { libraryBodyViewport = it.height }
+                                        .verticalScroll(libraryBodyScroll),
+                                    onTextLayout = { libraryBodyLayout = it },
+                                    textStyle = androidx.compose.ui.text.TextStyle(fontSize = libraryFontSize.sp,
+                                        lineHeight = (libraryFontSize * libraryDisplayPrefs.getFloat("line_spacing", 1.6f).coerceIn(1.2f, 2.2f)).sp,
+                                        color = Color(0xFF263B3E),
+                                        textDirection = TextDirection.ContentOrRtl),
+                                    decorationBox = { inner ->
+                                        Box {
+                                            if (libraryBody.text.isEmpty()) Text(
+                                                "Sentuh di sini untuk menulis...",
+                                                color = Color.Gray, fontSize = 16.sp)
+                                            inner()
+                                        }
+                                    }
+                                )
+                                Spacer(Modifier.height(4.dp))
+                            }
+                        }
+                    }
                     Row(
                         Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 5.dp),
                         horizontalArrangement = Arrangement.spacedBy(5.dp),
@@ -2459,6 +2506,17 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                             } else libraryBody = resizeEditorTextSelection(libraryBody, 1, libraryFontSize.toInt())
                         }, contentPadding = PaddingValues(0.dp), modifier = Modifier.weight(1f).height(32.dp)) { Text("A+") }
                     }
+
+                    Row(Modifier.fillMaxWidth().height(36.dp), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                        TextButton(onClick = { libraryToolsExpanded = !libraryToolsExpanded }) {
+                            Text(if (libraryToolsExpanded) "Tutup alat ▴" else "⋯ Alat editor", fontSize = 12.sp)
+                        }
+                        TextButton(onClick = { libraryTranslationExpanded = !libraryTranslationExpanded }) {
+                            Text(if (libraryTranslationExpanded) "Tutup terjemahan" else "Terjemahan", fontSize = 12.sp)
+                        }
+                    }
+                    if (libraryToolsExpanded) {
+                        Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                     var clearLibraryFormatConfirm by remember { mutableStateOf(false) }
                     TextButton(enabled = !libraryBody.selection.collapsed, onClick = {
                         clearLibraryFormatConfirm = true
@@ -2473,7 +2531,7 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                         }) { Text("Buang format") } },
                         dismissButton = { TextButton(onClick = { clearLibraryFormatConfirm = false }) { Text("Batal") } }
                     )
-                    Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+                    Row(Modifier.wrapContentWidth().padding(horizontal = 8.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         OutlinedButton(shape = RoundedCornerShape(0.dp), 
                             enabled = !translationBusy && libraryBody.text.isNotBlank(),
@@ -2482,6 +2540,7 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                                 val selected = libraryBody.text.substring(selection.min.coerceIn(0, libraryBody.text.length), selection.max.coerceIn(0, libraryBody.text.length))
                                 val source = if (selection.collapsed || selected.isBlank()) formattedNoteText(libraryBody.text).text
                                     else formattedNoteText(smartFormattedExcerpt(libraryBody.text, selection.min, selection.max)).text
+                                libraryTranslationExpanded = true
                                 translationBusy = true
                                 translationStatus = "Menyediakan terjemahan (muat turun model jika perlu)..."
                                 ArabicMalayTranslator.translate(source) { result ->
@@ -2507,6 +2566,11 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                             }
                         ) { Text("▤+", fontSize = 14.sp) }
                     }
+
+                        }
+                    }
+                    if (libraryTranslationExpanded) {
+                        Column(Modifier.fillMaxWidth().heightIn(max = 120.dp).verticalScroll(rememberScrollState())) {
                     if (translationStatus.isNotBlank()) {
                         Text(translationStatus, modifier = Modifier.padding(horizontal = 14.dp), fontSize = 12.sp)
                     }
@@ -2519,51 +2583,10 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                             maxLines = 4
                         )
                     }
-                    Surface(Modifier.fillMaxWidth().weight(1f).padding(horizontal = 3.dp, vertical = 0.dp),
-                        shape = RoundedCornerShape(0.dp), color = Color.White) {
-                        Box(Modifier.fillMaxSize()) {
-                            // Keep the writing surface unobstructed; decoration belongs to reading cards.
-                            Column(Modifier.fillMaxSize().padding(horizontal = 12.dp, vertical = 10.dp)) {
-                                androidx.compose.foundation.text.BasicTextField(
-                                    value = libraryTitle, onValueChange = { libraryTitle = it },
-                                    modifier = Modifier.fillMaxWidth(), singleLine = true,
-                                    textStyle = androidx.compose.ui.text.TextStyle(fontSize = 18.sp,
-                                        fontWeight = FontWeight.SemiBold, color = Color(0xFF087F83),
-                                        textDirection = TextDirection.ContentOrRtl),
-                                    decorationBox = { inner ->
-                                        Box {
-                                            if (libraryTitle.isEmpty()) Text("Tajuk catatan",
-                                                color = Color(0xFF087F83), fontSize = 18.sp)
-                                            inner()
-                                        }
-                                    }
-                                )
-                                Spacer(Modifier.height(8.dp))
-                                androidx.compose.foundation.text.BasicTextField(
-                                    value = libraryBody, onValueChange = { libraryBody = it },
-                                    visualTransformation = remember { NoteFormattingTransformation() },
-                                    modifier = Modifier.weight(1f).fillMaxWidth()
-                                        .padding(horizontal = 2.dp, vertical = 4.dp)
-                                        .onSizeChanged { libraryBodyViewport = it.height }
-                                        .verticalScroll(libraryBodyScroll),
-                                    onTextLayout = { libraryBodyLayout = it },
-                                    textStyle = androidx.compose.ui.text.TextStyle(fontSize = libraryFontSize.sp,
-                                        lineHeight = (libraryFontSize * libraryDisplayPrefs.getFloat("line_spacing", 1.6f).coerceIn(1.2f, 2.2f)).sp,
-                                        color = Color(0xFF263B3E),
-                                        textDirection = TextDirection.ContentOrRtl),
-                                    decorationBox = { inner ->
-                                        Box {
-                                            if (libraryBody.text.isEmpty()) Text(
-                                                "Sentuh di sini untuk menulis...",
-                                                color = Color.Gray, fontSize = 16.sp)
-                                            inner()
-                                        }
-                                    }
-                                )
-                                Spacer(Modifier.height(8.dp))
-                            }
+
                         }
                     }
+
 
                 }
             }
