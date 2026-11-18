@@ -550,7 +550,7 @@ fun HomeScreen(
                 shadowElevation = 2.dp
             ) {
                 Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
-                    Text("Ingatan", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color(0xFF08766C))
+                    Text("✦ Hikmah Hari Ini", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color(0xFF08766C))
                     Text(formattedNoteText(entry.arabic), modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Right,
                         fontSize = 18.sp, color = Color(0xFF183A30))
                     Text(formattedNoteText(entry.meaning), fontSize = 13.sp, color = Color(0xFF52666A))
