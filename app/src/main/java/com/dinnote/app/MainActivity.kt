@@ -2777,6 +2777,9 @@ private fun SmartVaultDialog(onDismiss: () -> Unit, onInsert: (String) -> Unit) 
     var references by remember { mutableStateOf(items.associateWith { readReference(it) }) }
     var refEditing by remember { mutableStateOf<String?>(null) }
     var refDraft by remember { mutableStateOf(List(referenceLabels.size) { "" }) }
+    var majlisMode by remember { mutableStateOf(false) }
+    var majlisSelection by remember { mutableStateOf(emptyList<String>()) }
+    var majlisTitle by remember { mutableStateOf("") }
     var query by remember { mutableStateOf("") }
     var editing by remember { mutableStateOf<String?>(null) }
     var draft by remember { mutableStateOf("") }
@@ -2787,6 +2790,14 @@ private fun SmartVaultDialog(onDismiss: () -> Unit, onInsert: (String) -> Unit) 
             Column {
                 OutlinedTextField(value = query, onValueChange = { query = it },
                     label = { Text("Cari teks, tema atau rujukan") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                TextButton(onClick = { majlisMode = !majlisMode; majlisSelection = emptyList() }) {
+                    Text(if (majlisMode) "Batal Smart Majlis" else "Smart Majlis · Pilih petikan", color = Color(0xFF087F83))
+                }
+                if (majlisMode) {
+                    OutlinedTextField(value = majlisTitle, onValueChange = { majlisTitle = it },
+                        label = { Text("Tajuk kuliah") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                    Text("Dipilih: " + majlisSelection.size, fontSize = 12.sp)
+                }
                 Column(Modifier.heightIn(max = 300.dp).verticalScroll(rememberScrollState())) {
                     val filtered = items.filter {
                         formattedNoteText(it).text.contains(query.trim(), ignoreCase = true) ||
@@ -2796,7 +2807,14 @@ private fun SmartVaultDialog(onDismiss: () -> Unit, onInsert: (String) -> Unit) 
                     if (filtered.isEmpty()) Text("Tiada petikan ditemui", modifier = Modifier.padding(12.dp))
                     filtered.forEach { block ->
                         Column(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
-                            TextButton(onClick = { onInsert(block); onDismiss() }) {
+                            if (majlisMode) {
+                                Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                                    Checkbox(checked = block in majlisSelection, onCheckedChange = { checked ->
+                                        majlisSelection = if (checked) majlisSelection + block else majlisSelection.filter { it != block }
+                                    })
+                                    Text(formattedNoteText(block), modifier = Modifier.weight(1f), maxLines = 4)
+                                }
+                            } else TextButton(onClick = { onInsert(block); onDismiss() }) {
                                 Text(formattedNoteText(block), maxLines = 4)
                             }
                             Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
@@ -2854,7 +2872,20 @@ private fun SmartVaultDialog(onDismiss: () -> Unit, onInsert: (String) -> Unit) 
                 }
             }
         },
-        confirmButton = { TextButton(onClick = onDismiss) { Text("Tutup") } }
+        confirmButton = {
+            if (majlisMode) TextButton(enabled = majlisSelection.isNotEmpty(), onClick = {
+                val sections = majlisSelection.mapIndexed { number, block ->
+                    val citation = referenceText(references[block].orEmpty())
+                    (number + 1).toString() + ".\n" + block + if (citation.isNotBlank()) "\n" + citation else ""
+                }
+                val title = majlisTitle.trim()
+                val material = (if (title.isNotBlank()) title + "\n\n" else "") + sections.joinToString("\n\n")
+                onInsert(material)
+                onDismiss()
+            }) { Text("Tampal bahan kuliah") }
+            else TextButton(onClick = onDismiss) { Text("Tutup") }
+        },
+        dismissButton = { if (majlisMode) TextButton(onClick = onDismiss) { Text("Tutup") } }
     )
 }
 
