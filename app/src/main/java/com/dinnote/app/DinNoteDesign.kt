@@ -58,23 +58,28 @@ fun DinNoteBilingualCard(
     DinNoteContentCard(modifier) {
         SelectionContainer {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text(
-            text = arabic,
-            modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Right,
-            fontSize = 18.sp,
-            lineHeight = 31.sp,
-            style = TextStyle(textDirection = TextDirection.Rtl),
-            color = Color(0xFF183A30)
-        )
-                Text(
-            text = malay,
-            fontSize = 14.sp,
-            lineHeight = 22.sp,
-            textAlign = TextAlign.Start,
-            style = TextStyle(textDirection = TextDirection.Ltr),
-            color = Color(0xFF334B4A)
-                )
+                if (arabic.isNotBlank()) {
+                    Text(
+                        text = arabic,
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Right,
+                        fontSize = 18.sp,
+                        lineHeight = 31.sp,
+                        style = TextStyle(textDirection = TextDirection.Rtl),
+                        color = DinNoteDesign.Ink
+                    )
+                }
+                if (malay.isNotBlank()) {
+                    Text(
+                        text = malay,
+                        modifier = Modifier.fillMaxWidth(),
+                        fontSize = 14.sp,
+                        lineHeight = 22.sp,
+                        textAlign = TextAlign.Start,
+                        style = TextStyle(textDirection = TextDirection.Ltr),
+                        color = Color(0xFF334B4A)
+                    )
+                }
             }
         }
     }
