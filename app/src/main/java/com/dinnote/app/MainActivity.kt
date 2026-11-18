@@ -1168,7 +1168,7 @@ fun NotesScreen(
             }
         }
         androidx.activity.compose.BackHandler(enabled = true) {
-            if (readingMode || persistNote()) showEditor = false
+            if (persistNote()) showEditor = false
         }
         LaunchedEffect(title, body.text, selectedCategory, selectedColor, readingMode) {
             if (!readingMode && (editingId != null || title.isNotBlank() || body.text.isNotBlank())) {
