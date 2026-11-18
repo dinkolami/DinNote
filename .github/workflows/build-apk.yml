@@ -27,6 +27,14 @@ jobs:
         run: |
           test -n "$KS" && test -n "$SP" && test -n "$KA" && test -n "$KP" || { echo "::error::Permanent signing secrets are missing. No APK will be published."; exit 1; }
           printf '%s' "$KS" | base64 --decode > "$RUNNER_TEMP/dinnote-release.jks"
+      - name: Validate signing keystore
+        env:
+          DINNOTE_STORE_PASSWORD: ${{ secrets.DINNOTE_STORE_PASSWORD }}
+          DINNOTE_KEY_ALIAS: ${{ secrets.DINNOTE_KEY_ALIAS }}
+        run: |
+          set -euo pipefail
+          keytool -list -keystore "$RUNNER_TEMP/dinnote-release.jks" -storepass:env DINNOTE_STORE_PASSWORD -alias "$DINNOTE_KEY_ALIAS" > /dev/null || { echo "::error::Keystore validation failed. Check the original keystore, its Base64 encoding, store password and alias."; exit 1; }
+          echo "Signing keystore and alias validated."
       - name: Build signed release APK
         env:
           DINNOTE_KEYSTORE_FILE: ${{ runner.temp }}/dinnote-release.jks
