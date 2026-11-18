@@ -1527,12 +1527,11 @@ fun NotesScreen(
                         )
                     }
 
-                    // Starter structure for Islamic notes. Insert plain editable text only:
-                    // no markup tokens, database migrations, or external assets.
+                    // Smart Article: editable templates using existing note formatting tokens.
                     var showNoteTemplateMenu by remember { mutableStateOf(false) }
                     Box(Modifier.fillMaxWidth().padding(horizontal = 12.dp)) {
                         TextButton(onClick = { showNoteTemplateMenu = true }) {
-                            Text("＋ Templat artikel", color = Color(0xFF075D49), fontSize = 13.sp)
+                            Text("＋ Smart Article", color = Color(0xFF075D49), fontSize = 13.sp)
                         }
                         DropdownMenu(
                             expanded = showNoteTemplateMenu,
@@ -1542,13 +1541,21 @@ fun NotesScreen(
                                 "Artikel Islamik: ayat, maksud dan perhatian" to listOf("Firman Allah SWT:", "[Ayat Arab]", "Maksudnya:", "[Terjemahan]", "Rujukan:", "[Surah dan nombor ayat]", "Perhatian:", "[Huraian]"),
                                 "Hadis dan pengajaran" to listOf("Sabda Rasulullah SAW:", "[Matan hadis]", "Maksudnya:", "[Terjemahan]", "Riwayat:", "[Sumber dan nombor hadis]", "Pengajaran:", "[Huraian]"),
                                 "Petikan kitab dan syarah" to listOf("Petikan kitab:", "[Teks Arab]", "Maksudnya:", "[Terjemahan]", "Rujukan:", "[Kitab, pengarang, jilid dan halaman]", "Syarah:", "[Huraian]"),
-                                "Faedah dan kesimpulan" to listOf("Faedah:", "[Isi utama]", "Kesimpulan:", "[Rumusan]")
+                                "Faedah dan kesimpulan" to listOf("Faedah:", "[Isi utama]", "Kesimpulan:", "[Rumusan]"),
+                                "Blok • Firman Allah" to listOf("Firman Allah SWT:", "[Ayat Arab]"),
+                                "Blok • Hadis" to listOf("Sabda Rasulullah SAW:", "[Matan hadis]"),
+                                "Blok • Kalam ulama" to listOf("Kalam ulama:", "[Petikan]"),
+                                "Blok • Maksud" to listOf("Maksudnya:", "[Terjemahan]"),
+                                "Blok • Perhatian" to listOf("Perhatian:", "[Huraian]"),
+                                "Blok • Faedah" to listOf("Faedah:", "[Isi utama]")
                             )
                             templates.forEach { (label, lines) ->
                                 DropdownMenuItem(
                                     text = { Text(label) },
                                     onClick = {
-                                        val template = lines.chunked(2).joinToString("\n\n", prefix = "\n\n", postfix = "\n\n") { it.joinToString("\n") }
+                                        val template = lines.chunked(2).joinToString("\n\n", prefix = "\n\n", postfix = "\n\n") { pair ->
+                                            "{{color:#075D49}}**" + pair.first() + "**{{/color}}\n" + pair.drop(1).joinToString("\n")
+                                        }
                                         val start = body.selection.max.coerceIn(0, body.text.length)
                                         val updated = body.text.substring(0, start) + template + body.text.substring(start)
                                         undoStack.add(body)
@@ -1559,6 +1566,7 @@ fun NotesScreen(
                                         val selection = if (placeholderStart >= 0 && placeholderEnd >= placeholderStart) TextRange(start + placeholderStart, start + placeholderEnd + 1) else TextRange(start + template.length)
                                         body = TextFieldValue(updated, selection = selection)
                                         showNoteTemplateMenu = false
+                                        noteBodyFocusRequester.requestFocus()
                                     }
                                 )
                             }
