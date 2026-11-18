@@ -86,7 +86,7 @@ fun DinNoteBilingualCard(
                     Text(
                         text = malay,
                         modifier = Modifier.fillMaxWidth(),
-                        fontSize = 14.sp,
+                        fontSize = DinNoteDesign.ReaderMalaySize,
                         lineHeight = 22.sp,
                         textAlign = TextAlign.Start,
                         style = TextStyle(textDirection = TextDirection.Ltr),
