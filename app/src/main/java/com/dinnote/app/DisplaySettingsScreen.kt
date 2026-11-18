@@ -225,12 +225,30 @@ fun DisplaySettingsScreen(modifier: Modifier = Modifier) {
         Text("Mazhab rujukan utama: Syafi‘i", fontWeight = FontWeight.Medium)
         Text("DinNote memfokuskan rujukan mazhab Syafi‘i.", fontSize = 12.sp, color = Color.Gray)
         Text("Susunan bacaan kitab", fontWeight = FontWeight.Medium)
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            listOf("Arab di atas, Melayu di bawah", "Melayu di atas, Arab di bawah", "Arab sahaja", "Melayu sahaja").forEach { option ->
-                FilterChip(selected = bookLayout == option, onClick = {
-                    bookLayout = option
-                    settingsStatus = "Perubahan belum disimpan"
-                }, label = { Text(option) })
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            listOf(
+                listOf("Arab di atas, Melayu di bawah" to "Arab di atas\nMelayu di bawah",
+                    "Melayu di atas, Arab di bawah" to "Melayu di atas\nArab di bawah"),
+                listOf("Arab sahaja" to "Arab sahaja", "Melayu sahaja" to "Melayu sahaja")
+            ).forEach { options ->
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    options.forEach { (option, label) ->
+                        FilterChip(
+                            modifier = Modifier.weight(1f),
+                            selected = bookLayout == option,
+                            onClick = {
+                                bookLayout = option
+                                settingsStatus = "Perubahan belum disimpan"
+                            },
+                            label = {
+                                Text(label, modifier = Modifier.fillMaxWidth(),
+                                    fontSize = 12.sp, lineHeight = 15.sp,
+                                    textAlign = TextAlign.Center)
+                            },
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                    }
+                }
             }
         }
         Text("Pilihan ini disimpan sebagai keutamaan Maktabah. Paparan kitab yang menyokong susunan ini akan disepadukan secara berperingkat.", fontSize = 12.sp, color = Color.Gray)
