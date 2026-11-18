@@ -1176,13 +1176,16 @@ fun NotesScreen(
         }
         // Editor is part of the Activity composition, not a separate Dialog window.
         // Android IME resizing now uses the Activity's window and shared insets.
-        Box(Modifier.fillMaxSize().background(Color.White)) {
+        val availableWidth = androidx.compose.ui.platform.LocalConfiguration.current.screenWidthDp
+        val editorGutter = ((availableWidth - 840).coerceAtLeast(0) / 2).dp
+        val readingPadding = if (availableWidth >= 600) 24.dp else 8.dp
+        Box(Modifier.fillMaxSize().background(Color.White).padding(horizontal = editorGutter)) {
             Box(Modifier.fillMaxSize().background(Color.White)) {
                 Column(Modifier.fillMaxSize()) {
                     if (readingMode) {
                         Column(
                             Modifier.fillMaxSize()
-                                .padding(horizontal = 8.dp, vertical = 8.dp)
+                                .padding(horizontal = readingPadding, vertical = 8.dp)
                                 .verticalScroll(rememberScrollState())
                                 .padding(horizontal = 8.dp, vertical = 10.dp)
                         ) {
