@@ -130,7 +130,7 @@ class NoteDatabase(context: Context) :
         if (oldName.trim() == newName.trim()) return
         writableDatabase.execSQL(
             "UPDATE notes SET category = ?, updated_at = ? WHERE category = ?",
-            arrayOf(newName, System.currentTimeMillis(), oldName)
+            arrayOf(newName.trim(), System.currentTimeMillis(), oldName)
         )
     }
 
