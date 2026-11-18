@@ -7,6 +7,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -57,8 +59,9 @@ fun DinNoteBilingualCard(
             text = arabic,
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Right,
-            fontSize = 21.sp,
-            lineHeight = 35.sp,
+            fontSize = 18.sp,
+            lineHeight = 31.sp,
+            style = TextStyle(textDirection = TextDirection.Rtl),
             color = Color(0xFF183A30)
         )
         Spacer(Modifier.height(4.dp))
