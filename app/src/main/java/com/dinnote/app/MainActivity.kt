@@ -1839,9 +1839,8 @@ private fun smartFormattedExcerpt(source: String, start: Int, end: Int): String 
     val from = start.coerceIn(0, source.length)
     val to = end.coerceIn(from, source.length)
     val (paired, ranges) = noteFormatRanges(source)
-    val all = noteFormatTokens(source)
     val hidden = BooleanArray(source.length)
-    (paired + all.filter { it.kind == "size" || it.kind == "color" }).forEach { token ->
+    paired.forEach { token ->
         for (i in token.start until token.end) hidden[i] = true
     }
     val openers = paired.associateBy { it.end }
@@ -1899,9 +1898,14 @@ private fun noteFormatRanges(source: String): Pair<List<NoteFormatToken>, List<T
             stack.add(token)
         }
     }
-    // Only paired delimiters are hidden. Unmatched or malformed markers
-    // remain editable, preventing invisible stray content and lost characters.
-    return recognized.sortedBy { it.start } to ranges.sortedWith(compareBy<Triple<Int, Int, SpanStyle>> { it.first }.thenByDescending { it.second })
+    // Explicit legacy size/color tokens are reserved metadata, even when an
+    // old edit left them unbalanced. Keep the stored source intact but hide
+    // these orphan tokens in both the reader and editor. Unpaired emphasis
+    // remains literal because underscores and asterisks can be intentional.
+    val hiddenTokens = (recognized + noteFormatTokens(source).filter {
+        it.kind == "size" || it.kind == "color"
+    }).distinctBy { it.start }.sortedBy { it.start }
+    return hiddenTokens to ranges.sortedWith(compareBy<Triple<Int, Int, SpanStyle>> { it.first }.thenByDescending { it.second })
 }
 
 /** Apply inline emphasis to the selected span without changing unrelated words. */
