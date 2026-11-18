@@ -12,9 +12,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.unit.dp
 import org.json.JSONArray
+
+private fun cleanSearchText(value: String): String = formattedNoteText(value).text
+
+private fun searchKey(value: String): String =
+    java.text.Normalizer.normalize(cleanSearchText(value), java.text.Normalizer.Form.NFKC)
+        .lowercase(java.util.Locale.ROOT)
+        .replace(Regex("[\\u0610-\\u061A\\u064B-\\u065F\\u0670\\u0640\\u06D6-\\u06DC\\u06DF-\\u06E4\\u06E7-\\u06E8\\u06EA-\\u06ED]"), "")
+        .replace(Regex("[أإآٱ]"), "ا")
+        .replace('ى', 'ي')
 
 private data class SearchHit(val source: String, val key: String, val title: String, val content: String)
 
@@ -30,6 +40,7 @@ fun GlobalSearchScreen(modifier: Modifier = Modifier) {
     var revision by remember { mutableIntStateOf(0) }
     var opened by remember { mutableStateOf<SearchHit?>(null) }
     val hits = remember(query, favoritesOnly, revision) {
+        val needle = searchKey(query.trim())
         buildList {
             database.allNotes().forEach { note ->
                 add(SearchHit("Nota", "note_${note.id}", note.title.ifBlank { "Tanpa tajuk" }, note.body))
@@ -53,8 +64,8 @@ fun GlobalSearchScreen(modifier: Modifier = Modifier) {
             }
         }.filter { hit ->
             (!favoritesOnly || favorites.getBoolean(hit.key, false)) &&
-                (query.isBlank() && favoritesOnly || query.isNotBlank() &&
-                    (hit.title.contains(query, true) || hit.content.contains(query, true)))
+                (needle.isBlank() && favoritesOnly || needle.isNotBlank() &&
+                    (searchKey(hit.title).contains(needle) || searchKey(hit.content).contains(needle)))
         }
     }
     Column(modifier.fillMaxSize().padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -80,8 +91,8 @@ fun GlobalSearchScreen(modifier: Modifier = Modifier) {
                         Column(Modifier.weight(1f).clickable { opened = hit }) {
                             Text(hit.source, color = MaterialTheme.colorScheme.primary,
                                 style = MaterialTheme.typography.labelSmall)
-                            Text(hit.title, fontWeight = FontWeight.SemiBold)
-                            Text(hit.content.take(110), maxLines = 2,
+                            Text(cleanSearchText(hit.title), fontWeight = FontWeight.SemiBold)
+                            Text(cleanSearchText(hit.content), maxLines = 2, overflow = TextOverflow.Ellipsis,
                                 style = MaterialTheme.typography.bodySmall)
                         }
                         TextButton(onClick = {
@@ -98,11 +109,11 @@ fun GlobalSearchScreen(modifier: Modifier = Modifier) {
     }
     opened?.let { hit ->
         AlertDialog(onDismissRequest = { opened = null },
-            title = { Text(hit.title) },
+            title = { Text(cleanSearchText(hit.title)) },
             text = {
                 Column(Modifier.heightIn(max = 480.dp)
                     .verticalScroll(rememberScrollState())) {
-                    Text(hit.content, modifier = Modifier.fillMaxWidth(),
+                    Text(formattedNoteText(hit.content), modifier = Modifier.fillMaxWidth(),
                         style = androidx.compose.ui.text.TextStyle(
                             textDirection = TextDirection.ContentOrRtl),
                         textAlign = TextAlign.Start)
