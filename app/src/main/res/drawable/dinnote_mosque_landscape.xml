@@ -85,4 +85,70 @@
     <path android:fillColor="#E6C879" android:pathData="M160,22.9 l2.1,2.1 l-2.1,2.1 l-2.1,-2.1 Z"/>
     <!-- Gold sky ornament 34/34 -->
     <path android:fillColor="#C99736" android:pathData="M197,7.8 l1.25,1.25 l-1.25,1.25 l-1.25,-1.25 Z"/>
+    <!-- Dome mosaic 1/33 -->
+    <path android:fillColor="#D6A53F" android:pathData="M149.0,79 l1.5,-2 l1.5,2 l-1.5,2 Z"/>
+    <!-- Dome mosaic 2/33 -->
+    <path android:fillColor="#F3DA91" android:pathData="M154.8,79 l1.5,-2 l1.5,2 l-1.5,2 Z"/>
+    <!-- Dome mosaic 3/33 -->
+    <path android:fillColor="#D6A53F" android:pathData="M160.6,79 l1.5,-2 l1.5,2 l-1.5,2 Z"/>
+    <!-- Dome mosaic 4/33 -->
+    <path android:fillColor="#F3DA91" android:pathData="M166.4,79 l1.5,-2 l1.5,2 l-1.5,2 Z"/>
+    <!-- Dome mosaic 5/33 -->
+    <path android:fillColor="#D6A53F" android:pathData="M172.2,79 l1.5,-2 l1.5,2 l-1.5,2 Z"/>
+    <!-- Dome mosaic 6/33 -->
+    <path android:fillColor="#F3DA91" android:pathData="M178.0,79 l1.5,-2 l1.5,2 l-1.5,2 Z"/>
+    <!-- Dome mosaic 7/33 -->
+    <path android:fillColor="#D6A53F" android:pathData="M183.8,79 l1.5,-2 l1.5,2 l-1.5,2 Z"/>
+    <!-- Dome mosaic 8/33 -->
+    <path android:fillColor="#F3DA91" android:pathData="M189.6,79 l1.5,-2 l1.5,2 l-1.5,2 Z"/>
+    <!-- Dome mosaic 9/33 -->
+    <path android:fillColor="#D6A53F" android:pathData="M195.4,79 l1.5,-2 l1.5,2 l-1.5,2 Z"/>
+    <!-- Dome mosaic 10/33 -->
+    <path android:fillColor="#F3DA91" android:pathData="M201.2,79 l1.5,-2 l1.5,2 l-1.5,2 Z"/>
+    <!-- Dome mosaic 11/33 -->
+    <path android:fillColor="#D6A53F" android:pathData="M207.0,79 l1.5,-2 l1.5,2 l-1.5,2 Z"/>
+    <!-- Dome mosaic 12/33 -->
+    <path android:fillColor="#F3DA91" android:pathData="M149.0,86 l1.5,-2 l1.5,2 l-1.5,2 Z"/>
+    <!-- Dome mosaic 13/33 -->
+    <path android:fillColor="#D6A53F" android:pathData="M154.8,86 l1.5,-2 l1.5,2 l-1.5,2 Z"/>
+    <!-- Dome mosaic 14/33 -->
+    <path android:fillColor="#F3DA91" android:pathData="M160.6,86 l1.5,-2 l1.5,2 l-1.5,2 Z"/>
+    <!-- Dome mosaic 15/33 -->
+    <path android:fillColor="#D6A53F" android:pathData="M166.4,86 l1.5,-2 l1.5,2 l-1.5,2 Z"/>
+    <!-- Dome mosaic 16/33 -->
+    <path android:fillColor="#F3DA91" android:pathData="M172.2,86 l1.5,-2 l1.5,2 l-1.5,2 Z"/>
+    <!-- Dome mosaic 17/33 -->
+    <path android:fillColor="#D6A53F" android:pathData="M178.0,86 l1.5,-2 l1.5,2 l-1.5,2 Z"/>
+    <!-- Dome mosaic 18/33 -->
+    <path android:fillColor="#F3DA91" android:pathData="M183.8,86 l1.5,-2 l1.5,2 l-1.5,2 Z"/>
+    <!-- Dome mosaic 19/33 -->
+    <path android:fillColor="#D6A53F" android:pathData="M189.6,86 l1.5,-2 l1.5,2 l-1.5,2 Z"/>
+    <!-- Dome mosaic 20/33 -->
+    <path android:fillColor="#F3DA91" android:pathData="M195.4,86 l1.5,-2 l1.5,2 l-1.5,2 Z"/>
+    <!-- Dome mosaic 21/33 -->
+    <path android:fillColor="#D6A53F" android:pathData="M201.2,86 l1.5,-2 l1.5,2 l-1.5,2 Z"/>
+    <!-- Dome mosaic 22/33 -->
+    <path android:fillColor="#F3DA91" android:pathData="M207.0,86 l1.5,-2 l1.5,2 l-1.5,2 Z"/>
+    <!-- Dome mosaic 23/33 -->
+    <path android:fillColor="#D6A53F" android:pathData="M149.0,93 l1.5,-2 l1.5,2 l-1.5,2 Z"/>
+    <!-- Dome mosaic 24/33 -->
+    <path android:fillColor="#F3DA91" android:pathData="M154.8,93 l1.5,-2 l1.5,2 l-1.5,2 Z"/>
+    <!-- Dome mosaic 25/33 -->
+    <path android:fillColor="#D6A53F" android:pathData="M160.6,93 l1.5,-2 l1.5,2 l-1.5,2 Z"/>
+    <!-- Dome mosaic 26/33 -->
+    <path android:fillColor="#F3DA91" android:pathData="M166.4,93 l1.5,-2 l1.5,2 l-1.5,2 Z"/>
+    <!-- Dome mosaic 27/33 -->
+    <path android:fillColor="#D6A53F" android:pathData="M172.2,93 l1.5,-2 l1.5,2 l-1.5,2 Z"/>
+    <!-- Dome mosaic 28/33 -->
+    <path android:fillColor="#F3DA91" android:pathData="M178.0,93 l1.5,-2 l1.5,2 l-1.5,2 Z"/>
+    <!-- Dome mosaic 29/33 -->
+    <path android:fillColor="#D6A53F" android:pathData="M183.8,93 l1.5,-2 l1.5,2 l-1.5,2 Z"/>
+    <!-- Dome mosaic 30/33 -->
+    <path android:fillColor="#F3DA91" android:pathData="M189.6,93 l1.5,-2 l1.5,2 l-1.5,2 Z"/>
+    <!-- Dome mosaic 31/33 -->
+    <path android:fillColor="#D6A53F" android:pathData="M195.4,93 l1.5,-2 l1.5,2 l-1.5,2 Z"/>
+    <!-- Dome mosaic 32/33 -->
+    <path android:fillColor="#F3DA91" android:pathData="M201.2,93 l1.5,-2 l1.5,2 l-1.5,2 Z"/>
+    <!-- Dome mosaic 33/33 -->
+    <path android:fillColor="#D6A53F" android:pathData="M207.0,93 l1.5,-2 l1.5,2 l-1.5,2 Z"/>
 </vector>
