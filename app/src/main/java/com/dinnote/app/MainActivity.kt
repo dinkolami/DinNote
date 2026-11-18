@@ -508,6 +508,23 @@ fun HomeScreen(
             DinNoteDashboardTile("Tetapan", "Paparan & data", "settings",
                 Modifier.weight(1f), onOpenSettings)
         }
+        Surface(
+            modifier = Modifier.fillMaxWidth().clickable(onClick = onOpenNotes),
+            shape = RoundedCornerShape(14.dp),
+            color = Color(0xFF075B50),
+            border = BorderStroke(1.dp, Color(0xFFB48B39))
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+            ) {
+                Text("✎", fontSize = 22.sp, color = Color(0xFFF1C86B))
+                Spacer(Modifier.width(12.dp))
+                Text("Buka Nota Saya", modifier = Modifier.weight(1f),
+                    fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
+                Text("›", fontSize = 22.sp, color = Color.White)
+            }
+        }
         if (pinnedNotes.isNotEmpty()) {
             Row(
                 modifier = Modifier.fillMaxWidth().padding(top = 3.dp, bottom = 1.dp),
