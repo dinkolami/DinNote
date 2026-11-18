@@ -19,7 +19,7 @@ public class MainActivity extends Activity {
   LinearLayout root, list;
   EditText search;
   int background = Color.rgb(248,249,252);
-  @Override public void onCreate(Bundle b) { super.onCreate(b); db=new DB(this); try { showHome(); } catch (Exception e) { showStartupError(e); } }
+  @Override public void onCreate(Bundle b) { super.onCreate(b); try { db=new DB(this); db.getWritableDatabase(); showHome(); } catch (Exception e) { showStartupError(e); } }
   void showStartupError(Exception e) {
     android.util.Log.e("DinNote", "Startup failed", e);
     LinearLayout page=column();
@@ -27,7 +27,7 @@ public class MainActivity extends Activity {
     TextView message=text("DinNote gagal dibuka. Data nota tidak dipadam.\\n\\nRalat: "+e.getClass().getSimpleName()+": "+e.getMessage(),16);
     page.addView(message);
     Button retry=new Button(this);retry.setText("Cuba lagi");page.addView(retry);
-    retry.setOnClickListener(v->{try {showHome();}catch(Exception error){showStartupError(error);}});
+    retry.setOnClickListener(v->{try {db=new DB(this);db.getWritableDatabase();showHome();}catch(Exception error){showStartupError(error);}});
   }
   TextView text(String value,int size) { TextView t=new TextView(this);t.setText(value);t.setTextSize(size);t.setTextColor(Color.rgb(36,43,57));t.setPadding(18,16,18,16);return t; }
   LinearLayout column() { LinearLayout l=new LinearLayout(this);l.setOrientation(1);l.setPadding(18,18,18,18);l.setBackgroundColor(background);return l; }
@@ -45,9 +45,10 @@ public class MainActivity extends Activity {
     refresh("");
   }
   void refresh(String query) {
+    if(list==null)return;
     list.removeAllViews();
     try(Cursor c=db.getReadableDatabase().rawQuery("SELECT id,title,body,color FROM notes WHERE title LIKE ? OR body LIKE ? ORDER BY updated DESC",new String[]{"%"+query+"%","%"+query+"%"})) {
-      while(c.moveToNext()){final int id=c.getInt(0);String heading=c.getString(1);String body=c.getString(2);int noteColor=c.getInt(3);
+      while(c.moveToNext()){final int id=c.getInt(0);String heading=c.getString(1);String body=c.getString(2);if(heading==null)heading="";if(body==null)body="";int noteColor=c.getInt(3);
         TextView item=text((heading.isEmpty()?"Tanpa tajuk":heading)+"\n"+(body.length()>110?body.substring(0,110)+"…":body),17);
         item.setBackgroundColor(noteColor);LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2);p.setMargins(0,10,0,10);list.addView(item,p);item.setOnClickListener(v->edit(id));
       }
@@ -56,12 +57,12 @@ public class MainActivity extends Activity {
   void edit(int id) {
     LinearLayout page=column();setContentView(page);
     Button back=new Button(this);back.setText("← Kembali");page.addView(back);
-    EditText title=new EditText(this);title.setHint("Tajuk nota");title.setSingleLine(true);title.setTextSize(22);page.addView(title);
-    EditText body=new EditText(this);body.setHint("Tulis nota di sini…");body.setTextSize(17);body.setGravity(Gravity.TOP|Gravity.START);body.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
+    EditText title=new EditText(this);title.setHint("Tajuk nota");title.setSingleLine(true);title.setTextSize(20);page.addView(title);
+    EditText body=new EditText(this);body.setHint("Tulis nota di sini…");body.setTextSize(16);body.setGravity(Gravity.TOP|Gravity.START);body.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
     page.addView(body,new LinearLayout.LayoutParams(-1,0,1));
     final int[] noteId={id};final boolean[] loading={true};final int[] noteColor={Color.WHITE};
     int[] colors={Color.WHITE,0xFFFFF4B8,0xFFDDF4DF,0xFFDCEEFF,0xFFFFE1E9,0xFFECE2FF};
-    LinearLayout toolbar=new LinearLayout(this);toolbar.setOrientation(LinearLayout.HORIZONTAL);page.addView(toolbar,1);
+    LinearLayout toolbar=new LinearLayout(this);toolbar.setOrientation(LinearLayout.HORIZONTAL);page.addView(toolbar,new LinearLayout.LayoutParams(-1,-2));
     Button colorButton=new Button(this);colorButton.setText("Warna");toolbar.addView(colorButton,new LinearLayout.LayoutParams(0,-2,1));
     Button checkButton=new Button(this);checkButton.setText("☐");toolbar.addView(checkButton,new LinearLayout.LayoutParams(0,-2,1));
     Button boldButton=new Button(this);boldButton.setText("B");boldButton.setTypeface(null,Typeface.BOLD);toolbar.addView(boldButton,new LinearLayout.LayoutParams(0,-2,1));
@@ -74,7 +75,7 @@ public class MainActivity extends Activity {
     loading[0]=false;
     Runnable save=()->{if(loading[0])return;String t=title.getText().toString(),b=body.getText().toString();if(noteId[0]<0&&t.trim().isEmpty()&&b.trim().isEmpty())return;
       ContentValues values=new ContentValues();values.put("title",t);values.put("body",b);values.put("updated",System.currentTimeMillis());values.put("color",noteColor[0]);
-      if(noteId[0]<0)noteId[0]=(int)db.getWritableDatabase().insert("notes",null,values);else db.getWritableDatabase().update("notes",values,"id=?",new String[]{""+noteId[0]});
+      if(noteId[0]<0)noteId[0]=(int)db.getWritableDatabase().insertOrThrow("notes",null,values);else db.getWritableDatabase().update("notes",values,"id=?",new String[]{""+noteId[0]});
     };
     TextWatcher watcher=new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){save.run();}public void afterTextChanged(Editable e){}};
     title.addTextChangedListener(watcher);body.addTextChangedListener(watcher);
@@ -130,7 +131,7 @@ public class MainActivity extends Activity {
     loading[0]=false;
     Runnable save=()->{if(loading[0])return;String t=title.getText().toString(),b=body.getText().toString();if(bookId[0]<0&&t.trim().isEmpty()&&b.trim().isEmpty())return;
       ContentValues cv=new ContentValues();cv.put("title",t);cv.put("body",b);cv.put("category_id",categoryId);cv.put("updated",System.currentTimeMillis());
-      if(bookId[0]<0)bookId[0]=(int)db.getWritableDatabase().insert("books",null,cv);else db.getWritableDatabase().update("books",cv,"id=?",new String[]{""+bookId[0]});
+      if(bookId[0]<0)bookId[0]=(int)db.getWritableDatabase().insertOrThrow("books",null,cv);else db.getWritableDatabase().update("books",cv,"id=?",new String[]{""+bookId[0]});
     };
     TextWatcher watcher=new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){save.run();}public void afterTextChanged(Editable e){}};
     title.addTextChangedListener(watcher);body.addTextChangedListener(watcher);
@@ -145,6 +146,6 @@ public class MainActivity extends Activity {
     DB(Context c){super(c,"dinnote.db",null,3);}
     public void onCreate(SQLiteDatabase db){db.execSQL("CREATE TABLE notes (id INTEGER PRIMARY KEY AUTOINCREMENT,title TEXT NOT NULL DEFAULT '',body TEXT NOT NULL DEFAULT '',updated INTEGER NOT NULL,color INTEGER NOT NULL DEFAULT -1)");createLibrary(db);}
     static void createLibrary(SQLiteDatabase db){db.execSQL("CREATE TABLE IF NOT EXISTS categories (id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT NOT NULL)");db.execSQL("CREATE TABLE IF NOT EXISTS books (id INTEGER PRIMARY KEY AUTOINCREMENT,category_id INTEGER NOT NULL,title TEXT NOT NULL DEFAULT '',body TEXT NOT NULL DEFAULT '',updated INTEGER NOT NULL)");}
-    public void onUpgrade(SQLiteDatabase db,int oldVersion,int newVersion){if(oldVersion<3)createLibrary(db);if(oldVersion<2) { try { db.execSQL("ALTER TABLE notes ADD COLUMN color INTEGER NOT NULL DEFAULT -1"); } catch (android.database.sqlite.SQLiteException ignored) { /* Column may already exist in older builds. */ } }  }
+    public void onUpgrade(SQLiteDatabase db,int oldVersion,int newVersion){if(oldVersion<2) { try { db.execSQL("ALTER TABLE notes ADD COLUMN color INTEGER NOT NULL DEFAULT -1"); } catch (android.database.sqlite.SQLiteException ignored) { /* Column may already exist in older builds. */ } } if(oldVersion<3)createLibrary(db); }
   }
 }
