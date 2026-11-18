@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -38,11 +39,21 @@ fun GlobalSearchScreen(modifier: Modifier = Modifier) {
     val library = remember { context.getSharedPreferences("dinnote_library_edits", 0) }
     val catalog = remember { context.getSharedPreferences("dinnote_kitab_catalog", 0) }
     val favorites = remember { context.getSharedPreferences("dinnote_bookmarks", 0) }
-    var query by remember { mutableStateOf("") }
-    var favoritesOnly by remember { mutableStateOf(false) }
+    var query by rememberSaveable { mutableStateOf("") }
+    var favoritesOnly by rememberSaveable { mutableStateOf(false) }
     var revision by remember { mutableIntStateOf(0) }
     var opened by remember { mutableStateOf<SearchHit?>(null) }
-    val searchIndex = remember(database, library, catalog) {
+    var indexRevision by remember { mutableIntStateOf(0) }
+    DisposableEffect(library, catalog) {
+        val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, _ -> indexRevision++ }
+        library.registerOnSharedPreferenceChangeListener(listener)
+        catalog.registerOnSharedPreferenceChangeListener(listener)
+        onDispose {
+            library.unregisterOnSharedPreferenceChangeListener(listener)
+            catalog.unregisterOnSharedPreferenceChangeListener(listener)
+        }
+    }
+    val searchIndex = remember(database, library, catalog, indexRevision) {
         buildList {
             database.allNotes().forEach { note ->
                 add(SearchHit("Nota", "note_${note.id}", note.title.ifBlank { "Tanpa tajuk" }, note.body))
