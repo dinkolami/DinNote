@@ -3650,11 +3650,14 @@ private fun DinNoteFrontHeader() {
                 }
             }
 
-        Column(Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 14.dp), horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(3.dp)) {
-            androidx.compose.foundation.Image(painter = androidx.compose.ui.res.painterResource(R.drawable.ic_dinnote_header), contentDescription = null, modifier = Modifier.size(38.dp))
-            Text("DinNote", fontSize = 29.sp, fontFamily = androidx.compose.ui.text.font.FontFamily.Serif, fontWeight = FontWeight.Bold, color = Color(0xFFFFF9E9))
-            Text("Daripada catatan kepada khazanah ilmu.", fontSize = 11.sp, color = Color(0xFFFFF2D1), textAlign = TextAlign.Center)
-            Text("────  ❖  ────", color = Color(0xFFE7C77E), fontSize = 12.sp)
+        Row(Modifier.fillMaxWidth().heightIn(min = 76.dp).padding(horizontal = 36.dp, vertical = 12.dp), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
+            androidx.compose.foundation.Image(painter = androidx.compose.ui.res.painterResource(R.drawable.ic_dinnote_header), contentDescription = "Logo DinNote", modifier = Modifier.size(38.dp))
+            Spacer(Modifier.width(8.dp))
+            Column(Modifier.weight(1f), horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
+                Text("DinNote", fontSize = 25.sp, fontFamily = androidx.compose.ui.text.font.FontFamily.Serif, fontWeight = FontWeight.Bold, color = Color(0xFFFFF9E9))
+                Text("Daripada catatan kepada khazanah ilmu.", fontSize = 10.sp, color = Color(0xFFFFF2D1), textAlign = TextAlign.Center)
+                Text("──── ❖ ────", color = Color(0xFFE7C77E), fontSize = 9.sp)
+            }
         }
     }
 }
