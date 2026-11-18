@@ -105,7 +105,7 @@ fun DinNoteBilingualCard(
 fun DinNoteSectionTitle(text: String) {
     Text(
         text = text,
-        fontSize = 16.sp,
+        fontSize = DinNoteDesign.SectionTitleSize,
         fontWeight = FontWeight.SemiBold,
         color = DinNoteDesign.Turquoise
     )
