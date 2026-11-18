@@ -619,7 +619,9 @@ fun HomeScreen(
         }
         reminder?.let { entry ->
             Surface(
-                modifier = Modifier.fillMaxWidth().clickable { expandedReminder = true },
+                modifier = Modifier.fillMaxWidth()
+                    .semantics { contentDescription = "Buka hikmah hari ini dan baca keterangan penuh" }
+                    .clickable { expandedReminder = true },
                 shape = RoundedCornerShape(16.dp),
                 color = Color(0xFFFFFDF7),
                 border = BorderStroke(1.dp, Color(0xFFB9D6CE)),
