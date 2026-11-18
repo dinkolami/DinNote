@@ -317,10 +317,10 @@ private fun DinNoteDashboardTile(
 ) {
     Surface(
         modifier = modifier.height(104.dp).clickable(onClick = onClick),
-        shape = RoundedCornerShape(10.dp),
-        color = Color(0xFFFFFEFA),
-        border = BorderStroke(1.dp, Color(0xFFD6E3DE)),
-        shadowElevation = 2.dp
+        shape = RoundedCornerShape(16.dp),
+        color = Color(0xFFFFFDF7),
+        border = BorderStroke(1.dp, Color(0xFFB7D5C8)),
+        shadowElevation = 3.dp
     ) {
         Column(
             modifier = Modifier.fillMaxSize().padding(horizontal = 4.dp, vertical = 7.dp),
