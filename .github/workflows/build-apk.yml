@@ -26,7 +26,9 @@ jobs:
           KP: ${{ secrets.DINNOTE_KEY_PASSWORD }}
         run: |
           test -n "$KS" && test -n "$SP" && test -n "$KA" && test -n "$KP" || { echo "::error::Permanent signing secrets are missing. No APK will be published."; exit 1; }
-          # GitHub Secrets may contain copied line breaks or spaces.\n          printf '%s' "$KS" | tr -d '[:space:]' | base64 --decode > "$RUNNER_TEMP/dinnote-release.jks" || { echo "::error::Keystore Base64 is invalid or incomplete."; exit 1; }\n          test -s "$RUNNER_TEMP/dinnote-release.jks" || { echo "::error::Decoded keystore is empty."; exit 1; }
+          # GitHub Secrets may contain copied line breaks or spaces.
+          printf '%s' "$KS" | tr -d '[:space:]' | base64 --decode > "$RUNNER_TEMP/dinnote-release.jks" || { echo "::error::Keystore Base64 is invalid or incomplete."; exit 1; }
+          test -s "$RUNNER_TEMP/dinnote-release.jks" || { echo "::error::Decoded keystore is empty."; exit 1; }
       - name: Validate signing keystore
         env:
           DINNOTE_STORE_PASSWORD: ${{ secrets.DINNOTE_STORE_PASSWORD }}
