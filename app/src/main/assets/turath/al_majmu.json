@@ -142,6 +142,90 @@
       "translationCredit": "Draf terjemahan DinNote",
       "volume": 1,
       "page": 82
+    },
+    {
+      "id": "majmu-11",
+      "number": 11,
+      "titleArabic": "أقسام الماء المستعمل",
+      "titleMalay": "Pembahagian air musta‘mal",
+      "arabic": "الْمَاءُ الْمُسْتَعْمَلُ ضَرْبَانِ مُسْتَعْمَلٌ فِي طَهَارَةِ الْحَدَثِ: وَمُسْتَعْمَلٌ فِي طَهَارَةِ النَّجَسِ",
+      "malay": "Air musta‘mal terbahagi kepada dua: air yang digunakan untuk bersuci daripada hadas dan air yang digunakan untuk bersuci daripada najis.",
+      "source": [
+        "https://shamela.ws/book/2186/148"
+      ],
+      "translationCredit": "Draf terjemahan DinNote",
+      "volume": 1,
+      "page": 149
+    },
+    {
+      "id": "majmu-12",
+      "number": 12,
+      "titleArabic": "طهارة الماء المستعمل",
+      "titleMalay": "Kesucian air musta‘mal",
+      "arabic": "فَأَمَّا الْمُسْتَعْمَلُ فِي طَهَارَةِ الْحَدَثِ فَيُنْظَرُ فِيهِ فَإِنْ اُسْتُعْمِلَ فِي رَفْعِ الْحَدَثِ فَهُوَ طَاهِرٌ لِأَنَّهُ مَاءٌ طَاهِرٌ لَاقَى مَحَلًّا طَاهِرًا فَكَانَ طَاهِرًا",
+      "malay": "Adapun air yang digunakan untuk bersuci daripada hadas, maka diperincikan: jika digunakan untuk mengangkat hadas, air itu suci kerana ia merupakan air suci yang mengenai tempat yang suci, lalu kekal suci.",
+      "source": [
+        "https://shamela.ws/book/2186/148"
+      ],
+      "translationCredit": "Draf terjemahan DinNote",
+      "volume": 1,
+      "page": 149
+    },
+    {
+      "id": "majmu-13",
+      "number": 13,
+      "titleArabic": "نص الشافعي في المستعمل",
+      "titleMalay": "Nas Imam al-Syafi‘i tentang air musta‘mal",
+      "arabic": "قَالَ الشَّيْخُ أَبُو حَامِدٍ نَصَّ الشَّافِعِيُّ فِي جَمِيعِ كُتُبِهِ الْقَدِيمَةِ وَالْجَدِيدَةِ أَنَّ الْمُسْتَعْمَلَ لَيْسَ بِطَهُورٍ",
+      "malay": "Syeikh Abu Hamid berkata: Imam al-Syafi‘i menyatakan secara jelas dalam semua kitabnya yang lama dan baharu bahawa air musta‘mal bukan air yang menyucikan.",
+      "source": [
+        "https://shamela.ws/book/2186/149"
+      ],
+      "translationCredit": "Draf terjemahan DinNote",
+      "volume": 1,
+      "page": 150
+    },
+    {
+      "id": "majmu-14",
+      "number": 14,
+      "titleArabic": "طهارة الحدث الواجبة والمندوبة",
+      "titleMalay": "Bersuci daripada hadas: wajib dan sunat",
+      "arabic": "يعنى بطهارة الْحَدَثِ الْوُضُوءَ وَالْغُسْلَ وَاجِبًا كَانَ أَوْ مَنْدُوبًا كَالْأَغْسَالِ الْمَسْنُونَةِ وَتَجْدِيدِ الْوُضُوءِ وَالْغَسْلَةِ الثَّانِيَةِ",
+      "malay": "Yang dimaksudkan dengan bersuci daripada hadas ialah wuduk dan mandi, sama ada wajib atau sunat, seperti mandi-mandi sunat, memperbaharui wuduk dan basuhan kali kedua.",
+      "source": [
+        "https://shamela.ws/book/2186/149"
+      ],
+      "translationCredit": "Draf terjemahan DinNote",
+      "volume": 1,
+      "page": 150
+    },
+    {
+      "id": "majmu-15",
+      "number": 15,
+      "titleArabic": "تكميل الماء النجس بغير الماء",
+      "titleMalay": "Mencukupkan air najis dengan cecair selain air",
+      "arabic": "وَلَوْ كُوثِرَ الْمَاءُ النَّجِسُ بِبَوْلٍ أَوْ مَاءِ وَرْدٍ أَوْ عَرَقٍ أَوْ غَيْرِ ذَلِكَ مِمَّا ليس بماء فبلغ به قلتين ولا تيغر فِيهِ فَالْجَمِيعُ نَجِسٌ بِلَا خِلَافٍ",
+      "malay": "Jika air najis ditambah dengan air kencing, air mawar, peluh atau cecair lain yang bukan air sehingga mencapai dua qullah, tanpa perubahan padanya, keseluruhannya tetap najis tanpa khilaf.",
+      "source": [
+        "https://shamela.ws/book/2186/136"
+      ],
+      "translationCredit": "Draf terjemahan DinNote",
+      "volume": 1,
+      "page": 137
+    },
+    {
+      "id": "majmu-16",
+      "number": 16,
+      "titleArabic": "زوال تغير الماء بالزعفران",
+      "titleMalay": "Hilangnya perubahan air akibat za‘faran",
+      "arabic": "وَلَوْ كُوثِرَ مَاءٌ مُتَغَيِّرٌ بِزَعْفَرَانٍ وَنَحْوِهِ فَزَالَ تَغَيُّرُهُ الَّذِي كَانَ بِالزَّعْفَرَانِ فَهُوَ طَهُورٌ",
+      "malay": "Jika air yang berubah kerana za‘faran atau seumpamanya ditambah dengan air sehingga hilang perubahan akibat za‘faran tersebut, maka air itu kembali menyucikan.",
+      "source": [
+        "https://shamela.ws/book/2186/136"
+      ],
+      "translationCredit": "Draf terjemahan DinNote",
+      "volume": 1,
+      "page": 137
     }
   ]
 }
