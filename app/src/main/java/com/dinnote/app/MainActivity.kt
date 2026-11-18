@@ -753,7 +753,7 @@ fun NotesScreen(
         }
     }
 
-    val visibleNotes = remember(notes, showArchived, selectedCategory, search) {
+    val visibleNotes = remember(notes.toList(), showArchived, selectedCategory, search) {
         val term = normalizeArabicSearch(search.trim())
         notes.filter {
             it.archived == showArchived &&
@@ -774,8 +774,8 @@ fun NotesScreen(
         ) {
             Text(if (showArchived) "Arkib Nota" else "Nota Saya", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF075B59))
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                TextButton(onClick = { showArchived = !showArchived }) { Text(if (showArchived) "Nota" else "Arkib") }
-                Button(onClick = {
+                TextButton(onClick = { showArchived = !showArchived; selectedCategory = "Semua"; search = "" }) { Text(if (showArchived) "Nota Aktif" else "Arkib") }
+                if (!showArchived) Button(onClick = {
                 editingId = null
                 title = ""
                 body = TextFieldValue("")
@@ -794,7 +794,7 @@ fun NotesScreen(
                 border = BorderStroke(1.dp, Color(0xFFB7DCD7))) {
                 Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 9.dp),
                     verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                    Text("Kategori: $selectedCategory", modifier = Modifier.weight(1f), fontSize = 13.sp)
+                    Text(if (selectedCategory == "Semua") "Semua Kategori" else "Kategori: $selectedCategory", modifier = Modifier.weight(1f), fontSize = 13.sp)
                     Text("⌄", fontSize = 20.sp, color = Color(0xFF087F8C))
                 }
             }
@@ -838,10 +838,11 @@ fun NotesScreen(
             ) {
                 Column(Modifier.fillMaxWidth().padding(24.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text("✎", fontSize = 30.sp, color = MaterialTheme.colorScheme.secondary)
-                    Text(if (search.isBlank()) "Ruang nota anda masih kosong" else "Tiada nota ditemui", fontWeight = FontWeight.Bold)
+                    Text(if (search.isNotBlank() || selectedCategory != "Semua") "Tiada nota ditemui" else if (showArchived) "Arkib nota masih kosong" else "Ruang nota anda masih kosong", fontWeight = FontWeight.Bold)
                     Text(
-                        if (search.isBlank()) "Mulakan dengan menulis nota pertama anda."
-                        else "Cuba kata carian atau kategori yang lain.",
+                        if (search.isNotBlank() || selectedCategory != "Semua") "Cuba kata carian atau kategori yang lain."
+                        else if (showArchived) "Nota yang diarkibkan akan muncul di sini dan boleh dikembalikan bila-bila masa."
+                        else "Mulakan dengan menulis nota pertama anda.",
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 13.sp
                     )
@@ -921,7 +922,7 @@ fun NotesScreen(
                                             }
                                         )
                                         DropdownMenuItem(
-                                            text = { Text(if (showArchived) "Pulihkan" else "Arkib") },
+                                            text = { Text(if (showArchived) "Kembalikan ke Nota Aktif" else "Arkibkan") },
                                             onClick = { database.setArchived(item.id, !item.archived); menuExpanded = false; refreshNotes() }
                                         )
                                         DropdownMenuItem(text = { Text("Padam") }, onClick = { noteToDelete = item; menuExpanded = false })
