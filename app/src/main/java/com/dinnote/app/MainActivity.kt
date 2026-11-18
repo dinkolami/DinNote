@@ -3598,9 +3598,11 @@ private fun IslamicStructuredReader(source: String, fontSize: Float, onEdit: () 
                 else -> "Kalam Hikmah"
             }
             Surface(modifier = Modifier.fillMaxWidth().clickable(onClick = onEdit),
-                color = if (kind == "arabic") Color(0xFFFFFCF5) else smartBlockColor(kind),
+                color = if (kind == "arabic") Color(0xFFFFF8E9) else smartBlockColor(kind),
                 shape = RoundedCornerShape(16.dp),
-                border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFB79B5A))) {
+                tonalElevation = 2.dp,
+                shadowElevation = 3.dp,
+                border = androidx.compose.foundation.BorderStroke(1.5.dp, Color(0xFFD3A63B))) {
                 Column(Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text(label, fontSize = 12.sp, color = Color(0xFF075D49),
