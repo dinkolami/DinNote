@@ -516,7 +516,7 @@ fun HomeScreen(
             }
         }
         if (recentlyAddedNotes.isNotEmpty()) {
-            PremiumSectionHeading("Terakhir Ditambah", "✎")
+            PremiumSectionHeading("Nota Terbaharu", "✎")
             recentlyAddedNotes.forEach { note ->
                 Surface(
                     modifier = Modifier.fillMaxWidth().clickable { onOpenPinnedNote(note.id) },
