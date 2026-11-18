@@ -2215,6 +2215,8 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
         libraryPrefs.getString("custom_categories", "")!!.split("\n").filter { it.isNotBlank() }
     }
     val allLibraryCategories = builtinLibraryCategories + customLibraryCategories
+    var libraryDeleteKey by remember { mutableStateOf<String?>(null) }
+    var libraryTrashOpen by remember { mutableStateOf(false) }
     var editingLibraryKey by remember { mutableStateOf<String?>(null) }
     var libraryTitle by remember { mutableStateOf("") }
     var libraryBody by remember { mutableStateOf(TextFieldValue("")) }
@@ -2324,6 +2326,7 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
             }
         }
 
+        TextButton(onClick = { libraryTrashOpen = true }) { Text("Tong Sampah") }
         when (selectedCategory) {
             "Ingatan" -> {
                 Text("الكلمات الطيبة", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Right, style = androidx.compose.ui.text.TextStyle(textDirection = TextDirection.Rtl), fontSize = 22.sp)
@@ -2383,7 +2386,10 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                     matchesMaktabahSearch(libraryPrefs.getString(it + "_body", "") ?: "", search) }.forEach { key ->
                     Card(modifier = Modifier.fillMaxWidth().clickable { openLibraryEditor(key) }, border = BorderStroke(1.dp, Color(0xFFB7DCD7)), shape = RoundedCornerShape(10.dp), colors = CardDefaults.cardColors(containerColor = Color.White)) {
                         Column(Modifier.padding(16.dp)) {
-                            Text(libraryPrefs.getString(key + "_title", "Tanpa tajuk") ?: "Tanpa tajuk", fontWeight = FontWeight.Bold)
+                            Row(Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                                Text(libraryPrefs.getString(key + "_title", "Tanpa tajuk") ?: "Tanpa tajuk", fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                                TextButton(onClick = { libraryDeleteKey = key }) { Text("Padam", color = MaterialTheme.colorScheme.error, fontSize = 12.sp) }
+                            }
                             Text(formattedNoteText(libraryPrefs.getString(key + "_body", "") ?: ""), modifier = Modifier.fillMaxWidth(), style = androidx.compose.ui.text.TextStyle(textDirection = TextDirection.ContentOrLtr), maxLines = 3, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
                             IslamicCardFooter()
                         }
@@ -2398,7 +2404,10 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                     matchesMaktabahSearch(libraryPrefs.getString(it + "_body", "") ?: "", search) }.forEach { key ->
                     Card(modifier = Modifier.fillMaxWidth().clickable { openLibraryEditor(key) }, border = BorderStroke(1.dp, Color(0xFFB7DCD7)), shape = RoundedCornerShape(10.dp), colors = CardDefaults.cardColors(containerColor = Color.White)) {
                         Column(Modifier.padding(16.dp)) {
-                            Text(libraryPrefs.getString(key + "_title", "Tanpa tajuk") ?: "Tanpa tajuk", fontWeight = FontWeight.Bold)
+                            Row(Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                                Text(libraryPrefs.getString(key + "_title", "Tanpa tajuk") ?: "Tanpa tajuk", fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                                TextButton(onClick = { libraryDeleteKey = key }) { Text("Padam", color = MaterialTheme.colorScheme.error, fontSize = 12.sp) }
+                            }
                             Text(formattedNoteText(libraryPrefs.getString(key + "_body", "") ?: ""), modifier = Modifier.fillMaxWidth(), style = androidx.compose.ui.text.TextStyle(textDirection = TextDirection.ContentOrLtr), maxLines = 3, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
                             IslamicCardFooter()
                         }
@@ -2408,6 +2417,55 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
         }
     }
 
+
+    libraryDeleteKey?.let { key ->
+        AlertDialog(
+            onDismissRequest = { libraryDeleteKey = null },
+            title = { Text("Padam kandungan?") },
+            text = { Text("Kandungan akan dipindahkan ke Tong Sampah dan boleh dipulihkan.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    libraryPrefs.edit()
+                        .putString("trash_" + key + "_title", libraryPrefs.getString(key + "_title", ""))
+                        .putString("trash_" + key + "_body", libraryPrefs.getString(key + "_body", ""))
+                        .remove(key + "_title").remove(key + "_body").apply()
+                    libraryRevision++
+                    libraryDeleteKey = null
+                }) { Text("Padam", color = MaterialTheme.colorScheme.error) }
+            },
+            dismissButton = { TextButton(onClick = { libraryDeleteKey = null }) { Text("Batal") } }
+        )
+    }
+    if (libraryTrashOpen) {
+        val trashKeys = remember(libraryRevision) {
+            libraryPrefs.all.keys.filter { it.startsWith("trash_entry_") && it.endsWith("_title") }
+                .map { it.removePrefix("trash_").removeSuffix("_title") }.sorted()
+        }
+        AlertDialog(
+            onDismissRequest = { libraryTrashOpen = false },
+            title = { Text("Tong Sampah") },
+            text = {
+                if (trashKeys.isEmpty()) Text("Tiada kandungan dipadam.")
+                else LazyColumn(modifier = Modifier.heightIn(max = 320.dp)) {
+                    items(trashKeys, key = { it }) { key ->
+                        Row(Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                            Text(libraryPrefs.getString("trash_" + key + "_title", "Tanpa tajuk") ?: "Tanpa tajuk", modifier = Modifier.weight(1f))
+                            TextButton(onClick = {
+                                if (!libraryPrefs.contains(key + "_title")) {
+                                    libraryPrefs.edit()
+                                        .putString(key + "_title", libraryPrefs.getString("trash_" + key + "_title", ""))
+                                        .putString(key + "_body", libraryPrefs.getString("trash_" + key + "_body", ""))
+                                        .remove("trash_" + key + "_title").remove("trash_" + key + "_body").apply()
+                                    libraryRevision++
+                                }
+                            }) { Text("Pulihkan") }
+                        }
+                    }
+                }
+            },
+            confirmButton = { TextButton(onClick = { libraryTrashOpen = false }) { Text("Tutup") } }
+        )
+    }
 
     if (showAddCategory || categoryToRename != null) {
         AlertDialog(
