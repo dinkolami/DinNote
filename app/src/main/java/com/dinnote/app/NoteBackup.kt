@@ -87,7 +87,8 @@ object NoteBackup {
     }
 
     private val backupPreferenceFiles = listOf(
-        "dinnote_categories", "dinnote_library_edits", "dinnote_kitab_catalog", "dinnote_display", "dinnote_bookmarks"
+        "dinnote_categories", "dinnote_library_edits", "dinnote_kitab_catalog", "dinnote_display", "dinnote_bookmarks",
+        "dinnote_smart_vault", "dinnote_smart_index", "dinnote_smart_recall"
     )
 
     private fun exportPreferences(context: Context): JSONObject = JSONObject().apply {
@@ -112,17 +113,30 @@ object NoteBackup {
         if (preferences == null) return
         backupPreferenceFiles.forEach { name ->
             val values = preferences.optJSONObject(name) ?: return@forEach
-            val editor = context.getSharedPreferences(name, Context.MODE_PRIVATE).edit()
+            val store = context.getSharedPreferences(name, Context.MODE_PRIVATE)
+            val editor = store.edit()
             val keys = values.keys()
             while (keys.hasNext()) {
                 val key = keys.next()
                 val entry = values.optJSONObject(key) ?: continue
                 when (entry.optString("type")) {
-                    "string" -> editor.putString(key, entry.optString("value"))
+                    "string" -> {
+                        if (name == "dinnote_smart_vault" && key == "items") {
+                            val incoming = JSONArray(entry.getString("value"))
+                            val current = JSONArray(store.getString("items", "[]") ?: "[]")
+                            val merged = linkedSetOf<String>()
+                            for (i in 0 until current.length()) merged.add(current.getString(i))
+                            for (i in 0 until incoming.length()) merged.add(incoming.getString(i))
+                            editor.putString(key, JSONArray(merged.toList()).toString())
+                        } else if (name != "dinnote_smart_index" || !store.contains(key)) {
+                            editor.putString(key, entry.optString("value"))
+                        }
+                    }
                     "boolean" -> editor.putBoolean(key, entry.optBoolean("value"))
                     "int" -> editor.putInt(key, entry.optInt("value"))
                     "float" -> editor.putFloat(key, entry.optDouble("value").toFloat())
-                    "long" -> editor.putLong(key, entry.optLong("value"))
+                    "long" -> editor.putLong(key, if (name == "dinnote_smart_recall")
+                        maxOf(store.getLong(key, 0L), entry.optLong("value")) else entry.optLong("value"))
                     "strings" -> {
                         val array = entry.optJSONArray("value") ?: JSONArray()
                         editor.putStringSet(key, (0 until array.length()).map { array.optString(it) }.toSet())
