@@ -1161,6 +1161,7 @@ fun NotesScreen(
         fun persistNote(): Boolean {
             if (title.isBlank() && body.text.isBlank() && editingId == null) {
                 recoveryPrefs.edit().clear().apply()
+                recoveryAvailable = false
                 return true
             }
             recoveryPrefs.edit().putString("title", title).putString("body", body.text)
@@ -1183,6 +1184,11 @@ fun NotesScreen(
         }
         LaunchedEffect(title, body.text, selectedCategory, selectedColor, readingMode) {
             if (!readingMode && (editingId != null || title.isNotBlank() || body.text.isNotBlank())) {
+                val saved = notes.firstOrNull { it.id == editingId }
+                if (saved != null && saved.title == title.trim() && saved.body == body.text &&
+                    saved.colorTag == selectedColor && saved.category == selectedCategory) {
+                    return@LaunchedEffect
+                }
                 recoveryPrefs.edit().putString("title", title).putString("body", body.text)
                     .putString("color", selectedColor).putString("category", selectedCategory).apply()
                 kotlinx.coroutines.delay(650)
