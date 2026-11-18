@@ -127,7 +127,7 @@ class NoteDatabase(context: Context) :
 
     fun renameCategory(oldName: String, newName: String) {
         require(oldName.isNotBlank() && newName.isNotBlank()) { "Nama kategori tidak boleh kosong" }
-        if (oldName == newName) return
+        if (oldName.trim() == newName.trim()) return
         writableDatabase.execSQL(
             "UPDATE notes SET category = ?, updated_at = ? WHERE category = ?",
             arrayOf(newName, System.currentTimeMillis(), oldName)
