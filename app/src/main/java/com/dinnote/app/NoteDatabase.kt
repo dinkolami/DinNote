@@ -80,7 +80,8 @@ class NoteDatabase(context: Context) :
         return if (id == null) {
             writableDatabase.insertOrThrow("notes", null, values)
         } else {
-            writableDatabase.update("notes", values, "id = ?", arrayOf(id.toString()))
+            val affected = writableDatabase.update("notes", values, "id = ?", arrayOf(id.toString()))
+            check(affected == 1) { "Nota tidak ditemui: $id" }
             id
         }
     }
