@@ -409,55 +409,102 @@ private fun DinNoteReferenceShowcase(
     meaning: String,
     onRead: () -> Unit
 ) {
-    val emerald = Color(0xFF005545)
-    val gold = Color(0xFFD5A747)
+    val emerald = Color(0xFF004E3C)
+    val gold = Color(0xFFD7A740)
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(22.dp),
-        color = Color(0xFFFFF8E8),
+        shape = RoundedCornerShape(24.dp),
+        color = Color(0xFFFFF6E3),
         border = BorderStroke(2.dp, gold),
-        shadowElevation = 4.dp
+        shadowElevation = 5.dp
     ) {
-        Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
+        Column {
             Box(
-                modifier = Modifier.fillMaxWidth()
-                    .background(Brush.horizontalGradient(listOf(Color(0xFF003B31), Color(0xFF08705A), Color(0xFF003B31))))
-                    .padding(horizontal = 14.dp, vertical = 14.dp),
+                modifier = Modifier.fillMaxWidth().height(140.dp)
+                    .background(Brush.verticalGradient(listOf(Color(0xFF003A2C), Color(0xFF00634B)))),
                 contentAlignment = androidx.compose.ui.Alignment.Center
             ) {
-                Column(horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
-                    Text("۞  DinNote  ۞", fontSize = 25.sp, fontWeight = FontWeight.Bold, color = Color(0xFFF3D58A))
+                Canvas(Modifier.matchParentSize()) {
+                    val w = size.width
+                    val h = size.height
+                    val arch = Path().apply {
+                        moveTo(0f, h)
+                        lineTo(0f, h * .68f)
+                        cubicTo(w * .13f, h * .60f, w * .18f, h * .45f, w * .30f, h * .42f)
+                        cubicTo(w * .40f, h * .38f, w * .43f, h * .14f, w * .50f, h * .06f)
+                        cubicTo(w * .57f, h * .14f, w * .60f, h * .38f, w * .70f, h * .42f)
+                        cubicTo(w * .82f, h * .45f, w * .87f, h * .60f, w, h * .68f)
+                        lineTo(w, h)
+                        close()
+                    }
+                    drawPath(arch, Color(0xFF0A7257))
+                    drawPath(arch, gold, style = Stroke(width = 3.dp.toPx()))
+                    drawLine(gold, Offset(0f, h - 3.dp.toPx()),
+                        Offset(w, h - 3.dp.toPx()), 2.dp.toPx())
+                }
+                Column(horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier.padding(top = 24.dp)) {
+                    Text("۞  DinNote  ۞", fontSize = 27.sp, fontWeight = FontWeight.Bold,
+                        color = Color(0xFFFFDC86))
                     Text("دَفْتَرُ الْعِلْمِ وَالْمَعْرِفَةِ",
                         fontSize = 15.sp, color = Color(0xFFFFF4D7),
-                        textAlign = TextAlign.Center,
                         style = androidx.compose.ui.text.TextStyle(textDirection = TextDirection.Rtl))
                 }
             }
-            Column(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 14.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
+            Column(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 14.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Surface(shape = RoundedCornerShape(18.dp), color = emerald,
-                    border = BorderStroke(1.dp, gold)) {
-                    Text("✦  Bacaan Pilihan  ✦", modifier = Modifier.fillMaxWidth().padding(10.dp),
-                        textAlign = TextAlign.Center, fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold, color = Color(0xFFF7DB94))
+                    border = BorderStroke(2.dp, gold), shadowElevation = 2.dp) {
+                    Text("✦   Nota Pilihan   ✦",
+                        modifier = Modifier.fillMaxWidth().padding(12.dp),
+                        textAlign = TextAlign.Center, fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold, color = Color(0xFFFFDC86))
                 }
-                Text("۞  Teks Arab", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = emerald)
-                Surface(shape = RoundedCornerShape(14.dp), color = Color(0xFFFFFDF6),
-                    border = BorderStroke(1.dp, gold)) {
-                    Text(formattedNoteText(arabic), modifier = Modifier.fillMaxWidth().padding(16.dp),
-                        textAlign = TextAlign.Right, fontSize = 20.sp, lineHeight = 36.sp,
-                        style = androidx.compose.ui.text.TextStyle(textDirection = TextDirection.Rtl),
-                        color = Color(0xFF172C26))
+                Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                    Surface(shape = RoundedCornerShape(20.dp), color = emerald,
+                        border = BorderStroke(1.dp, gold)) {
+                        Text("☪  Teks Arab", modifier = Modifier.padding(horizontal = 14.dp, vertical = 7.dp),
+                            fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    }
+                    Spacer(Modifier.width(8.dp))
+                    Box(Modifier.weight(1f).height(1.dp).background(gold))
+                    Text(" ✦ ", color = gold)
                 }
-                Text("✦  Nota / Terjemahan", fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold, color = emerald)
-                Surface(shape = RoundedCornerShape(14.dp), color = Color(0xFFFFFDF6),
+                Surface(shape = RoundedCornerShape(16.dp),
+                    color = Color(0xFFFFFDF6), border = BorderStroke(1.5.dp, gold),
+                    shadowElevation = 2.dp) {
+                    Column(Modifier.fillMaxWidth().padding(14.dp)) {
+                        Text("❖", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center,
+                            fontSize = 18.sp, color = gold)
+                        Text(formattedNoteText(arabic),
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 7.dp),
+                            textAlign = TextAlign.Right, fontSize = 20.sp, lineHeight = 36.sp,
+                            style = androidx.compose.ui.text.TextStyle(textDirection = TextDirection.Rtl),
+                            color = Color(0xFF172C26))
+                        Text("❖", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center,
+                            fontSize = 18.sp, color = gold)
+                    }
+                }
+                Surface(shape = RoundedCornerShape(20.dp), color = emerald,
                     border = BorderStroke(1.dp, gold)) {
+                    Text("✎  Nota / Terjemahan",
+                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
+                        fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                }
+                Surface(shape = RoundedCornerShape(14.dp), color = Color(0xFFFFFDF6),
+                    border = BorderStroke(1.5.dp, gold), shadowElevation = 2.dp) {
                     Text(formattedNoteText(meaning),
-                        modifier = Modifier.fillMaxWidth().padding(14.dp),
-                        fontSize = 14.sp, lineHeight = 23.sp, color = Color(0xFF25382F))
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        fontSize = 15.sp, lineHeight = 25.sp, color = Color(0xFF25382F))
+                }
+                Box(
+                    Modifier.fillMaxWidth().height(64.dp)
+                        .clip(RoundedCornerShape(topStart = 38.dp, topEnd = 38.dp))
+                        .background(Brush.verticalGradient(listOf(Color(0xFFDAE7B4), Color(0xFF00634B)))),
+                    contentAlignment = androidx.compose.ui.Alignment.Center
+                ) {
+                    Text("☪   ✦   ☪", fontSize = 27.sp, color = Color(0xFFFFDB80))
                 }
                 Surface(modifier = Modifier.fillMaxWidth().clickable(onClick = onRead),
                     shape = RoundedCornerShape(12.dp), color = emerald,
