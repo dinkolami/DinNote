@@ -7,6 +7,7 @@ import android.database.*;
 import android.database.sqlite.*;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import java.util.*;
 import android.text.style.StyleSpan;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
@@ -19,6 +20,8 @@ public class MainActivity extends Activity {
   LinearLayout root, list;
   EditText search;
   int background = Color.rgb(248,249,252);
+  String noteFilter="";
+  int noteSort=0;
   @Override public void onCreate(Bundle b) { super.onCreate(b); try { db=new DB(this); db.getWritableDatabase(); showHome(); } catch (Exception e) { showStartupError(e); } }
   void showStartupError(Exception e) {
     android.util.Log.e("DinNote", "Startup failed", e);
@@ -38,16 +41,18 @@ public class MainActivity extends Activity {
     Button libraryMenu=new Button(this);libraryMenu.setText("📚  Maktabah");root.addView(libraryMenu);
     libraryMenu.setOnClickListener(v->showLibrary());
     notesMenu.setOnClickListener(v->showHome());
-    search=new EditText(this);search.setSingleLine(true);search.setHint("Cari nota…");root.addView(search);
+    Button sort=new Button(this);sort.setText("Susun: Terkini");root.addView(sort);
+    sort.setOnClickListener(v->new AlertDialog.Builder(this).setItems(new String[]{"Terkini","Terlama","Tajuk A-Z"},(d,w)->{noteSort=w;sort.setText("Susun: "+new String[]{"Terkini","Terlama","Tajuk A-Z"}[w]);refresh(noteFilter);}).show());
+    search=new EditText(this);search.setSingleLine(true);search.setHint("Cari tajuk atau kandungan nota…");root.addView(search);
     Button add=new Button(this);add.setText("+ Nota baharu");root.addView(add);add.setOnClickListener(v->edit(-1));
     ScrollView scroll=new ScrollView(this);list=new LinearLayout(this);list.setOrientation(1);scroll.addView(list);root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
-    search.addTextChangedListener(new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){refresh(s.toString());}public void afterTextChanged(Editable e){}});
-    refresh("");
+    search.addTextChangedListener(new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){noteFilter=s.toString();refresh(noteFilter);}public void afterTextChanged(Editable e){}});
+    refresh(noteFilter);
   }
   void refresh(String query) {
     if(list==null)return;
     list.removeAllViews();
-    try(Cursor c=db.getReadableDatabase().rawQuery("SELECT id,title,body,color FROM notes WHERE title LIKE ? OR body LIKE ? ORDER BY updated DESC",new String[]{"%"+query+"%","%"+query+"%"})) {
+    try(Cursor c=db.getReadableDatabase().rawQuery("SELECT id,title,body,color FROM notes WHERE title LIKE ? OR body LIKE ? ORDER BY "+(noteSort==1?"updated ASC":noteSort==2?"title COLLATE NOCASE ASC":"updated DESC"),new String[]{"%"+query+"%","%"+query+"%"})) {
       while(c.moveToNext()){final int id=c.getInt(0);String heading=c.getString(1);String body=c.getString(2);if(heading==null)heading="";if(body==null)body="";int noteColor=c.getInt(3);
         TextView item=text((heading.isEmpty()?"Tanpa tajuk":heading)+"\n"+(body.length()>110?body.substring(0,110)+"…":body),17);
         item.setBackgroundColor(noteColor);LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2);p.setMargins(0,10,0,10);list.addView(item,p);item.setOnClickListener(v->edit(id));
@@ -67,6 +72,8 @@ public class MainActivity extends Activity {
     Button checkButton=new Button(this);checkButton.setText("☐");toolbar.addView(checkButton,new LinearLayout.LayoutParams(0,-2,1));
     Button boldButton=new Button(this);boldButton.setText("B");boldButton.setTypeface(null,Typeface.BOLD);toolbar.addView(boldButton,new LinearLayout.LayoutParams(0,-2,1));
     Button italicButton=new Button(this);italicButton.setText("I");italicButton.setTypeface(null,Typeface.ITALIC);toolbar.addView(italicButton,new LinearLayout.LayoutParams(0,-2,1));
+    Button underlineButton=new Button(this);underlineButton.setText("U");toolbar.addView(underlineButton,new LinearLayout.LayoutParams(0,-2,1));
+    underlineButton.setOnClickListener(v->underlineSelection(body));
     colorButton.setOnClickListener(v->{int index=0;for(int i=0;i<colors.length;i++)if(colors[i]==noteColor[0])index=i;noteColor[0]=colors[(index+1)%colors.length];body.setBackgroundColor(noteColor[0]);saveColor(noteId[0],noteColor[0]);});
     checkButton.setOnClickListener(v->{int start=Math.max(0,body.getSelectionStart());body.getText().insert(start,"☐ ");});
     boldButton.setOnClickListener(v->styleSelection(body,Typeface.BOLD));
@@ -116,11 +123,22 @@ public class MainActivity extends Activity {
     Button back=new Button(this);back.setText("← Maktabah");page.addView(back);back.setOnClickListener(v->showLibrary());
     page.addView(text("📁  "+categoryName,24));
     Button add=new Button(this);add.setText("+ Tambah kitab");page.addView(add);add.setOnClickListener(v->editBook(-1,categoryId,categoryName));
+    EditText bookSearch=new EditText(this);bookSearch.setSingleLine(true);bookSearch.setHint("Cari kitab dalam kategori…");page.addView(bookSearch);
+    bookSearch.addTextChangedListener(new TextWatcher(){public void beforeTextChanged(CharSequence s,int a,int c,int f){}public void onTextChanged(CharSequence s,int a,int b,int c){populateBooks(items,categoryId,categoryName,s.toString());}public void afterTextChanged(Editable e){}});
     ScrollView scroll=new ScrollView(this);LinearLayout items=new LinearLayout(this);items.setOrientation(1);scroll.addView(items);page.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
-    try(Cursor c=db.getReadableDatabase().rawQuery("SELECT id,title FROM books WHERE category_id=? ORDER BY updated DESC",new String[]{""+categoryId})){
-      while(c.moveToNext()){int bookId=c.getInt(0);String title=c.getString(1);Button item=new Button(this);item.setText("📖  "+(title.isEmpty()?"Tanpa tajuk":title));items.addView(item);item.setOnClickListener(v->editBook(bookId,categoryId,categoryName));}
+    populateBooks(items,categoryId,categoryName,"");
+  }
+  void populateBooks(LinearLayout items,int categoryId,String categoryName,String query){
+    items.removeAllViews();
+    try(Cursor c=db.getReadableDatabase().rawQuery("SELECT id,title FROM books WHERE category_id=? AND (title LIKE ? OR body LIKE ?) ORDER BY updated DESC",
+      new String[]{""+categoryId,"%"+query+"%","%"+query+"%"})){
+      while(c.moveToNext()){int bookId=c.getInt(0);String heading=c.getString(1);
+        Button item=new Button(this);item.setText("📖  "+(heading==null||heading.isEmpty()?"Tanpa tajuk":heading));
+        items.addView(item);item.setOnClickListener(v->editBook(bookId,categoryId,categoryName));
+      }
     }
   }
+
   void editBook(int id,int categoryId,String categoryName){
     LinearLayout page=column();setContentView(page);
     Button back=new Button(this);back.setText("← Maktabah");page.addView(back);
@@ -137,6 +155,8 @@ public class MainActivity extends Activity {
     Button check=new Button(this);check.setText("☐");toolbar.addView(check,new LinearLayout.LayoutParams(0,-2,1));
     Button bold=new Button(this);bold.setText("B");bold.setTypeface(null,Typeface.BOLD);toolbar.addView(bold,new LinearLayout.LayoutParams(0,-2,1));
     Button italic=new Button(this);italic.setText("I");italic.setTypeface(null,Typeface.ITALIC);toolbar.addView(italic,new LinearLayout.LayoutParams(0,-2,1));
+    Button underline=new Button(this);underline.setText("U");toolbar.addView(underline,new LinearLayout.LayoutParams(0,-2,1));
+    underline.setOnClickListener(v->underlineSelection(body));
     check.setOnClickListener(v->body.getText().insert(Math.max(0,body.getSelectionStart()),"☐ "));
     bold.setOnClickListener(v->styleSelection(body,Typeface.BOLD));
     italic.setOnClickListener(v->styleSelection(body,Typeface.ITALIC));
@@ -161,6 +181,7 @@ public class MainActivity extends Activity {
       }).show());
   }
   void saveColor(int id,int color){if(id<0)return;ContentValues v=new ContentValues();v.put("color",color);db.getWritableDatabase().update("notes",v,"id=?",new String[]{""+id});}
+  void underlineSelection(EditText edit){int a=edit.getSelectionStart(),b=edit.getSelectionEnd();if(a<0||b<=a){Toast.makeText(this,"Pilih teks dahulu",Toast.LENGTH_SHORT).show();return;}edit.getText().setSpan(new android.text.style.UnderlineSpan(),a,b,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);}
   void styleSelection(EditText edit,int style){int a=edit.getSelectionStart(),b=edit.getSelectionEnd();if(a<0||b<=a){Toast.makeText(this,"Pilih teks dahulu",Toast.LENGTH_SHORT).show();return;}SpannableStringBuilder t=new SpannableStringBuilder(edit.getText());t.setSpan(new StyleSpan(style),a,b,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);edit.setText(t);edit.setSelection(b);}
   @Override public void onBackPressed(){showHome();}
   static class DB extends SQLiteOpenHelper {
