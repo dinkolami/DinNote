@@ -26,8 +26,18 @@ data class SmartReferenceEntry(
     val category: String,
     val aliases: List<String>,
     val description: String,
-    val source: String = ""
+    val source: String = "",
+    val details: Map<String, String> = emptyMap()
 )
+
+private val referenceFields = listOf("birthDate" to "Tarikh lahir", "birthPlace" to "Tempat lahir", "deathDate" to "Tarikh wafat", "deathPlace" to "Tempat wafat", "works" to "Karya utama", "teachers" to "Guru", "students" to "Murid", "author" to "Pengarang", "subject" to "Bidang", "location" to "Lokasi")
+private fun fieldsFor(category: String) = when(category.lowercase(Locale.ROOT)) {
+    "ulama", "tokoh islam" -> referenceFields.take(7)
+    "kitab" -> referenceFields.filter { it.first in listOf("author","subject") }
+    "tempat" -> referenceFields.filter { it.first == "location" }
+    else -> emptyList()
+}
+private val defaultPopupFields = setOf("birthDate","birthPlace","deathDate","deathPlace","works","author","subject","location","description","source")
 
 data class SmartReferenceMatch(val start: Int, val end: Int, val entry: SmartReferenceEntry)
 
@@ -38,6 +48,13 @@ class SmartReferenceStore(context: Context) {
         get() = prefs.getBoolean("enabled", true)
         set(value) { prefs.edit().putBoolean("enabled", value).apply() }
 
+    var popupMode: String
+        get() = prefs.getString("popup_mode", "ringkas") ?: "ringkas"
+        set(value) { prefs.edit().putString("popup_mode",value).apply() }
+    var popupFields: Set<String>
+        get() = prefs.getStringSet("popup_fields",defaultPopupFields)?.toSet() ?: defaultPopupFields
+        set(value) { prefs.edit().putStringSet("popup_fields",value.toSet()).apply() }
+
     fun entries(): List<SmartReferenceEntry> {
         val raw = prefs.getString("entries", null) ?: return initialEntries()
         return runCatching {
@@ -47,7 +64,8 @@ class SmartReferenceStore(context: Context) {
                 val aliases = o.optJSONArray("aliases") ?: JSONArray()
                 SmartReferenceEntry(o.getString("id"), o.getString("title"),
                     o.getString("category"), (0 until aliases.length()).map { aliases.getString(it) },
-                    o.getString("description"), o.optString("source"))
+                    o.getString("description"), o.optString("source"),
+                    o.optJSONObject("details")?.let { d -> d.keys().asSequence().associateWith { d.optString(it) } } ?: emptyMap())
             }
         }.getOrElse { emptyList() }
     }
@@ -57,7 +75,7 @@ class SmartReferenceStore(context: Context) {
         entries.forEach { e ->
             array.put(JSONObject().put("id", e.id).put("title", e.title)
                 .put("category", e.category).put("aliases", JSONArray(e.aliases))
-                .put("description", e.description).put("source", e.source))
+                .put("description", e.description).put("source", e.source).put("details", JSONObject(e.details)))
         }
         prefs.edit().putString("entries", array.toString()).apply()
     }
@@ -73,9 +91,9 @@ class SmartReferenceStore(context: Context) {
         SmartReferenceEntry("imam-shafii", "Imam al-Syafi‘i", "Ulama",
             listOf("Imam Syafie", "Imam al-Syafii", "الإمام الشافعي", "محمد بن إدريس الشافعي", "الشافعي"),
             "Muhammad bin Idris al-Syafi‘i (150–204H), pengasas mazhab Syafi‘i. Antara karya beliau ialah al-Umm dan al-Risalah.",
-            "Siyar A‘lam al-Nubala’, biografi al-Syafi‘i"),
+            "Siyar A‘lam al-Nubala’, biografi al-Syafi‘i", mapOf("birthDate" to "150H / 767M", "birthPlace" to "Gaza", "deathDate" to "204H / 820M", "deathPlace" to "Mesir", "works" to "الأم، الرسالة", "teachers" to "Imam Malik bin Anas", "students" to "Ahmad bin Hanbal")),
         SmartReferenceEntry("al-umm", "al-Umm", "Kitab", listOf("الأم", "كتاب الأم"),
-            "Kitab fiqh karya Imam al-Syafi‘i.")
+            "Kitab fiqh karya Imam al-Syafi‘i.", details = mapOf("author" to "Imam al-Syafi‘i", "subject" to "Fiqh"))
     )
 }
 
@@ -150,6 +168,21 @@ fun SmartReferenceSettings() {
         Text("Aktifkan rujukan automatik")
         Switch(checked = enabled, onCheckedChange = { enabled = it; store.enabled = it })
     }
+    var mode by remember { mutableStateOf(store.popupMode) }
+    var selectedFields by remember { mutableStateOf(store.popupFields) }
+    if (enabled) {
+        Text("Jenis paparan popup")
+        Row(horizontalArrangement=Arrangement.spacedBy(4.dp)) {
+            listOf("ringkas" to "Ringkas","lengkap" to "Lengkap","custom" to "Tersuai").forEach { (key,label) ->
+                FilterChip(selected=mode==key,onClick={mode=key;store.popupMode=key},label={Text(label)})
+            }
+        }
+        if(mode=="custom") (referenceFields + listOf("description" to "Biografi / keterangan","source" to "Sumber")).forEach { (key,label) ->
+            Row { Checkbox(checked=key in selectedFields,onCheckedChange={checked ->
+                selectedFields=if(checked) selectedFields+key else selectedFields-key;store.popupFields=selectedFields
+            }); Text(label,Modifier.padding(top=12.dp)) }
+        }
+    }
     OutlinedButton(onClick = { editing = SmartReferenceEntry(title="",category="Ulama",aliases=emptyList(),description="") }) { Text("+ Tambah rujukan") }
     entries.forEach { entry ->
         Row(Modifier.fillMaxWidth()) {
@@ -169,15 +202,24 @@ fun SmartReferenceSettings() {
         var aliases by remember(entry.id) { mutableStateOf(entry.aliases.joinToString("\n")) }
         var description by remember(entry.id) { mutableStateOf(entry.description) }
         var source by remember(entry.id) { mutableStateOf(entry.source) }
+        var details by remember(entry.id) { mutableStateOf(entry.details) }
         AlertDialog(onDismissRequest={editing=null},title={Text("Rujukan ilmu")},
             text={Column(Modifier.verticalScroll(rememberScrollState()),verticalArrangement=Arrangement.spacedBy(8.dp)){
                 OutlinedTextField(title,{title=it},label={Text("Nama utama")})
-                OutlinedTextField(category,{category=it},label={Text("Kategori")})
+                Text("Kategori")
+                listOf("Ulama","Kitab","Istilah","Tempat","Tokoh Islam").chunked(3).forEach { group ->
+                    Row(horizontalArrangement=Arrangement.spacedBy(4.dp)) {
+                        group.forEach { value -> FilterChip(selected=category==value,onClick={category=value},label={Text(value)}) }
+                    }
+                }
+                fieldsFor(category).forEach { (key,label) ->
+                    OutlinedTextField(details[key].orEmpty(),{details=details+(key to it)},label={Text(label)})
+                }
                 OutlinedTextField(aliases,{aliases=it},label={Text("Alias — satu setiap baris")})
                 OutlinedTextField(description,{description=it},label={Text("Keterangan")},minLines=3)
                 OutlinedTextField(source,{source=it},label={Text("Sumber")})
             }},confirmButton={TextButton(enabled=title.isNotBlank() && description.isNotBlank(),onClick={
-                store.upsert(entry.copy(title=title.trim(),category=category,aliases=aliases.lines().map{it.trim()}.filter{it.isNotEmpty()},description=description,source=source))
+                store.upsert(entry.copy(title=title.trim(),category=category,aliases=aliases.lines().map{it.trim()}.filter{it.isNotEmpty()},description=description,source=source,details=details.filterValues { it.isNotBlank() }))
                 entries=store.entries();editing=null
             }){Text("Simpan")}},dismissButton={TextButton(onClick={editing=null}){Text("Batal")}})
     }
@@ -204,8 +246,21 @@ fun ReferenceReaderText(text: AnnotatedString, modifier: Modifier = Modifier, st
     },style=style,onTextLayout={layout=it})
     selected?.let { entry ->
         AlertDialog(onDismissRequest={selected=null},title={Text(entry.title)},text={Column(Modifier.verticalScroll(rememberScrollState()),verticalArrangement=Arrangement.spacedBy(8.dp)){
-            Text(entry.category,color=Color(0xFF075B59));Text(entry.description)
-            if(entry.source.isNotBlank()) Text("Sumber: "+entry.source)
+            Text(entry.category,color=Color(0xFF075B59))
+            val visible = when(store.popupMode) {
+                "lengkap" -> (referenceFields.map { it.first } + listOf("description","source")).toSet()
+                "custom" -> store.popupFields
+                else -> defaultPopupFields
+            }
+            fieldsFor(entry.category).forEach { (key,label) ->
+                val value = entry.details[key].orEmpty()
+                if(key in visible && value.isNotBlank()) {
+                    Text(label,style=MaterialTheme.typography.labelMedium,color=Color(0xFF075B59))
+                    Text(value)
+                }
+            }
+            if("description" in visible) Text(entry.description)
+            if("source" in visible && entry.source.isNotBlank()) Text("Sumber: "+entry.source)
         }},confirmButton={TextButton(onClick={selected=null}){Text("Tutup")}})
     }
 }
