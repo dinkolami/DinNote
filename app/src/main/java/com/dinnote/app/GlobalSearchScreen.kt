@@ -32,6 +32,8 @@ private fun searchKey(value: String): String =
         .replace('ى', 'ي')
 
 private data class SearchHit(val source: String, val key: String, val title: String, val content: String) {
+    val plainTitle by lazy { cleanSearchText(title) }
+    val plainContent by lazy { cleanSearchText(content) }
     val titleKey by lazy { searchKey(title) }
     val contentKey by lazy { searchKey(content) }
 }
@@ -123,8 +125,8 @@ fun GlobalSearchScreen(modifier: Modifier = Modifier) {
                         Column(Modifier.weight(1f).clickable { openedKey = "${hit.source}:${hit.key}" }) {
                             Text(hit.source, color = MaterialTheme.colorScheme.primary,
                                 style = MaterialTheme.typography.labelSmall)
-                            Text(cleanSearchText(hit.title), fontWeight = FontWeight.SemiBold)
-                            Text(cleanSearchText(hit.content), maxLines = 2, overflow = TextOverflow.Ellipsis,
+                            Text(hit.plainTitle, fontWeight = FontWeight.SemiBold)
+                            Text(hit.plainContent, maxLines = 2, overflow = TextOverflow.Ellipsis,
                                 style = MaterialTheme.typography.bodySmall)
                         }
                         val isFavorite = favorites.getBoolean(hit.key, false)
@@ -148,7 +150,7 @@ fun GlobalSearchScreen(modifier: Modifier = Modifier) {
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(hit.source, style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.primary)
-                    Text(cleanSearchText(hit.title))
+                    Text(hit.plainTitle)
                 }
             },
             text = {
@@ -165,7 +167,7 @@ fun GlobalSearchScreen(modifier: Modifier = Modifier) {
             dismissButton = {
                 TextButton(onClick = {
                     val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                    clipboard.setPrimaryClip(android.content.ClipData.newPlainText("DinNote", cleanSearchText(hit.content)))
+                    clipboard.setPrimaryClip(android.content.ClipData.newPlainText("DinNote", hit.plainContent))
                     if (android.os.Build.VERSION.SDK_INT < 33) {
                         android.widget.Toast.makeText(context, "Teks disalin", android.widget.Toast.LENGTH_SHORT).show()
                     }
