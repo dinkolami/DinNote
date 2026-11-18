@@ -2281,7 +2281,15 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
         modifier = Modifier.fillMaxSize().padding(horizontal = 12.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        Text("Maktabah", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF075B59))
+        Surface(color = Color(0xFF075B59), shape = RoundedCornerShape(14.dp), modifier = Modifier.fillMaxWidth()) {
+            Row(Modifier.padding(horizontal = 12.dp, vertical = 6.dp), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    Text("Maktabah DinNote", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    Text("Perpustakaan Digital Islam", fontSize = 12.sp, color = Color(0xFFE8CF91))
+                }
+                TextButton(onClick = { libraryTrashOpen = true }) { Text("Tong Sampah", color = Color.White, fontSize = 11.sp) }
+            }
+        }
 
 
         var libraryCategoryExpanded by remember { mutableStateOf(false) }
@@ -2298,7 +2306,7 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                     Spacer(Modifier.width(9.dp))
                     Text("Kategori: $selectedCategory", modifier = Modifier.weight(1f),
                         fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF20262B))
-                    VerticalDivider(modifier = Modifier.height(23.dp), color = Color(0xFFB7C0C8))
+
                     Spacer(Modifier.width(10.dp))
                     Text("⌄", fontSize = 20.sp, color = Color(0xFF20262B))
                 }
@@ -2312,7 +2320,7 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                         libraryCategoryExpanded = false
                     })
                 }
-                HorizontalDivider()
+
                 DropdownMenuItem(text = { Text("+ Tambah kategori") }, onClick = {
                     libraryCategoryExpanded = false
                     newCategoryName = ""
@@ -2326,7 +2334,6 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
             }
         }
 
-        TextButton(onClick = { libraryTrashOpen = true }) { Text("Tong Sampah") }
         when (selectedCategory) {
             "Ingatan" -> {
                 Text("الكلمات الطيبة", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Right, style = androidx.compose.ui.text.TextStyle(textDirection = TextDirection.Rtl), fontSize = 22.sp)
@@ -2363,16 +2370,16 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                                 }
                                 if (malayFirstInLibrary && showMalayInLibrary) {
                                     Text(formattedNoteText(entry.meaning), color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                    UnifiedEditorDivider()
+
                                 }
                                 if (showArabicInLibrary) Text(formattedNoteText(entry.arabic), modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Right, style = androidx.compose.ui.text.TextStyle(textDirection = TextDirection.Rtl), fontSize = libraryFontSize.sp)
                                 if (showMalayInLibrary && !malayFirstInLibrary) {
-                                    if (showArabicInLibrary) UnifiedEditorDivider()
+
                                     Text(formattedNoteText(entry.meaning), color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
                                 if (showMalayInLibrary) Text(formattedNoteText(entry.transliteration), fontWeight = FontWeight.Medium, fontSize = 13.sp)
                                 Text("Tekan untuk maklumat lanjut", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
-                                IslamicCardFooter()
+
                             }
                         }
                     }
@@ -2384,32 +2391,56 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                 Button(onClick = { openLibraryEditor("entry_Kitab-Kitab_" + System.currentTimeMillis()) }) { Text("+ Tambah Kitab") }
                 libraryItems.filter { matchesMaktabahSearch(libraryPrefs.getString(it + "_title", "") ?: "", search) ||
                     matchesMaktabahSearch(libraryPrefs.getString(it + "_body", "") ?: "", search) }.forEach { key ->
-                    Card(modifier = Modifier.fillMaxWidth().clickable { openLibraryEditor(key) }, border = BorderStroke(1.dp, Color(0xFFB7DCD7)), shape = RoundedCornerShape(10.dp), colors = CardDefaults.cardColors(containerColor = Color.White)) {
+                    Card(modifier = Modifier.fillMaxWidth().clickable { openLibraryEditor(key) }, elevation = CardDefaults.cardElevation(defaultElevation = 2.dp), shape = RoundedCornerShape(14.dp), colors = CardDefaults.cardColors(containerColor = Color.White)) {
                         Column(Modifier.padding(16.dp)) {
                             Row(Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                                 Text(libraryPrefs.getString(key + "_title", "Tanpa tajuk") ?: "Tanpa tajuk", fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-                                TextButton(onClick = { libraryDeleteKey = key }) { Text("Padam", color = MaterialTheme.colorScheme.error, fontSize = 12.sp) }
+                                Box {
+                                    var menuOpen by remember(key) { mutableStateOf(false) }
+                                    TextButton(onClick = { menuOpen = true }) { Text("⋮", fontSize = 22.sp, color = Color(0xFF075B59)) }
+                                    DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
+                                        DropdownMenuItem(text = { Text("Edit") }, onClick = { menuOpen = false; openLibraryEditor(key) })
+                                        DropdownMenuItem(text = { Text("Padam") }, onClick = { menuOpen = false; libraryDeleteKey = key })
+                                    }
+                                }
                             }
                             Text(formattedNoteText(libraryPrefs.getString(key + "_body", "") ?: ""), modifier = Modifier.fillMaxWidth(), style = androidx.compose.ui.text.TextStyle(textDirection = TextDirection.ContentOrLtr), maxLines = 3, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
-                            IslamicCardFooter()
+                            val decoration = remember(context) { runCatching { context.assets.open("maktabah_card.webp").use { android.graphics.BitmapFactory.decodeStream(it) } }.getOrNull() }
+                            decoration?.let { bitmap ->
+                                androidx.compose.foundation.Image(bitmap = bitmap.asImageBitmap(), contentDescription = null,
+                                    modifier = Modifier.align(androidx.compose.ui.Alignment.End).width(116.dp).height(39.dp),
+                                    contentScale = androidx.compose.ui.layout.ContentScale.Fit)
+                            }
                         }
                     }
                 }
             }
             else -> {
-                Text("✨ Kalam Hikmah", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                Text(selectedCategory, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF075B59))
 
                 Button(onClick = { openLibraryEditor("entry_" + selectedCategory + "_" + System.currentTimeMillis()) }) { Text("+ Tambah Kandungan") }
                 libraryItems.filter { matchesMaktabahSearch(libraryPrefs.getString(it + "_title", "") ?: "", search) ||
                     matchesMaktabahSearch(libraryPrefs.getString(it + "_body", "") ?: "", search) }.forEach { key ->
-                    Card(modifier = Modifier.fillMaxWidth().clickable { openLibraryEditor(key) }, border = BorderStroke(1.dp, Color(0xFFB7DCD7)), shape = RoundedCornerShape(10.dp), colors = CardDefaults.cardColors(containerColor = Color.White)) {
+                    Card(modifier = Modifier.fillMaxWidth().clickable { openLibraryEditor(key) }, elevation = CardDefaults.cardElevation(defaultElevation = 2.dp), shape = RoundedCornerShape(14.dp), colors = CardDefaults.cardColors(containerColor = Color.White)) {
                         Column(Modifier.padding(16.dp)) {
                             Row(Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                                 Text(libraryPrefs.getString(key + "_title", "Tanpa tajuk") ?: "Tanpa tajuk", fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-                                TextButton(onClick = { libraryDeleteKey = key }) { Text("Padam", color = MaterialTheme.colorScheme.error, fontSize = 12.sp) }
+                                Box {
+                                    var menuOpen by remember(key) { mutableStateOf(false) }
+                                    TextButton(onClick = { menuOpen = true }) { Text("⋮", fontSize = 22.sp, color = Color(0xFF075B59)) }
+                                    DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
+                                        DropdownMenuItem(text = { Text("Edit") }, onClick = { menuOpen = false; openLibraryEditor(key) })
+                                        DropdownMenuItem(text = { Text("Padam") }, onClick = { menuOpen = false; libraryDeleteKey = key })
+                                    }
+                                }
                             }
                             Text(formattedNoteText(libraryPrefs.getString(key + "_body", "") ?: ""), modifier = Modifier.fillMaxWidth(), style = androidx.compose.ui.text.TextStyle(textDirection = TextDirection.ContentOrLtr), maxLines = 3, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
-                            IslamicCardFooter()
+                            val decoration = remember(context) { runCatching { context.assets.open("maktabah_card.webp").use { android.graphics.BitmapFactory.decodeStream(it) } }.getOrNull() }
+                            decoration?.let { bitmap ->
+                                androidx.compose.foundation.Image(bitmap = bitmap.asImageBitmap(), contentDescription = null,
+                                    modifier = Modifier.align(androidx.compose.ui.Alignment.End).width(116.dp).height(39.dp),
+                                    contentScale = androidx.compose.ui.layout.ContentScale.Fit)
+                            }
                         }
                     }
                 }
