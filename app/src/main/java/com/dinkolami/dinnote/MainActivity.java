@@ -6,6 +6,10 @@ import android.content.*;
 import android.database.*;
 import android.database.sqlite.*;
 import android.graphics.Color;
+import android.graphics.Typeface;
+import android.text.style.StyleSpan;
+import android.text.Spannable;
+import android.text.SpannableStringBuilder;
 import android.text.*;
 import android.view.*;
 import android.widget.*;
@@ -20,7 +24,7 @@ public class MainActivity extends Activity {
   LinearLayout column() { LinearLayout l=new LinearLayout(this);l.setOrientation(1);l.setPadding(18,18,18,18);l.setBackgroundColor(background);return l; }
   void showHome() {
     root=column();setContentView(root);
-    TextView title=text("DinNote",28);title.setTypeface(null,1);root.addView(title);
+    TextView title=text("DinNote",28);title.setTypeface(null,2);root.addView(title);
     search=new EditText(this);search.setSingleLine(true);search.setHint("Cari nota…");root.addView(search);
     Button add=new Button(this);add.setText("+ Nota baharu");root.addView(add);add.setOnClickListener(v->edit(-1));
     ScrollView scroll=new ScrollView(this);list=new LinearLayout(this);list.setOrientation(1);scroll.addView(list);root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
@@ -29,10 +33,10 @@ public class MainActivity extends Activity {
   }
   void refresh(String query) {
     list.removeAllViews();
-    try(Cursor c=db.getReadableDatabase().rawQuery("SELECT id,title,body FROM notes WHERE title LIKE ? OR body LIKE ? ORDER BY updated DESC",new String[]{"%"+query+"%","%"+query+"%"})) {
-      while(c.moveToNext()){final int id=c.getInt(0);String heading=c.getString(1);String body=c.getString(2);
+    try(Cursor c=db.getReadableDatabase().rawQuery("SELECT id,title,body,color FROM notes WHERE title LIKE ? OR body LIKE ? ORDER BY updated DESC",new String[]{"%"+query+"%","%"+query+"%"})) {
+      while(c.moveToNext()){final int id=c.getInt(0);String heading=c.getString(1);String body=c.getString(2);int noteColor=c.getInt(3);
         TextView item=text((heading.isEmpty()?"Tanpa tajuk":heading)+"\n"+(body.length()>110?body.substring(0,110)+"…":body),17);
-        item.setBackgroundColor(Color.WHITE);LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2);p.setMargins(0,10,0,10);list.addView(item,p);item.setOnClickListener(v->edit(id));
+        item.setBackgroundColor(noteColor);LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2);p.setMargins(0,10,0,10);list.addView(item,p);item.setOnClickListener(v->edit(id));
       }
     }
   }
@@ -42,11 +46,21 @@ public class MainActivity extends Activity {
     EditText title=new EditText(this);title.setHint("Tajuk nota");title.setSingleLine(true);title.setTextSize(22);page.addView(title);
     EditText body=new EditText(this);body.setHint("Tulis nota di sini…");body.setTextSize(17);body.setGravity(Gravity.TOP|Gravity.START);body.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
     page.addView(body,new LinearLayout.LayoutParams(-1,0,1));
-    final int[] noteId={id};final boolean[] loading={true};
-    if(id>=0){try(Cursor c=db.getReadableDatabase().rawQuery("SELECT title,body FROM notes WHERE id=?",new String[]{""+id})){if(c.moveToFirst()){title.setText(c.getString(0));body.setText(c.getString(1));}}}
+    final int[] noteId={id};final boolean[] loading={true};final int[] noteColor={Color.WHITE};
+    int[] colors={Color.WHITE,0xFFFFF4B8,0xFFDDF4DF,0xFFDCEEFF,0xFFFFE1E9,0xFFECE2FF};
+    LinearLayout toolbar=new LinearLayout(this);toolbar.setOrientation(LinearLayout.HORIZONTAL);page.addView(toolbar,1);
+    Button colorButton=new Button(this);colorButton.setText("Warna");toolbar.addView(colorButton,new LinearLayout.LayoutParams(0,-2,1));
+    Button checkButton=new Button(this);checkButton.setText("☐");toolbar.addView(checkButton,new LinearLayout.LayoutParams(0,-2,1));
+    Button boldButton=new Button(this);boldButton.setText("B");boldButton.setTypeface(null,Typeface.BOLD);toolbar.addView(boldButton,new LinearLayout.LayoutParams(0,-2,1));
+    Button italicButton=new Button(this);italicButton.setText("I");italicButton.setTypeface(null,Typeface.ITALIC);toolbar.addView(italicButton,new LinearLayout.LayoutParams(0,-2,1));
+    colorButton.setOnClickListener(v->{int index=0;for(int i=0;i<colors.length;i++)if(colors[i]==noteColor[0])index=i;noteColor[0]=colors[(index+1)%colors.length];body.setBackgroundColor(noteColor[0]);saveColor(noteId[0],noteColor[0]);});
+    checkButton.setOnClickListener(v->{int start=Math.max(0,body.getSelectionStart());body.getText().insert(start,"☐ ");});
+    boldButton.setOnClickListener(v->styleSelection(body,Typeface.BOLD));
+    italicButton.setOnClickListener(v->styleSelection(body,Typeface.ITALIC));
+    if(id>=0){try(Cursor c=db.getReadableDatabase().rawQuery("SELECT title,body,color FROM notes WHERE id=?",new String[]{""+id})){if(c.moveToFirst()){title.setText(c.getString(0));body.setText(c.getString(1));noteColor[0]=c.getInt(2);body.setBackgroundColor(noteColor[0]);}}}
     loading[0]=false;
     Runnable save=()->{if(loading[0])return;String t=title.getText().toString(),b=body.getText().toString();if(noteId[0]<0&&t.trim().isEmpty()&&b.trim().isEmpty())return;
-      ContentValues values=new ContentValues();values.put("title",t);values.put("body",b);values.put("updated",System.currentTimeMillis());
+      ContentValues values=new ContentValues();values.put("title",t);values.put("body",b);values.put("updated",System.currentTimeMillis());values.put("color",noteColor[0]);
       if(noteId[0]<0)noteId[0]=(int)db.getWritableDatabase().insert("notes",null,values);else db.getWritableDatabase().update("notes",values,"id=?",new String[]{""+noteId[0]});
     };
     TextWatcher watcher=new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){save.run();}public void afterTextChanged(Editable e){}};
@@ -55,10 +69,12 @@ public class MainActivity extends Activity {
     Button delete=new Button(this);delete.setText("Padam nota");page.addView(delete);
     delete.setOnClickListener(v->new AlertDialog.Builder(this).setMessage("Padam nota ini?").setNegativeButton("Batal",null).setPositiveButton("Padam",(d,w)->{if(noteId[0]>=0)db.getWritableDatabase().delete("notes","id=?",new String[]{""+noteId[0]});showHome();}).show());
   }
+  void saveColor(int id,int color){if(id<0)return;ContentValues v=new ContentValues();v.put("color",color);db.getWritableDatabase().update("notes",v,"id=?",new String[]{""+id});}
+  void styleSelection(EditText edit,int style){int a=edit.getSelectionStart(),b=edit.getSelectionEnd();if(a<0||b<=a){Toast.makeText(this,"Pilih teks dahulu",Toast.LENGTH_SHORT).show();return;}SpannableStringBuilder t=new SpannableStringBuilder(edit.getText());t.setSpan(new StyleSpan(style),a,b,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);edit.setText(t);edit.setSelection(b);}
   @Override public void onBackPressed(){showHome();}
   static class DB extends SQLiteOpenHelper {
     DB(Context c){super(c,"dinnote.db",null,1);}
-    public void onCreate(SQLiteDatabase db){db.execSQL("CREATE TABLE notes (id INTEGER PRIMARY KEY AUTOINCREMENT,title TEXT NOT NULL DEFAULT '',body TEXT NOT NULL DEFAULT '',updated INTEGER NOT NULL)");}
-    public void onUpgrade(SQLiteDatabase db,int oldVersion,int newVersion){}
+    public void onCreate(SQLiteDatabase db){db.execSQL("CREATE TABLE notes (id INTEGER PRIMARY KEY AUTOINCREMENT,title TEXT NOT NULL DEFAULT '',body TEXT NOT NULL DEFAULT '',updated INTEGER NOT NULL,color INTEGER NOT NULL DEFAULT -1)");}
+    public void onUpgrade(SQLiteDatabase db,int oldVersion,int newVersion){if(oldVersion<2)db.execSQL("ALTER TABLE notes ADD COLUMN color INTEGER NOT NULL DEFAULT -1");}
   }
 }
