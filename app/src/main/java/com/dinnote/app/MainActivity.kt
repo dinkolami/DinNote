@@ -535,7 +535,7 @@ fun HomeScreen(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
                 verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
             ) {
-                Text("▤", fontSize = 22.sp, color = Color(0xFF075B50))
+                Text("▤", fontSize = 24.sp, color = Color(0xFF075B50))
                 Spacer(Modifier.width(12.dp))
                 Text("Buka Maktabah", modifier = Modifier.weight(1f),
                     fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF075B50))
