@@ -26,6 +26,7 @@ object DinNoteDesign {
     val Corner = 12.dp
     val Cream = Color(0xFFFFFDF7)
     val Ink = Color(0xFF183A30)
+    val SecondaryInk = Color(0xFF334B4A)
 }
 
 @Composable
@@ -77,7 +78,7 @@ fun DinNoteBilingualCard(
                         lineHeight = 22.sp,
                         textAlign = TextAlign.Start,
                         style = TextStyle(textDirection = TextDirection.Ltr),
-                        color = Color(0xFF334B4A)
+                        color = DinNoteDesign.SecondaryInk
                     )
                 }
             }
