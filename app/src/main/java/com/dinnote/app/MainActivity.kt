@@ -318,7 +318,7 @@ private fun DinNoteDashboardTile(
     modifier: Modifier = Modifier, onClick: () -> Unit
 ) {
     Surface(
-        modifier = modifier.height(118.dp)
+        modifier = modifier.height(106.dp)
             .semantics { contentDescription = "Buka $title: $subtitle" }
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
