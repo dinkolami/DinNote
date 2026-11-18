@@ -4000,26 +4000,68 @@ private fun TurathStarterCard(search: String, assetPath: String = "turath/arba_i
         androidx.compose.ui.window.Dialog(onDismissRequest={opened=false},properties=androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth=false, decorFitsSystemWindows=false)) {
             Surface(modifier=Modifier.fillMaxSize().safeDrawingPadding(),color=Color.White) {
                 Column(Modifier.fillMaxSize().padding(horizontal=18.dp, vertical=8.dp),verticalArrangement=Arrangement.spacedBy(8.dp)) {
-                    Row(Modifier.fillMaxWidth(),verticalAlignment=androidx.compose.ui.Alignment.CenterVertically) {
-                        TextButton(onClick={if(selected>=0) selected=-1 else opened=false}) { Text(if(selected>=0) "Senarai" else "Tutup") }
-                        Text(book.optString("titleArabic"),modifier=Modifier.weight(1f),textAlign=TextAlign.End,fontSize=22.sp,fontWeight=FontWeight.Bold)
-                    }
                     if(selected !in entries.indices) {
+                        var indexQuery by remember { mutableStateOf("") }
+                        val visibleIndices = remember(entries, indexQuery) {
+                            val term = normalizeArabicSearch(indexQuery.trim())
+                            entries.indices.filter { i ->
+                                term.isBlank() || normalizeArabicSearch(entries[i].optString("titleArabic")).contains(term) ||
+                                    entries[i].optString("titleMalay").contains(indexQuery.trim(), ignoreCase = true)
+                            }
+                        }
+                        Surface(shape = RoundedCornerShape(16.dp), color = Color(0xFF124D40),
+                            border = BorderStroke(1.dp, Color(0xFFD3B66F))) {
+                            Column(Modifier.fillMaxWidth().padding(12.dp)) {
+                                Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                                    TextButton(onClick = { opened = false }) { Text("‹ Tutup", color = Color(0xFFE8CF91)) }
+                                    Text(book.optString("titleArabic"), Modifier.weight(1f), textAlign = TextAlign.End,
+                                        fontSize = 21.sp, fontWeight = FontWeight.Bold, color = Color(0xFFFFE8B0))
+                                }
+                                Text(book.optString("titleMalay"), Modifier.fillMaxWidth(), textAlign = TextAlign.End,
+                                    fontSize = 13.sp, color = Color.White)
+                                Text("Indeks kandungan • ${entries.size} petikan", Modifier.fillMaxWidth(),
+                                    textAlign = TextAlign.End, fontSize = 11.sp, color = Color(0xFFE8CF91))
+                            }
+                        }
+                        OutlinedTextField(indexQuery, { indexQuery = it }, modifier = Modifier.fillMaxWidth(),
+                            singleLine = true, shape = RoundedCornerShape(12.dp),
+                            placeholder = { Text("Cari bab atau tajuk...", fontSize = 13.sp) })
                         if (lastRead in entries.indices) {
                             TextButton(onClick = { selected = lastRead }) { Text("Sambung bacaan • ${lastRead + 1}", color = Color(0xFF075B49)) }
                         }
-                        LazyColumn(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(8.dp)) {
-                            items(entries.size) { index ->
-                                val e=entries[index]
-                                Card(onClick={selected=index},modifier=Modifier.fillMaxWidth()) {
-                                    Column(Modifier.padding(14.dp)) {
-                                        Text(e.optString("titleArabic"),modifier=Modifier.fillMaxWidth(),textAlign=TextAlign.End,fontSize=20.sp)
-                                        Text(e.optString("titleMalay"))
+                        Text("KANDUNGAN KITAB  •  ${visibleIndices.size}", fontSize = 11.sp,
+                            fontWeight = FontWeight.SemiBold, color = Color(0xFF075B49))
+                        if (visibleIndices.isEmpty()) Text("Tiada tajuk sepadan.", color = Color.Gray, fontSize = 13.sp)
+                        LazyColumn(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                            items(visibleIndices.size) { position ->
+                                val index = visibleIndices[position]
+                                val e = entries[index]
+                                Card(onClick = { selected = index }, modifier = Modifier.fillMaxWidth(),
+                                    shape = RoundedCornerShape(10.dp),
+                                    border = BorderStroke(1.dp, Color(0xFFE4E8DF)),
+                                    colors = CardDefaults.cardColors(containerColor = if (index == lastRead) Color(0xFFE6EFE8) else Color(0xFFFFFCF4))) {
+                                    Row(Modifier.padding(horizontal = 10.dp, vertical = 9.dp),
+                                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(9.dp)) {
+                                        Box(Modifier.size(34.dp).background(Color(0xFFE8F0E5), RoundedCornerShape(8.dp)),
+                                            contentAlignment = androidx.compose.ui.Alignment.Center) {
+                                            Text((index + 1).toString().padStart(2, '0'), fontSize = 11.sp, color = Color(0xFF075B49))
+                                        }
+                                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                                            Text(e.optString("titleArabic"), Modifier.fillMaxWidth(), textAlign = TextAlign.End,
+                                                fontSize = 19.sp, lineHeight = 28.sp, color = Color(0xFF183F34))
+                                            Text(e.optString("titleMalay"), fontSize = 12.sp, lineHeight = 17.sp, color = Color(0xFF59685E))
+                                        }
+                                        Text("›", fontSize = 22.sp, color = Color(0xFFA78945))
                                     }
                                 }
                             }
                         }
                     } else {
+                        Row(Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                            TextButton(onClick = { selected = -1 }) { Text("‹ Senarai") }
+                            Text(book.optString("titleArabic"), Modifier.weight(1f), textAlign = TextAlign.End, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                        }
                         val e=entries[selected]
                         androidx.compose.runtime.LaunchedEffect(selected, assetPath) {
                             lastRead = selected
