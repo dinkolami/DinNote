@@ -2767,6 +2767,16 @@ private fun SmartVaultDialog(onDismiss: () -> Unit, onInsert: (String) -> Unit) 
         return android.util.Base64.encodeToString(digest, android.util.Base64.NO_WRAP)
     }
     var tags by remember { mutableStateOf(items.associateWith { index.getString(tagKey(it), "") ?: "" }) }
+    val referenceLabels = listOf("Kitab", "Pengarang", "Jilid", "Halaman", "Sumber tambahan")
+    fun readReference(block: String): List<String> = referenceLabels.indices.map { field ->
+        index.getString("ref_" + tagKey(block) + "_" + field, "") ?: ""
+    }
+    fun referenceText(fields: List<String>): String = fields.mapIndexedNotNull { field, value ->
+        value.trim().takeIf { it.isNotEmpty() }?.let { referenceLabels[field] + ": " + it }
+    }.joinToString(" · ")
+    var references by remember { mutableStateOf(items.associateWith { readReference(it) }) }
+    var refEditing by remember { mutableStateOf<String?>(null) }
+    var refDraft by remember { mutableStateOf(List(referenceLabels.size) { "" }) }
     var query by remember { mutableStateOf("") }
     var editing by remember { mutableStateOf<String?>(null) }
     var draft by remember { mutableStateOf("") }
@@ -2776,11 +2786,12 @@ private fun SmartVaultDialog(onDismiss: () -> Unit, onInsert: (String) -> Unit) 
         text = {
             Column {
                 OutlinedTextField(value = query, onValueChange = { query = it },
-                    label = { Text("Cari teks atau tema") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                    label = { Text("Cari teks, tema atau rujukan") }, singleLine = true, modifier = Modifier.fillMaxWidth())
                 Column(Modifier.heightIn(max = 300.dp).verticalScroll(rememberScrollState())) {
                     val filtered = items.filter {
                         formattedNoteText(it).text.contains(query.trim(), ignoreCase = true) ||
-                            tags[it].orEmpty().contains(query.trim(), ignoreCase = true)
+                            tags[it].orEmpty().contains(query.trim(), ignoreCase = true) ||
+                            referenceText(references[it].orEmpty()).contains(query.trim(), ignoreCase = true)
                     }
                     if (filtered.isEmpty()) Text("Tiada petikan ditemui", modifier = Modifier.padding(12.dp))
                     filtered.forEach { block ->
@@ -2793,6 +2804,35 @@ private fun SmartVaultDialog(onDismiss: () -> Unit, onInsert: (String) -> Unit) 
                                     Text("Tema / tag", color = Color(0xFF087F83))
                                 }
                                 Text(tags[block].orEmpty(), fontSize = 12.sp, maxLines = 2)
+                            }
+                            val citation = referenceText(references[block].orEmpty())
+                            if (citation.isNotBlank()) Text(citation, fontSize = 12.sp, modifier = Modifier.padding(horizontal = 12.dp))
+                            Row {
+                                TextButton(onClick = { refEditing = block; refDraft = readReference(block); editing = null }) {
+                                    Text("Smart Reference", color = Color(0xFF087F83))
+                                }
+                                if (citation.isNotBlank()) TextButton(onClick = { onInsert(block + "\n" + citation); onDismiss() }) {
+                                    Text("Tampal + rujukan")
+                                }
+                            }
+                            if (refEditing == block) {
+                                referenceLabels.forEachIndexed { field, label ->
+                                    OutlinedTextField(value = refDraft[field], onValueChange = { input ->
+                                        refDraft = refDraft.mapIndexed { k, old -> if (k == field) input else old }
+                                    }, label = { Text(label) }, modifier = Modifier.fillMaxWidth(), singleLine = true)
+                                }
+                                Row {
+                                    TextButton(onClick = {
+                                        val editor = index.edit()
+                                        refDraft.forEachIndexed { field, input ->
+                                            editor.putString("ref_" + tagKey(block) + "_" + field, input.trim())
+                                        }
+                                        editor.apply()
+                                        references = references + (block to refDraft.map { it.trim() })
+                                        refEditing = null
+                                    }) { Text("Simpan rujukan") }
+                                    TextButton(onClick = { refEditing = null }) { Text("Batal") }
+                                }
                             }
                             if (editing == block) {
                                 OutlinedTextField(value = draft, onValueChange = { draft = it },
