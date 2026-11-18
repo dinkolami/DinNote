@@ -59,6 +59,18 @@ jobs:
       - name: Build debug APK
         if: steps.signing.outputs.ready != 'true'
         run: gradle :app:assembleDebug --no-daemon
+      - name: Validate debug APK before publishing
+        if: steps.signing.outputs.ready != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK=$(find app/build/outputs/apk/debug -name '*.apk' -print -quit)
+          test -n "$APK"
+          test -s "$APK"
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose "$APK"
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" | head -n 15
+          unzip -t "$APK" | tail -n 2
+          echo "APK size: $(stat -c%s "$APK") bytes"
       - name: Upload debug APK
         if: steps.signing.outputs.ready != 'true'
         uses: actions/upload-artifact@v4
