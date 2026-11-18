@@ -100,6 +100,7 @@ class NoteDatabase(context: Context) :
     }
 
     fun setPinned(id: Long, pinned: Boolean) {
+        require(id > 0L) { "ID nota tidak sah" }
         writableDatabase.execSQL(
             "UPDATE notes SET is_pinned = ?, updated_at = ? WHERE id = ?",
             arrayOf(if (pinned) 1 else 0, System.currentTimeMillis(), id)
