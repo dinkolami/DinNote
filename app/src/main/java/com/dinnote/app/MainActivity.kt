@@ -902,7 +902,7 @@ fun NotesScreen(
                                 Box {
                                     Text("⋮", modifier = Modifier.clickable { menuExpanded = true }, fontSize = 20.sp)
                                     DropdownMenu(expanded = menuExpanded, onDismissRequest = { menuExpanded = false }) {
-                                        DropdownMenuItem(
+                                        if (!showArchived) DropdownMenuItem(
                                             text = { Text(if (item.pinned) "Lepas pin" else "Pin nota") },
                                             onClick = { database.setPinned(item.id, !item.pinned); menuExpanded = false; refreshNotes() }
                                         )
@@ -922,7 +922,7 @@ fun NotesScreen(
                                             }
                                         )
                                         DropdownMenuItem(
-                                            text = { Text(if (showArchived) "Kembalikan ke Nota Aktif" else "Arkibkan") },
+                                            text = { Text(if (showArchived) "Kembalikan ke Nota Aktif" else "Arkibkan", color = MaterialTheme.colorScheme.primary) },
                                             onClick = { database.setArchived(item.id, !item.archived); menuExpanded = false; refreshNotes() }
                                         )
                                         DropdownMenuItem(text = { Text("Padam") }, onClick = { noteToDelete = item; menuExpanded = false })
