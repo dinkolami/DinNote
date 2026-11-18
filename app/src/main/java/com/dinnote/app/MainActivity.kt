@@ -579,7 +579,7 @@ fun HomeScreen(
                         Text("✦", fontSize = 12.sp, color = Color(0xFFC49A48))
                         Text(note.title.ifBlank { "Tanpa tajuk" },
                             modifier = Modifier.weight(1f),
-                            fontSize = 12.sp, fontWeight = FontWeight.Medium,
+                            fontSize = 13.sp, lineHeight = 18.sp, fontWeight = FontWeight.Medium,
                             color = Color(0xFF075B59), maxLines = 1,
                             overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
                         Text("›", fontSize = 16.sp, color = Color(0xFF08766C))
@@ -609,7 +609,7 @@ fun HomeScreen(
                         }
                         Text(note.title.ifBlank { "Tanpa tajuk" },
                             modifier = Modifier.weight(1f),
-                            fontSize = 12.sp, fontWeight = FontWeight.Medium,
+                            fontSize = 13.sp, lineHeight = 18.sp, fontWeight = FontWeight.Medium,
                             color = Color(0xFF075B59), maxLines = 1,
                             overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
                         Text("›", fontSize = 16.sp, color = Color(0xFF08766C))
