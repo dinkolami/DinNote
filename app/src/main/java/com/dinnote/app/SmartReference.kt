@@ -57,7 +57,7 @@ class SmartReferenceStore(context: Context) {
 
     fun entries(): List<SmartReferenceEntry> {
         val raw = prefs.getString("entries", null) ?: return initialEntries()
-        return runCatching {
+        val saved = runCatching {
             val array = JSONArray(raw)
             (0 until array.length()).map { i ->
                 val o = array.getJSONObject(i)
@@ -67,7 +67,14 @@ class SmartReferenceStore(context: Context) {
                     o.getString("description"), o.optString("source"),
                     o.optJSONObject("details")?.let { d -> d.keys().asSequence().associateWith { d.optString(it) } } ?: emptyMap())
             }
-        }.getOrElse { emptyList() }
+        }.getOrElse { return emptyList() }
+        if (prefs.getInt("catalogue_version", 1) < 2) {
+            val oldIds = setOf("imam-shafii", "al-umm")
+            val merged = saved + initialEntries().filter { item -> item.id !in oldIds && saved.none { it.id == item.id } }
+            save(merged)
+            return merged
+        }
+        return saved
     }
 
     fun save(entries: List<SmartReferenceEntry>) {
@@ -77,7 +84,7 @@ class SmartReferenceStore(context: Context) {
                 .put("category", e.category).put("aliases", JSONArray(e.aliases))
                 .put("description", e.description).put("source", e.source).put("details", JSONObject(e.details)))
         }
-        prefs.edit().putString("entries", array.toString()).apply()
+        prefs.edit().putString("entries", array.toString()).putInt("catalogue_version", 2).apply()
     }
 
     fun upsert(entry: SmartReferenceEntry) {
@@ -93,7 +100,37 @@ class SmartReferenceStore(context: Context) {
             "Muhammad bin Idris al-Syafi‘i (150–204H), pengasas mazhab Syafi‘i. Antara karya beliau ialah al-Umm dan al-Risalah.",
             "Siyar A‘lam al-Nubala’, biografi al-Syafi‘i", mapOf("birthDate" to "150H / 767M", "birthPlace" to "Gaza", "deathDate" to "204H / 820M", "deathPlace" to "Mesir", "works" to "الأم، الرسالة", "teachers" to "Imam Malik bin Anas", "students" to "Ahmad bin Hanbal")),
         SmartReferenceEntry("al-umm", "al-Umm", "Kitab", listOf("الأم", "كتاب الأم"),
-            "Kitab fiqh karya Imam al-Syafi‘i.", details = mapOf("author" to "Imam al-Syafi‘i", "subject" to "Fiqh"))
+            "Kitab fiqh karya Imam al-Syafi‘i.", details = mapOf("author" to "Imam al-Syafi‘i", "subject" to "Fiqh")),
+        SmartReferenceEntry("abu-hanifa", "Imam Abu Hanifah", "Ulama", listOf("أبو حنيفة"), "Imam mazhab Hanafi.", details = mapOf("birthDate" to "80H", "birthPlace" to "Kufah", "deathDate" to "150H", "deathPlace" to "Baghdad")),
+        SmartReferenceEntry("malik", "Imam Malik", "Ulama", listOf("مالك بن أنس", "الإمام مالك"), "Imam mazhab Maliki dan ahli hadis Madinah.", details = mapOf("birthDate" to "93H", "birthPlace" to "Madinah", "deathDate" to "179H", "deathPlace" to "Madinah", "works" to "الموطأ")),
+        SmartReferenceEntry("ahmad", "Imam Ahmad bin Hanbal", "Ulama", listOf("أحمد بن حنبل", "الإمام أحمد"), "Imam mazhab Hanbali dan ahli hadis.", details = mapOf("birthDate" to "164H", "birthPlace" to "Baghdad", "deathDate" to "241H", "deathPlace" to "Baghdad", "works" to "المسند")),
+        SmartReferenceEntry("nawawi", "Imam al-Nawawi", "Ulama", listOf("Imam Nawawi", "النووي", "الإمام النووي"), "Ulama besar mazhab Syafi‘i dan pensyarah hadis.", details = mapOf("birthDate" to "631H", "birthPlace" to "Nawa", "deathDate" to "676H", "deathPlace" to "Nawa", "works" to "المجموع، منهاج الطالبين، رياض الصالحين")),
+        SmartReferenceEntry("rafii", "Imam al-Rafi‘i", "Ulama", listOf("Imam Rafii", "الرافعي", "عبد الكريم الرافعي"), "Antara tokoh utama pentarjihan mazhab Syafi‘i.", details = mapOf("birthDate" to "557H", "birthPlace" to "Qazvin", "deathDate" to "623H", "deathPlace" to "Qazvin", "works" to "العزيز شرح الوجيز، المحرر")),
+        SmartReferenceEntry("ghazali", "Imam al-Ghazali", "Ulama", listOf("Imam Ghazali", "الغزالي", "أبو حامد الغزالي"), "Ulama fiqh Syafi‘i, usul fiqh dan tasawwuf.", details = mapOf("birthDate" to "450H", "birthPlace" to "Tus", "deathDate" to "505H", "deathPlace" to "Tus", "works" to "إحياء علوم الدين، المستصفى، الوسيط")),
+        SmartReferenceEntry("juwayni", "Imam al-Juwayni", "Ulama", listOf("إمام الحرمين", "الجويني", "Imam al-Haramayn"), "Ulama usul fiqh dan guru Imam al-Ghazali.", details = mapOf("birthDate" to "419H", "deathDate" to "478H", "deathPlace" to "Nishapur", "works" to "نهاية المطلب، البرهان")),
+        SmartReferenceEntry("muzani", "Imam al-Muzani", "Ulama", listOf("المزني", "إسماعيل المزني"), "Murid Imam al-Syafi‘i dan penyebar mazhabnya.", details = mapOf("birthDate" to "175H", "birthPlace" to "Mesir", "deathDate" to "264H", "deathPlace" to "Mesir", "works" to "مختصر المزني")),
+        SmartReferenceEntry("mawardi", "Imam al-Mawardi", "Ulama", listOf("الماوردي", "Imam Mawardi"), "Faqih Syafi‘i dan penulis mengenai pemerintahan.", details = mapOf("birthDate" to "364H", "birthPlace" to "Basrah", "deathDate" to "450H", "deathPlace" to "Baghdad", "works" to "الحاوي الكبير، الأحكام السلطانية")),
+        SmartReferenceEntry("shirazi", "Abu Ishaq al-Shirazi", "Ulama", listOf("أبو إسحاق الشيرازي", "الشيرازي"), "Faqih Syafi‘i dan pengajar di Madrasah Nizamiyyah.", details = mapOf("birthDate" to "393H", "birthPlace" to "Firuzabad", "deathDate" to "476H", "deathPlace" to "Baghdad", "works" to "المهذب، اللمع")),
+        SmartReferenceEntry("ibn-hajar-haytami", "Ibn Hajar al-Haytami", "Ulama", listOf("ابن حجر الهيتمي", "ابن حجر المكي"), "Tokoh fiqh Syafi‘i mutaakhkhirin.", details = mapOf("birthDate" to "909H", "deathDate" to "974H", "deathPlace" to "Makkah", "works" to "تحفة المحتاج")),
+        SmartReferenceEntry("ramli", "Syamsuddin al-Ramli", "Ulama", listOf("شمس الدين الرملي", "الإمام الرملي"), "Tokoh rujukan fiqh Syafi‘i mutaakhkhirin.", details = mapOf("birthDate" to "919H", "birthPlace" to "Mesir", "deathDate" to "1004H", "deathPlace" to "Mesir", "works" to "نهاية المحتاج")),
+        SmartReferenceEntry("khatib-shirbini", "al-Khatib al-Syirbini", "Ulama", listOf("الخطيب الشربيني", "الشربيني"), "Ulama fiqh dan tafsir mazhab Syafi‘i.", details = mapOf("deathDate" to "977H", "works" to "مغني المحتاج")),
+        SmartReferenceEntry("zakariya-ansari", "Syeikh Zakariyya al-Ansari", "Ulama", listOf("زكريا الأنصاري", "شيخ الإسلام زكريا الأنصاري"), "Ulama Syafi‘i dalam fiqh, hadis dan tasawwuf.", details = mapOf("birthDate" to "823H", "deathDate" to "926H", "deathPlace" to "Mesir", "works" to "أسنى المطالب، فتح الوهاب")),
+        SmartReferenceEntry("bukhari", "Imam al-Bukhari", "Ulama", listOf("Imam Bukhari", "البخاري", "الإمام البخاري"), "Muhaddith dan penyusun Sahih al-Bukhari.", details = mapOf("birthDate" to "194H", "birthPlace" to "Bukhara", "deathDate" to "256H", "deathPlace" to "Khartank", "works" to "صحيح البخاري، الأدب المفرد")),
+        SmartReferenceEntry("muslim", "Imam Muslim", "Ulama", listOf("مسلم بن الحجاج", "الإمام مسلم"), "Muhaddith dan penyusun Sahih Muslim; tahun lahir diperselisihkan.", details = mapOf("birthDate" to "204H", "birthPlace" to "Nishapur", "deathDate" to "261H", "deathPlace" to "Nishapur", "works" to "صحيح مسلم")),
+        SmartReferenceEntry("abu-dawud", "Imam Abu Dawud", "Ulama", listOf("أبو داود السجستاني", "Imam Abu Daud"), "Penyusun salah satu kitab Sunan utama.", details = mapOf("birthDate" to "202H", "birthPlace" to "Sijistan", "deathDate" to "275H", "deathPlace" to "Basrah", "works" to "سنن أبي داود")),
+        SmartReferenceEntry("tirmidhi", "Imam al-Tirmidhi", "Ulama", listOf("الترمذي", "Imam Tirmizi"), "Ahli hadis dan penyusun al-Jami‘.", details = mapOf("birthDate" to "209H", "deathDate" to "279H", "works" to "جامع الترمذي، الشمائل المحمدية")),
+        SmartReferenceEntry("nasai", "Imam al-Nasa’i", "Ulama", listOf("النسائي", "Imam Nasai"), "Ahli hadis dan penyusun al-Sunan.", details = mapOf("birthDate" to "215H", "birthPlace" to "Nasa", "deathDate" to "303H", "works" to "سنن النسائي")),
+        SmartReferenceEntry("ibn-majah", "Imam Ibn Majah", "Ulama", listOf("ابن ماجه", "Imam Ibnu Majah"), "Ahli hadis dan penyusun Sunan Ibn Majah.", details = mapOf("birthDate" to "209H", "birthPlace" to "Qazvin", "deathDate" to "273H", "deathPlace" to "Qazvin", "works" to "سنن ابن ماجه")),
+        SmartReferenceEntry("ibn-hajar-asqalani", "Ibn Hajar al-Asqalani", "Ulama", listOf("ابن حجر العسقلاني", "الحافظ ابن حجر"), "Hafiz hadis dan faqih Syafi‘i.", details = mapOf("birthDate" to "773H", "birthPlace" to "Mesir", "deathDate" to "852H", "deathPlace" to "Mesir", "works" to "فتح الباري، تهذيب التهذيب، بلوغ المرام")),
+        SmartReferenceEntry("suyuti", "Imam al-Suyuti", "Ulama", listOf("السيوطي", "جلال الدين السيوطي", "Imam Suyuti"), "Ulama ensiklopedik dalam hadis, tafsir dan fiqh.", details = mapOf("birthDate" to "849H", "birthPlace" to "Kaherah", "deathDate" to "911H", "deathPlace" to "Kaherah", "works" to "الإتقان، الجامع الصغير، الأشباه والنظائر")),
+        SmartReferenceEntry("dhahabi", "Imam al-Dhahabi", "Ulama", listOf("الذهبي", "شمس الدين الذهبي"), "Sejarawan dan ahli kritik hadis.", details = mapOf("birthDate" to "673H", "birthPlace" to "Damascus", "deathDate" to "748H", "deathPlace" to "Damascus", "works" to "سير أعلام النبلاء، تاريخ الإسلام")),
+        SmartReferenceEntry("qushayri", "Imam al-Qusyairi", "Ulama", listOf("القشيري", "عبد الكريم القشيري"), "Ulama tasawwuf, tafsir dan mazhab Syafi‘i.", details = mapOf("birthDate" to "376H", "deathDate" to "465H", "deathPlace" to "Nishapur", "works" to "الرسالة القشيرية، لطائف الإشارات")),
+        SmartReferenceEntry("junayd", "Imam al-Junayd", "Ulama", listOf("الجنيد البغدادي", "الجنيد"), "Tokoh tasawwuf awal yang masyhur dengan penekanan terhadap syariat.", details = mapOf("deathDate" to "297H", "deathPlace" to "Baghdad")),
+        SmartReferenceEntry("ibn-ata", "Ibn ‘Ata’illah al-Sakandari", "Ulama", listOf("ابن عطاء الله السكندري", "ابن عطاء الله", "Ibnu Athaillah"), "Ulama tasawwuf tariqat Syaziliyyah dan faqih Maliki.", details = mapOf("birthPlace" to "Iskandariah", "deathDate" to "709H", "deathPlace" to "Kaherah", "works" to "الحكم العطائية، لطائف المنن")),
+        SmartReferenceEntry("abu-madyan", "Abu Madyan", "Ulama", listOf("أبو مدين الغوث", "أبو مدين"), "Tokoh tasawwuf Maghribi yang berpengaruh.", details = mapOf("deathDate" to "594H")),
+        SmartReferenceEntry("hasan-basri", "Hasan al-Basri", "Ulama", listOf("الحسن البصري", "Hasan Basri"), "Tabi‘i yang terkenal dengan ilmu, zuhud dan nasihat.", details = mapOf("birthDate" to "21H", "birthPlace" to "Madinah", "deathDate" to "110H", "deathPlace" to "Basrah")),
+        SmartReferenceEntry("yahya-muadh", "Yahya bin Mu‘adh", "Ulama", listOf("يحيى بن معاذ الرازي", "يحيى بن معاذ"), "Tokoh zuhud dan nasihat kerohanian.", details = mapOf("deathDate" to "258H", "deathPlace" to "Nishapur")),
+        SmartReferenceEntry("rabi-adawiyya", "Rabi‘ah al-‘Adawiyyah", "Ulama", listOf("رابعة العدوية", "Rabiah al-Adawiyah"), "Tokoh zuhud awal; tarikh kelahiran dan wafat diperselisihkan.", details = mapOf("birthPlace" to "Basrah"))
     )
 }
 
