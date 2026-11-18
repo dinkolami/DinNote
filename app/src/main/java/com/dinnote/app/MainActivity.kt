@@ -2874,7 +2874,21 @@ private fun SmartRecallDialog(items: List<String>, onClose: () -> Unit) {
 private fun SmartDualView(items: List<String>, onClose: () -> Unit, onInsert: (String) -> Unit) {
     var selected by remember { mutableStateOf(items.firstOrNull().orEmpty()) }
     var query by remember { mutableStateOf("") }
-    var draft by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf("") }
+    val context = LocalContext.current
+    val workspace = remember { context.getSharedPreferences("dinnote_workspace", android.content.Context.MODE_PRIVATE) }
+    var draft by remember { mutableStateOf(workspace.getString("draft", "").orEmpty()) }
+    var confirmClear by remember { mutableStateOf(false) }
+    fun changeDraft(value: String) {
+        draft = value
+        workspace.edit().putString("draft", value).apply()
+    }
+    if (confirmClear) {
+        AlertDialog(onDismissRequest = { confirmClear = false },
+            title = { Text("Kosongkan catatan pengajian?") },
+            text = { Text("Draf ruang pengajian akan dipadam. Nota yang sudah disimpan tidak terjejas.") },
+            confirmButton = { TextButton(onClick = { changeDraft(""); confirmClear = false }) { Text("Kosongkan") } },
+            dismissButton = { TextButton(onClick = { confirmClear = false }) { Text("Batal") } })
+    }
     val configuration = androidx.compose.ui.platform.LocalConfiguration.current
     val wide = configuration.screenWidthDp >= 600 ||
         (configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE &&
@@ -2887,7 +2901,7 @@ private fun SmartDualView(items: List<String>, onClose: () -> Unit, onInsert: (S
                 Row(Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                     Text("Smart Dual View", Modifier.weight(1f), color = Color(0xFF087F83), fontSize = 20.sp)
                     TextButton(onClick = onClose) { Text("Tutup") }
-                    TextButton(enabled = draft.isNotBlank(), onClick = { onInsert(draft); onClose() }) { Text("Tampal nota") }
+                    TextButton(enabled = draft.isNotBlank(), onClick = { onInsert(draft); changeDraft(""); onClose() }) { Text("Tampal nota") }
                 }
                 HorizontalDivider()
                 val sourcePanel: @Composable () -> Unit = {
@@ -2906,14 +2920,18 @@ private fun SmartDualView(items: List<String>, onClose: () -> Unit, onInsert: (S
                             Text(remember(selected) { formattedNoteText(selected) }, fontSize = 20.sp, lineHeight = 32.sp)
                         }
                         TextButton(enabled = selected.isNotBlank(), onClick = {
-                            draft = if (draft.isBlank()) selected else draft + "\n\n" + selected
+                            changeDraft(if (draft.isBlank()) selected else draft + "\n\n" + selected)
                         }) { Text("+ Petikan ke nota") }
                     }
                 }
                 val editorPanel: @Composable () -> Unit = {
                     Column(Modifier.fillMaxSize().padding(6.dp)) {
-                        Text("Catatan pengajian", color = Color(0xFF087F83))
-                        OutlinedTextField(draft, { draft = it }, modifier = Modifier.fillMaxSize(),
+                        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                            Text("Catatan pengajian", Modifier.weight(1f), color = Color(0xFF087F83))
+                            TextButton(enabled = draft.isNotBlank(), onClick = { confirmClear = true }) { Text("Kosongkan") }
+                        }
+                        Text("Draf disimpan secara automatik", fontSize = 11.sp, color = Color(0xFF087F83))
+                        OutlinedTextField(draft, { changeDraft(it) }, modifier = Modifier.fillMaxSize(),
                             placeholder = { Text("Tulis faedah dan huraian di sini…") },
                             textStyle = androidx.compose.ui.text.TextStyle(fontSize = 19.sp, textDirection = TextDirection.ContentOrRtl),
                             visualTransformation = androidx.compose.ui.text.input.VisualTransformation { value ->
