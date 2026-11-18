@@ -2203,7 +2203,7 @@ private fun matchesMaktabahSearch(value: String, query: String): Boolean =
 
 @Composable
 fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {}) {
-    var selectedCategory by remember { mutableStateOf("Ingatan") }
+    var selectedCategory by remember { mutableStateOf("Kitab-Kitab") }
     var selectedEntry by remember { mutableStateOf<KalimahEntry?>(null) }
     var editingKalimah by remember { mutableStateOf<KalimahEntry?>(null) }
     var kalimahArabic by remember { mutableStateOf("") }
