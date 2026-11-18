@@ -1308,22 +1308,23 @@ fun NotesScreen(
                                     ),
                                     decorationBox = { inner ->
                                         Box(Modifier.fillMaxWidth().drawBehind {
-                                            // Micro-dotted notebook guides: 0.5 px dots, 3.5 px spacing, 90% opacity.
-                                            val layout = bodyTextLayout
-                                            if (layout != null) {
-                                                val step = 4f
-                                                val radius = 0.25f
-                                                val ink = Color(0xFF888888).copy(alpha = 0.90f)
-                                                for (line in 0 until layout.lineCount) {
-                                                    val y = layout.getLineBottom(line).toFloat() + 2f
-                                                    if (y <= size.height) {
-                                                        var x = 0f
-                                                        while (x < size.width) {
-                                                            drawCircle(ink, radius = radius, center = Offset(x, y))
-                                                            x += step
-                                                        }
-                                                    }
+                                            // Visible micro-dotted writing guides, including empty notes.
+                                            // Compose canvas coordinates are pixels; sub-pixel dots were invisible.
+                                            val ink = Color(0xFF777777).copy(alpha = 0.90f)
+                                            val dotRadius = 0.8.dp.toPx()
+                                            val dotSpacing = 5.dp.toPx()
+                                            val lineSpacing = (editorFontSize * displayPrefs.getFloat("line_spacing", 1.6f).coerceIn(1.2f, 2.2f)).sp.toPx()
+                                            val firstLine = bodyTextLayout?.let { layout ->
+                                                if (layout.lineCount > 0) layout.getLineBottom(0).toFloat() else lineSpacing
+                                            } ?: lineSpacing
+                                            var y = firstLine.coerceAtLeast(lineSpacing) + 2.dp.toPx()
+                                            while (y < size.height) {
+                                                var x = dotSpacing / 2f
+                                                while (x < size.width) {
+                                                    drawCircle(ink, radius = dotRadius, center = Offset(x, y))
+                                                    x += dotSpacing
                                                 }
+                                                y += lineSpacing
                                             }
                                         }) {
                                             if (body.text.isEmpty()) Text(
