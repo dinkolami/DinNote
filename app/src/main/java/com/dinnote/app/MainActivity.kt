@@ -2705,6 +2705,8 @@ private fun SharedParagraphTools(value: TextFieldValue, onChange: (TextFieldValu
     val end = source.indexOf('\n', cursor).let { if (it < 0) source.length else it }
     val enabled = end > start && formattedNoteText(smartFormattedExcerpt(source, start, end)).text.isNotBlank()
     val context = androidx.compose.ui.platform.LocalContext.current
+    val transfer = context.getSharedPreferences("dinnote_smart_transfer", android.content.Context.MODE_PRIVATE)
+    var hasTransfer by remember { mutableStateOf(transfer.contains("block")) }
     val excerpt = if (enabled) smartFormattedExcerpt(source, start, end) else ""
     fun duplicateBlock() {
         val before = smartFormattedExcerpt(source, 0, end)
@@ -2725,7 +2727,7 @@ private fun SharedParagraphTools(value: TextFieldValue, onChange: (TextFieldValu
     }
     val selected = value.copy(selection = TextRange(start, end), composition = null)
     Box(Modifier.wrapContentWidth()) {
-        TextButton(enabled = enabled, onClick = { expanded = true }) {
+        TextButton(onClick = { hasTransfer = transfer.contains("block"); expanded = true }) {
             Text("▤ Smart Block", color = if (enabled) Color(0xFF087F83) else Color.Gray, fontSize = 13.sp)
         }
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
@@ -2737,6 +2739,28 @@ private fun SharedParagraphTools(value: TextFieldValue, onChange: (TextFieldValu
                 expanded = false
                 val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
                 clipboard.setPrimaryClip(android.content.ClipData.newPlainText("DinNote", formattedNoteText(excerpt).text))
+            })
+            DropdownMenuItem(text = { Text("Salin dengan format DinNote") }, enabled = enabled, onClick = {
+                expanded = false
+                transfer.edit().putString("block", excerpt).apply()
+                hasTransfer = true
+                android.widget.Toast.makeText(context, "Blok disalin dengan format", android.widget.Toast.LENGTH_SHORT).show()
+            })
+            DropdownMenuItem(text = { Text("Tampal blok DinNote") }, enabled = hasTransfer, onClick = {
+                expanded = false
+                val block = transfer.getString("block", null)
+                if (!block.isNullOrEmpty()) {
+                    val a = value.selection.min.coerceIn(0, source.length)
+                    val b = value.selection.max.coerceIn(a, source.length)
+                    val before = smartFormattedExcerpt(source, 0, a)
+                    val after = smartFormattedExcerpt(source, b, source.length)
+                    onChange(TextFieldValue(before + block + after, selection = TextRange(before.length + block.length)))
+                }
+            })
+            DropdownMenuItem(text = { Text("Kosongkan salinan DinNote") }, enabled = hasTransfer, onClick = {
+                expanded = false
+                transfer.edit().remove("block").apply()
+                hasTransfer = false
             })
             DropdownMenuItem(text = { Text("Duplikasi perenggan") }, enabled = enabled, onClick = {
                 expanded = false
