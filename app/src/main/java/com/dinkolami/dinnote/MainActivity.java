@@ -53,8 +53,8 @@ public class MainActivity extends Activity {
         l.setGravity(Gravity.CENTER_VERTICAL); return l;
     }
     private TextView action(String label, Runnable click) {
-        TextView v = text(label,15,true);
-        v.setTextColor(GREEN);
+        TextView v = text(label,14,true);
+        v.setTextColor(GREEN); v.setClickable(true);
         v.setOnClickListener(w -> click.run()); return v;
     }
     private void base(String heading) {
@@ -155,9 +155,9 @@ public class MainActivity extends Activity {
         actions.addView(action("  Notebook",this::moveNote));
         actions.addView(action("  Padam",this::deleteNote));
         body.addView(actions);
-        titleEdit=new EditText(this);titleEdit.setHint("Tajuk nota");titleEdit.setSingleLine(true);
-        titleEdit.setTextSize(21);body.addView(titleEdit);
-        toolbar=row(); HorizontalScrollView tools=new HorizontalScrollView(this);tools.setHorizontalScrollBarEnabled(false);
+        titleEdit=new EditText(this);titleEdit.setHint("Tajuk nota");titleEdit.setSingleLine(true); titleEdit.setSelectAllOnFocus(false);
+        titleEdit.setTextSize(20);body.addView(titleEdit);
+        toolbar=row(); toolbar.setGravity(Gravity.CENTER_VERTICAL); HorizontalScrollView tools=new HorizontalScrollView(this);tools.setHorizontalScrollBarEnabled(false); tools.setFillViewport(false);
         tools.addView(toolbar);body.addView(tools);
         toolbar.addView(action("B",()->toggleStyle(Typeface.BOLD)));
         toolbar.addView(action("I",()->toggleStyle(Typeface.ITALIC)));
@@ -175,8 +175,8 @@ public class MainActivity extends Activity {
             contentEdit.setTextDirection(contentEdit.getTextDirection()==View.TEXT_DIRECTION_RTL?View.TEXT_DIRECTION_LTR:View.TEXT_DIRECTION_RTL);
         }));
         contentEdit=new EditText(this);contentEdit.setGravity(Gravity.TOP);
-        contentEdit.setTextSize(17);contentEdit.setHint("Mula menulis nota di sini...");
-        contentEdit.setMinLines(14);contentEdit.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
+        contentEdit.setTextSize(16);contentEdit.setHint("Mula menulis nota di sini..."); contentEdit.setPadding(dp(12),dp(14),dp(12),dp(24));
+        contentEdit.setMinLines(16);contentEdit.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG); contentEdit.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);
         body.addView(contentEdit,new LinearLayout.LayoutParams(-1,-2));
         if(id>0){
             Cursor c=store.getReadableDatabase().rawQuery("SELECT title,content,notebook_id FROM notes WHERE id=?",new String[]{""+id});
