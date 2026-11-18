@@ -52,12 +52,14 @@ public class MainActivity extends Activity {
   void refresh(String query) {
     if(list==null)return;
     list.removeAllViews();
+    int visibleCount=0;
     try(Cursor c=db.getReadableDatabase().rawQuery("SELECT id,title,body,color FROM notes WHERE title LIKE ? OR body LIKE ? ORDER BY "+(noteSort==1?"updated ASC":noteSort==2?"title COLLATE NOCASE ASC":"updated DESC"),new String[]{"%"+query+"%","%"+query+"%"})) {
-      while(c.moveToNext()){final int id=c.getInt(0);String heading=c.getString(1);String body=c.getString(2);if(heading==null)heading="";if(body==null)body="";int noteColor=c.getInt(3);
+      while(c.moveToNext()){visibleCount++;final int id=c.getInt(0);String heading=c.getString(1);String body=c.getString(2);if(heading==null)heading="";if(body==null)body="";int noteColor=c.getInt(3);
         TextView item=text((heading.isEmpty()?"Tanpa tajuk":heading)+"\n"+(body.length()>110?body.substring(0,110)+"…":body),17);
         item.setBackgroundColor(noteColor);LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2);p.setMargins(0,10,0,10);list.addView(item,p);item.setOnClickListener(v->edit(id));
       }
     }
+    if(visibleCount==0)list.addView(text(query.trim().isEmpty()?"Belum ada nota. Tekan + Nota baharu untuk mula.":"Tiada nota ditemui.",16));
   }
   void edit(int id) {
     LinearLayout page=column();setContentView(page);
@@ -87,6 +89,7 @@ public class MainActivity extends Activity {
     TextWatcher watcher=new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){save.run();}public void afterTextChanged(Editable e){}};
     title.addTextChangedListener(watcher);body.addTextChangedListener(watcher);
     back.setOnClickListener(v->{save.run();showHome();});
+    title.setContentDescription("Tajuk nota");body.setContentDescription("Kandungan nota Arab dan Rumi");
     Button delete=new Button(this);delete.setText("Padam nota");page.addView(delete);
     delete.setOnClickListener(v->new AlertDialog.Builder(this).setMessage("Padam nota ini?").setNegativeButton("Batal",null).setPositiveButton("Padam",(d,w)->{if(noteId[0]>=0)db.getWritableDatabase().delete("notes","id=?",new String[]{""+noteId[0]});showHome();}).show());
   }
@@ -130,13 +133,15 @@ public class MainActivity extends Activity {
   }
   void populateBooks(LinearLayout items,int categoryId,String categoryName,String query){
     items.removeAllViews();
+    int visibleCount=0;
     try(Cursor c=db.getReadableDatabase().rawQuery("SELECT id,title FROM books WHERE category_id=? AND (title LIKE ? OR body LIKE ?) ORDER BY updated DESC",
       new String[]{""+categoryId,"%"+query+"%","%"+query+"%"})){
-      while(c.moveToNext()){int bookId=c.getInt(0);String heading=c.getString(1);
+      while(c.moveToNext()){visibleCount++;int bookId=c.getInt(0);String heading=c.getString(1);
         Button item=new Button(this);item.setText("📖  "+(heading==null||heading.isEmpty()?"Tanpa tajuk":heading));
         items.addView(item);item.setOnClickListener(v->editBook(bookId,categoryId,categoryName));
       }
     }
+    if(visibleCount==0)items.addView(text(query.trim().isEmpty()?"Kategori ini belum mempunyai kitab.":"Tiada kitab ditemui.",16));
   }
 
   void editBook(int id,int categoryId,String categoryName){
