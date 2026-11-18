@@ -26,7 +26,10 @@ private fun searchKey(value: String): String =
         .replace(Regex("[أإآٱ]"), "ا")
         .replace('ى', 'ي')
 
-private data class SearchHit(val source: String, val key: String, val title: String, val content: String)
+private data class SearchHit(val source: String, val key: String, val title: String, val content: String) {
+    val titleKey by lazy { searchKey(title) }
+    val contentKey by lazy { searchKey(content) }
+}
 
 @Composable
 fun GlobalSearchScreen(modifier: Modifier = Modifier) {
@@ -39,8 +42,7 @@ fun GlobalSearchScreen(modifier: Modifier = Modifier) {
     var favoritesOnly by remember { mutableStateOf(false) }
     var revision by remember { mutableIntStateOf(0) }
     var opened by remember { mutableStateOf<SearchHit?>(null) }
-    val hits = remember(query, favoritesOnly, revision) {
-        val needle = searchKey(query.trim())
+    val searchIndex = remember(database, library, catalog) {
         buildList {
             database.allNotes().forEach { note ->
                 add(SearchHit("Nota", "note_${note.id}", note.title.ifBlank { "Tanpa tajuk" }, note.body))
@@ -62,11 +64,15 @@ fun GlobalSearchScreen(modifier: Modifier = Modifier) {
                 add(SearchHit("Pelbagai", "kalimah_${entry.title}", entry.title,
                     entry.arabic + "\n" + entry.meaning))
             }
-        }.filter { hit ->
+        }
+    }
+    val hits = remember(searchIndex, query, favoritesOnly, revision) {
+        val needle = searchKey(query.trim())
+        searchIndex.filter { hit ->
             (!favoritesOnly || favorites.getBoolean(hit.key, false)) &&
                 (needle.isBlank() && favoritesOnly || needle.isNotBlank() &&
-                    (searchKey(hit.title).contains(needle) || searchKey(hit.content).contains(needle)))
-        }
+                    (hit.titleKey.contains(needle) || hit.contentKey.contains(needle)))
+        }.sortedBy { hit -> if (needle.isNotBlank() && hit.titleKey.contains(needle)) 0 else 1 }
     }
     Column(modifier.fillMaxSize().padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text("Carian Pintar & Kegemaran", fontWeight = FontWeight.SemiBold)
