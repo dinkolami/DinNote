@@ -284,7 +284,7 @@ private fun HomeShortcut(label: String, symbol: String, modifier: Modifier = Mod
 @Composable
 private fun DashboardLineIcon(kind: String) {
     androidx.compose.foundation.Canvas(Modifier.size(34.dp)) {
-        val ink = Color(0xFF087F80)
+        val ink = Color(0xFF075B50)
         val stroke = 1.8.dp.toPx()
         val w = size.width
         val h = size.height
