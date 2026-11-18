@@ -1175,6 +1175,9 @@ fun NotesScreen(
                 false
             }
         }
+        androidx.activity.compose.BackHandler(enabled = true) {
+            if (readingMode || persistNote()) showEditor = false
+        }
         LaunchedEffect(title, body.text, selectedCategory, selectedColor, readingMode) {
             if (!readingMode && (title.isNotBlank() || body.text.isNotBlank())) {
                 recoveryPrefs.edit().putString("title", title).putString("body", body.text)
