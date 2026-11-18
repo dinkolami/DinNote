@@ -4032,7 +4032,7 @@ private fun TurathStarterCard(search: String, assetPath: String = "turath/arba_i
     }
     var opened by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(openInitially) }
     var selected by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(-1) }
-    var language by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(if (assetPath.contains("ibn_kathir")) "Arab" else "Bersebelahan") }
+    var language by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(if (assetPath.contains("ibn_kathir")) "Arab" else if (assetPath.contains("al_hikam")) "Hikmah" else "Bersebelahan") }
     val readerPrefs = remember(context) { context.getSharedPreferences("turath_reader", android.content.Context.MODE_PRIVATE) }
     var readerScale by remember(readerPrefs) { mutableStateOf(readerPrefs.getInt("reader_scale", 0).coerceIn(-4, 8)) }
     var lastRead by remember(assetPath) { mutableStateOf(readerPrefs.getInt(assetPath, -1)) }
@@ -4040,11 +4040,13 @@ private fun TurathStarterCard(search: String, assetPath: String = "turath/arba_i
         entries.any { matchesMaktabahSearch(it.optString("arabic")+" "+it.optString("malay"),search) }
     if(visible && !openInitially) {
         val coverColor = when {
+            assetPath.contains("al_hikam") -> Color(0xFF223F36)
             assetPath.contains("majmu") -> Color(0xFF722F35)
             assetPath.contains("fatihah") -> Color(0xFF16465D)
             else -> Color(0xFF075B49)
         }
         val coverTitle = when {
+            assetPath.contains("al_hikam") -> "الْحِكَمُ"
             assetPath.contains("majmu") -> "الْمَجْمُوعُ"
             assetPath.contains("ibn_kathir") -> "ابْنُ كَثِيرٍ"
             assetPath.contains("fatihah") -> "الْفَاتِحَةُ"
@@ -4157,7 +4159,7 @@ private fun TurathStarterCard(search: String, assetPath: String = "turath/arba_i
                             readerPrefs.edit().putInt(assetPath, selected).apply()
                         }
                         Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(4.dp)) {
-                            listOf("Arab","Melayu","Bersebelahan").forEach { mode ->
+                            (if (assetPath.contains("al_hikam")) listOf("Hikmah","Arab","Melayu","Bersebelahan") else listOf("Arab","Melayu","Bersebelahan")).forEach { mode ->
                                 FilterChip(selected=language==mode,onClick={language=mode},label={Text(mode,fontSize=11.sp)})
                             }
                         }
@@ -4171,7 +4173,28 @@ private fun TurathStarterCard(search: String, assetPath: String = "turath/arba_i
                                 Text(e.optString("titleMalay"),fontWeight=FontWeight.Bold,fontSize=20.sp,lineHeight=26.sp,color=Color(0xFF171717))
                                 val arabicStyle = androidx.compose.ui.text.TextStyle(fontSize=(20+readerScale).sp,lineHeight=((20+readerScale)*1.6f).sp,textDirection=TextDirection.ContentOrRtl,textAlign=TextAlign.End,color=MaterialTheme.colorScheme.onSurface)
                                 val malayStyle = androidx.compose.ui.text.TextStyle(fontSize=(16+readerScale).sp,lineHeight=((16+readerScale)*1.5f).sp,textDirection=TextDirection.Ltr,color=Color(0xFF171717))
-                                if(language=="Bersebelahan") {
+                                if (language == "Hikmah" && assetPath.contains("al_hikam")) {
+                                    val parts = e.optString("malay").split("\n\nHURAIAN TEMATIK (bukan petikan syarah Ibn Ajibah):\n", limit = 2)
+                                    Surface(shape = RoundedCornerShape(16.dp), color = Color(0xFF124D40), border = BorderStroke(1.dp, Color(0xFFD3B66F))) {
+                                        Column(Modifier.fillMaxWidth().padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                                            Text("❖  MATAN HIKMAH  ❖", Modifier.fillMaxWidth(), textAlign = TextAlign.Center, color = Color(0xFFE8CF91), fontSize = 11.sp)
+                                            ReferenceReaderText(text = AnnotatedString(e.optString("arabic")), modifier = Modifier.fillMaxWidth(), style = arabicStyle.copy(color = Color(0xFFFFF6DE), textAlign = TextAlign.Center))
+                                        }
+                                    }
+                                    Surface(shape = RoundedCornerShape(12.dp), color = Color(0xFFF5F7F0), border = BorderStroke(1.dp, Color(0xFFE4E8DF))) {
+                                        Column(Modifier.fillMaxWidth().padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                            Text("TERJEMAHAN MELAYU", color = Color(0xFF075B49), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                            ReferenceReaderText(text = AnnotatedString(parts[0]), modifier = Modifier.fillMaxWidth(), style = malayStyle)
+                                        }
+                                    }
+                                    if (parts.size > 1) Surface(shape = RoundedCornerShape(12.dp), color = Color(0xFFFFFCF4), border = BorderStroke(1.dp, Color(0xFFD3B66F))) {
+                                        Column(Modifier.fillMaxWidth().padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                            Text("HURAIAN TEMATIK", color = Color(0xFF075B49), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                            Text("Bukan petikan syarah asal Ibn Ajibah", fontSize = 11.sp, color = Color(0xFF59685E))
+                                            ReferenceReaderText(text = AnnotatedString(parts[1]), modifier = Modifier.fillMaxWidth(), style = malayStyle)
+                                        }
+                                    }
+                                } else if(language=="Bersebelahan") {
                                     BoxWithConstraints(Modifier.fillMaxWidth()) {
                                     if(maxWidth < 600.dp) {
                                         Column(verticalArrangement=Arrangement.spacedBy(16.dp)) {
@@ -4218,7 +4241,7 @@ private fun TurathStarterCard(search: String, assetPath: String = "turath/arba_i
                     HorizontalDivider(color=Color(0xFFE7E7E7))
                     Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceEvenly) {
                         listOf(Triple("Utama","⌂",0),Triple("Nota","✎",1),Triple("Maktabah","▤",2),Triple("Tetapan","⚙",4)).forEach { tab ->
-                            Column(Modifier.weight(1f).clickable { opened=false; if(tab.third!=2) onNavigate(tab.third) }.padding(vertical=8.dp),horizontalAlignment=androidx.compose.ui.Alignment.CenterHorizontally) {
+                            Column(Modifier.weight(1f).clickable { opened=false; onReaderClose(); if(tab.third!=2) onNavigate(tab.third) }.padding(vertical=8.dp),horizontalAlignment=androidx.compose.ui.Alignment.CenterHorizontally) {
                                 Text(tab.second,fontSize=20.sp,color=if(tab.third==2) Color(0xFF087F83) else Color.DarkGray)
                                 Text(tab.first,fontSize=11.sp,color=if(tab.third==2) Color(0xFF087F83) else Color.DarkGray)
                             }
