@@ -96,7 +96,7 @@ class NoteDatabase(context: Context) :
         require(colorTag.isNotBlank()) { "Warna nota tidak sah" }
         writableDatabase.execSQL(
             "UPDATE notes SET color_tag = ?, updated_at = ? WHERE id = ?",
-            arrayOf(colorTag, System.currentTimeMillis(), id)
+            arrayOf(colorTag.trim(), System.currentTimeMillis(), id)
         )
     }
 
