@@ -75,7 +75,7 @@ fun DinNoteBilingualCard(
                         text = arabic,
                         modifier = Modifier.fillMaxWidth(),
                         textAlign = TextAlign.Right,
-                        fontSize = 18.sp,
+                        fontSize = DinNoteDesign.ReaderArabicSize,
                         lineHeight = 31.sp,
                         style = TextStyle(textDirection = TextDirection.Rtl),
                         color = DinNoteDesign.Ink
