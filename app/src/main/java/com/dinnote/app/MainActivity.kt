@@ -2720,10 +2720,56 @@ private fun UnifiedFocusToolbar(value: TextFieldValue, fontSize: Float, onFormat
 
 }
 
+private fun readSmartVault(context: android.content.Context): List<String> {
+    val prefs = context.getSharedPreferences("dinnote_smart_vault", android.content.Context.MODE_PRIVATE)
+    return runCatching {
+        val array = org.json.JSONArray(prefs.getString("items", "[]") ?: "[]")
+        (0 until array.length()).map { array.getString(it) }
+    }.getOrDefault(emptyList())
+}
+
+private fun saveSmartVault(context: android.content.Context, block: String) {
+    if (formattedNoteText(block).text.isBlank()) return
+    val items = listOf(block) + readSmartVault(context).filter { it != block }
+    val array = org.json.JSONArray()
+    items.forEach { array.put(it) }
+    context.getSharedPreferences("dinnote_smart_vault", android.content.Context.MODE_PRIVATE)
+        .edit().putString("items", array.toString()).apply()
+}
+
+@Composable
+private fun SmartVaultDialog(onDismiss: () -> Unit, onInsert: (String) -> Unit) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val items = remember { readSmartVault(context) }
+    var query by remember { mutableStateOf("") }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Smart Vault · Khazanah Faedah") },
+        text = {
+            Column {
+                OutlinedTextField(value = query, onValueChange = { query = it },
+                    label = { Text("Cari petikan") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                Column(Modifier.heightIn(max = 300.dp).verticalScroll(rememberScrollState())) {
+                    val filtered = items.filter { formattedNoteText(it).text.contains(query.trim(), ignoreCase = true) }
+                    if (filtered.isEmpty()) Text("Tiada petikan ditemui", modifier = Modifier.padding(12.dp))
+                    filtered.forEach { block ->
+                        TextButton(onClick = { onInsert(block); onDismiss() }) {
+                            Text(formattedNoteText(block), maxLines = 4)
+                        }
+                        HorizontalDivider()
+                    }
+                }
+            }
+        },
+        confirmButton = { TextButton(onClick = onDismiss) { Text("Tutup") } }
+    )
+}
+
 // Shared paragraph selection for library and structured content editors.
 @Composable
 private fun SharedParagraphTools(value: TextFieldValue, onChange: (TextFieldValue) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
+    var vaultOpen by remember { mutableStateOf(false) }
     val source = value.text
     val cursor = value.selection.min.coerceIn(0, source.length)
     val start = if (cursor == 0) 0 else source.lastIndexOf('\n', cursor - 1) + 1
@@ -2750,6 +2796,13 @@ private fun SharedParagraphTools(value: TextFieldValue, onChange: (TextFieldValu
         val position = before.length + if (up) excerpt.length else swapped.length
         onChange(TextFieldValue(before + swapped + after, selection = TextRange(position)))
     }
+    if (vaultOpen) SmartVaultDialog(onDismiss = { vaultOpen = false }, onInsert = { block ->
+        val a = value.selection.min.coerceIn(0, source.length)
+        val b = value.selection.max.coerceIn(a, source.length)
+        val before = smartFormattedExcerpt(source, 0, a)
+        val after = smartFormattedExcerpt(source, b, source.length)
+        onChange(TextFieldValue(before + block + after, selection = TextRange(before.length + block.length)))
+    })
     val selected = value.copy(selection = TextRange(start, end), composition = null)
     Box(Modifier.wrapContentWidth()) {
         TextButton(onClick = { hasTransfer = transfer.contains("block"); expanded = true }) {
@@ -2786,6 +2839,15 @@ private fun SharedParagraphTools(value: TextFieldValue, onChange: (TextFieldValu
                 expanded = false
                 transfer.edit().remove("block").apply()
                 hasTransfer = false
+            })
+            DropdownMenuItem(text = { Text("Simpan ke Smart Vault") }, enabled = enabled, onClick = {
+                expanded = false
+                saveSmartVault(context, excerpt)
+                android.widget.Toast.makeText(context, "Petikan disimpan", android.widget.Toast.LENGTH_SHORT).show()
+            })
+            DropdownMenuItem(text = { Text("Buka Smart Vault") }, onClick = {
+                expanded = false
+                vaultOpen = true
             })
             DropdownMenuItem(text = { Text("Duplikasi perenggan") }, enabled = enabled, onClick = {
                 expanded = false
