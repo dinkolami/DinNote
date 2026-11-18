@@ -555,9 +555,9 @@ fun HomeScreen(
             ) {
                 Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
                     Text("Ingatan", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color(0xFF08766C))
-                    Text(entry.arabic, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Right,
+                    Text(formattedNoteText(entry.arabic), modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Right,
                         fontSize = 18.sp, color = Color(0xFF183A30))
-                    Text(entry.meaning, fontSize = 13.sp, color = Color(0xFF52666A))
+                    Text(formattedNoteText(entry.meaning), fontSize = 13.sp, color = Color(0xFF52666A))
                 }
             }
         }
@@ -574,7 +574,7 @@ fun HomeScreen(
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         Text(
-                            entry.arabic,
+                            formattedNoteText(entry.arabic),
                             modifier = Modifier.fillMaxWidth(),
                             textAlign = TextAlign.Right,
                             style = androidx.compose.ui.text.TextStyle(textDirection = TextDirection.Rtl),
@@ -582,12 +582,12 @@ fun HomeScreen(
                             lineHeight = 36.sp
                         )
                         UnifiedEditorDivider()
-                        Text(entry.meaning, fontSize = 16.sp, lineHeight = 25.sp)
+                        Text(formattedNoteText(entry.meaning), fontSize = 16.sp, lineHeight = 25.sp)
                         if (entry.transliteration.isNotBlank()) {
-                            Text(entry.transliteration, fontWeight = FontWeight.Medium)
+                            Text(formattedNoteText(entry.transliteration), fontWeight = FontWeight.Medium)
                         }
                         if (entry.reference.isNotBlank()) {
-                            Text("Rujukan: ${entry.reference}", fontSize = 13.sp)
+                            Text(formattedNoteText("Rujukan: ${entry.reference}"), fontSize = 13.sp)
                         }
                     }
                 },
@@ -1379,54 +1379,15 @@ fun NotesScreen(
                             }
                         }
                     }
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 5.dp),
-                        horizontalArrangement = Arrangement.spacedBy(5.dp),
-                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
-                    ) {
-                        OutlinedButton(shape = RoundedCornerShape(0.dp), 
-                            onClick = { formatSelection("**") },
-                            contentPadding = PaddingValues(horizontal = 0.dp, vertical = 0.dp),
-                            modifier = Modifier.weight(1f).height(32.dp)
-                        ) { Text("B", fontWeight = FontWeight.Bold) }
-                        OutlinedButton(shape = RoundedCornerShape(0.dp), 
-                            onClick = { formatSelection("_") },
-                            contentPadding = PaddingValues(horizontal = 0.dp, vertical = 0.dp),
-                            modifier = Modifier.weight(1f).height(32.dp)
-                        ) { Text("I", fontStyle = FontStyle.Italic) }
-                        OutlinedButton(shape = RoundedCornerShape(0.dp), 
-                            onClick = { formatSelection("++") },
-                            contentPadding = PaddingValues(horizontal = 0.dp, vertical = 0.dp),
-                            modifier = Modifier.weight(1f).height(32.dp)
-                        ) { Text("U", textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline) }
-                        EditorColorPicker { selectedColor ->
-                            val updated = colorEditorSelection(body, selectedColor)
-                            if (updated != body) {
-                                undoStack.add(body)
-                                if (undoStack.size > 60) undoStack.removeAt(0)
-                                redoStack.clear()
-                                body = updated
-                            }
+                    UnifiedFocusToolbar(body, editorFontSize, ::formatSelection, { selectedColor ->
+                        val updated = colorEditorSelection(body, selectedColor)
+                        if (updated != body) {
+                            undoStack.add(body)
+                            if (undoStack.size > 60) undoStack.removeAt(0)
+                            redoStack.clear()
+                            body = updated
                         }
-                        OutlinedButton(shape = RoundedCornerShape(0.dp), 
-                            onClick = { resizeSelection(-1) },
-                            enabled = !body.selection.collapsed || editorFontSize > 14f,
-                            contentPadding = PaddingValues(horizontal = 0.dp, vertical = 0.dp),
-                            modifier = Modifier.weight(1f).height(32.dp)
-                        ) { Text("A−", color = Color(0xFF087F83)) }
-                        OutlinedButton(shape = RoundedCornerShape(0.dp), 
-                            onClick = {},
-                            enabled = false,
-                            contentPadding = PaddingValues(horizontal = 0.dp, vertical = 0.dp),
-                            modifier = Modifier.weight(1f).height(32.dp)
-                        ) { Text("${selectedEditorFontSize(body, editorFontSize.toInt())}", color = Color(0xFF087F83)) }
-                        OutlinedButton(shape = RoundedCornerShape(0.dp), 
-                            onClick = { resizeSelection(1) },
-                            enabled = !body.selection.collapsed || editorFontSize < 30f,
-                            contentPadding = PaddingValues(horizontal = 0.dp, vertical = 0.dp),
-                            modifier = Modifier.weight(1f).height(34.dp)
-                        ) { Text("A+", color = Color(0xFF087F83)) }
-                    }
+                    }, ::resizeSelection)
                     Row(Modifier.fillMaxWidth().height(34.dp), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                         TextButton(onClick = { showEditorTools = !showEditorTools }, contentPadding = PaddingValues(horizontal = 10.dp)) {
                             Text(if (showEditorTools) "Tutup alat ▴" else "⋯ Alat editor", fontSize = 12.sp)
@@ -2307,15 +2268,15 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                                     }
                                 }
                                 if (malayFirstInLibrary && showMalayInLibrary) {
-                                    Text(entry.meaning, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    Text(formattedNoteText(entry.meaning), color = MaterialTheme.colorScheme.onSurfaceVariant)
                                     UnifiedEditorDivider()
                                 }
-                                if (showArabicInLibrary) Text(entry.arabic, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Right, style = androidx.compose.ui.text.TextStyle(textDirection = TextDirection.Rtl), fontSize = libraryFontSize.sp)
+                                if (showArabicInLibrary) Text(formattedNoteText(entry.arabic), modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Right, style = androidx.compose.ui.text.TextStyle(textDirection = TextDirection.Rtl), fontSize = libraryFontSize.sp)
                                 if (showMalayInLibrary && !malayFirstInLibrary) {
                                     if (showArabicInLibrary) UnifiedEditorDivider()
-                                    Text(entry.meaning, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    Text(formattedNoteText(entry.meaning), color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
-                                if (showMalayInLibrary) Text(entry.transliteration, fontWeight = FontWeight.Medium, fontSize = 13.sp)
+                                if (showMalayInLibrary) Text(formattedNoteText(entry.transliteration), fontWeight = FontWeight.Medium, fontSize = 13.sp)
                                 Text("Tekan untuk maklumat lanjut", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
                                 IslamicCardFooter()
                             }
@@ -2474,39 +2435,15 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                             }
                         }
                     }
-                    Row(
-                        Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 5.dp),
-                        horizontalArrangement = Arrangement.spacedBy(5.dp),
-                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
-                    ) {
-                        listOf("B" to "**", "I" to "_", "U" to "++").forEach { (label, marker) ->
-                            OutlinedButton(shape = RoundedCornerShape(0.dp),
-                                enabled = !libraryBody.selection.collapsed,
-                                onClick = { libraryBody = wrapEditorSelection(libraryBody, marker) },
-                                contentPadding = PaddingValues(0.dp),
-                                modifier = Modifier.weight(1f).height(32.dp)
-                            ) { Text(label, fontSize = 13.sp) }
-                        }
-                        EditorColorPicker { selectedColor ->
-                            libraryBody = colorEditorSelection(libraryBody, selectedColor)
-                        }
-                        OutlinedButton(shape = RoundedCornerShape(0.dp), onClick = {
+                    UnifiedFocusToolbar(libraryBody, libraryFontSize,
+                        onFormat = { libraryBody = wrapEditorSelection(libraryBody, it) },
+                        onColor = { libraryBody = colorEditorSelection(libraryBody, it) },
+                        onResize = { delta ->
                             if (libraryBody.selection.collapsed) {
-                                libraryFontSize = (libraryFontSize - 1f).coerceAtLeast(14f)
+                                libraryFontSize = (libraryFontSize + delta).coerceIn(14f, 30f)
                                 libraryDisplayPrefs.edit().putInt("font_size", libraryFontSize.toInt()).apply()
-                            } else libraryBody = resizeEditorTextSelection(libraryBody, -1, libraryFontSize.toInt())
-                        }, contentPadding = PaddingValues(0.dp), modifier = Modifier.weight(1f).height(32.dp)) { Text("A−") }
-                        Box(Modifier.weight(1f), contentAlignment = androidx.compose.ui.Alignment.Center) {
-                            Text(selectedEditorFontSize(libraryBody, libraryFontSize.toInt()).toString(), fontSize = 13.sp)
-                        }
-                        OutlinedButton(shape = RoundedCornerShape(0.dp), onClick = {
-                            if (libraryBody.selection.collapsed) {
-                                libraryFontSize = (libraryFontSize + 1f).coerceAtMost(30f)
-                                libraryDisplayPrefs.edit().putInt("font_size", libraryFontSize.toInt()).apply()
-                            } else libraryBody = resizeEditorTextSelection(libraryBody, 1, libraryFontSize.toInt())
-                        }, contentPadding = PaddingValues(0.dp), modifier = Modifier.weight(1f).height(32.dp)) { Text("A+") }
-                    }
-
+                            } else libraryBody = resizeEditorTextSelection(libraryBody, delta, libraryFontSize.toInt())
+                        })
                     Row(Modifier.fillMaxWidth().height(36.dp), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                         TextButton(onClick = { libraryToolsExpanded = !libraryToolsExpanded }) {
                             Text(if (libraryToolsExpanded) "Tutup alat ▴" else "⋯ Alat editor", fontSize = 12.sp)
@@ -2594,20 +2531,14 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
     } // End inline Maktabah overlay container
 
     editingKalimah?.let { entry ->
-        AlertDialog(
-            onDismissRequest = { editingKalimah = null },
-            title = { Text("Edit · " + entry.title) },
-            text = {
-                Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    DefaultEditorTextField(value = kalimahArabic, onValueChange = { kalimahArabic = it }, label = "Teks Arab", arabic = true)
-                    DefaultEditorTextField(value = kalimahMeaning, onValueChange = { kalimahMeaning = it }, label = "Terjemahan Melayu", arabic = false)
-                    DefaultEditorTextField(value = kalimahTransliteration, onValueChange = { kalimahTransliteration = it }, label = "Transliterasi", arabic = false)
-                    DefaultEditorTextField(value = kalimahReference, onValueChange = { kalimahReference = it }, label = "Rujukan", arabic = false)
-                    DefaultEditorTextField(value = kalimahNote, onValueChange = { kalimahNote = it }, label = "Nota", arabic = false)
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = {
+        androidx.compose.ui.window.Dialog(onDismissRequest = { editingKalimah = null },
+            properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false)) {
+            var field by remember(entry.title) { mutableIntStateOf(0) }
+            val values = listOf(kalimahArabic, kalimahMeaning, kalimahTransliteration, kalimahReference, kalimahNote)
+            val labels = listOf("Teks Arab", "Terjemahan Melayu", "Transliterasi", "Rujukan", "Nota")
+            Surface(Modifier.fillMaxSize().imePadding(), color = Color.White) {
+                Column(Modifier.fillMaxSize().padding(horizontal = 8.dp)) {
+                    UnifiedEditorHeading("Edit · " + entry.title, { editingKalimah = null }, {
                     val prefix = "kalimah_edit_" + entry.title + "_"
                     libraryPrefs.edit().putString(prefix + "arabic", kalimahArabic)
                         .putString(prefix + "meaning", kalimahMeaning)
@@ -2616,10 +2547,44 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                         .putString(prefix + "note", kalimahNote).apply()
                     libraryRevision++
                     editingKalimah = null
-                }) { Text("Simpan") }
-            },
-            dismissButton = { TextButton(onClick = { editingKalimah = null }) { Text("Batal") } }
-        )
+
+                    })
+                    Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState())) {
+                        labels.forEachIndexed { index, label ->
+                            TextButton(onClick = { field = index }) {
+                                Text(label, fontWeight = if (field == index) FontWeight.Bold else FontWeight.Normal)
+                            }
+                        }
+                    }
+                    key(field) {
+                        var value by remember { mutableStateOf(TextFieldValue(values[field])) }
+                        var size by remember { mutableFloatStateOf(libraryFontSize) }
+                        fun change(next: TextFieldValue) {
+                            value = next
+                            when (field) {
+                                0 -> kalimahArabic = next.text
+                                1 -> kalimahMeaning = next.text
+                                2 -> kalimahTransliteration = next.text
+                                3 -> kalimahReference = next.text
+                                4 -> kalimahNote = next.text
+                            }
+                        }
+                        androidx.compose.foundation.text.BasicTextField(value = value, onValueChange = { change(it) },
+                            modifier = Modifier.weight(1f).fillMaxWidth().padding(8.dp).verticalScroll(rememberScrollState()),
+                            visualTransformation = remember { NoteFormattingTransformation() },
+                            textStyle = androidx.compose.ui.text.TextStyle(fontSize = size.sp, color = Color(0xFF263B3E),
+                                textDirection = TextDirection.ContentOrRtl))
+                        UnifiedFocusToolbar(value, size,
+                            onFormat = { change(wrapEditorSelection(value, it)) },
+                            onColor = { change(colorEditorSelection(value, it)) },
+                            onResize = { delta ->
+                                if (value.selection.collapsed) size = (size + delta).coerceIn(14f, 30f)
+                                else change(resizeEditorTextSelection(value, delta, size.toInt()))
+                            })
+                    }
+                }
+            }
+        }
     }
     if (showKalimahSettings) {
         AlertDialog(
@@ -2657,17 +2622,17 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     if (malayFirstInLibrary && showMalayInLibrary) {
-                        Text(entry.meaning)
+                        Text(formattedNoteText(entry.meaning))
                         UnifiedEditorDivider()
                     }
-                    if (showArabicInLibrary) Text(entry.arabic, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Right, style = androidx.compose.ui.text.TextStyle(textDirection = TextDirection.Rtl), fontSize = libraryFontSize.sp)
+                    if (showArabicInLibrary) Text(formattedNoteText(entry.arabic), modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Right, style = androidx.compose.ui.text.TextStyle(textDirection = TextDirection.Rtl), fontSize = libraryFontSize.sp)
                     if (showMalayInLibrary && !malayFirstInLibrary) {
                         if (showArabicInLibrary) UnifiedEditorDivider()
-                        Text(entry.meaning)
+                        Text(formattedNoteText(entry.meaning))
                     }
-                    if (showMalayInLibrary) Text(entry.transliteration, fontWeight = FontWeight.Medium, fontSize = 13.sp)
-                    Text("Rujukan: ${entry.reference}", fontSize = 13.sp)
-                    Text(entry.note, fontSize = 13.sp)
+                    if (showMalayInLibrary) Text(formattedNoteText(entry.transliteration), fontWeight = FontWeight.Medium, fontSize = 13.sp)
+                    Text(formattedNoteText("Rujukan: ${entry.reference}"), fontSize = 13.sp)
+                    Text(formattedNoteText(entry.note), fontSize = 13.sp)
                     IslamicCardFooter()
                 }
             },
@@ -2677,6 +2642,52 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
             }
         )
     }
+}
+
+
+@Composable
+private fun UnifiedFocusToolbar(value: TextFieldValue, fontSize: Float, onFormat: (String) -> Unit, onColor: (Long) -> Unit, onResize: (Int) -> Unit) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 5.dp),
+                        horizontalArrangement = Arrangement.spacedBy(5.dp),
+                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                    ) {
+                        OutlinedButton(shape = RoundedCornerShape(0.dp), 
+                            onClick = { onFormat("**") },
+                            contentPadding = PaddingValues(horizontal = 0.dp, vertical = 0.dp),
+                            modifier = Modifier.weight(1f).height(32.dp)
+                        ) { Text("B", fontWeight = FontWeight.Bold) }
+                        OutlinedButton(shape = RoundedCornerShape(0.dp), 
+                            onClick = { onFormat("_") },
+                            contentPadding = PaddingValues(horizontal = 0.dp, vertical = 0.dp),
+                            modifier = Modifier.weight(1f).height(32.dp)
+                        ) { Text("I", fontStyle = FontStyle.Italic) }
+                        OutlinedButton(shape = RoundedCornerShape(0.dp), 
+                            onClick = { onFormat("++") },
+                            contentPadding = PaddingValues(horizontal = 0.dp, vertical = 0.dp),
+                            modifier = Modifier.weight(1f).height(32.dp)
+                        ) { Text("U", textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline) }
+                        EditorColorPicker(onPick = onColor)
+                        OutlinedButton(shape = RoundedCornerShape(0.dp), 
+                            onClick = { onResize(-1) },
+                            enabled = !value.selection.collapsed || fontSize > 14f,
+                            contentPadding = PaddingValues(horizontal = 0.dp, vertical = 0.dp),
+                            modifier = Modifier.weight(1f).height(32.dp)
+                        ) { Text("A−", color = Color(0xFF087F83)) }
+                        OutlinedButton(shape = RoundedCornerShape(0.dp), 
+                            onClick = {},
+                            enabled = false,
+                            contentPadding = PaddingValues(horizontal = 0.dp, vertical = 0.dp),
+                            modifier = Modifier.weight(1f).height(32.dp)
+                        ) { Text("${selectedEditorFontSize(value, fontSize.toInt())}", color = Color(0xFF087F83)) }
+                        OutlinedButton(shape = RoundedCornerShape(0.dp), 
+                            onClick = { onResize(1) },
+                            enabled = !value.selection.collapsed || fontSize < 30f,
+                            contentPadding = PaddingValues(horizontal = 0.dp, vertical = 0.dp),
+                            modifier = Modifier.weight(1f).height(34.dp)
+                        ) { Text("A+", color = Color(0xFF087F83)) }
+                    }
+
 }
 
 // Default content field for all structured Kalimah editors.
