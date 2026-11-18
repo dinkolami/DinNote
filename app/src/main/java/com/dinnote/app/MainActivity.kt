@@ -2962,10 +2962,13 @@ private fun SmartVaultDialog(onDismiss: () -> Unit, onInsert: (String) -> Unit) 
     val context = androidx.compose.ui.platform.LocalContext.current
     val items = remember { readSmartVault(context) }
     val index = remember { context.getSharedPreferences("dinnote_smart_index", android.content.Context.MODE_PRIVATE) }
-    fun tagKey(block: String): String {
-        val digest = java.security.MessageDigest.getInstance("SHA-256").digest(block.toByteArray(Charsets.UTF_8))
-        return android.util.Base64.encodeToString(digest, android.util.Base64.NO_WRAP)
+    val blockKeys = remember(items) {
+        items.associateWith { block ->
+            val digest = java.security.MessageDigest.getInstance("SHA-256").digest(block.toByteArray(Charsets.UTF_8))
+            android.util.Base64.encodeToString(digest, android.util.Base64.NO_WRAP)
+        }
     }
+    fun tagKey(block: String): String = blockKeys.getValue(block)
     var tags by remember { mutableStateOf(items.associateWith { index.getString(tagKey(it), "") ?: "" }) }
     val referenceLabels = listOf("Kitab", "Pengarang", "Jilid", "Halaman", "Sumber tambahan")
     fun readReference(block: String): List<String> = referenceLabels.indices.map { field ->
@@ -2995,18 +2998,21 @@ private fun SmartVaultDialog(onDismiss: () -> Unit, onInsert: (String) -> Unit) 
     var query by remember { mutableStateOf("") }
     var editing by remember { mutableStateOf<String?>(null) }
     var draft by remember { mutableStateOf("") }
-    val searchText = remember(items) { items.associateWith { formattedNoteText(it).text } }
+    val searchText = remember(items) { mutableMapOf<String, String>() }
     val filtered = remember(items, query, tags, references) {
         val term = query.trim()
-        items.filter {
-            searchText[it].orEmpty().contains(term, ignoreCase = true) ||
-                tags[it].orEmpty().contains(term, ignoreCase = true) ||
-                referenceText(references[it].orEmpty()).contains(term, ignoreCase = true)
+        if (term.isEmpty()) items else items.filter {
+            tags[it].orEmpty().contains(term, ignoreCase = true) ||
+                referenceText(references[it].orEmpty()).contains(term, ignoreCase = true) ||
+                searchText.getOrPut(it) { formattedNoteText(it).text }.contains(term, ignoreCase = true)
         }
     }
     var relatedBlock by remember { mutableStateOf<String?>(null) }
-    fun themeSet(block: String): Set<String> = tags[block].orEmpty().split(",")
-        .map { it.trim().lowercase(java.util.Locale.ROOT) }.filter { it.isNotBlank() }.toSet()
+    val themeSets = remember(tags) {
+        tags.mapValues { (_, value) -> value.split(",")
+            .map { it.trim().lowercase(java.util.Locale.ROOT) }.filter { it.isNotBlank() }.toSet() }
+    }
+    fun themeSet(block: String): Set<String> = themeSets[block].orEmpty()
     var graphOpen by remember { mutableStateOf(false) }
     var graphTheme by remember { mutableStateOf<String?>(null) }
     var atlasOpen by remember { mutableStateOf(false) }
