@@ -2,7 +2,6 @@ package com.dinnote.app
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.text.selection.SelectionContainer
-import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.*
@@ -25,7 +24,7 @@ import org.json.JSONArray
 private fun cleanSearchText(value: String): String = formattedNoteText(value).text
 
 private fun searchKey(value: String): String =
-    java.text.Normalizer.normalize(cleanSearchText(value), java.text.Normalizer.Form.NFKC)
+    java.text.Normalizer.normalize(value, java.text.Normalizer.Form.NFKC)
         .lowercase(java.util.Locale.ROOT)
         .replace(Regex("[\\u0610-\\u061A\\u064B-\\u065F\\u0670\\u0640\\u06D6-\\u06DC\\u06DF-\\u06E4\\u06E7-\\u06E8\\u06EA-\\u06ED]"), "")
         .replace(Regex("[أإآٱ]"), "ا")
@@ -34,8 +33,8 @@ private fun searchKey(value: String): String =
 private data class SearchHit(val source: String, val key: String, val title: String, val content: String) {
     val plainTitle by lazy { cleanSearchText(title) }
     val plainContent by lazy { cleanSearchText(content) }
-    val titleKey by lazy { searchKey(title) }
-    val contentKey by lazy { searchKey(content) }
+    val titleKey by lazy { searchKey(plainTitle) }
+    val contentKey by lazy { searchKey(plainContent) }
 }
 
 @Composable
