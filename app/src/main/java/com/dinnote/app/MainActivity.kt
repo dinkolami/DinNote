@@ -2425,6 +2425,7 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                 TurathStarterCard(search, "turath/al_majmu.json", onNavigate)
                 TurathStarterCard(search, "turath/al_fatihah.json", onNavigate)
                 TurathStarterCard(search, "turath/ibn_kathir_fatihah.json", onNavigate)
+                TurathStarterCard(search, "turath/ibn_kathir_short.json", onNavigate)
 
                 Button(onClick = { openLibraryEditor("entry_Kitab-Kitab_" + System.currentTimeMillis()) }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(14.dp), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF075B49))) { Text("+ Tambah Kitab") }
                 libraryItems.filter { matchesMaktabahSearch(libraryPrefs.getString(it + "_title", "") ?: "", search) ||
