@@ -299,13 +299,46 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
                                     else Color(0xFF087F8C),
                                 textAlign = if (arabicParagraph) TextAlign.Right else TextAlign.Start
                             )
-                            SelectionContainer {
-                                Text(paragraphs[index], fontSize = readerFontSize.sp,
+                            var passage by remember(item.id, index, paragraphs[index]) {
+                                mutableStateOf(TextFieldValue(paragraphs[index]))
+                            }
+                            val selected = passage.text.substring(passage.selection.min, passage.selection.max)
+                            BasicTextField(
+                                value = passage,
+                                onValueChange = { passage = it },
+                                readOnly = true,
+                                textStyle = TextStyle(
+                                    fontSize = readerFontSize.sp,
                                     lineHeight = (readerFontSize * readerLineSpacing).sp,
                                     color = if (highlighted) Color(0xFF263B3E) else readerInk,
-                                    style = TextStyle(textDirection = if (arabicParagraph) TextDirection.Rtl else TextDirection.Ltr),
-                                    modifier = Modifier.fillMaxWidth().padding(4.dp),
-                                    textAlign = if (arabicParagraph) TextAlign.Right else readerTextAlignment)
+                                    textDirection = if (arabicParagraph) TextDirection.Rtl else TextDirection.Ltr,
+                                    textAlign = if (arabicParagraph) TextAlign.Right else readerTextAlignment
+                                ),
+                                modifier = Modifier.fillMaxWidth().padding(4.dp)
+                            )
+                            if (selected.isNotBlank()) {
+                                Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    FilledTonalButton(onClick = {
+                                        excerptText = selected
+                                        excerptStatus = ""
+                                        excerptDialog = item
+                                    }) { Text("Simpan petikan", fontSize = 12.sp) }
+                                    TextButton(onClick = {
+                                        val citation = formatKitabCitation(item.title, item.author, item.volume, item.page, item.chapter)
+                                        val output = selected + "\n\nRujukan: " + citation
+                                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                                        clipboard.setPrimaryClip(android.content.ClipData.newPlainText("Petikan kitab DinNote", output))
+                                    }) { Text("Salin", fontSize = 12.sp) }
+                                    TextButton(onClick = {
+                                        val citation = formatKitabCitation(item.title, item.author, item.volume, item.page, item.chapter)
+                                        val intent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                                            type = "text/plain"
+                                            putExtra(android.content.Intent.EXTRA_TEXT, selected + "\n\nRujukan: " + citation)
+                                        }
+                                        context.startActivity(android.content.Intent.createChooser(intent, "Kongsi petikan"))
+                                    }) { Text("Kongsi", fontSize = 12.sp) }
+                                }
                             }
                             if (readerBackground != "dark") {
                                 Text("⌒  ۞  ⌒   DinNote   ⌒  ۞  ⌒",
@@ -468,7 +501,7 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
             title = { Text("Petikan untuk Nota Kuliah", color = Color(0xFF075B59)) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("Pilih dan salin petikan daripada pembaca kitab, kemudian tampal di sini. Rujukan kitab akan dimasukkan secara automatik.", fontSize = 13.sp)
+                    Text("Semak petikan pilihan atau tampal teks lain. Rujukan kitab akan dimasukkan secara automatik.", fontSize = 13.sp)
                     TextButton(onClick = {
                         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
                         val clip = clipboard.primaryClip
