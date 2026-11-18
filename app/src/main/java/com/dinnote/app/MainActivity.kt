@@ -1332,7 +1332,7 @@ fun NotesScreen(
                     if (!body.selection.collapsed) {
                         Box(Modifier.fillMaxWidth().padding(horizontal = 12.dp)) {
                             TextButton(onClick = { smartMenu = true }) {
-                                Text("✦ Smart Touch", color = Color(0xFF087F83), fontSize = 13.sp)
+                                Text("☝ ✦ Smart Touch", color = Color(0xFF087F83), fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
                             }
                             DropdownMenu(expanded = smartMenu, onDismissRequest = { smartMenu = false }) {
                                 listOf("Terjemah", "Tambah syarah", "Simpan petikan").forEach { action ->
@@ -1479,6 +1479,16 @@ fun NotesScreen(
                                         bodyScrollState.animateScrollTo(target.coerceIn(0, bodyScrollState.maxValue))
                                     }
                                 }
+                                val nativeToolbar = androidx.compose.ui.platform.LocalTextToolbar.current
+                                val toolbarView = androidx.compose.ui.platform.LocalView.current
+                                val openSmartMenu by rememberUpdatedState(newValue = { smartMenu = true })
+                                val selectionToolbar = remember(toolbarView, nativeToolbar) {
+                                    SmartSelectionToolbar(toolbarView, nativeToolbar) { openSmartMenu() }
+                                }
+                                DisposableEffect(selectionToolbar) {
+                                    onDispose { selectionToolbar.hide() }
+                                }
+                                CompositionLocalProvider(androidx.compose.ui.platform.LocalTextToolbar provides selectionToolbar) {
                                 androidx.compose.foundation.text.BasicTextField(
                                     value = body,
                                     // Same-length transformation keeps IME cursor offsets stable.
@@ -1514,6 +1524,7 @@ fun NotesScreen(
                                         }
                                     }
                                 )
+                                }
                             }
                         }
                     }
@@ -1532,6 +1543,70 @@ fun NotesScreen(
  * character; formatting delimiters become invisible word-joiners.
  * This avoids the offset-mapping crashes seen with shrinking transformations.
  */
+
+// Native floating selection toolbar with a DinNote action. The standard Compose
+// toolbar remains responsible for cursor-only menus.
+private class SmartSelectionToolbar(
+    private val view: android.view.View,
+    private val fallback: androidx.compose.ui.platform.TextToolbar,
+    private val onSmart: () -> Unit
+) : androidx.compose.ui.platform.TextToolbar {
+    private var mode: android.view.ActionMode? = null
+    private var rect = androidx.compose.ui.geometry.Rect.Zero
+    override val status: androidx.compose.ui.platform.TextToolbarStatus
+        get() = if (mode != null) androidx.compose.ui.platform.TextToolbarStatus.Shown else fallback.status
+
+    override fun showMenu(
+        rect: androidx.compose.ui.geometry.Rect,
+        onCopyRequested: (() -> Unit)?,
+        onPasteRequested: (() -> Unit)?,
+        onCutRequested: (() -> Unit)?,
+        onSelectAllRequested: (() -> Unit)?
+    ) {
+        if (onCopyRequested == null && onCutRequested == null) {
+            mode?.finish()
+            fallback.showMenu(rect, onCopyRequested, onPasteRequested, onCutRequested, onSelectAllRequested)
+            return
+        }
+        fallback.hide()
+        this.rect = rect
+        mode?.finish()
+        val actions = listOf(
+            "Copy" to onCopyRequested, "Paste" to onPasteRequested,
+            "Cut" to onCutRequested, "Select all" to onSelectAllRequested,
+            "✦ Smart Touch" to onSmart
+        )
+        mode = view.startActionMode(object : android.view.ActionMode.Callback2() {
+            override fun onCreateActionMode(actionMode: android.view.ActionMode, menu: android.view.Menu): Boolean {
+                actions.forEachIndexed { index, entry ->
+                    if (entry.second != null) menu.add(0, index + 1, index, entry.first)
+                        .setShowAsAction(android.view.MenuItem.SHOW_AS_ACTION_ALWAYS)
+                }
+                return true
+            }
+            override fun onPrepareActionMode(actionMode: android.view.ActionMode, menu: android.view.Menu) = false
+            override fun onActionItemClicked(actionMode: android.view.ActionMode, item: android.view.MenuItem): Boolean {
+                val action = actions.getOrNull(item.itemId - 1)?.second ?: return false
+                action()
+                return true
+            }
+            override fun onDestroyActionMode(actionMode: android.view.ActionMode) {
+                if (mode === actionMode) mode = null
+            }
+            override fun onGetContentRect(actionMode: android.view.ActionMode, target: android.view.View, outRect: android.graphics.Rect) {
+                val bounds = this@SmartSelectionToolbar.rect
+                outRect.set(bounds.left.toInt(), bounds.top.toInt(), bounds.right.toInt(), bounds.bottom.toInt())
+            }
+        }, android.view.ActionMode.TYPE_FLOATING)
+        if (mode == null) fallback.showMenu(rect, onCopyRequested, onPasteRequested, onCutRequested, onSelectAllRequested)
+    }
+    override fun hide() {
+        mode?.finish()
+        mode = null
+        fallback.hide()
+    }
+}
+
 private fun selectedEditorFontSize(value: TextFieldValue, fallback: Int): Int {
     val start = value.selection.min.coerceIn(0, value.text.length)
     val end = value.selection.max.coerceIn(start, value.text.length)
