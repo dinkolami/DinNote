@@ -54,7 +54,7 @@ fun DinNoteContentCard(
     ) {
         Column(
             modifier = Modifier.padding(horizontal = DinNoteDesign.CardHorizontalPadding, vertical = DinNoteDesign.CardVerticalPadding),
-            verticalArrangement = Arrangement.spacedBy(6.dp),
+            verticalArrangement = Arrangement.spacedBy(DinNoteDesign.CardContentSpacing),
             content = content
         )
     }
