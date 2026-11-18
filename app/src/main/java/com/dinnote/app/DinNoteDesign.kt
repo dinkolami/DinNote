@@ -17,10 +17,12 @@ import androidx.compose.ui.unit.sp
  * All note, maktabah and reading screens should use the same border and spacing.
  */
 object DinNoteDesign {
-    val Turquoise = Color(0xFF087F8C)
-    val Border = Color(0xFFD8DEE3)
-    val Gold = Color(0xFFC69A3C)
-    val Corner = 9.dp
+    val Turquoise = Color(0xFF075B50)
+    val Border = Color(0xFFE3DAC5)
+    val Gold = Color(0xFFB48B39)
+    val Corner = 14.dp
+    val Cream = Color(0xFFFFFDF7)
+    val Ink = Color(0xFF183A30)
 }
 
 @Composable
@@ -30,7 +32,9 @@ fun DinNoteContentCard(
 ) {
     Surface(
         modifier = modifier.fillMaxWidth(),
-        color = Color.White,
+        color = DinNoteDesign.Cream,
+        tonalElevation = 0.dp,
+        shadowElevation = 2.dp,
         shape = RoundedCornerShape(DinNoteDesign.Corner),
         border = BorderStroke(1.dp, DinNoteDesign.Border)
     ) {
@@ -57,11 +61,11 @@ fun DinNoteBilingualCard(
             lineHeight = 35.sp,
             color = Color(0xFF183A30)
         )
-        HorizontalDivider(color = DinNoteDesign.Border, thickness = 1.dp)
+        Spacer(Modifier.height(4.dp))
         Text(
             text = malay,
-            fontSize = 14.sp,
-            lineHeight = 22.sp,
+            fontSize = 15.sp,
+            lineHeight = 24.sp,
             color = Color(0xFF334B4A)
         )
     }
