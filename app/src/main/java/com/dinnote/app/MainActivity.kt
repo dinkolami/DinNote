@@ -1187,6 +1187,9 @@ fun NotesScreen(
                     .putString("color", selectedColor).putString("category", selectedCategory).apply()
                 kotlinx.coroutines.delay(650)
                 persistNote()
+            } else if (!readingMode && editingId == null) {
+                recoveryPrefs.edit().clear().apply()
+                recoveryAvailable = false
             }
         }
         // Editor is part of the Activity composition, not a separate Dialog window.
