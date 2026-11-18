@@ -17,7 +17,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -1308,26 +1307,7 @@ fun NotesScreen(
                                         textDirection = TextDirection.ContentOrRtl
                                     ),
                                     decorationBox = { inner ->
-                                        Box(Modifier.fillMaxWidth().drawBehind {
-                                            // Visible micro-dotted writing guides, including empty notes.
-                                            // Compose canvas coordinates are pixels; sub-pixel dots were invisible.
-                                            val ink = Color(0xFF777777).copy(alpha = 0.90f)
-                                            val dotRadius = 0.8.dp.toPx()
-                                            val dotSpacing = 5.dp.toPx()
-                                            val lineSpacing = (editorFontSize * displayPrefs.getFloat("line_spacing", 1.6f).coerceIn(1.2f, 2.2f)).sp.toPx()
-                                            val firstLine = bodyTextLayout?.let { layout ->
-                                                if (layout.lineCount > 0) layout.getLineBottom(0).toFloat() else lineSpacing
-                                            } ?: lineSpacing
-                                            var y = firstLine.coerceAtLeast(lineSpacing) + 2.dp.toPx()
-                                            while (y < size.height) {
-                                                var x = dotSpacing / 2f
-                                                while (x < size.width) {
-                                                    drawCircle(ink, radius = dotRadius, center = Offset(x, y))
-                                                    x += dotSpacing
-                                                }
-                                                y += lineSpacing
-                                            }
-                                        }) {
+                                        Box {
                                             if (body.text.isEmpty()) Text(
                                                 "Sentuh di sini untuk menulis...",
                                                 fontSize = 16.sp,
