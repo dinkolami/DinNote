@@ -324,7 +324,7 @@ private fun DinNoteDashboardTile(
         shape = RoundedCornerShape(16.dp),
         color = Color(0xFFFFFDF7),
         border = BorderStroke(1.dp, Color(0xFFB7D5C8)),
-        shadowElevation = 3.dp
+        shadowElevation = 2.dp
     ) {
         Column(
             modifier = Modifier.fillMaxSize().padding(horizontal = 10.dp, vertical = 10.dp),
