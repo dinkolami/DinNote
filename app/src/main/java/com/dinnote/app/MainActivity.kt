@@ -316,7 +316,7 @@ private fun DinNoteDashboardTile(
     modifier: Modifier = Modifier, onClick: () -> Unit
 ) {
     Surface(
-        modifier = modifier.height(104.dp).clickable(onClick = onClick),
+        modifier = modifier.height(118.dp).clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
         color = Color(0xFFFFFDF7),
         border = BorderStroke(1.dp, Color(0xFFB7D5C8)),
