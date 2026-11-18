@@ -1477,6 +1477,17 @@ fun NotesScreen(
                     )
                     // Smart Block: select the paragraph at the cursor without changing stored text.
                     var smartBlockMenu by remember { mutableStateOf(false) }
+                    var noteVaultOpen by remember { mutableStateOf(false) }
+                    if (noteVaultOpen) SmartVaultDialog(onDismiss = { noteVaultOpen = false }, onInsert = { block ->
+                        val a = body.selection.min.coerceIn(0, body.text.length)
+                        val b = body.selection.max.coerceIn(a, body.text.length)
+                        val before = smartFormattedExcerpt(body.text, 0, a)
+                        val after = smartFormattedExcerpt(body.text, b, body.text.length)
+                        undoStack.add(body.copy(composition = null))
+                        if (undoStack.size > 60) undoStack.removeAt(0)
+                        redoStack.clear()
+                        body = TextFieldValue(before + block + after, selection = TextRange(before.length + block.length))
+                    })
                     val blockText = body.text
                     val blockCursor = body.selection.min.coerceIn(0, blockText.length)
                     val blockStart = if (blockCursor == 0) 0 else blockText.lastIndexOf('\n', blockCursor - 1) + 1
@@ -1522,6 +1533,15 @@ fun NotesScreen(
                                 redoStack.clear()
                                 val newStart = blockStart + next.length + 1
                                 body = TextFieldValue(blockText.substring(0, blockStart) + next + "\n" + paragraph + blockText.substring(nextEnd), selection = TextRange(newStart, newStart + paragraph.length))
+                            })
+                            DropdownMenuItem(text = { Text("Simpan ke Smart Vault") }, enabled = canSelectBlock, onClick = {
+                                smartBlockMenu = false
+                                saveSmartVault(pasteContext, smartFormattedExcerpt(blockText, blockStart, blockEnd))
+                                android.widget.Toast.makeText(pasteContext, "Petikan disimpan", android.widget.Toast.LENGTH_SHORT).show()
+                            })
+                            DropdownMenuItem(text = { Text("Buka Smart Vault") }, onClick = {
+                                smartBlockMenu = false
+                                noteVaultOpen = true
                             })
                             DropdownMenuItem(text = { Text("Salin dengan format DinNote") }, enabled = canSelectBlock, onClick = {
                                 smartBlockMenu = false
