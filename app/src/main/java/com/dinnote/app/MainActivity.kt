@@ -2413,12 +2413,12 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                 }
             }
             "Kitab-Kitab" -> {
-                Text("📚 Maktabah Kitab", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                Text("Maktabah Kitab", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color(0xFF075B49))
                 TurathStarterCard(search, onNavigate = onNavigate)
                 TurathStarterCard(search, "turath/al_majmu.json", onNavigate)
                 TurathStarterCard(search, "turath/al_fatihah.json", onNavigate)
 
-                Button(onClick = { openLibraryEditor("entry_Kitab-Kitab_" + System.currentTimeMillis()) }) { Text("+ Tambah Kitab") }
+                Button(onClick = { openLibraryEditor("entry_Kitab-Kitab_" + System.currentTimeMillis()) }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(14.dp), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF075B49))) { Text("+ Tambah Kitab") }
                 libraryItems.filter { matchesMaktabahSearch(libraryPrefs.getString(it + "_title", "") ?: "", search) ||
                     matchesMaktabahSearch(libraryPrefs.getString(it + "_body", "") ?: "", search) }.forEach { key ->
                     Card(modifier = Modifier.fillMaxWidth().clickable { openLibraryEditor(key) }, elevation = CardDefaults.cardElevation(defaultElevation = 2.dp), shape = RoundedCornerShape(14.dp), colors = CardDefaults.cardColors(containerColor = Color.White)) {
@@ -3944,11 +3944,48 @@ private fun TurathStarterCard(search: String, assetPath: String = "turath/arba_i
     val visible = search.isBlank() || matchesMaktabahSearch(book.optString("titleArabic")+" "+book.optString("titleMalay"), search) ||
         entries.any { matchesMaktabahSearch(it.optString("arabic")+" "+it.optString("malay"),search) }
     if(visible) {
-        Card(onClick={opened=true;selected=-1},modifier=Modifier.fillMaxWidth(),colors=CardDefaults.cardColors(containerColor=Color(0xFFE8F2E9))) {
-            Column(Modifier.padding(16.dp)) {
-                Text(book.optString("titleArabic"),modifier=Modifier.fillMaxWidth(),textAlign=TextAlign.End,fontSize=24.sp,fontWeight=FontWeight.Bold,color=Color(0xFF075B49))
-                Text(book.optString("titleMalay"),fontWeight=FontWeight.Bold)
-                Text(if(book.has("expectedEntries")) "${entries.size} / ${book.optInt("expectedEntries")} hadis • Contoh awal • Offline" else "${entries.size} petikan • Koleksi awal • Offline",fontSize=12.sp)
+        val coverColor = when {
+            assetPath.contains("majmu") -> Color(0xFF722F35)
+            assetPath.contains("fatihah") -> Color(0xFF16465D)
+            else -> Color(0xFF075B49)
+        }
+        val coverTitle = when {
+            assetPath.contains("majmu") -> "الْمَجْمُوعُ"
+            assetPath.contains("fatihah") -> "الْفَاتِحَةُ"
+            assetPath.contains("arba") -> "الْأَرْبَعُونَ"
+            else -> book.optString("titleArabic")
+        }
+        Card(onClick = { opened = true; selected = -1 },
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
+            border = BorderStroke(1.dp, Color(0xFFD3B66F)),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFCF4))) {
+            Row(Modifier.padding(12.dp), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Box(Modifier.width(76.dp).height(102.dp)
+                    .background(Brush.horizontalGradient(listOf(coverColor, coverColor, Color(0xFF142E30))), RoundedCornerShape(5.dp))
+                    .border(2.dp, Color(0xFFB99A54), RoundedCornerShape(5.dp))
+                    .padding(5.dp)
+                    .border(1.dp, Color(0xFFE8CF91), RoundedCornerShape(3.dp)),
+                    contentAlignment = androidx.compose.ui.Alignment.Center) {
+                    Column(horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
+                        modifier = Modifier.padding(4.dp)) {
+                        Text("❖", color = Color(0xFFE8CF91), fontSize = 13.sp)
+                        Text(coverTitle, color = Color(0xFFFFF6DE), fontSize = 12.sp,
+                            textAlign = TextAlign.Center, fontWeight = FontWeight.Bold)
+                        Text("❖", color = Color(0xFFE8CF91), fontSize = 13.sp)
+                    }
+                }
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(book.optString("titleArabic"), modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.End, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color(0xFF075B49))
+                    Text(book.optString("titleMalay"), fontWeight = FontWeight.SemiBold, fontSize = 15.sp, color = Color(0xFF263B30))
+                    Text(if (book.has("expectedEntries")) "${entries.size} / ${book.optInt("expectedEntries")} hadis • Contoh awal" else "${entries.size} petikan • Koleksi awal",
+                        fontSize = 11.sp, color = Color(0xFF59685E))
+                    Text("Offline", fontSize = 10.sp, color = Color(0xFF075B49),
+                        modifier = Modifier.background(Color(0xFFE8F0E5), RoundedCornerShape(8.dp)).padding(horizontal = 8.dp, vertical = 3.dp))
+                }
             }
         }
     }
