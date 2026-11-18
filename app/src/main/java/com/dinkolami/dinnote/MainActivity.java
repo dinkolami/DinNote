@@ -19,7 +19,16 @@ public class MainActivity extends Activity {
   LinearLayout root, list;
   EditText search;
   int background = Color.rgb(248,249,252);
-  @Override public void onCreate(Bundle b) { super.onCreate(b); db=new DB(this); showHome(); }
+  @Override public void onCreate(Bundle b) { super.onCreate(b); db=new DB(this); try { showHome(); } catch (Exception e) { showStartupError(e); } }
+  void showStartupError(Exception e) {
+    android.util.Log.e("DinNote", "Startup failed", e);
+    LinearLayout page=column();
+    setContentView(page);
+    TextView message=text("DinNote gagal dibuka. Data nota tidak dipadam.\\n\\nRalat: "+e.getClass().getSimpleName()+": "+e.getMessage(),16);
+    page.addView(message);
+    Button retry=new Button(this);retry.setText("Cuba lagi");page.addView(retry);
+    retry.setOnClickListener(v->{try {showHome();}catch(Exception error){showStartupError(error);}});
+  }
   TextView text(String value,int size) { TextView t=new TextView(this);t.setText(value);t.setTextSize(size);t.setTextColor(Color.rgb(36,43,57));t.setPadding(18,16,18,16);return t; }
   LinearLayout column() { LinearLayout l=new LinearLayout(this);l.setOrientation(1);l.setPadding(18,18,18,18);l.setBackgroundColor(background);return l; }
   void showHome() {
@@ -73,8 +82,8 @@ public class MainActivity extends Activity {
   void styleSelection(EditText edit,int style){int a=edit.getSelectionStart(),b=edit.getSelectionEnd();if(a<0||b<=a){Toast.makeText(this,"Pilih teks dahulu",Toast.LENGTH_SHORT).show();return;}SpannableStringBuilder t=new SpannableStringBuilder(edit.getText());t.setSpan(new StyleSpan(style),a,b,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);edit.setText(t);edit.setSelection(b);}
   @Override public void onBackPressed(){showHome();}
   static class DB extends SQLiteOpenHelper {
-    DB(Context c){super(c,"dinnote.db",null,1);}
+    DB(Context c){super(c,"dinnote.db",null,2);}
     public void onCreate(SQLiteDatabase db){db.execSQL("CREATE TABLE notes (id INTEGER PRIMARY KEY AUTOINCREMENT,title TEXT NOT NULL DEFAULT '',body TEXT NOT NULL DEFAULT '',updated INTEGER NOT NULL,color INTEGER NOT NULL DEFAULT -1)");}
-    public void onUpgrade(SQLiteDatabase db,int oldVersion,int newVersion){if(oldVersion<2)db.execSQL("ALTER TABLE notes ADD COLUMN color INTEGER NOT NULL DEFAULT -1");}
+    public void onUpgrade(SQLiteDatabase db,int oldVersion,int newVersion){if(oldVersion<2) { try { db.execSQL("ALTER TABLE notes ADD COLUMN color INTEGER NOT NULL DEFAULT -1"); } catch (android.database.sqlite.SQLiteException ignored) { /* Column may already exist in older builds. */ } }}
   }
 }
