@@ -27,6 +27,7 @@ public class MainActivity extends Activity {
     private String filter = "";
     private boolean showingEditor = false;
     private boolean focusMode = false;
+    private HorizontalScrollView editorTools;
     private static final int SURFACE = Color.rgb(249,250,247);
 
     @Override public void onCreate(Bundle state) {
@@ -158,19 +159,23 @@ public class MainActivity extends Activity {
         titleEdit=new EditText(this);titleEdit.setHint("Tajuk nota");titleEdit.setSingleLine(true); titleEdit.setSelectAllOnFocus(false);
         titleEdit.setTextSize(20);body.addView(titleEdit);
         toolbar=row(); toolbar.setGravity(Gravity.CENTER_VERTICAL); HorizontalScrollView tools=new HorizontalScrollView(this);tools.setHorizontalScrollBarEnabled(false); tools.setFillViewport(false);
-        tools.addView(toolbar);body.addView(tools);
+        tools.addView(toolbar);body.addView(tools); editorTools=tools;
         toolbar.addView(action("B",()->toggleStyle(Typeface.BOLD)));
         toolbar.addView(action("I",()->toggleStyle(Typeface.ITALIC)));
         toolbar.addView(action("U̲",()->applySpan(new UnderlineSpan())));
         toolbar.addView(action("Warna",()->applySpan(new ForegroundColorSpan(GREEN))));
         toolbar.addView(action("Highlight",()->applySpan(new BackgroundColorSpan(Color.YELLOW))));
         toolbar.addView(action("☑",()->insertChecklist()));
+        toolbar.addView(action("• Senarai",()->insertPrefix("• ")));
         toolbar.addView(action("Cari/Ganti",this::findReplace));
         toolbar.addView(action("Baca",this::readingMode));
+        toolbar.addView(action("Salin",this::copyNote));
         toolbar.addView(action("Fokus",this::focusWriting));
         toolbar.addView(action("Kongsi",this::shareNote));
+        toolbar.addView(action("Tarikh",()->insertPrefix(new java.text.SimpleDateFormat("dd/MM/yyyy",java.util.Locale.getDefault()).format(new java.util.Date()))));
         toolbar.addView(action("A+",()->resizeText(2)));
         toolbar.addView(action("A−",()->resizeText(-2)));
+        toolbar.addView(action("Tajuk",()->applySpan(new RelativeSizeSpan(1.3f))));
         toolbar.addView(action("Arab ⇄",()->{
             contentEdit.setTextDirection(contentEdit.getTextDirection()==View.TEXT_DIRECTION_RTL?View.TEXT_DIRECTION_LTR:View.TEXT_DIRECTION_RTL);
         }));
@@ -199,8 +204,8 @@ public class MainActivity extends Activity {
         contentEdit.setTextSize(Math.max(12,Math.min(32,contentEdit.getTextSize()/getResources().getDisplayMetrics().scaledDensity+delta)));
     }
     private void focusWriting() {
-        focusMode=!focusMode;
-        toolbar.setVisibility(focusMode?View.GONE:View.VISIBLE);
+        focusMode=!focusMode; contentEdit.requestFocus();
+        editorTools.setVisibility(focusMode?View.GONE:View.VISIBLE);
         Toast.makeText(this,focusMode?"Mod fokus aktif":"Mod fokus tamat",Toast.LENGTH_SHORT).show();
     }
     private void readingMode() {
@@ -213,6 +218,11 @@ public class MainActivity extends Activity {
         scroll.addView(reading);
         new AlertDialog.Builder(this).setTitle(titleEdit.getText().toString()).setView(scroll)
             .setPositiveButton("Kembali menulis",null).show();
+    }
+    private void copyNote() {
+        if(contentEdit==null)return;
+        ((android.content.ClipboardManager)getSystemService(CLIPBOARD_SERVICE)).setPrimaryClip(ClipData.newPlainText("DinNote",contentEdit.getText().toString()));
+        Toast.makeText(this,"Nota disalin",Toast.LENGTH_SHORT).show();
     }
     private void shareNote() {
         saveNow();
@@ -253,6 +263,11 @@ public class MainActivity extends Activity {
         if(a<0||b<=a){Toast.makeText(this,"Pilih teks dahulu",Toast.LENGTH_SHORT).show();return;}
         contentEdit.getText().setSpan(span,Math.min(a,b),Math.max(a,b),Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         scheduleSave();
+    }
+    private void insertPrefix(String prefix) {
+        if(contentEdit==null)return;
+        int pos=Math.max(0,contentEdit.getSelectionStart());
+        contentEdit.getText().insert(pos,prefix);
     }
     private void insertChecklist() {
         int pos=Math.max(0,contentEdit.getSelectionStart());
