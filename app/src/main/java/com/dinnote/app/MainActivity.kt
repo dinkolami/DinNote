@@ -399,6 +399,78 @@ private fun IslamicGeometricBackground(modifier: Modifier = Modifier) {
     }
 }
 
+/**
+ * Frontpage showcase inspired by the supplied DinNote emerald-and-gold mock-up.
+ * Uses Compose shapes rather than embedding the screenshot (which contains a phone frame).
+ */
+@Composable
+private fun DinNoteReferenceShowcase(
+    arabic: String,
+    meaning: String,
+    onRead: () -> Unit
+) {
+    val emerald = Color(0xFF005545)
+    val gold = Color(0xFFD5A747)
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(22.dp),
+        color = Color(0xFFFFF8E8),
+        border = BorderStroke(2.dp, gold),
+        shadowElevation = 4.dp
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
+            Box(
+                modifier = Modifier.fillMaxWidth()
+                    .background(Brush.horizontalGradient(listOf(Color(0xFF003B31), Color(0xFF08705A), Color(0xFF003B31))))
+                    .padding(horizontal = 14.dp, vertical = 14.dp),
+                contentAlignment = androidx.compose.ui.Alignment.Center
+            ) {
+                Column(horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
+                    Text("۞  DinNote  ۞", fontSize = 25.sp, fontWeight = FontWeight.Bold, color = Color(0xFFF3D58A))
+                    Text("دَفْتَرُ الْعِلْمِ وَالْمَعْرِفَةِ",
+                        fontSize = 15.sp, color = Color(0xFFFFF4D7),
+                        textAlign = TextAlign.Center,
+                        style = androidx.compose.ui.text.TextStyle(textDirection = TextDirection.Rtl))
+                }
+            }
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 14.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Surface(shape = RoundedCornerShape(18.dp), color = emerald,
+                    border = BorderStroke(1.dp, gold)) {
+                    Text("✦  Bacaan Pilihan  ✦", modifier = Modifier.fillMaxWidth().padding(10.dp),
+                        textAlign = TextAlign.Center, fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold, color = Color(0xFFF7DB94))
+                }
+                Text("۞  Teks Arab", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = emerald)
+                Surface(shape = RoundedCornerShape(14.dp), color = Color(0xFFFFFDF6),
+                    border = BorderStroke(1.dp, gold)) {
+                    Text(formattedNoteText(arabic), modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        textAlign = TextAlign.Right, fontSize = 20.sp, lineHeight = 36.sp,
+                        style = androidx.compose.ui.text.TextStyle(textDirection = TextDirection.Rtl),
+                        color = Color(0xFF172C26))
+                }
+                Text("✦  Nota / Terjemahan", fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold, color = emerald)
+                Surface(shape = RoundedCornerShape(14.dp), color = Color(0xFFFFFDF6),
+                    border = BorderStroke(1.dp, gold)) {
+                    Text(formattedNoteText(meaning),
+                        modifier = Modifier.fillMaxWidth().padding(14.dp),
+                        fontSize = 14.sp, lineHeight = 23.sp, color = Color(0xFF25382F))
+                }
+                Surface(modifier = Modifier.fillMaxWidth().clickable(onClick = onRead),
+                    shape = RoundedCornerShape(12.dp), color = emerald,
+                    border = BorderStroke(1.dp, gold)) {
+                    Text("Baca teks penuh  ›", modifier = Modifier.padding(12.dp),
+                        textAlign = TextAlign.Center, fontWeight = FontWeight.SemiBold,
+                        color = Color.White)
+                }
+            }
+        }
+    }
+}
+
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
@@ -487,6 +559,63 @@ fun HomeScreen(
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         DinNoteFrontHeader()
+        // The mock-up's four-item gold navigation ribbon, scrollable on narrow phones.
+        Row(
+            modifier = Modifier.fillMaxWidth()
+                .horizontalScroll(rememberScrollState())
+                .clip(RoundedCornerShape(20.dp))
+                .background(Color(0xFF004B3E))
+                .padding(horizontal = 8.dp, vertical = 7.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+        ) {
+            listOf(
+                "Nota" to onOpenNotes,
+                "Maktabah" to onOpenLibrary,
+                "Kalam Hikmah" to onOpenLibrary,
+                "Kalimah Tayyibah" to onOpenLibrary
+            ).forEachIndexed { index, (label, action) ->
+                if (index > 0) Text("◆", fontSize = 10.sp, color = Color(0xFFE8BC5E))
+                Text(label, modifier = Modifier.clickable(onClick = action)
+                    .padding(horizontal = 8.dp, vertical = 6.dp),
+                    fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
+            }
+        }
+        // Compact illustrated menu inspired by the vertical shortcuts in the reference.
+        Row(
+            modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(7.dp)
+        ) {
+            listOf(
+                Triple("✎", "Nota", onOpenNotes),
+                Triple("▥", "Kitab", onOpenLibrary),
+                Triple("✦", "Hikmah", onOpenLibrary),
+                Triple("◈", "Tayyibah", onOpenLibrary),
+                Triple("☷", "Carian", onOpenSearch),
+                Triple("⚙", "Tetapan", onOpenSettings)
+            ).forEach { (symbol, label, action) ->
+                Surface(
+                    modifier = Modifier.width(76.dp).clickable(onClick = action),
+                    shape = RoundedCornerShape(13.dp), color = Color(0xFF004B3E),
+                    border = BorderStroke(1.dp, Color(0xFFD5A747)),
+                    shadowElevation = 2.dp
+                ) {
+                    Column(Modifier.padding(vertical = 9.dp, horizontal = 4.dp),
+                        horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
+                        Text(symbol, fontSize = 23.sp, color = Color(0xFFF2CF76))
+                        Text(label, fontSize = 11.sp, color = Color.White,
+                            textAlign = TextAlign.Center, maxLines = 1)
+                    }
+                }
+            }
+        }
+        reminder?.let { entry ->
+            DinNoteReferenceShowcase(
+                arabic = entry.arabic,
+                meaning = entry.meaning,
+                onRead = { expandedReminder = true }
+            )
+        }
         Text(
             "Catatan ilmu • Maktabah • Hikmah",
             modifier = Modifier.fillMaxWidth(),
