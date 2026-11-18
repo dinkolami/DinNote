@@ -678,7 +678,6 @@ fun NotesScreen(
     var categoryToRename by remember { mutableStateOf<String?>(null) }
     var categoryToDelete by remember { mutableStateOf<String?>(null) }
     var renamedCategory by remember { mutableStateOf("") }
-    var categoryToDelete by remember { mutableStateOf<String?>(null) }
     var noteToDelete by remember { mutableStateOf<DinNote?>(null) }
     val defaultCategories = listOf("Agama", "Pengajian", "Kitab", "Peribadi", "Kerja", "Idea", "Lain-lain")
     val categoryPrefs = remember { context.getSharedPreferences("dinnote_categories", android.content.Context.MODE_PRIVATE) }
@@ -776,7 +775,7 @@ fun NotesScreen(
         Row(Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
                 Text(if (showArchived) "Arkib Nota" else "Nota Saya", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF075B59))
-                Text("Khazanah catatan peribadi", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("Tulis, susun dan simpan ilham anda", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             IconButton(onClick = { showArchived = !showArchived; selectedCategory = "Semua"; search = "" }) {
                 Icon(Icons.Default.DateRange, contentDescription = if (showArchived) "Nota Aktif" else "Arkib")
@@ -790,7 +789,7 @@ fun NotesScreen(
         }
         TextField(value = search, onValueChange = { search = it }, placeholder = { Text("Cari nota anda...", fontSize = 13.sp) },
             leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) }, singleLine = true,
-            shape = RoundedCornerShape(16.dp), modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(14.dp), modifier = Modifier.fillMaxWidth(),
             colors = TextFieldDefaults.colors(focusedContainerColor = Color.White, unfocusedContainerColor = Color.White,
                 focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent))
         Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -827,12 +826,12 @@ fun NotesScreen(
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
             ) {
                 Column(Modifier.fillMaxWidth().padding(24.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("✎", fontSize = 30.sp, color = MaterialTheme.colorScheme.secondary)
+                    Text("✦", fontSize = 26.sp, color = Color(0xFFB5964C))
                     Text(if (search.isNotBlank() || selectedCategory != "Semua") "Tiada nota ditemui" else if (showArchived) "Arkib nota masih kosong" else "Ruang nota anda masih kosong", fontWeight = FontWeight.Bold)
                     Text(
                         if (search.isNotBlank() || selectedCategory != "Semua") "Cuba kata carian atau kategori yang lain."
                         else if (showArchived) "Nota yang diarkibkan akan muncul di sini dan boleh dikembalikan bila-bila masa."
-                        else "Mulakan dengan menulis nota pertama anda.",
+                        else "Catat idea, ilmu dan perkara penting anda di sini.",
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 13.sp
                     )
@@ -851,9 +850,9 @@ fun NotesScreen(
             LazyVerticalGrid(
                 columns = GridCells.Fixed(if (gridMode) 2 else 1),
                 modifier = Modifier.weight(1f).fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                contentPadding = PaddingValues(bottom = 8.dp)
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                contentPadding = PaddingValues(bottom = 12.dp)
             ) {
                 items(orderedNotes.size, key = { orderedNotes[it].id }) { index ->
                     val item = orderedNotes[index]
@@ -881,8 +880,9 @@ fun NotesScreen(
                                 showEditor = true
                             }
                         ),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
-                        shape = RoundedCornerShape(16.dp)
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFEFA)),
+                        border = BorderStroke(1.dp, Color(0xFFE5EAE3)),
+                        shape = RoundedCornerShape(14.dp)
                     ) {
                         Row(Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 6.dp),
                             verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
