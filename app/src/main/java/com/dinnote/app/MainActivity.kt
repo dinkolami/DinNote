@@ -671,6 +671,13 @@ fun HomeScreen(
                 Text("Buka Maktabah ›", fontSize = 12.sp, color = Color.White)
             }
         }
+        Text(
+            "DinNote • Nota dan rujukan di hujung jari",
+            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+            textAlign = TextAlign.Center,
+            fontSize = 11.sp,
+            color = Color(0xFF53736F)
+        )
     }
     }
 }
