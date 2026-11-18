@@ -88,7 +88,7 @@ object NoteBackup {
 
     private val backupPreferenceFiles = listOf(
         "dinnote_categories", "dinnote_library_edits", "dinnote_kitab_catalog", "dinnote_display", "dinnote_bookmarks",
-        "dinnote_smart_vault", "dinnote_smart_index", "dinnote_smart_recall"
+        "dinnote_smart_vault", "dinnote_smart_index", "dinnote_smart_recall", "dinnote_workspace"
     )
 
     private fun exportPreferences(context: Context): JSONObject = JSONObject().apply {
@@ -128,6 +128,15 @@ object NoteBackup {
                             for (i in 0 until current.length()) merged.add(current.getString(i))
                             for (i in 0 until incoming.length()) merged.add(incoming.getString(i))
                             editor.putString(key, JSONArray(merged.toList()).toString())
+                        } else if (name == "dinnote_workspace" && key == "draft") {
+                            val incoming = entry.optString("value")
+                            val current = store.getString("draft", "").orEmpty()
+                            if (incoming.isNotBlank() && incoming != current) {
+                                val separator = "\n\n--- Draf daripada sandaran ---\n\n"
+                                if (current.isBlank()) editor.putString(key, incoming)
+                                else if (!current.endsWith(separator + incoming))
+                                    editor.putString(key, current + separator + incoming)
+                            }
                         } else if (name != "dinnote_smart_index" || !store.contains(key)) {
                             editor.putString(key, entry.optString("value"))
                         }
