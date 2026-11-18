@@ -2874,6 +2874,15 @@ private fun SmartVaultDialog(onDismiss: () -> Unit, onInsert: (String) -> Unit) 
     var query by remember { mutableStateOf("") }
     var editing by remember { mutableStateOf<String?>(null) }
     var draft by remember { mutableStateOf("") }
+    val searchText = remember(items) { items.associateWith { formattedNoteText(it).text } }
+    val filtered = remember(items, query, tags, references) {
+        val term = query.trim()
+        items.filter {
+            searchText[it].orEmpty().contains(term, ignoreCase = true) ||
+                tags[it].orEmpty().contains(term, ignoreCase = true) ||
+                referenceText(references[it].orEmpty()).contains(term, ignoreCase = true)
+        }
+    }
     if (insightOpen) {
         val recallPrefs = context.getSharedPreferences("dinnote_smart_recall", android.content.Context.MODE_PRIVATE)
         val now = System.currentTimeMillis()
@@ -2942,23 +2951,21 @@ private fun SmartVaultDialog(onDismiss: () -> Unit, onInsert: (String) -> Unit) 
                     }
                 }
                 Column {
-                    val filtered = items.filter {
-                        formattedNoteText(it).text.contains(query.trim(), ignoreCase = true) ||
-                            tags[it].orEmpty().contains(query.trim(), ignoreCase = true) ||
-                            referenceText(references[it].orEmpty()).contains(query.trim(), ignoreCase = true)
-                    }
                     if (filtered.isEmpty()) Text("Tiada petikan ditemui", modifier = Modifier.padding(12.dp))
-                    filtered.forEach { block ->
+                    Text("Paparan: " + filtered.size + " / " + items.size, fontSize = 12.sp)
+                    LazyColumn(Modifier.heightIn(max = 300.dp)) {
+                    items(filtered, key = { it }) { block ->
+                        val preview = remember(block) { formattedNoteText(block) }
                         Column(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
                             if (majlisMode) {
                                 Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                                     Checkbox(checked = block in majlisSelection, onCheckedChange = { checked ->
                                         majlisSelection = if (checked) majlisSelection + block else majlisSelection.filter { it != block }
                                     })
-                                    Text(formattedNoteText(block), modifier = Modifier.weight(1f), maxLines = 4)
+                                    Text(preview, modifier = Modifier.weight(1f), maxLines = 4)
                                 }
                             } else TextButton(onClick = { onInsert(block); onDismiss() }) {
-                                Text(formattedNoteText(block), maxLines = 4)
+                                Text(preview, maxLines = 4)
                             }
                             Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                                 TextButton(onClick = { editing = block; draft = tags[block].orEmpty(); refEditing = null }) {
@@ -3011,6 +3018,7 @@ private fun SmartVaultDialog(onDismiss: () -> Unit, onInsert: (String) -> Unit) 
                             }
                         }
                         HorizontalDivider()
+                    }
                     }
                 }
             }
