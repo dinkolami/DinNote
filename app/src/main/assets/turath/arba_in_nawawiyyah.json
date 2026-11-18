@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "arba-in-nawawiyyah",
+  "titleArabic": "الأربعون النووية",
+  "titleMalay": "Hadis 40 Imam Nawawi",
+  "author": "يحيى بن شرف النووي",
+  "category": "Hadis",
+  "expectedEntries": 42,
+  "status": "partial",
+  "translationStatus": "draft_pending_review",
+  "entries": [
+    {
+      "id": "hadith-1",
+      "number": 1,
+      "titleArabic": "الحديث الأول",
+      "titleMalay": "Hadis pertama: Niat",
+      "arabic": "عن أمير المؤمنين أبي حفص عمر بن الخطاب رضي الله تعالى عنه قال: سمعت رسول الله صلى الله تعالى عليه وعلى آله وسلم يقول: إنما الأعمال بالنيات، وإنما لكل امرئ ما نوى، فمن كانت هجرته إلى الله ورسوله فهجرته إلى الله ورسوله، ومن كانت هجرته لدنيا يصيبها أو امرأة ينكحها فهجرته إلى ما هاجر إليه.\nرواه إماما المحدثين: أبو عبد الله محمد ابن إسماعيل بن إبراهيم بن المغيرة بن بردزبه البخاري، وأبو الحسين مسلم ابن الحجاج بن مسلم القشيري النيسابوري: في صحيحيهما اللذين هما أصح الكتب المصنفة.",
+      "malay": "Daripada Amirul Mukminin Abu Hafs Umar bin al-Khattab رضي الله عنه, beliau berkata: Aku mendengar Rasulullah ﷺ bersabda: Sesungguhnya amalan itu berdasarkan niat, dan setiap orang memperoleh apa yang diniatkannya. Sesiapa yang hijrahnya kepada Allah dan Rasul-Nya, maka hijrahnya kepada Allah dan Rasul-Nya. Sesiapa yang hijrahnya kerana dunia yang ingin diperolehnya atau wanita yang ingin dinikahinya, maka hijrahnya kepada apa yang menjadi tujuan hijrahnya.\nDiriwayatkan oleh dua imam ahli hadis, Abu Abdullah Muhammad bin Ismail bin Ibrahim bin al-Mughirah bin Bardizbah al-Bukhari dan Abu al-Husain Muslim bin al-Hajjaj bin Muslim al-Qusyairi al-Naisaburi, dalam kedua-dua kitab Sahih mereka, iaitu dua kitab karangan yang paling sahih.",
+      "source": [
+        "https://shamela.ws/book/12836/12",
+        "https://shamela.ws/book/12836/13"
+      ],
+      "translationCredit": "Draf terjemahan DinNote"
+    }
+  ]
+}
