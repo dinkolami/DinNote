@@ -128,7 +128,7 @@ class NoteDatabase(context: Context) :
     fun moveCategoryToDefault(category: String) {
         writableDatabase.execSQL(
             "UPDATE notes SET category = ?, updated_at = ? WHERE category = ?",
-            arrayOf("Lain-lain", System.currentTimeMillis(), category)
+            arrayOf(defaultCategory, System.currentTimeMillis(), category)
         )
     }
 
