@@ -84,6 +84,48 @@ jobs:
           chmod 600 "$HOME/.android/debug.keystore"
           # Keep app/dinnote-debug.keystore until Gradle has signed the APK.
 
+      - name: Prepare offline Ibn Kathir Arabic corpus
+        run: |
+          python3 - <<'PY'
+          import json, pathlib, urllib.request, concurrent.futures, time
+          base = "https://raw.githubusercontent.com/spa5k/tafsir_api/v1.2.3/tafsir/ar-tafsir-ibn-kathir/"
+          dest = pathlib.Path("app/src/main/assets/turath/ibn_kathir")
+          dest.mkdir(parents=True, exist_ok=True)
+          def prepare(n):
+              url = base + str(n) + ".json"
+              for attempt in range(3):
+                  try:
+                      with urllib.request.urlopen(url, timeout=90) as response:
+                          rows = json.load(response)
+                      break
+                  except Exception:
+                      if attempt == 2: raise
+                      time.sleep(2 ** attempt)
+              assert rows and all(int(row["surah"]) == n and isinstance(row["text"], str) for row in rows)
+              groups = {}
+              for row in rows:
+                  if row["text"].strip():
+                      groups.setdefault(row["text"], []).append(int(row["ayah"]))
+              assert groups
+              entries = []
+              for text, ayahs in groups.items():
+                  label = ", ".join(map(str, ayahs))
+                  entries.append({"titleArabic": "الآيات " + label, "titleMalay": "Surah " + str(n) + " • Ayat " + label,
+                                  "arabic": text, "malay": "Terjemahan Melayu belum tersedia."})
+              book = {"titleArabic": "تَفْسِيرُ ابْنِ كَثِيرٍ", "titleMalay": "Tafsir Ibn Kathir • Surah " + str(n),
+                      "source": url, "entries": entries}
+              if n == 1:
+                  for entry in entries:
+                      if entry["titleMalay"].endswith("Ayat 3"):
+                          entry["malay"] = "Firman-Nya, «Yang Maha Pemurah lagi Maha Penyayang»: perbahasan mengenainya telah pun dikemukakan dalam huraian basmalah, sehingga tidak perlu diulang di sini."
+              (dest / (str(n) + ".json")).write_text(json.dumps(book, ensure_ascii=False), encoding="utf-8")
+              return n
+          with concurrent.futures.ThreadPoolExecutor(max_workers=6) as pool:
+              completed = list(pool.map(prepare, range(1, 115)))
+          assert len(completed) == 114
+          print("Prepared 114 Arabic tafsir surah files; Malay translation incomplete.")
+          PY
+
       - name: Build clean APK
         run: |
           VERSION_CODE=$((240000 + GITHUB_RUN_NUMBER))
