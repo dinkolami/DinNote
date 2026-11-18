@@ -1,6 +1,19 @@
 package com.dinnote.app
 
 import android.content.Context
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.*
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.unit.dp
+
 import org.json.JSONArray
 import org.json.JSONObject
 import java.text.Normalizer
@@ -120,5 +133,79 @@ object SmartReferenceMatcher {
         candidates.sortedWith(compareBy<SmartReferenceMatch> { it.start }.thenByDescending { it.end - it.start })
             .forEach { match -> if (result.lastOrNull()?.end?.let { it > match.start } != true) result.add(match) }
         return result
+    }
+}
+
+
+@androidx.compose.runtime.Composable
+fun SmartReferenceSettings() {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val store = remember(context) { SmartReferenceStore(context) }
+    var enabled by remember { mutableStateOf(store.enabled) }
+    var entries by remember { mutableStateOf(store.entries()) }
+    var editing by remember { mutableStateOf<SmartReferenceEntry?>(null) }
+    var deleting by remember { mutableStateOf<SmartReferenceEntry?>(null) }
+    Text("Smart Reference — المرجع الذكي", style = MaterialTheme.typography.titleMedium)
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+        Text("Aktifkan rujukan automatik")
+        Switch(checked = enabled, onCheckedChange = { enabled = it; store.enabled = it })
+    }
+    OutlinedButton(onClick = { editing = SmartReferenceEntry(title="",category="Ulama",aliases=emptyList(),description="") }) { Text("+ Tambah rujukan") }
+    entries.forEach { entry ->
+        Row(Modifier.fillMaxWidth()) {
+            Text(entry.title, Modifier.weight(1f))
+            TextButton(onClick={editing=entry}) { Text("Edit") }
+            TextButton(onClick={deleting=entry}) { Text("Padam") }
+        }
+    }
+    deleting?.let { entry ->
+        AlertDialog(onDismissRequest={deleting=null},title={Text("Padam rujukan?")},text={Text(entry.title)},
+            confirmButton={TextButton(onClick={store.delete(entry.id);entries=store.entries();deleting=null}){Text("Padam")}},
+            dismissButton={TextButton(onClick={deleting=null}){Text("Batal")}})
+    }
+    editing?.let { entry ->
+        var title by remember(entry.id) { mutableStateOf(entry.title) }
+        var category by remember(entry.id) { mutableStateOf(entry.category) }
+        var aliases by remember(entry.id) { mutableStateOf(entry.aliases.joinToString("\n")) }
+        var description by remember(entry.id) { mutableStateOf(entry.description) }
+        var source by remember(entry.id) { mutableStateOf(entry.source) }
+        AlertDialog(onDismissRequest={editing=null},title={Text("Rujukan ilmu")},
+            text={Column(Modifier.verticalScroll(rememberScrollState()),verticalArrangement=Arrangement.spacedBy(8.dp)){
+                OutlinedTextField(title,{title=it},label={Text("Nama utama")})
+                OutlinedTextField(category,{category=it},label={Text("Kategori")})
+                OutlinedTextField(aliases,{aliases=it},label={Text("Alias — satu setiap baris")})
+                OutlinedTextField(description,{description=it},label={Text("Keterangan")},minLines=3)
+                OutlinedTextField(source,{source=it},label={Text("Sumber")})
+            }},confirmButton={TextButton(enabled=title.isNotBlank() && description.isNotBlank(),onClick={
+                store.upsert(entry.copy(title=title.trim(),category=category,aliases=aliases.lines().map{it.trim()}.filter{it.isNotEmpty()},description=description,source=source))
+                entries=store.entries();editing=null
+            }){Text("Simpan")}},dismissButton={TextButton(onClick={editing=null}){Text("Batal")}})
+    }
+}
+
+@Composable
+fun ReferenceReaderText(text: AnnotatedString, modifier: Modifier = Modifier, style: TextStyle = LocalTextStyle.current, onDoubleTap: ((Int)->Unit)? = null) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val store = remember(context) { SmartReferenceStore(context) }
+    val matches = remember(text,store) { if(store.enabled) SmartReferenceMatcher.find(text.text,store.entries()) else emptyList() }
+    val marked = remember(text,matches) { buildAnnotatedString {
+        append(text)
+        matches.forEach { addStyle(SpanStyle(color=Color(0xFF087F65),textDecoration=TextDecoration.Underline),it.start,it.end) }
+    } }
+    var selected by remember { mutableStateOf<SmartReferenceEntry?>(null) }
+    var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
+    val editAction by rememberUpdatedState(onDoubleTap)
+    Text(marked,modifier=modifier.pointerInput(marked,matches,onDoubleTap != null) {
+        detectTapGestures(onTap={p ->
+            layout?.let { l -> val i=l.getOffsetForPosition(p)
+                if(i in 0 until marked.length && l.getBoundingBox(i).contains(p)) selected=matches.firstOrNull { i >= it.start && i < it.end }?.entry
+            }
+        },onDoubleTap=if(onDoubleTap==null) null else {p -> layout?.let { editAction?.invoke(it.getOffsetForPosition(p)) }})
+    },style=style,onTextLayout={layout=it})
+    selected?.let { entry ->
+        AlertDialog(onDismissRequest={selected=null},title={Text(entry.title)},text={Column(Modifier.verticalScroll(rememberScrollState()),verticalArrangement=Arrangement.spacedBy(8.dp)){
+            Text(entry.category,color=Color(0xFF075B59));Text(entry.description)
+            if(entry.source.isNotBlank()) Text("Sumber: "+entry.source)
+        }},confirmButton={TextButton(onClick={selected=null}){Text("Tutup")}})
     }
 }
