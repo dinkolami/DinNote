@@ -27,6 +27,7 @@ public class MainActivity extends Activity {
     private String filter = "";
     private boolean showingEditor = false;
     private boolean focusMode = false;
+    private static final int SURFACE = Color.rgb(249,250,247);
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
@@ -57,14 +58,14 @@ public class MainActivity extends Activity {
         v.setOnClickListener(w -> click.run()); return v;
     }
     private void base(String heading) {
-        root = column(); root.setBackgroundColor(Color.rgb(249,250,247));
+        root = column(); root.setBackgroundColor(SURFACE);
         setContentView(root);
         LinearLayout top=row(); top.setBackgroundColor(Color.WHITE);
-        TextView name=text(heading,22,true); name.setTextColor(GREEN);
-        top.addView(name,new LinearLayout.LayoutParams(0,dp(62),1));
+        TextView name=text(heading,22,true); name.setTextColor(GREEN); name.setLetterSpacing(.02f);
+        top.addView(name,new LinearLayout.LayoutParams(0,dp(58),1));
         root.addView(top);
         ScrollView scroll=new ScrollView(this); scroll.setFillViewport(true);
-        body=column(); body.setPadding(dp(12),dp(8),dp(12),dp(8));
+        body=column(); body.setPadding(dp(14),dp(10),dp(14),dp(16));
         scroll.addView(body); root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
     }
     private void showHome() {
@@ -76,8 +77,8 @@ public class MainActivity extends Activity {
         nav.addView(action("  + Nota",()->openNote(-1)));
         body.addView(nav);
         EditText search=new EditText(this); search.setSingleLine(true);
-        search.setTextSize(15); search.setHint("Cari semua nota...");
-        search.setText(filter); body.addView(search);
+        search.setTextSize(14); search.setHint("Cari semua nota...");
+        search.setText(filter); search.setSingleLine(true); body.addView(search);
         LinearLayout results=column(); body.addView(results);
         search.addTextChangedListener(new TextWatcher() {
             public void beforeTextChanged(CharSequence s,int st,int c,int a){}
@@ -96,10 +97,10 @@ public class MainActivity extends Activity {
                 final long id=c.getLong(0);
                 String title=c.getString(1), content=c.getString(2), notebook=c.getString(3);
                 LinearLayout card=column(); card.setPadding(dp(8),dp(6),dp(8),dp(6));
-                card.setBackgroundColor(Color.WHITE);
-                TextView heading=text(title.isEmpty()?"Nota tanpa tajuk":title,18,true);
+                card.setBackgroundColor(Color.WHITE); card.setElevation(dp(1));
+                TextView heading=text(title.isEmpty()?"Nota tanpa tajuk":title,17,true);
                 TextView preview=text(notebook+"  ·  "+Html.fromHtml(content,Html.FROM_HTML_MODE_COMPACT).toString().replace('\n',' ').trim(),13,false);
-                preview.setMaxLines(2); card.addView(heading); card.addView(preview);
+                preview.setMaxLines(2); preview.setEllipsize(android.text.TextUtils.TruncateAt.END); card.addView(heading); card.addView(preview);
                 card.setOnClickListener(v->openNote(id));
                 results.addView(card,new LinearLayout.LayoutParams(-1,-2));
                 View line=new View(this); line.setBackgroundColor(Color.rgb(230,235,231));
