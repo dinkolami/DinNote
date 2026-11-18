@@ -12,6 +12,12 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Canvas
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -454,6 +460,7 @@ fun HomeScreen(
             .padding(horizontal = 14.dp, vertical = 4.dp),
         verticalArrangement = Arrangement.spacedBy(5.dp)
     ) {
+        DinNoteFrontHeader()
         if (pinnedNotes.isNotEmpty()) {
             Row(
                 modifier = Modifier.fillMaxWidth().padding(top = 3.dp, bottom = 1.dp),
@@ -473,28 +480,7 @@ fun HomeScreen(
                         Text("Nota Dipinkan", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
                     }
                 }
-                Spacer(Modifier.weight(1f))
-                val headerContext = LocalContext.current
-                val headerLogo = remember(headerContext) {
-                    runCatching {
-                        headerContext.assets.open("dinnote_logo_header.png").use { stream ->
-                            BitmapFactory.decodeStream(stream)?.asImageBitmap()
-                        }
-                    }.getOrNull()
-                }
-                if (headerLogo != null) {
-                    androidx.compose.foundation.Image(
-                        bitmap = headerLogo,
-                        contentDescription = "Logo DinNote asal",
-                        contentScale = ContentScale.Fit,
-                        modifier = Modifier.width(112.dp).height(38.dp)
-                    )
-                } else {
-                    Text("DinNote", fontSize = 17.sp,
-                        fontFamily = androidx.compose.ui.text.font.FontFamily.Serif,
-                        fontStyle = FontStyle.Italic, fontWeight = FontWeight.Bold,
-                        color = Color(0xFF075B59))
-                }
+
             }
             pinnedNotes.forEach { note ->
                 Surface(
@@ -3628,5 +3614,47 @@ private fun IslamicCardFooter() {
         drawPath(diamond, gold, style = stroke)
         drawCircle(teal, radius = 2.dp.toPx(),
             center = androidx.compose.ui.geometry.Offset(center,y-8.dp.toPx()))
+    }
+}
+
+@Composable
+private fun DinNoteFrontHeader() {
+    Box(Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Brush.verticalGradient(listOf(Color(0xFF003C35), Color(0xFF08675D), Color(0xFF00483F))))) {
+            Canvas(Modifier.matchParentSize()) {
+                val w = size.width
+                val h = size.height
+                val gold = Color(0xFFE7C77E)
+                val arch = Path().apply {
+                    moveTo(0f, h * .76f)
+                    cubicTo(w * .08f, h * .32f, w * .20f, h * .34f, w * .25f, h * .32f)
+                    cubicTo(w * .30f, h * .12f, w * .43f, h * .16f, w * .50f, 2f)
+                    cubicTo(w * .57f, h * .16f, w * .70f, h * .12f, w * .75f, h * .32f)
+                    cubicTo(w * .80f, h * .34f, w * .92f, h * .32f, w, h * .62f)
+                }
+                drawPath(arch, Color(0xFF18A08A), style = Stroke(width = 7.dp.toPx()))
+                drawPath(arch, gold, style = Stroke(width = 3.dp.toPx()))
+                listOf(.11f, .89f).forEach { fraction ->
+                    val x = w * fraction
+                    val y = h * .58f
+                    val r = 7.dp.toPx()
+                    drawLine(gold, Offset(x, h * .39f), Offset(x, y), 1.dp.toPx())
+                    drawCircle(gold.copy(alpha = .12f), r * 2.4f, Offset(x, y + r))
+                    val lantern = Path().apply {
+                        moveTo(x, y); lineTo(x + r, y + r)
+                        lineTo(x + r * .65f, y + r * 2.2f)
+                        lineTo(x, y + r * 2.8f)
+                        lineTo(x - r * .65f, y + r * 2.2f)
+                        lineTo(x - r, y + r); close()
+                    }
+                    drawPath(lantern, gold)
+                }
+            }
+
+        Column(Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 14.dp), horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(3.dp)) {
+            androidx.compose.foundation.Image(painter = androidx.compose.ui.res.painterResource(R.drawable.ic_dinnote_header), contentDescription = null, modifier = Modifier.size(38.dp))
+            Text("DinNote", fontSize = 29.sp, fontFamily = androidx.compose.ui.text.font.FontFamily.Serif, fontWeight = FontWeight.Bold, color = Color(0xFFFFF9E9))
+            Text("Daripada catatan kepada khazanah ilmu.", fontSize = 11.sp, color = Color(0xFFFFF2D1), textAlign = TextAlign.Center)
+            Text("────  ❖  ────", color = Color(0xFFE7C77E), fontSize = 12.sp)
+        }
     }
 }
