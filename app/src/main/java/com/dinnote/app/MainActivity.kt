@@ -3949,8 +3949,8 @@ private fun TurathStarterCard(search: String, assetPath: String = "turath/arba_i
         }
     }
     if(opened) {
-        androidx.compose.ui.window.Dialog(onDismissRequest={opened=false},properties=androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth=false)) {
-            Surface(modifier=Modifier.fillMaxSize().padding(12.dp),shape=RoundedCornerShape(16.dp),color=MaterialTheme.colorScheme.surface) {
+        androidx.compose.ui.window.Dialog(onDismissRequest={opened=false},properties=androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth=false, decorFitsSystemWindows=false)) {
+            Surface(modifier=Modifier.fillMaxSize().safeDrawingPadding().padding(12.dp),shape=RoundedCornerShape(16.dp),color=MaterialTheme.colorScheme.surface) {
                 Column(Modifier.fillMaxSize().padding(14.dp),verticalArrangement=Arrangement.spacedBy(8.dp)) {
                     Row(Modifier.fillMaxWidth(),verticalAlignment=androidx.compose.ui.Alignment.CenterVertically) {
                         TextButton(onClick={if(selected>=0) selected=-1 else opened=false}) { Text(if(selected>=0) "Senarai" else "Tutup") }
