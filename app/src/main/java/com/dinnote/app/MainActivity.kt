@@ -1339,9 +1339,30 @@ fun NotesScreen(
                             body = updated
                         }
                     }
-                    TextButton(enabled = body.text.isNotEmpty(), onClick = {
-                        if (body.selection.collapsed) clearFormatConfirm = true else applyClearFormat()
-                    }) { Text("Tx  Buang format", color = Color(0xFF087F83), fontSize = 13.sp) }
+                    val pasteContext = androidx.compose.ui.platform.LocalContext.current
+                    Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                        TextButton(enabled = body.text.isNotEmpty(), onClick = {
+                            if (body.selection.collapsed) clearFormatConfirm = true else applyClearFormat()
+                        }) { Text("Tx  Buang format", color = Color(0xFF087F83), fontSize = 13.sp) }
+                        TextButton(onClick = {
+                            val clipboard = pasteContext.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                            val pasted = clipboard.primaryClip?.let { clip ->
+                                if (clip.itemCount > 0) clip.getItemAt(0).coerceToText(pasteContext)?.toString() else null
+                            }
+                            if (!pasted.isNullOrEmpty()) {
+                                val start = body.selection.min.coerceIn(0, body.text.length)
+                                val end = body.selection.max.coerceIn(start, body.text.length)
+                                undoStack.add(body.copy(composition = null))
+                                if (undoStack.size > 60) undoStack.removeAt(0)
+                                redoStack.clear()
+                                body = TextFieldValue(body.text.replaceRange(start, end, pasted),
+                                    selection = TextRange(start + pasted.length))
+                                noteBodyFocusRequester.requestFocus()
+                            } else {
+                                android.widget.Toast.makeText(pasteContext, "Clipboard kosong", android.widget.Toast.LENGTH_SHORT).show()
+                            }
+                        }) { Text("▣ Tampal", color = Color(0xFF087F83), fontSize = 13.sp) }
+                    }
                     if (clearFormatConfirm) AlertDialog(
                         onDismissRequest = { clearFormatConfirm = false },
                         title = { Text("Buang semua format?") },
