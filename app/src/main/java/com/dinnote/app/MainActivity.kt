@@ -2643,41 +2643,7 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                         }) { Text("Buang format") } },
                         dismissButton = { TextButton(onClick = { clearLibraryFormatConfirm = false }) { Text("Batal") } }
                     )
-                    Row(Modifier.wrapContentWidth().padding(horizontal = 8.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        OutlinedButton(shape = RoundedCornerShape(0.dp), 
-                            enabled = !translationBusy && libraryBody.text.isNotBlank(),
-                            onClick = {
-                                val selection = libraryBody.selection
-                                val selected = libraryBody.text.substring(selection.min.coerceIn(0, libraryBody.text.length), selection.max.coerceIn(0, libraryBody.text.length))
-                                val source = if (selection.collapsed || selected.isBlank()) formattedNoteText(libraryBody.text).text
-                                    else formattedNoteText(smartFormattedExcerpt(libraryBody.text, selection.min, selection.max)).text
-                                libraryTranslationExpanded = true
-                                translationBusy = true
-                                translationStatus = "Menyediakan terjemahan (muat turun model jika perlu)..."
-                                ArabicMalayTranslator.translate(source) { result ->
-                                    translationBusy = false
-                                    result.onSuccess {
-                                        translationDraft = it
-                                        translationStatus = "Terjemahan draf tersedia. Sila semak maksud fiqh."
-                                    }.onFailure {
-                                        translationStatus = "Terjemahan gagal: ${it.localizedMessage ?: "Sila cuba lagi"}"
-                                    }
-                                }
-                            }
-                        ) { Text("ع⇄A", fontSize = 14.sp) }
-                        OutlinedButton(shape = RoundedCornerShape(0.dp), 
-                            enabled = translationDraft.isNotBlank(),
-                            onClick = {
-                                val selection = libraryBody.selection
-                                val selected = libraryBody.text.substring(selection.min.coerceIn(0, libraryBody.text.length), selection.max.coerceIn(0, libraryBody.text.length))
-                                val source = selected.ifBlank { libraryBody.text }
-                                val note = "Petikan Arab:\n" + source + "\n\nTerjemahan Melayu (draf):\n" + translationDraft + "\n\nSumber: " + libraryTitle.ifBlank { "Maktabah DinNote" }
-                                translatedNoteDatabase.save(libraryTitle.ifBlank { "Petikan Maktabah" }, note, null)
-                                translationStatus = "Petikan dan terjemahan disimpan dalam Nota."
-                            }
-                        ) { Text("▤+", fontSize = 14.sp) }
-                    }
+
 
                         }
                     }
