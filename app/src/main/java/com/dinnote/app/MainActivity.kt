@@ -544,9 +544,10 @@ fun HomeScreen(
         reminder?.let { entry ->
             Surface(
                 modifier = Modifier.fillMaxWidth().clickable { expandedReminder = true },
-                shape = RoundedCornerShape(10.dp),
-                color = Color.White,
-                border = BorderStroke(1.dp, Color(0xFFB9D6CE))
+                shape = RoundedCornerShape(16.dp),
+                color = Color(0xFFFFFDF7),
+                border = BorderStroke(1.dp, Color(0xFFB9D6CE)),
+                shadowElevation = 2.dp
             ) {
                 Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
                     Text("Ingatan", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color(0xFF08766C))
