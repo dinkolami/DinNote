@@ -518,7 +518,7 @@ fun HomeScreen(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
                 verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
             ) {
-                Text("✎", fontSize = 22.sp, color = Color(0xFFF1C86B))
+                Text("✎", fontSize = 24.sp, color = Color(0xFFF1C86B))
                 Spacer(Modifier.width(12.dp))
                 Text("Catatan & Nota Saya", modifier = Modifier.weight(1f),
                     fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
