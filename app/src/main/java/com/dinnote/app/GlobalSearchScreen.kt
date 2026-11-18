@@ -12,6 +12,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.style.TextDirection
@@ -42,7 +44,7 @@ fun GlobalSearchScreen(modifier: Modifier = Modifier) {
     var query by rememberSaveable { mutableStateOf("") }
     var favoritesOnly by rememberSaveable { mutableStateOf(false) }
     var revision by remember { mutableIntStateOf(0) }
-    var opened by remember { mutableStateOf<SearchHit?>(null) }
+    var openedKey by rememberSaveable { mutableStateOf<String?>(null) }
     var indexRevision by remember { mutableIntStateOf(0) }
     DisposableEffect(library, catalog) {
         val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, _ -> indexRevision++ }
@@ -116,37 +118,40 @@ fun GlobalSearchScreen(modifier: Modifier = Modifier) {
                     border = androidx.compose.foundation.BorderStroke(1.dp,
                         androidx.compose.ui.graphics.Color(0xFFD8DEE3))) {
                     Row(Modifier.fillMaxWidth().padding(10.dp)) {
-                        Column(Modifier.weight(1f).clickable { opened = hit }) {
+                        Column(Modifier.weight(1f).clickable { openedKey = "${hit.source}:${hit.key}" }) {
                             Text(hit.source, color = MaterialTheme.colorScheme.primary,
                                 style = MaterialTheme.typography.labelSmall)
                             Text(cleanSearchText(hit.title), fontWeight = FontWeight.SemiBold)
                             Text(cleanSearchText(hit.content), maxLines = 2, overflow = TextOverflow.Ellipsis,
                                 style = MaterialTheme.typography.bodySmall)
                         }
-                        TextButton(onClick = {
+                        val isFavorite = favorites.getBoolean(hit.key, false)
+                        TextButton(modifier = Modifier.semantics {
+                            contentDescription = if (isFavorite) "Buang daripada kegemaran" else "Tambah ke kegemaran"
+                        }, onClick = {
                             favorites.edit().putBoolean(hit.key,
                                 !favorites.getBoolean(hit.key, false)).apply()
                             revision++
                         }) {
-                            Text(if (favorites.getBoolean(hit.key, false)) "★" else "☆")
+                            Text(if (isFavorite) "★" else "☆")
                         }
                     }
                 }
             }
         }
     }
-    opened?.let { hit ->
-        AlertDialog(onDismissRequest = { opened = null },
+    searchIndex.firstOrNull { "${it.source}:${it.key}" == openedKey }?.let { hit ->
+        AlertDialog(onDismissRequest = { openedKey = null },
             title = { Text(cleanSearchText(hit.title)) },
             text = {
                 Column(Modifier.heightIn(max = 480.dp)
                     .verticalScroll(rememberScrollState())) {
                     Text(formattedNoteText(hit.content), modifier = Modifier.fillMaxWidth(),
-                        style = androidx.compose.ui.text.TextStyle(
-                            textDirection = TextDirection.ContentOrRtl),
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            textDirection = TextDirection.Content),
                         textAlign = TextAlign.Start)
                 }
             },
-            confirmButton = { TextButton(onClick = { opened = null }) { Text("Tutup") } })
+            confirmButton = { TextButton(onClick = { openedKey = null }) { Text("Tutup") } })
     }
 }
