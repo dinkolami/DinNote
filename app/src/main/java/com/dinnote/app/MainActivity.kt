@@ -2424,6 +2424,7 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                 TurathStarterCard(search, onNavigate = onNavigate)
                 TurathStarterCard(search, "turath/al_majmu.json", onNavigate)
                 TurathStarterCard(search, "turath/al_fatihah.json", onNavigate)
+                TurathStarterCard(search, "turath/ibn_kathir_fatihah.json", onNavigate)
 
                 Button(onClick = { openLibraryEditor("entry_Kitab-Kitab_" + System.currentTimeMillis()) }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(14.dp), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF075B49))) { Text("+ Tambah Kitab") }
                 libraryItems.filter { matchesMaktabahSearch(libraryPrefs.getString(it + "_title", "") ?: "", search) ||
@@ -3944,7 +3945,7 @@ private fun TurathStarterCard(search: String, assetPath: String = "turath/arba_i
     }
     var opened by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(false) }
     var selected by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(-1) }
-    var language by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf("Bersebelahan") }
+    var language by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(if (assetPath.contains("ibn_kathir")) "Arab" else "Bersebelahan") }
     val readerPrefs = remember(context) { context.getSharedPreferences("turath_reader", android.content.Context.MODE_PRIVATE) }
     var readerScale by remember(readerPrefs) { mutableStateOf(readerPrefs.getInt("reader_scale", 0).coerceIn(-4, 8)) }
     var lastRead by remember(assetPath) { mutableStateOf(readerPrefs.getInt(assetPath, -1)) }
@@ -3958,6 +3959,7 @@ private fun TurathStarterCard(search: String, assetPath: String = "turath/arba_i
         }
         val coverTitle = when {
             assetPath.contains("majmu") -> "الْمَجْمُوعُ"
+            assetPath.contains("ibn_kathir") -> "ابْنُ كَثِيرٍ"
             assetPath.contains("fatihah") -> "الْفَاتِحَةُ"
             assetPath.contains("arba") -> "الْأَرْبَعُونَ"
             else -> book.optString("titleArabic")
