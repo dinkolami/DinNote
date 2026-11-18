@@ -470,7 +470,7 @@ fun HomeScreen(
             "Catat ilmu • Teroka kitab • Simpan hikmah",
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Center,
-            fontSize = 12.sp,
+            fontSize = 13.sp,
             fontWeight = FontWeight.Medium,
             color = Color(0xFF075B50)
         )
