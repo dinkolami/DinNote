@@ -3933,12 +3933,15 @@ private fun DinNoteFrontHeaderFallback() {
 }
 
 
+private val tafsirSurahMalay = "Al-Fatihah|Al-Baqarah|Ali Imran|An-Nisa|Al-Maidah|Al-Anam|Al-Araf|Al-Anfal|At-Taubah|Yunus|Hud|Yusuf|Ar-Rad|Ibrahim|Al-Hijr|An-Nahl|Al-Isra|Al-Kahfi|Maryam|Taha|Al-Anbiya|Al-Hajj|Al-Muminun|An-Nur|Al-Furqan|Asy-Syuara|An-Naml|Al-Qasas|Al-Ankabut|Ar-Rum|Luqman|As-Sajdah|Al-Ahzab|Saba|Fatir|Yasin|As-Saffat|Sad|Az-Zumar|Ghafir|Fussilat|Asy-Syura|Az-Zukhruf|Ad-Dukhan|Al-Jathiyah|Al-Ahqaf|Muhammad|Al-Fath|Al-Hujurat|Qaf|Az-Zariyat|At-Tur|An-Najm|Al-Qamar|Ar-Rahman|Al-Waqiah|Al-Hadid|Al-Mujadilah|Al-Hasyr|Al-Mumtahanah|As-Saff|Al-Jumuah|Al-Munafiqun|At-Taghabun|At-Talaq|At-Tahrim|Al-Mulk|Al-Qalam|Al-Haqqah|Al-Maarij|Nuh|Al-Jinn|Al-Muzzammil|Al-Muddaththir|Al-Qiyamah|Al-Insan|Al-Mursalat|An-Naba|An-Naziat|Abasa|At-Takwir|Al-Infitar|Al-Mutaffifin|Al-Insyiqaq|Al-Buruj|At-Tariq|Al-Ala|Al-Ghasyiyah|Al-Fajr|Al-Balad|Asy-Syams|Al-Lail|Ad-Duha|Asy-Syarh|At-Tin|Al-Alaq|Al-Qadr|Al-Bayyinah|Az-Zalzalah|Al-Adiyat|Al-Qariah|At-Takathur|Al-Asr|Al-Humazah|Al-Fil|Quraisy|Al-Maun|Al-Kawthar|Al-Kafirun|An-Nasr|Al-Masad|Al-Ikhlas|Al-Falaq|An-Nas".split('|')
+private val tafsirSurahArabic = "الفاتحة|البقرة|آل عمران|النساء|المائدة|الأنعام|الأعراف|الأنفال|التوبة|يونس|هود|يوسف|الرعد|إبراهيم|الحجر|النحل|الإسراء|الكهف|مريم|طه|الأنبياء|الحج|المؤمنون|النور|الفرقان|الشعراء|النمل|القصص|العنكبوت|الروم|لقمان|السجدة|الأحزاب|سبأ|فاطر|يس|الصافات|ص|الزمر|غافر|فصلت|الشورى|الزخرف|الدخان|الجاثية|الأحقاف|محمد|الفتح|الحجرات|ق|الذاريات|الطور|النجم|القمر|الرحمن|الواقعة|الحديد|المجادلة|الحشر|الممتحنة|الصف|الجمعة|المنافقون|التغابن|الطلاق|التحريم|الملك|القلم|الحاقة|المعارج|نوح|الجن|المزمل|المدثر|القيامة|الإنسان|المرسلات|النبأ|النازعات|عبس|التكوير|الانفطار|المطففين|الانشقاق|البروج|الطارق|الأعلى|الغاشية|الفجر|البلد|الشمس|الليل|الضحى|الشرح|التين|العلق|القدر|البينة|الزلزلة|العاديات|القارعة|التكاثر|العصر|الهمزة|الفيل|قريش|الماعون|الكوثر|الكافرون|النصر|المسد|الإخلاص|الفلق|الناس".split('|')
+
 @Composable
 private fun IbnKathirCollection(search: String, onNavigate: (Int) -> Unit) {
     val context = LocalContext.current
     val available = remember(context) {
-        context.assets.list("turath/ibn_kathir").orEmpty().filter { it.endsWith(".json") }
-            .sortedBy { it.substringBefore(".").toIntOrNull() ?: 999 }
+        context.assets.list("turath/ibn_kathir").orEmpty().mapNotNull { it.substringBefore(".").toIntOrNull() }
+            .filter { it in 1..114 }.sorted()
     }
     if (available.isEmpty()) {
         TurathStarterCard(search, "turath/ibn_kathir_fatihah.json", onNavigate)
@@ -3946,37 +3949,66 @@ private fun IbnKathirCollection(search: String, onNavigate: (Int) -> Unit) {
         return
     }
     var expanded by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(false) }
-    var chosen by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf("") }
-    var query by remember { mutableStateOf("") }
-    if (search.isNotBlank() && !matchesMaktabahSearch("Tafsir Ibn Kathir تفسير ابن كثير", search)) return
-    Card(onClick = { expanded = true }, modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFCF4)),
+    var chosen by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(0) }
+    var query by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf("") }
+    fun matches(n: Int, term: String): Boolean = term.isBlank() ||
+        n.toString() == term.trim() || matchesMaktabahSearch(tafsirSurahMalay[n-1] + " " + tafsirSurahArabic[n-1], term)
+    if (search.isNotBlank() && !matchesMaktabahSearch("Tafsir Ibn Kathir تفسير ابن كثير", search) && available.none { matches(it, search) }) return
+    Card(onClick = { query = ""; expanded = true }, modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFCF4)),
         border = BorderStroke(1.dp, Color(0xFFD3B66F))) {
-        Column(Modifier.padding(14.dp)) {
-            Text("تَفْسِيرُ الْقُرْآنِ الْعَظِيمِ", Modifier.fillMaxWidth(), textAlign = TextAlign.End,
-                fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color(0xFF075B49))
-            Text("Tafsir Ibn Kathir", fontWeight = FontWeight.Bold)
-            Text("${available.size} / 114 surah • Arab offline • Melayu belum lengkap", fontSize = 12.sp)
+        Row(Modifier.padding(14.dp), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Box(Modifier.width(60.dp).height(82.dp).background(Color(0xFF124D40), RoundedCornerShape(8.dp))
+                .border(1.dp, Color(0xFFD3B66F), RoundedCornerShape(8.dp)), contentAlignment = androidx.compose.ui.Alignment.Center) {
+                Text("ابْنُ كَثِيرٍ", color = Color(0xFFFFE8B0), fontSize = 15.sp, textAlign = TextAlign.Center)
+            }
+            Column(Modifier.weight(1f)) {
+                Text("تَفْسِيرُ الْقُرْآنِ الْعَظِيمِ", Modifier.fillMaxWidth(), textAlign = TextAlign.End,
+                    fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color(0xFF075B49))
+                Text("Tafsir Ibn Kathir", fontWeight = FontWeight.Bold)
+                Text("Imam Ibn Kathir • 774H", fontSize = 12.sp, color = Color(0xFF59685E))
+                Text("${available.size}/114 surah • Arab offline", fontSize = 11.sp, color = Color(0xFF075B49))
+            }
         }
     }
     if (expanded) {
-        androidx.compose.ui.window.Dialog(onDismissRequest = { expanded = false; chosen = "" },
+        androidx.compose.ui.window.Dialog(onDismissRequest = { expanded = false; chosen = 0 },
             properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false)) {
             Surface(Modifier.fillMaxSize().safeDrawingPadding(), color = Color(0xFFFFFCF4)) {
-                Column(Modifier.padding(12.dp)) {
-                    Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                        TextButton(onClick = { if (chosen.isNotEmpty()) chosen = "" else expanded = false }) { Text("‹ Kembali") }
-                        Text("Tafsir Ibn Kathir", fontWeight = FontWeight.Bold, color = Color(0xFF075B49))
+                Column(Modifier.fillMaxSize().padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Surface(color = Color(0xFF124D40), shape = RoundedCornerShape(14.dp),
+                        border = BorderStroke(1.dp, Color(0xFFD3B66F))) {
+                        Column(Modifier.fillMaxWidth().padding(10.dp)) {
+                            Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                                TextButton(onClick = { if (chosen != 0) chosen = 0 else expanded = false }) { Text("‹ Kembali", color = Color(0xFFFFE8B0)) }
+                                Text(if (chosen == 0) "تَفْسِيرُ ابْنِ كَثِيرٍ" else tafsirSurahArabic[chosen-1],
+                                    Modifier.weight(1f), textAlign = TextAlign.End, color = Color.White, fontSize = 20.sp)
+                            }
+                            Text("Tafsir Ibn Kathir • ${available.size} surah", color = Color(0xFFFFE8B0), fontSize = 12.sp)
+                        }
                     }
-                    if (chosen.isNotEmpty()) {
-                        key(chosen) { TurathStarterCard("", "turath/ibn_kathir/$chosen", onNavigate) }
+                    if (chosen != 0) {
+                        key(chosen) { TurathStarterCard("", "turath/ibn_kathir/$chosen.json", onNavigate, openInitially = true) { chosen = 0 } }
                     } else {
                         OutlinedTextField(query, { query = it }, modifier = Modifier.fillMaxWidth(),
-                            singleLine = true, placeholder = { Text("Cari nombor surah") })
-                        LazyColumn(Modifier.weight(1f)) {
-                            items(available.filter { it.substringBefore(".").contains(query.trim()) }) { file ->
-                                TextButton(onClick = { chosen = file }, modifier = Modifier.fillMaxWidth()) {
-                                    Text("Surah " + file.substringBefore("."), color = Color(0xFF075B49))
+                            singleLine = true, shape = RoundedCornerShape(12.dp), placeholder = { Text("Cari nama atau nombor surah") })
+                        Text("Terjemahan Melayu belum lengkap", fontSize = 11.sp, color = Color(0xFF59685E))
+                        val filtered = available.filter { matches(it, query) }
+                        if (filtered.isEmpty()) Text("Tiada surah sepadan.", fontSize = 13.sp)
+                        LazyColumn(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                            items(filtered) { n ->
+                                Card(onClick = { chosen = n }, modifier = Modifier.fillMaxWidth(),
+                                    shape = RoundedCornerShape(10.dp), colors = CardDefaults.cardColors(containerColor = Color.White),
+                                    border = BorderStroke(1.dp, Color(0xFFE4E8DF))) {
+                                    Row(Modifier.padding(10.dp), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                                        Box(Modifier.size(36.dp).background(Color(0xFFE8F0E5), RoundedCornerShape(8.dp)),
+                                            contentAlignment = androidx.compose.ui.Alignment.Center) { Text(n.toString(), color = Color(0xFF075B49), fontSize = 12.sp) }
+                                        Text(tafsirSurahMalay[n-1], Modifier.weight(1f), fontWeight = FontWeight.Medium, fontSize = 14.sp)
+                                        Text(tafsirSurahArabic[n-1], fontSize = 19.sp, color = Color(0xFF075B49))
+                                        Text("›", color = Color(0xFFA78945), fontSize = 22.sp)
+                                    }
                                 }
                             }
                         }
@@ -3988,7 +4020,7 @@ private fun IbnKathirCollection(search: String, onNavigate: (Int) -> Unit) {
 }
 
 @Composable
-private fun TurathStarterCard(search: String, assetPath: String = "turath/arba_in_nawawiyyah.json", onNavigate: (Int) -> Unit = {}) {
+private fun TurathStarterCard(search: String, assetPath: String = "turath/arba_in_nawawiyyah.json", onNavigate: (Int) -> Unit = {}, openInitially: Boolean = false, onReaderClose: () -> Unit = {}) {
     val context = LocalContext.current
     val book = remember(context, assetPath) {
         runCatching { context.assets.open(assetPath).bufferedReader(Charsets.UTF_8).use { org.json.JSONObject(it.readText()) } }.getOrNull()
@@ -3997,7 +4029,7 @@ private fun TurathStarterCard(search: String, assetPath: String = "turath/arba_i
         val array = book.getJSONArray("entries")
         (0 until array.length()).map { array.getJSONObject(it) }
     }
-    var opened by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(false) }
+    var opened by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(openInitially) }
     var selected by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(-1) }
     var language by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(if (assetPath.contains("ibn_kathir")) "Arab" else "Bersebelahan") }
     val readerPrefs = remember(context) { context.getSharedPreferences("turath_reader", android.content.Context.MODE_PRIVATE) }
@@ -4005,7 +4037,7 @@ private fun TurathStarterCard(search: String, assetPath: String = "turath/arba_i
     var lastRead by remember(assetPath) { mutableStateOf(readerPrefs.getInt(assetPath, -1)) }
     val visible = search.isBlank() || matchesMaktabahSearch(book.optString("titleArabic")+" "+book.optString("titleMalay"), search) ||
         entries.any { matchesMaktabahSearch(it.optString("arabic")+" "+it.optString("malay"),search) }
-    if(visible) {
+    if(visible && !openInitially) {
         val coverColor = when {
             assetPath.contains("majmu") -> Color(0xFF722F35)
             assetPath.contains("fatihah") -> Color(0xFF16465D)
@@ -4053,7 +4085,7 @@ private fun TurathStarterCard(search: String, assetPath: String = "turath/arba_i
         }
     }
     if(opened) {
-        androidx.compose.ui.window.Dialog(onDismissRequest={opened=false},properties=androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth=false, decorFitsSystemWindows=false)) {
+        androidx.compose.ui.window.Dialog(onDismissRequest={opened=false; onReaderClose()},properties=androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth=false, decorFitsSystemWindows=false)) {
             Surface(modifier=Modifier.fillMaxSize().safeDrawingPadding(),color=Color.White) {
                 Column(Modifier.fillMaxSize().padding(horizontal=18.dp, vertical=8.dp),verticalArrangement=Arrangement.spacedBy(8.dp)) {
                     if(selected !in entries.indices) {
@@ -4069,7 +4101,7 @@ private fun TurathStarterCard(search: String, assetPath: String = "turath/arba_i
                             border = BorderStroke(1.dp, Color(0xFFD3B66F))) {
                             Column(Modifier.fillMaxWidth().padding(12.dp)) {
                                 Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                                    TextButton(onClick = { opened = false }) { Text("‹ Tutup", color = Color(0xFFE8CF91)) }
+                                    TextButton(onClick = { opened = false; onReaderClose() }) { Text("‹ Tutup", color = Color(0xFFE8CF91)) }
                                     Text(book.optString("titleArabic"), Modifier.weight(1f), textAlign = TextAlign.End,
                                         fontSize = 21.sp, fontWeight = FontWeight.Bold, color = Color(0xFFFFE8B0))
                                 }
