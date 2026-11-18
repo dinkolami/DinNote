@@ -2238,6 +2238,7 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
     var showAddCategory by remember { mutableStateOf(false) }
     var newCategoryName by remember { mutableStateOf("") }
     var categoryToRename by remember { mutableStateOf<String?>(null) }
+    var categoryToDelete by remember { mutableStateOf<String?>(null) }
     val builtinLibraryCategories = listOf("Ingatan", "Kitab-Kitab", "Fiqh Syafi‘i", "Usul Fiqh", "Hadis", "Tafsir", "Akidah", "Tasawuf", "Bahasa Arab", "Kalam Hikmah")
     val customLibraryCategories = remember(libraryRevision) {
         libraryPrefs.getString("custom_categories", "")!!.split("\n").filter { it.isNotBlank() }
