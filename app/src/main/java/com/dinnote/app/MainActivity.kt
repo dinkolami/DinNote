@@ -3004,6 +3004,45 @@ private fun SmartVaultDialog(onDismiss: () -> Unit, onInsert: (String) -> Unit) 
                 referenceText(references[it].orEmpty()).contains(term, ignoreCase = true)
         }
     }
+    var relatedBlock by remember { mutableStateOf<String?>(null) }
+    fun themeSet(block: String): Set<String> = tags[block].orEmpty().split(",")
+        .map { it.trim().lowercase(java.util.Locale.ROOT) }.filter { it.isNotBlank() }.toSet()
+    relatedBlock?.let { source ->
+        val themes = themeSet(source)
+        val related = remember(source, tags, references) {
+            items.filter { it != source }.map { candidate ->
+                val shared = themeSet(candidate).intersect(themes)
+                val book = references[source]?.getOrNull(0).orEmpty().trim()
+                val sameBook = book.isNotEmpty() && book.equals(references[candidate]?.getOrNull(0).orEmpty().trim(), ignoreCase = true)
+                Triple(candidate, shared, sameBook)
+            }.filter { it.second.isNotEmpty() || it.third }
+                .sortedByDescending { it.second.size * 2 + if (it.third) 1 else 0 }
+        }
+        AlertDialog(onDismissRequest = { relatedBlock = null },
+            title = { Text("Smart Knowledge · Petikan berkaitan") },
+            text = {
+                Column(Modifier.heightIn(max = 420.dp)) {
+                    Text(formattedNoteText(source), maxLines = 3)
+                    HorizontalDivider()
+                    Text("Hubungan: " + related.size, color = Color(0xFF087F83))
+                    if (related.isEmpty()) Text("Belum ada petikan berkaitan. Tambah tema atau sumber kitab yang sama.")
+                    LazyColumn(Modifier.heightIn(max = 300.dp)) {
+                        items(related, key = { it.first }) { entry ->
+                            Column(Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
+                                TextButton(onClick = { relatedBlock = entry.first }) {
+                                    Text(formattedNoteText(entry.first), maxLines = 4)
+                                }
+                                Text((entry.second.toList() + if (entry.third) listOf("Kitab sama") else emptyList()).joinToString(" · "), fontSize = 12.sp)
+                                TextButton(onClick = { onInsert(entry.first); onDismiss() }) { Text("Tampal petikan") }
+                                HorizontalDivider()
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = { TextButton(onClick = { relatedBlock = null }) { Text("Kembali ke Vault") } })
+        return
+    }
     if (dualOpen) {
         SmartDualView(items, onClose = { dualOpen = false }, onInsert = { onInsert(it); onDismiss() })
         return
@@ -3100,6 +3139,9 @@ private fun SmartVaultDialog(onDismiss: () -> Unit, onInsert: (String) -> Unit) 
                                     Text("Tema / tag", color = Color(0xFF087F83))
                                 }
                                 Text(tags[block].orEmpty(), fontSize = 12.sp, maxLines = 2)
+                            }
+                            TextButton(onClick = { relatedBlock = block }) {
+                                Text("Petikan berkaitan", color = Color(0xFF087F83))
                             }
                             val citation = referenceText(references[block].orEmpty())
                             if (citation.isNotBlank()) Text(citation, fontSize = 12.sp, modifier = Modifier.padding(horizontal = 12.dp))
