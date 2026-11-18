@@ -26,6 +26,7 @@ public class MainActivity extends Activity {
     private boolean loading = false;
     private String filter = "";
     private boolean showingEditor = false;
+    private boolean focusMode = false;
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
@@ -163,6 +164,12 @@ public class MainActivity extends Activity {
         toolbar.addView(action("Warna",()->applySpan(new ForegroundColorSpan(GREEN))));
         toolbar.addView(action("Highlight",()->applySpan(new BackgroundColorSpan(Color.YELLOW))));
         toolbar.addView(action("☑",()->insertChecklist()));
+        toolbar.addView(action("Cari/Ganti",this::findReplace));
+        toolbar.addView(action("Baca",this::readingMode));
+        toolbar.addView(action("Fokus",this::focusWriting));
+        toolbar.addView(action("Kongsi",this::shareNote));
+        toolbar.addView(action("A+",()->resizeText(2)));
+        toolbar.addView(action("A−",()->resizeText(-2)));
         toolbar.addView(action("Arab ⇄",()->{
             contentEdit.setTextDirection(contentEdit.getTextDirection()==View.TEXT_DIRECTION_RTL?View.TEXT_DIRECTION_LTR:View.TEXT_DIRECTION_RTL);
         }));
@@ -185,6 +192,58 @@ public class MainActivity extends Activity {
         };
         titleEdit.addTextChangedListener(watcher);contentEdit.addTextChangedListener(watcher);
         loading=false;
+    }
+    private void resizeText(int delta) {
+        if(contentEdit==null)return;
+        contentEdit.setTextSize(Math.max(12,Math.min(32,contentEdit.getTextSize()/getResources().getDisplayMetrics().scaledDensity+delta)));
+    }
+    private void focusWriting() {
+        focusMode=!focusMode;
+        toolbar.setVisibility(focusMode?View.GONE:View.VISIBLE);
+        Toast.makeText(this,focusMode?"Mod fokus aktif":"Mod fokus tamat",Toast.LENGTH_SHORT).show();
+    }
+    private void readingMode() {
+        saveNow();
+        ScrollView scroll=new ScrollView(this);
+        TextView reading=text("",19,false);
+        reading.setTextIsSelectable(true);
+        reading.setText(Html.fromHtml(Html.toHtml(contentEdit.getText(),Html.TO_HTML_PARAGRAPH_LINES_CONSECUTIVE),Html.FROM_HTML_MODE_COMPACT));
+        reading.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
+        scroll.addView(reading);
+        new AlertDialog.Builder(this).setTitle(titleEdit.getText().toString()).setView(scroll)
+            .setPositiveButton("Kembali menulis",null).show();
+    }
+    private void shareNote() {
+        saveNow();
+        Intent send=new Intent(Intent.ACTION_SEND);
+        send.setType("text/plain");
+        send.putExtra(Intent.EXTRA_SUBJECT,titleEdit.getText().toString());
+        send.putExtra(Intent.EXTRA_TEXT,titleEdit.getText().toString()+"\\n\\n"+contentEdit.getText().toString());
+        startActivity(Intent.createChooser(send,"Kongsi nota"));
+    }
+    private void findReplace() {
+        LinearLayout fields=column();
+        EditText find=new EditText(this);find.setSingleLine(true);find.setHint("Cari perkataan");
+        EditText replace=new EditText(this);replace.setSingleLine(true);replace.setHint("Ganti dengan");
+        fields.addView(find);fields.addView(replace);
+        new AlertDialog.Builder(this).setTitle("Cari dan ganti").setView(fields)
+            .setPositiveButton("Ganti semua",(d,w)->{
+                String needle=find.getText().toString();
+                if(needle.isEmpty())return;
+                Editable e=contentEdit.getText();
+                String value=e.toString();
+                int from=0,found=0;
+                while((from=value.indexOf(needle,from))>=0){found++;from+=needle.length();}
+                if(found>0){
+                    for(int i=e.length()-needle.length();i>=0;i--){
+                        if(i+needle.length()<=e.length() && e.subSequence(i,i+needle.length()).toString().equals(needle)){
+                            e.replace(i,i+needle.length(),replace.getText().toString());
+                        }
+                    }
+                    scheduleSave();
+                }
+                Toast.makeText(this,found+" padanan diganti",Toast.LENGTH_SHORT).show();
+            }).setNegativeButton("Batal",null).show();
     }
     private void toggleStyle(int style) {applySpan(new StyleSpan(style));}
     private void applySpan(Object span) {
