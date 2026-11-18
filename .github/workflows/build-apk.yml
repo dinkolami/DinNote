@@ -14,16 +14,30 @@ jobs:
           java-version: '17'
       - name: Configure Android SDK
         run: |
-          echo "ANDROID_HOME=$ANDROID_HOME" >> "$GITHUB_ENV"
-          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses || true
           "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-35" "build-tools;35.0.0"
-      - name: Install Gradle
-        uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.12'
-      - name: Build debug APK
-        run: gradle :app:assembleDebug --no-daemon
+      - name: Require permanent signing secrets
+        env:
+          KS: ${{ secrets.DINNOTE_KEYSTORE_BASE64 }}
+          SP: ${{ secrets.DINNOTE_STORE_PASSWORD }}
+          KA: ${{ secrets.DINNOTE_KEY_ALIAS }}
+          KP: ${{ secrets.DINNOTE_KEY_PASSWORD }}
+        run: |
+          test -n "$KS" && test -n "$SP" && test -n "$KA" && test -n "$KP" || { echo "::error::Permanent signing secrets are missing. No APK will be published."; exit 1; }
+          printf '%s' "$KS" | base64 --decode > "$RUNNER_TEMP/dinnote-release.jks"
+      - name: Build signed release APK
+        env:
+          DINNOTE_KEYSTORE_FILE: ${{ runner.temp }}/dinnote-release.jks
+          DINNOTE_STORE_PASSWORD: ${{ secrets.DINNOTE_STORE_PASSWORD }}
+          DINNOTE_KEY_ALIAS: ${{ secrets.DINNOTE_KEY_ALIAS }}
+          DINNOTE_KEY_PASSWORD: ${{ secrets.DINNOTE_KEY_PASSWORD }}
+        run: gradle :app:assembleRelease --no-daemon
+      - name: Verify signature
+        run: |
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs app/build/outputs/apk/release/app-release.apk
       - uses: actions/upload-artifact@v4
         with:
-          name: DinNote-debug-apk
-          path: app/build/outputs/apk/debug/app-debug.apk
+          name: DinNote-signed-release-apk
+          path: app/build/outputs/apk/release/app-release.apk
