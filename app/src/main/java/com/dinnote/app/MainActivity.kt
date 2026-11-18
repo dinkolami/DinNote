@@ -321,24 +321,24 @@ private fun DinNoteDashboardTile(
         modifier = modifier.height(106.dp).defaultMinSize(minWidth = 110.dp)
             .semantics { contentDescription = "Buka $title: $subtitle" }
             .clickable(onClick = onClick),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(18.dp),
         color = Color(0xFFFFFDF7),
-        border = BorderStroke(1.dp, Color(0xFFB7D5C8)),
+        border = BorderStroke(1.dp, Color(0xFFA9CCBC)),
         shadowElevation = 2.dp
     ) {
         Column(
-            modifier = Modifier.fillMaxSize().padding(horizontal = 10.dp, vertical = 10.dp),
+            modifier = Modifier.fillMaxSize().padding(horizontal = 12.dp, vertical = 9.dp),
             horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
             DashboardLineIcon(symbol)
             Spacer(Modifier.height(5.dp))
-            Box(Modifier.width(38.dp).height(2.dp).background(Color(0xFFD3AE65)))
+            Box(Modifier.width(42.dp).height(2.dp).background(Color(0xFFB48B39)))
             Spacer(Modifier.height(5.dp))
-            Text(title, fontSize = 14.sp, fontWeight = FontWeight.Bold,
-                color = Color(0xFF183A30), maxLines = 2, lineHeight = 17.sp,
+            Text(title, fontSize = 15.sp, fontWeight = FontWeight.Bold,
+                color = Color(0xFF183A30), maxLines = 2, lineHeight = 19.sp,
                 textAlign = TextAlign.Center)
-            Spacer(Modifier.height(2.dp))
+            Spacer(Modifier.height(3.dp))
             Text(subtitle, fontSize = 11.sp, color = Color(0xFF395C53),
                 maxLines = 2, lineHeight = 14.sp, textAlign = TextAlign.Center)
         }
@@ -521,7 +521,7 @@ fun HomeScreen(
                 Text("✎", fontSize = 24.sp, color = Color(0xFFF1C86B))
                 Spacer(Modifier.width(12.dp))
                 Text("Catatan & Nota Saya", modifier = Modifier.weight(1f),
-                    fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
+                    fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
                 Text("›", fontSize = 22.sp, color = Color.White)
             }
         }
@@ -538,7 +538,7 @@ fun HomeScreen(
                 Text("▤", fontSize = 24.sp, color = Color(0xFF075B50))
                 Spacer(Modifier.width(12.dp))
                 Text("Buka Maktabah", modifier = Modifier.weight(1f),
-                    fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF075B50))
+                    fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF075B50))
                 Text("›", fontSize = 22.sp, color = Color(0xFF075B50))
             }
         }
@@ -604,7 +604,7 @@ fun HomeScreen(
                     ) {
                         Text("✎", fontSize = 12.sp, color = Color(0xFF08766C))
                         if (note.category.isNotBlank()) {
-                            Text(note.category, fontSize = 10.sp, color = Color(0xFF53736F),
+                            Text(note.category, fontSize = 11.sp, color = Color(0xFF395C53),
                                 maxLines = 1)
                         }
                         Text(note.title.ifBlank { "Tanpa tajuk" },
@@ -628,7 +628,7 @@ fun HomeScreen(
                 shadowElevation = 2.dp
             ) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(11.dp)) {
-                    Text("✦ Hikmah Hari Ini", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color(0xFF08766C))
+                    Text("✦ Hikmah Hari Ini • Ketik untuk baca", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color(0xFF08766C))
                     Text(formattedNoteText(entry.arabic), modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Right,
                         fontSize = 18.sp, lineHeight = 30.sp,
                         style = androidx.compose.ui.text.TextStyle(textDirection = TextDirection.Rtl),
