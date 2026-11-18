@@ -470,6 +470,40 @@ fun HomeScreen(
             fontWeight = FontWeight.Medium,
             color = Color(0xFF075B50)
         )
+        Surface(
+            color = Color(0xFF006B5B),
+            shape = RoundedCornerShape(12.dp),
+            border = BorderStroke(1.dp, Color(0xFFC69A3C)),
+            shadowElevation = 2.dp
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text("✦", fontSize = 14.sp, color = Color(0xFFF1C86B))
+                Text("Teroka DinNote", fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold, color = Color.White)
+            }
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            DinNoteDashboardTile("Nota Saya", "Tulis & urus catatan", "note",
+                Modifier.weight(1f), onOpenNotes)
+            DinNoteDashboardTile("Maktabah", "Kitab & rujukan", "library",
+                Modifier.weight(1f), onOpenLibrary)
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            DinNoteDashboardTile("Carian", "Arab & Melayu", "search",
+                Modifier.weight(1f), onOpenSearch)
+            DinNoteDashboardTile("Penanda", "Kitab & bacaan", "bookmark",
+                Modifier.weight(1f), onOpenLibrary)
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            DinNoteDashboardTile("Mazhab Syafi‘i", "Kitab & hukum", "school",
+                Modifier.weight(1f), onOpenLibrary)
+            DinNoteDashboardTile("Tetapan", "Paparan & data", "settings",
+                Modifier.weight(1f), onOpenSettings)
+        }
         if (pinnedNotes.isNotEmpty()) {
             Row(
                 modifier = Modifier.fillMaxWidth().padding(top = 3.dp, bottom = 1.dp),
@@ -593,40 +627,6 @@ fun HomeScreen(
                     TextButton(onClick = { expandedReminder = false }) { Text("Tutup") }
                 }
             )
-        }
-        Surface(
-            color = Color(0xFF006B5B),
-            shape = RoundedCornerShape(12.dp),
-            border = BorderStroke(1.dp, Color(0xFFC69A3C)),
-            shadowElevation = 2.dp
-        ) {
-            Row(
-                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text("✦", fontSize = 14.sp, color = Color(0xFFF1C86B))
-                Text("Teroka DinNote", fontSize = 13.sp,
-                    fontWeight = FontWeight.SemiBold, color = Color.White)
-            }
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            DinNoteDashboardTile("Nota Saya", "Tulis & urus catatan", "note",
-                Modifier.weight(1f), onOpenNotes)
-            DinNoteDashboardTile("Maktabah", "Kitab & rujukan", "library",
-                Modifier.weight(1f), onOpenLibrary)
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            DinNoteDashboardTile("Carian", "Arab & Melayu", "search",
-                Modifier.weight(1f), onOpenSearch)
-            DinNoteDashboardTile("Penanda", "Kitab & bacaan", "bookmark",
-                Modifier.weight(1f), onOpenLibrary)
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            DinNoteDashboardTile("Mazhab Syafi‘i", "Kitab & hukum", "school",
-                Modifier.weight(1f), onOpenLibrary)
-            DinNoteDashboardTile("Tetapan", "Paparan & data", "settings",
-                Modifier.weight(1f), onOpenSettings)
         }
         Surface(
             modifier = Modifier.fillMaxWidth().clickable(onClick = onOpenLibrary),
