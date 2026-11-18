@@ -35,7 +35,15 @@ jobs:
           DINNOTE_KEY_ALIAS: ${{ secrets.DINNOTE_KEY_ALIAS }}
         run: |
           set -euo pipefail
-          keytool -list -keystore "$RUNNER_TEMP/dinnote-release.jks" -storepass:env DINNOTE_STORE_PASSWORD -alias "$DINNOTE_KEY_ALIAS" > /dev/null || { echo "::error::Keystore validation failed. Check the original keystore, its Base64 encoding, store password and alias."; exit 1; }
+          test -s "$RUNNER_TEMP/dinnote-release.jks" || { echo "::error::Keystore file is empty."; exit 1; }
+          if ! keytool -list -keystore "$RUNNER_TEMP/dinnote-release.jks" -storepass:env DINNOTE_STORE_PASSWORD > /dev/null 2>&1; then
+            echo "::error::Keystore cannot be opened with the store password. Check Base64 file and DINNOTE_STORE_PASSWORD."
+            exit 1
+          fi
+          if ! keytool -list -keystore "$RUNNER_TEMP/dinnote-release.jks" -storepass:env DINNOTE_STORE_PASSWORD -alias "$DINNOTE_KEY_ALIAS" > /dev/null 2>&1; then
+            echo "::error::Keystore opens, but DINNOTE_KEY_ALIAS does not match an entry."
+            exit 1
+          fi
           echo "Signing keystore and alias validated."
       - name: Build signed release APK
         env:
