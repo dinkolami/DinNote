@@ -318,29 +318,29 @@ private fun DinNoteDashboardTile(
     modifier: Modifier = Modifier, onClick: () -> Unit
 ) {
     Surface(
-        modifier = modifier.height(106.dp).defaultMinSize(minWidth = 110.dp)
+        modifier = modifier.height(102.dp).defaultMinSize(minWidth = 110.dp)
             .semantics { contentDescription = "Buka $title: $subtitle" }
             .clickable(onClick = onClick),
-        shape = RoundedCornerShape(18.dp),
+        shape = RoundedCornerShape(15.dp),
         color = Color(0xFFFFFDF7),
-        border = BorderStroke(1.dp, Color(0xFFA9CCBC)),
-        shadowElevation = 2.dp
+        border = BorderStroke(1.dp, Color(0xFF9EC6B5)),
+        shadowElevation = 1.dp
     ) {
         Column(
-            modifier = Modifier.fillMaxSize().padding(horizontal = 12.dp, vertical = 9.dp),
+            modifier = Modifier.fillMaxSize().padding(horizontal = 12.dp, vertical = 7.dp),
             horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
             DashboardLineIcon(symbol)
-            Spacer(Modifier.height(5.dp))
-            Box(Modifier.width(42.dp).height(2.dp).background(Color(0xFFB48B39)))
-            Spacer(Modifier.height(5.dp))
-            Text(title, fontSize = 15.sp, fontWeight = FontWeight.Bold,
-                color = Color(0xFF183A30), maxLines = 2, lineHeight = 19.sp,
+            Spacer(Modifier.height(4.dp))
+            Box(Modifier.width(34.dp).height(2.dp).background(Color(0xFFB48B39)))
+            Spacer(Modifier.height(4.dp))
+            Text(title, fontSize = 14.sp, fontWeight = FontWeight.Bold,
+                color = Color(0xFF183A30), maxLines = 2, lineHeight = 17.sp,
                 textAlign = TextAlign.Center)
             Spacer(Modifier.height(3.dp))
             Text(subtitle, fontSize = 11.sp, color = Color(0xFF395C53),
-                maxLines = 2, lineHeight = 14.sp, textAlign = TextAlign.Center)
+                maxLines = 2, lineHeight = 13.sp, textAlign = TextAlign.Center)
         }
     }
 }
@@ -462,7 +462,7 @@ fun HomeScreen(
         }
     Column(
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp, vertical = 10.dp),
+            .padding(horizontal = 14.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         DinNoteFrontHeader()
@@ -472,7 +472,7 @@ fun HomeScreen(
             textAlign = TextAlign.Center,
             fontSize = 13.sp,
             fontWeight = FontWeight.Medium,
-            color = Color(0xFF075B50)
+            color = Color(0xFF064B41)
         )
         Surface(
             color = Color(0xFF006B5B),
@@ -486,26 +486,26 @@ fun HomeScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text("✦", fontSize = 14.sp, color = Color(0xFFF1C86B))
-                Text("Pintasan Utama", fontSize = 14.sp,
+                Text("Teroka DinNote", fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold, color = Color.White)
             }
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            DinNoteDashboardTile("Nota Saya", "Tulis & urus catatan", "note",
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            DinNoteDashboardTile("Nota Saya", "Catat, edit & simpan", "note",
                 Modifier.weight(1f), onOpenNotes)
-            DinNoteDashboardTile("Maktabah", "Kitab & rujukan", "library",
+            DinNoteDashboardTile("Maktabah", "Kitab Arab & Melayu", "library",
                 Modifier.weight(1f), onOpenLibrary)
         }
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            DinNoteDashboardTile("Carian", "Arab & Melayu", "search",
+            DinNoteDashboardTile("Carian", "Cari nota & kitab", "search",
                 Modifier.weight(1f), onOpenSearch)
-            DinNoteDashboardTile("Penanda", "Kitab & bacaan", "bookmark",
+            DinNoteDashboardTile("Penanda", "Bacaan tersimpan", "bookmark",
                 Modifier.weight(1f), onOpenLibrary)
         }
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             DinNoteDashboardTile("Mazhab Syafi‘i", "Kitab & hukum", "school",
                 Modifier.weight(1f), onOpenLibrary)
-            DinNoteDashboardTile("Tetapan", "Paparan & data", "settings",
+            DinNoteDashboardTile("Tetapan", "Tema & sandaran", "settings",
                 Modifier.weight(1f), onOpenSettings)
         }
         Surface(
