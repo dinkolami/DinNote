@@ -2871,6 +2871,9 @@ private fun SmartVaultDialog(onDismiss: () -> Unit, onInsert: (String) -> Unit) 
         val title = majlisTitle.trim()
         return (if (title.isNotBlank()) title + "\n\n" else "") + sections.joinToString("\n\n")
     }
+    var query by remember { mutableStateOf("") }
+    var editing by remember { mutableStateOf<String?>(null) }
+    var draft by remember { mutableStateOf("") }
     if (insightOpen) {
         val recallPrefs = context.getSharedPreferences("dinnote_smart_recall", android.content.Context.MODE_PRIVATE)
         val now = System.currentTimeMillis()
@@ -2914,14 +2917,11 @@ private fun SmartVaultDialog(onDismiss: () -> Unit, onInsert: (String) -> Unit) 
         SmartMinbarDialog(material, onClose = { minbarMaterial = null })
         return
     }
-    var query by remember { mutableStateOf("") }
-    var editing by remember { mutableStateOf<String?>(null) }
-    var draft by remember { mutableStateOf("") }
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Smart Vault · Khazanah Faedah") },
         text = {
-            Column {
+            Column(Modifier.heightIn(max = 480.dp).verticalScroll(rememberScrollState())) {
                 OutlinedTextField(value = query, onValueChange = { query = it },
                     label = { Text("Cari teks, tema atau rujukan") }, singleLine = true, modifier = Modifier.fillMaxWidth())
                 TextButton(onClick = { insightOpen = true }) {
@@ -2941,7 +2941,7 @@ private fun SmartVaultDialog(onDismiss: () -> Unit, onInsert: (String) -> Unit) 
                         Text("Baca dalam Smart Minbar")
                     }
                 }
-                Column(Modifier.heightIn(max = 300.dp).verticalScroll(rememberScrollState())) {
+                Column {
                     val filtered = items.filter {
                         formattedNoteText(it).text.contains(query.trim(), ignoreCase = true) ||
                             tags[it].orEmpty().contains(query.trim(), ignoreCase = true) ||
@@ -2961,7 +2961,7 @@ private fun SmartVaultDialog(onDismiss: () -> Unit, onInsert: (String) -> Unit) 
                                 Text(formattedNoteText(block), maxLines = 4)
                             }
                             Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                                TextButton(onClick = { editing = block; draft = tags[block].orEmpty() }) {
+                                TextButton(onClick = { editing = block; draft = tags[block].orEmpty(); refEditing = null }) {
                                     Text("Tema / tag", color = Color(0xFF087F83))
                                 }
                                 Text(tags[block].orEmpty(), fontSize = 12.sp, maxLines = 2)
@@ -3017,13 +3017,7 @@ private fun SmartVaultDialog(onDismiss: () -> Unit, onInsert: (String) -> Unit) 
         },
         confirmButton = {
             if (majlisMode) TextButton(enabled = majlisSelection.isNotEmpty(), onClick = {
-                val sections = majlisSelection.mapIndexed { number, block ->
-                    val citation = referenceText(references[block].orEmpty())
-                    (number + 1).toString() + ".\n" + block + if (citation.isNotBlank()) "\n" + citation else ""
-                }
-                val title = majlisTitle.trim()
-                val material = (if (title.isNotBlank()) title + "\n\n" else "") + sections.joinToString("\n\n")
-                onInsert(material)
+                onInsert(assembleMajlis())
                 onDismiss()
             }) { Text("Tampal bahan kuliah") }
             else TextButton(onClick = onDismiss) { Text("Tutup") }
