@@ -318,7 +318,7 @@ private fun DinNoteDashboardTile(
     modifier: Modifier = Modifier, onClick: () -> Unit
 ) {
     Surface(
-        modifier = modifier.height(102.dp).defaultMinSize(minWidth = 110.dp)
+        modifier = modifier.height(108.dp).defaultMinSize(minWidth = 110.dp)
             .semantics { contentDescription = "Buka $title: $subtitle" }
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(15.dp),
@@ -339,7 +339,7 @@ private fun DinNoteDashboardTile(
                 color = Color(0xFF183A30), maxLines = 2, lineHeight = 17.sp,
                 textAlign = TextAlign.Center)
             Spacer(Modifier.height(3.dp))
-            Text(subtitle, fontSize = 11.sp, color = Color(0xFF395C53),
+            Text(subtitle, fontSize = 12.sp, color = Color(0xFF395C53),
                 maxLines = 2, lineHeight = 13.sp, textAlign = TextAlign.Center)
         }
     }
@@ -428,11 +428,11 @@ fun HomeScreen(
             }
         }.getOrNull()
     }
-    var showDashboard by remember { mutableStateOf(true) }
-    var showPinned by remember { mutableStateOf(true) }
-    var showRecent by remember { mutableStateOf(true) }
-    var showWisdom by remember { mutableStateOf(true) }
-    var compactMode by remember { mutableStateOf(false) }
+    var showDashboard by remember { mutableStateOf(homePrefs.getBoolean("home_showDashboard", true)) }
+    var showPinned by remember { mutableStateOf(homePrefs.getBoolean("home_showPinned", true)) }
+    var showRecent by remember { mutableStateOf(homePrefs.getBoolean("home_showRecent", true)) }
+    var showWisdom by remember { mutableStateOf(homePrefs.getBoolean("home_showWisdom", true)) }
+    var compactMode by remember { mutableStateOf(homePrefs.getBoolean("home_compactMode", false)) }
     var allPinned by remember { mutableStateOf(false) }
     var allRecent by remember { mutableStateOf(false) }
     var wisdomPage by remember { mutableIntStateOf(0) }
@@ -448,11 +448,11 @@ fun HomeScreen(
         val activeNotes = pinnedDatabase.allNotes().filter { !it.archived }
         noteCount = activeNotes.size
         pinnedCount = activeNotes.count { it.pinned }
-        categoryCount = activeNotes.map { it.category }.distinct().size
+        categoryCount = activeNotes.map { it.category.trim() }.filter { it.isNotEmpty() }.distinct().size
         pinnedNotes.clear()
         pinnedNotes.addAll(activeNotes.filter { it.pinned }.sortedByDescending { it.updatedAt })
         recentlyAddedNotes.clear()
-        recentlyAddedNotes.addAll(activeNotes.sortedByDescending { it.updatedAt })
+        recentlyAddedNotes.addAll(activeNotes.filterNot { it.pinned }.sortedByDescending { it.updatedAt })
     }
     Box(modifier = modifier.fillMaxSize()) {
         // Never stack the geometric pattern beneath a user-selected wallpaper.
@@ -561,20 +561,35 @@ fun HomeScreen(
         Surface(shape = RoundedCornerShape(14.dp), color = Color(0xFFFFFDF7),
             border = BorderStroke(1.dp, Color(0xFFA9CCBC))) {
             Column(Modifier.fillMaxWidth().padding(10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text("Koleksi Saya", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color(0xFF075B50))
+                Text("Ringkasan Koleksi", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color(0xFF075B50))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text("$noteCount nota", Modifier.weight(1f), fontSize = 12.sp)
-                    Text("$pinnedCount pin", Modifier.weight(1f), fontSize = 12.sp)
+                    Text("$pinnedCount dipinkan", Modifier.weight(1f), fontSize = 12.sp)
                     Text("$categoryCount kategori", Modifier.weight(1f), fontSize = 12.sp)
                 }
                 Row {
-                    TextButton(onClick = { showDashboard = !showDashboard }) { Text(if (showDashboard) "Sorok menu" else "Papar menu", fontSize = 11.sp) }
-                    TextButton(onClick = { compactMode = !compactMode }) { Text(if (compactMode) "Paparan biasa" else "Mod padat", fontSize = 11.sp) }
+                    TextButton(onClick = { showDashboard = !showDashboard; homePrefs.edit().putBoolean("home_showDashboard", showDashboard).apply() }) { Text(if (showDashboard) "Sembunyikan pintasan" else "Tunjuk pintasan", fontSize = 11.sp) }
+                    TextButton(onClick = { compactMode = !compactMode; homePrefs.edit().putBoolean("home_compactMode", compactMode).apply() }) { Text(if (compactMode) "Mod selesa" else "Mod ringkas", fontSize = 11.sp) }
                 }
                 Row {
-                    TextButton(onClick = { showPinned = !showPinned }) { Text(if (showPinned) "Sorok pin" else "Papar pin", fontSize = 11.sp) }
-                    TextButton(onClick = { showRecent = !showRecent }) { Text(if (showRecent) "Sorok nota" else "Papar nota", fontSize = 11.sp) }
-                    TextButton(onClick = { showWisdom = !showWisdom }) { Text(if (showWisdom) "Sorok hikmah" else "Papar hikmah", fontSize = 11.sp) }
+                    TextButton(onClick = { showPinned = !showPinned; homePrefs.edit().putBoolean("home_showPinned", showPinned).apply() }) { Text(if (showPinned) "Sorok dipinkan" else "Papar dipinkan", fontSize = 11.sp) }
+                    TextButton(onClick = { showRecent = !showRecent; homePrefs.edit().putBoolean("home_showRecent", showRecent).apply() }) { Text(if (showRecent) "Sorok terkini" else "Papar terkini", fontSize = 11.sp) }
+                    TextButton(onClick = { showWisdom = !showWisdom; homePrefs.edit().putBoolean("home_showWisdom", showWisdom).apply() }) { Text(if (showWisdom) "Sorok hikmah" else "Papar hikmah", fontSize = 11.sp) }
+                }
+            }
+        }
+        if (noteCount == 0) {
+            Surface(
+                modifier = Modifier.fillMaxWidth().clickable(onClick = onOpenNotes),
+                shape = RoundedCornerShape(14.dp),
+                color = Color(0xFFFFFDF7),
+                border = BorderStroke(1.dp, Color(0xFF9EC6B5))
+            ) {
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text("Mulakan catatan pertama", fontWeight = FontWeight.Bold, color = Color(0xFF075B50))
+                    Text("Simpan ilmu, nota kuliah dan rujukan peribadi dalam DinNote.",
+                        fontSize = 13.sp, color = Color(0xFF395C53))
+                    Text("Buka Nota Saya ›", fontWeight = FontWeight.SemiBold, color = Color(0xFF08766C))
                 }
             }
         }
@@ -599,7 +614,7 @@ fun HomeScreen(
                 }
 
             }
-            if (pinnedNotes.size > 3) TextButton(onClick = { allPinned = !allPinned }) { Text(if (allPinned) "Kurangkan" else "Lihat semua nota dipinkan") }
+            if (pinnedNotes.size > 3) TextButton(onClick = { allPinned = !allPinned }) { Text(if (allPinned) "Tunjuk sedikit" else "Lihat semua nota dipinkan") }
             pinnedNotes.take(if (allPinned) pinnedNotes.size else 3).forEach { note ->
                 Surface(
                     modifier = Modifier.fillMaxWidth().clickable { onOpenPinnedNote(note.id) },
@@ -625,8 +640,8 @@ fun HomeScreen(
             }
         }
         if (showRecent && recentlyAddedNotes.isNotEmpty()) {
-            PremiumSectionHeading("Terakhir Dikemas Kini", "✎")
-            if (recentlyAddedNotes.size > 3) TextButton(onClick = { allRecent = !allRecent }) { Text(if (allRecent) "Kurangkan" else "Lihat semua nota terkini") }
+            PremiumSectionHeading("Nota Terkini Lain", "✎")
+            if (recentlyAddedNotes.size > 3) TextButton(onClick = { allRecent = !allRecent }) { Text(if (allRecent) "Tunjuk sedikit" else "Lihat semua nota terkini") }
             recentlyAddedNotes.take(if (allRecent) recentlyAddedNotes.size else 3).forEach { note ->
                 Surface(
                     modifier = Modifier.fillMaxWidth().clickable { onOpenPinnedNote(note.id) },
@@ -642,8 +657,8 @@ fun HomeScreen(
                     ) {
                         Text("▤", fontSize = 12.sp, color = Color(0xFF08766C))
                         if (note.category.isNotBlank()) {
-                            Text(note.category, fontSize = 11.sp, color = Color(0xFF395C53),
-                                maxLines = 1)
+                            Text(note.category.take(16), fontSize = 10.sp, color = Color(0xFF395C53),
+                                maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
                         }
                         Text(note.title.ifBlank { "Tanpa tajuk" },
                             modifier = Modifier.weight(1f),
@@ -658,7 +673,7 @@ fun HomeScreen(
         if (showWisdom) reminder?.let { entry ->
             Surface(
                 modifier = Modifier.fillMaxWidth()
-                    .semantics { contentDescription = "Buka hikmah hari ini dan baca keterangan penuh" }
+                    .semantics { contentDescription = "Buka teks Arab dan terjemahan hikmah untuk bacaan penuh" }
                     .clickable { expandedReminder = true },
                 shape = RoundedCornerShape(16.dp),
                 color = Color(0xFFFFFDF7),
@@ -668,7 +683,7 @@ fun HomeScreen(
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(11.dp)) {
                     Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                         Text("✦ Hikmah Hari Ini", modifier = Modifier.weight(1f), fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color(0xFF08766C))
-                        TextButton(onClick = { wisdomPage++ }) { Text("Lagi ›", fontSize = 12.sp) }
+                        TextButton(onClick = { wisdomPage = (wisdomPage + 1) % kalimahEntries.size.coerceAtLeast(1) }) { Text("Hikmah lain ›", fontSize = 12.sp) }
                     }
                     Text(formattedNoteText(entry.arabic), modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Right,
                         fontSize = 19.sp, lineHeight = 32.sp,
@@ -695,8 +710,8 @@ fun HomeScreen(
                             modifier = Modifier.fillMaxWidth(),
                             textAlign = TextAlign.Right,
                             style = androidx.compose.ui.text.TextStyle(textDirection = TextDirection.Rtl),
-                            fontSize = 22.sp,
-                            lineHeight = 36.sp
+                            fontSize = 20.sp,
+                            lineHeight = 34.sp
                         )
                         UnifiedEditorDivider()
                         Text(formattedNoteText(entry.meaning), fontSize = 16.sp, lineHeight = 25.sp)
