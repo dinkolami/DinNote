@@ -339,7 +339,7 @@ private fun DinNoteDashboardTile(
                 color = Color(0xFF183A30), maxLines = 2, lineHeight = 17.sp,
                 textAlign = TextAlign.Center)
             Spacer(Modifier.height(2.dp))
-            Text(subtitle, fontSize = 11.sp, color = Color(0xFF53736F),
+            Text(subtitle, fontSize = 11.sp, color = Color(0xFF395C53),
                 maxLines = 2, lineHeight = 14.sp, textAlign = TextAlign.Center)
         }
     }
