@@ -2424,8 +2424,7 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                 TurathStarterCard(search, onNavigate = onNavigate)
                 TurathStarterCard(search, "turath/al_majmu.json", onNavigate)
                 TurathStarterCard(search, "turath/al_fatihah.json", onNavigate)
-                TurathStarterCard(search, "turath/ibn_kathir_fatihah.json", onNavigate)
-                TurathStarterCard(search, "turath/ibn_kathir_short.json", onNavigate)
+                IbnKathirCollection(search, onNavigate)
 
                 Button(onClick = { openLibraryEditor("entry_Kitab-Kitab_" + System.currentTimeMillis()) }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(14.dp), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF075B49))) { Text("+ Tambah Kitab") }
                 libraryItems.filter { matchesMaktabahSearch(libraryPrefs.getString(it + "_title", "") ?: "", search) ||
@@ -3933,6 +3932,60 @@ private fun DinNoteFrontHeaderFallback() {
     }
 }
 
+
+@Composable
+private fun IbnKathirCollection(search: String, onNavigate: (Int) -> Unit) {
+    val context = LocalContext.current
+    val available = remember(context) {
+        context.assets.list("turath/ibn_kathir").orEmpty().filter { it.endsWith(".json") }
+            .sortedBy { it.substringBefore(".").toIntOrNull() ?: 999 }
+    }
+    if (available.isEmpty()) {
+        TurathStarterCard(search, "turath/ibn_kathir_fatihah.json", onNavigate)
+        TurathStarterCard(search, "turath/ibn_kathir_short.json", onNavigate)
+        return
+    }
+    var expanded by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(false) }
+    var chosen by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf("") }
+    var query by remember { mutableStateOf("") }
+    if (search.isNotBlank() && !matchesMaktabahSearch("Tafsir Ibn Kathir تفسير ابن كثير", search)) return
+    Card(onClick = { expanded = true }, modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFCF4)),
+        border = BorderStroke(1.dp, Color(0xFFD3B66F))) {
+        Column(Modifier.padding(14.dp)) {
+            Text("تَفْسِيرُ الْقُرْآنِ الْعَظِيمِ", Modifier.fillMaxWidth(), textAlign = TextAlign.End,
+                fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color(0xFF075B49))
+            Text("Tafsir Ibn Kathir", fontWeight = FontWeight.Bold)
+            Text("${available.size} / 114 surah • Arab offline • Melayu belum lengkap", fontSize = 12.sp)
+        }
+    }
+    if (expanded) {
+        androidx.compose.ui.window.Dialog(onDismissRequest = { expanded = false; chosen = "" },
+            properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false)) {
+            Surface(Modifier.fillMaxSize().safeDrawingPadding(), color = Color(0xFFFFFCF4)) {
+                Column(Modifier.padding(12.dp)) {
+                    Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                        TextButton(onClick = { if (chosen.isNotEmpty()) chosen = "" else expanded = false }) { Text("‹ Kembali") }
+                        Text("Tafsir Ibn Kathir", fontWeight = FontWeight.Bold, color = Color(0xFF075B49))
+                    }
+                    if (chosen.isNotEmpty()) {
+                        key(chosen) { TurathStarterCard("", "turath/ibn_kathir/$chosen", onNavigate) }
+                    } else {
+                        OutlinedTextField(query, { query = it }, modifier = Modifier.fillMaxWidth(),
+                            singleLine = true, placeholder = { Text("Cari nombor surah") })
+                        LazyColumn(Modifier.weight(1f)) {
+                            items(available.filter { it.substringBefore(".").contains(query.trim()) }) { file ->
+                                TextButton(onClick = { chosen = file }, modifier = Modifier.fillMaxWidth()) {
+                                    Text("Surah " + file.substringBefore("."), color = Color(0xFF075B49))
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
 
 @Composable
 private fun TurathStarterCard(search: String, assetPath: String = "turath/arba_in_nawawiyyah.json", onNavigate: (Int) -> Unit = {}) {
