@@ -1328,6 +1328,27 @@ fun NotesScreen(
                     var smartLabel by remember { mutableStateOf("") }
                     var smartDialog by remember { mutableStateOf(false) }
                     var smartBusy by remember { mutableStateOf(false) }
+                    // Smart Format: clear a selection, or confirm clearing the entire note.
+                    var clearFormatConfirm by remember { mutableStateOf(false) }
+                    fun applyClearFormat() {
+                        val updated = clearEditorFormatting(body)
+                        if (updated != body) {
+                            undoStack.add(body)
+                            if (undoStack.size > 60) undoStack.removeAt(0)
+                            redoStack.clear()
+                            body = updated
+                        }
+                    }
+                    TextButton(enabled = body.text.isNotEmpty(), onClick = {
+                        if (body.selection.collapsed) clearFormatConfirm = true else applyClearFormat()
+                    }) { Text("Tx  Buang format", color = Color(0xFF087F83), fontSize = 13.sp) }
+                    if (clearFormatConfirm) AlertDialog(
+                        onDismissRequest = { clearFormatConfirm = false },
+                        title = { Text("Buang semua format?") },
+                        text = { Text("Isi nota dikekalkan. Warna, saiz dan penekanan tulisan akan dibuang.") },
+                        confirmButton = { TextButton(onClick = { applyClearFormat(); clearFormatConfirm = false }) { Text("Buang format") } },
+                        dismissButton = { TextButton(onClick = { clearFormatConfirm = false }) { Text("Batal") } }
+                    )
                     // Smart Block: select the paragraph at the cursor without changing stored text.
                     var smartBlockMenu by remember { mutableStateOf(false) }
                     val blockText = body.text
@@ -1684,6 +1705,23 @@ private class SmartSelectionToolbar(
         mode = null
         fallback.hide()
     }
+}
+
+private fun clearEditorFormatting(value: TextFieldValue): TextFieldValue {
+    val source = value.text
+    val start = value.selection.min.coerceIn(0, source.length)
+    val end = value.selection.max.coerceIn(start, source.length)
+    if (start == end) {
+        val plain = formattedNoteText(source).text
+        val cursor = formattedNoteText(smartFormattedExcerpt(source, 0, start)).length.coerceIn(0, plain.length)
+        return TextFieldValue(plain, selection = TextRange(cursor))
+    }
+    val before = smartFormattedExcerpt(source, 0, start)
+    val selected = formattedNoteText(smartFormattedExcerpt(source, start, end)).text
+    val after = smartFormattedExcerpt(source, end, source.length)
+    if (selected.isEmpty()) return value
+    return TextFieldValue(before + selected + after,
+        selection = TextRange(before.length, before.length + selected.length))
 }
 
 private fun exactEditorFormatOpener(source: String, start: Int, end: Int, kind: String): NoteFormatToken? {
@@ -2336,6 +2374,20 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                             } else libraryBody = resizeEditorTextSelection(libraryBody, 1, libraryFontSize.toInt())
                         }, contentPadding = PaddingValues(0.dp), modifier = Modifier.weight(1f).height(32.dp)) { Text("A+") }
                     }
+                    var clearLibraryFormatConfirm by remember { mutableStateOf(false) }
+                    TextButton(enabled = !libraryBody.selection.collapsed, onClick = {
+                        clearLibraryFormatConfirm = true
+                    }) { Text("Tx  Buang format", color = Color(0xFF087F83), fontSize = 13.sp) }
+                    if (clearLibraryFormatConfirm) AlertDialog(
+                        onDismissRequest = { clearLibraryFormatConfirm = false },
+                        title = { Text("Buang format pilihan?") },
+                        text = { Text("Isi petikan dikekalkan.") },
+                        confirmButton = { TextButton(onClick = {
+                            if (!libraryBody.selection.collapsed) libraryBody = clearEditorFormatting(libraryBody)
+                            clearLibraryFormatConfirm = false
+                        }) { Text("Buang format") } },
+                        dismissButton = { TextButton(onClick = { clearLibraryFormatConfirm = false }) { Text("Batal") } }
+                    )
                     Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         OutlinedButton(shape = RoundedCornerShape(0.dp), 
@@ -2343,7 +2395,8 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                             onClick = {
                                 val selection = libraryBody.selection
                                 val selected = libraryBody.text.substring(selection.min.coerceIn(0, libraryBody.text.length), selection.max.coerceIn(0, libraryBody.text.length))
-                                val source = selected.ifBlank { libraryBody.text }
+                                val source = if (selection.collapsed || selected.isBlank()) formattedNoteText(libraryBody.text).text
+                                    else formattedNoteText(smartFormattedExcerpt(libraryBody.text, selection.min, selection.max)).text
                                 translationBusy = true
                                 translationStatus = "Menyediakan terjemahan (muat turun model jika perlu)..."
                                 ArabicMalayTranslator.translate(source) { result ->
