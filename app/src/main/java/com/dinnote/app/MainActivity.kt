@@ -497,6 +497,14 @@ private fun DinNoteReferenceShowcase(
             }
             Column(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 14.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(
+                    "❖  كَلِمَاتٌ نَافِعَةٌ  ❖",
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center,
+                    fontSize = 14.sp,
+                    color = emerald,
+                    style = androidx.compose.ui.text.TextStyle(textDirection = TextDirection.Rtl)
+                )
                 Surface(shape = RoundedCornerShape(18.dp), color = emerald,
                     border = BorderStroke(2.dp, gold), shadowElevation = 2.dp) {
                     Text("✦   Nota Pilihan   ✦",
@@ -541,6 +549,13 @@ private fun DinNoteReferenceShowcase(
                         modifier = Modifier.fillMaxWidth().padding(16.dp),
                         fontSize = 15.sp, lineHeight = 25.sp, color = Color(0xFF25382F))
                 }
+                Text(
+                    "✦  ❖  ✦",
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center,
+                    color = gold,
+                    fontSize = 15.sp
+                )
                 androidx.compose.foundation.Image(
                     painter = androidx.compose.ui.res.painterResource(R.drawable.dinnote_mosque_landscape),
                     contentDescription = "Ilustrasi masjid, menara, dedaun dan gelombang hijau emas",
