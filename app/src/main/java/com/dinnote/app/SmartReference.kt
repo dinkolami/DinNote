@@ -68,9 +68,12 @@ class SmartReferenceStore(context: Context) {
                     o.optJSONObject("details")?.let { d -> d.keys().asSequence().associateWith { d.optString(it) } } ?: emptyMap())
             }
         }.getOrElse { return emptyList() }
-        if (prefs.getInt("catalogue_version", 1) < 2) {
+        if (prefs.getInt("catalogue_version", 1) < 3) {
+            val previousVersion = prefs.getInt("catalogue_version", 1)
             val oldIds = setOf("imam-shafii", "al-umm")
-            val merged = saved + initialEntries().filter { item -> item.id !in oldIds && saved.none { it.id == item.id } }
+            val merged = saved + initialEntries().filter { item ->
+                (item.id.startsWith("book-") || (previousVersion < 2 && item.id !in oldIds)) && saved.none { it.id == item.id }
+            }
             save(merged)
             return merged
         }
@@ -84,7 +87,7 @@ class SmartReferenceStore(context: Context) {
                 .put("category", e.category).put("aliases", JSONArray(e.aliases))
                 .put("description", e.description).put("source", e.source).put("details", JSONObject(e.details)))
         }
-        prefs.edit().putString("entries", array.toString()).putInt("catalogue_version", 2).apply()
+        prefs.edit().putString("entries", array.toString()).putInt("catalogue_version", 3).apply()
     }
 
     fun upsert(entry: SmartReferenceEntry) {
@@ -130,7 +133,41 @@ class SmartReferenceStore(context: Context) {
         SmartReferenceEntry("abu-madyan", "Abu Madyan", "Ulama", listOf("أبو مدين الغوث", "أبو مدين"), "Tokoh tasawwuf Maghribi yang berpengaruh.", details = mapOf("deathDate" to "594H")),
         SmartReferenceEntry("hasan-basri", "Hasan al-Basri", "Ulama", listOf("الحسن البصري", "Hasan Basri"), "Tabi‘i yang terkenal dengan ilmu, zuhud dan nasihat.", details = mapOf("birthDate" to "21H", "birthPlace" to "Madinah", "deathDate" to "110H", "deathPlace" to "Basrah")),
         SmartReferenceEntry("yahya-muadh", "Yahya bin Mu‘adh", "Ulama", listOf("يحيى بن معاذ الرازي", "يحيى بن معاذ"), "Tokoh zuhud dan nasihat kerohanian.", details = mapOf("deathDate" to "258H", "deathPlace" to "Nishapur")),
-        SmartReferenceEntry("rabi-adawiyya", "Rabi‘ah al-‘Adawiyyah", "Ulama", listOf("رابعة العدوية", "Rabiah al-Adawiyah"), "Tokoh zuhud awal; tarikh kelahiran dan wafat diperselisihkan.", details = mapOf("birthPlace" to "Basrah"))
+        SmartReferenceEntry("rabi-adawiyya", "Rabi‘ah al-‘Adawiyyah", "Ulama", listOf("رابعة العدوية", "Rabiah al-Adawiyah"), "Tokoh zuhud awal; tarikh kelahiran dan wafat diperselisihkan.", details = mapOf("birthPlace" to "Basrah")),
+        SmartReferenceEntry("book-risalah", "al-Risalah", "Kitab", listOf("الرسالة للشافعي", "رسالة الشافعي"), "Karya awal yang menghuraikan kaedah memahami dalil syarak.", details = mapOf("author" to "Imam al-Syafi‘i", "subject" to "Usul fiqh")),
+        SmartReferenceEntry("book-majmu", "al-Majmu‘ Syarh al-Muhadhdhab", "Kitab", listOf("المجموع شرح المهذب", "مجموع النووي", "al-Majmu‘", "al-Majmu"), "Syarah kitab al-Muhadhdhab yang membincangkan dalil dan khilaf fiqh; karya asal tidak selesai semasa hayat pengarang.", details = mapOf("author" to "Imam al-Nawawi", "subject" to "Fiqh Syafi‘i")),
+        SmartReferenceEntry("book-minhaj", "Minhaj al-Talibin", "Kitab", listOf("منهاج الطالبين", "Minhaj al-Talibin"), "Matan rujukan fiqh Syafi‘i yang diringkaskan daripada al-Muharrar.", details = mapOf("author" to "Imam al-Nawawi", "subject" to "Fiqh Syafi‘i")),
+        SmartReferenceEntry("book-rawdah", "Rawdat al-Talibin", "Kitab", listOf("روضة الطالبين", "Rawdah al-Talibin"), "Ringkasan dan olahan karya al-Rafi‘i mengenai perbahasan mazhab.", details = mapOf("author" to "Imam al-Nawawi", "subject" to "Fiqh Syafi‘i")),
+        SmartReferenceEntry("book-tuhfah", "Tuhfat al-Muhtaj", "Kitab", listOf("تحفة المحتاج", "Tuhfah al-Muhtaj"), "Syarah Minhaj al-Talibin dan rujukan penting ulama Syafi‘i mutaakhkhirin.", details = mapOf("author" to "Ibn Hajar al-Haytami", "subject" to "Fiqh Syafi‘i")),
+        SmartReferenceEntry("book-nihayah", "Nihayat al-Muhtaj", "Kitab", listOf("نهاية المحتاج", "Nihayah al-Muhtaj"), "Syarah Minhaj al-Talibin yang menjadi rujukan utama mazhab.", details = mapOf("author" to "Syamsuddin al-Ramli", "subject" to "Fiqh Syafi‘i")),
+        SmartReferenceEntry("book-mughni", "Mughni al-Muhtaj", "Kitab", listOf("مغني المحتاج"), "Syarah Minhaj al-Talibin.", details = mapOf("author" to "al-Khatib al-Syirbini", "subject" to "Fiqh Syafi‘i")),
+        SmartReferenceEntry("book-muhadhdhab", "al-Muhadhdhab", "Kitab", listOf("المهذب في فقه الإمام الشافعي", "المهذب", "al-Muhazzab"), "Kitab fiqh yang menjadi asas kepada syarah al-Majmu‘.", details = mapOf("author" to "Abu Ishaq al-Shirazi", "subject" to "Fiqh Syafi‘i")),
+        SmartReferenceEntry("book-aziz", "al-‘Aziz Syarh al-Wajiz", "Kitab", listOf("العزيز شرح الوجيز", "فتح العزيز", "الشرح الكبير للرافعي"), "Syarah al-Wajiz karya al-Ghazali.", details = mapOf("author" to "Imam al-Rafi‘i", "subject" to "Fiqh Syafi‘i")),
+        SmartReferenceEntry("book-muharrar", "al-Muharrar", "Kitab", listOf("المحرر للرافعي"), "Matan fiqh yang menjadi asas Minhaj al-Talibin.", details = mapOf("author" to "Imam al-Rafi‘i", "subject" to "Fiqh Syafi‘i")),
+        SmartReferenceEntry("book-hawi", "al-Hawi al-Kabir", "Kitab", listOf("الحاوي الكبير"), "Ensiklopedia fiqh yang menghuraikan Mukhtasar al-Muzani.", details = mapOf("author" to "Imam al-Mawardi", "subject" to "Fiqh Syafi‘i")),
+        SmartReferenceEntry("book-muzani-book", "Mukhtasar al-Muzani", "Kitab", listOf("مختصر المزني"), "Ringkasan fiqh yang menyampaikan pandangan Imam al-Syafi‘i.", details = mapOf("author" to "Imam al-Muzani", "subject" to "Fiqh Syafi‘i")),
+        SmartReferenceEntry("book-asna", "Asna al-Matalib", "Kitab", listOf("أسنى المطالب"), "Syarah Rawd al-Talib.", details = mapOf("author" to "Zakariyya al-Ansari", "subject" to "Fiqh Syafi‘i")),
+        SmartReferenceEntry("book-fath-wahhab", "Fath al-Wahhab", "Kitab", listOf("فتح الوهاب بشرح منهج الطلاب", "فتح الوهاب"), "Syarah Manhaj al-Tullab.", details = mapOf("author" to "Zakariyya al-Ansari", "subject" to "Fiqh Syafi‘i")),
+        SmartReferenceEntry("book-i-anah", "I‘anat al-Talibin", "Kitab", listOf("إعانة الطالبين", "Ianah al-Talibin"), "Hasyiah terhadap Fath al-Mu‘in.", details = mapOf("author" to "Abu Bakr Syata al-Dimyati", "subject" to "Fiqh Syafi‘i")),
+        SmartReferenceEntry("book-fath-muin", "Fath al-Mu‘in", "Kitab", listOf("فتح المعين", "Fathul Muin"), "Syarah Qurrat al-‘Ayn yang masyhur di Alam Melayu.", details = mapOf("author" to "Zaynuddin al-Malibari", "subject" to "Fiqh Syafi‘i")),
+        SmartReferenceEntry("book-bukhari-book", "Sahih al-Bukhari", "Kitab", listOf("صحيح البخاري", "Sahih Bukhari"), "Himpunan hadis sahih dengan susunan bab fiqh.", details = mapOf("author" to "Imam al-Bukhari", "subject" to "Hadis")),
+        SmartReferenceEntry("book-muslim-book", "Sahih Muslim", "Kitab", listOf("صحيح مسلم"), "Himpunan hadis sahih dengan pengelompokan jalur riwayat.", details = mapOf("author" to "Imam Muslim", "subject" to "Hadis")),
+        SmartReferenceEntry("book-abudawud-book", "Sunan Abi Dawud", "Kitab", listOf("سنن أبي داود", "Sunan Abu Daud"), "Himpunan hadis yang memberi tumpuan kepada hukum.", details = mapOf("author" to "Imam Abu Dawud", "subject" to "Hadis")),
+        SmartReferenceEntry("book-tirmidhi-book", "Jami‘ al-Tirmidhi", "Kitab", listOf("جامع الترمذي", "سنن الترمذي"), "Himpunan hadis bersama penilaian dan perbahasan fiqh.", details = mapOf("author" to "Imam al-Tirmidhi", "subject" to "Hadis")),
+        SmartReferenceEntry("book-nasai-book", "Sunan al-Nasa’i", "Kitab", listOf("سنن النسائي"), "Himpunan hadis dalam susunan bab.", details = mapOf("author" to "Imam al-Nasa’i", "subject" to "Hadis")),
+        SmartReferenceEntry("book-majah-book", "Sunan Ibn Majah", "Kitab", listOf("سنن ابن ماجه"), "Salah satu daripada enam kitab hadis utama.", details = mapOf("author" to "Imam Ibn Majah", "subject" to "Hadis")),
+        SmartReferenceEntry("book-fath-bari", "Fath al-Bari", "Kitab", listOf("فتح الباري", "Fathul Bari"), "Syarah Sahih al-Bukhari.", details = mapOf("author" to "Ibn Hajar al-Asqalani", "subject" to "Syarah hadis")),
+        SmartReferenceEntry("book-riyad", "Riyad al-Salihin", "Kitab", listOf("رياض الصالحين", "Riyadhus Salihin"), "Himpunan ayat dan hadis berkaitan adab, ibadah dan akhlak.", details = mapOf("author" to "Imam al-Nawawi", "subject" to "Hadis dan akhlak")),
+        SmartReferenceEntry("book-arba-in", "al-Arba‘in al-Nawawiyyah", "Kitab", listOf("الأربعون النووية", "الأربعين النووية", "Hadis 40 Nawawi"), "Koleksi 42 hadis asas agama.", details = mapOf("author" to "Imam al-Nawawi", "subject" to "Hadis")),
+        SmartReferenceEntry("book-ihya", "Ihya’ ‘Ulum al-Din", "Kitab", listOf("إحياء علوم الدين", "Ihya Ulumuddin"), "Karya mengenai ibadah, adat, penyakit hati dan sifat terpuji.", details = mapOf("author" to "Imam al-Ghazali", "subject" to "Tasawwuf dan akhlak")),
+        SmartReferenceEntry("book-hikam", "al-Hikam al-‘Ata’iyyah", "Kitab", listOf("الحكم العطائية", "Hikam Ibn Ataillah"), "Himpunan kalam hikmah mengenai perjalanan rohani dan kehambaan.", details = mapOf("author" to "Ibn ‘Ata’illah al-Sakandari", "subject" to "Tasawwuf")),
+        SmartReferenceEntry("book-qushayri-book", "al-Risalah al-Qusyairiyyah", "Kitab", listOf("الرسالة القشيرية"), "Pengenalan tokoh, istilah dan adab ahli tasawwuf.", details = mapOf("author" to "Imam al-Qusyairi", "subject" to "Tasawwuf")),
+        SmartReferenceEntry("book-hilyah", "Hilyat al-Awliya’", "Kitab", listOf("حلية الأولياء", "Hilyatul Awliya"), "Koleksi riwayat dan biografi tokoh zuhud.", details = mapOf("author" to "Abu Nu‘aym al-Isfahani", "subject" to "Biografi dan zuhud")),
+        SmartReferenceEntry("book-siyar", "Siyar A‘lam al-Nubala’", "Kitab", listOf("سير أعلام النبلاء"), "Koleksi biografi tokoh Islam daripada pelbagai generasi.", details = mapOf("author" to "Imam al-Dhahabi", "subject" to "Biografi")),
+        SmartReferenceEntry("book-mafatih", "Mafatih al-Ghayb", "Kitab", listOf("مفاتيح الغيب", "التفسير الكبير للرازي"), "Tafsir yang membincangkan bahasa, akidah dan persoalan rasional.", details = mapOf("author" to "Fakhruddin al-Razi", "subject" to "Tafsir")),
+        SmartReferenceEntry("book-jalalayn", "Tafsir al-Jalalayn", "Kitab", listOf("تفسير الجلالين", "Tafsir Jalalain"), "Tafsir ringkas al-Quran yang disusun oleh dua orang ulama.", details = mapOf("author" to "Jalaluddin al-Mahalli dan Jalaluddin al-Suyuti", "subject" to "Tafsir")),
+        SmartReferenceEntry("book-itqan", "al-Itqan fi ‘Ulum al-Quran", "Kitab", listOf("الإتقان في علوم القرآن"), "Karya ensiklopedik mengenai disiplin ilmu al-Quran.", details = mapOf("author" to "Imam al-Suyuti", "subject" to "Ulum al-Quran")),
+        SmartReferenceEntry("book-mustasfa", "al-Mustasfa", "Kitab", listOf("المستصفى من علم الأصول", "المستصفى"), "Karya mengenai dalil, hukum dan kaedah istinbat.", details = mapOf("author" to "Imam al-Ghazali", "subject" to "Usul fiqh"))
     )
 }
 
