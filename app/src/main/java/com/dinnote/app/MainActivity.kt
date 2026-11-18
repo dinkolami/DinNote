@@ -1187,6 +1187,8 @@ fun NotesScreen(
                 val saved = notes.firstOrNull { it.id == editingId }
                 if (saved != null && saved.title == title.trim() && saved.body == body.text &&
                     saved.colorTag == selectedColor && saved.category == selectedCategory) {
+                    recoveryPrefs.edit().clear().apply()
+                    recoveryAvailable = false
                     return@LaunchedEffect
                 }
                 recoveryPrefs.edit().putString("title", title).putString("body", body.text)
