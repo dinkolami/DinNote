@@ -74,6 +74,7 @@ class NoteDatabase(context: Context) :
     }
 
     fun save(title: String, body: String, id: Long? = null, colorTag: String? = null, category: String? = null): Long {
+        require(colorTag == null || colorTag.isNotBlank()) { "Warna nota tidak sah" }
         val values = ContentValues().apply {
             put("title", title)
             put("body", body)
