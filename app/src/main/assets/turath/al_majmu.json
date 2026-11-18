@@ -58,6 +58,90 @@
       "translationCredit": "Draf terjemahan DinNote",
       "volume": 1,
       "page": 80
+    },
+    {
+      "id": "majmu-5",
+      "number": 5,
+      "titleArabic": "سبب تسمية الماء المطلق",
+      "titleMalay": "Penamaan air mutlak",
+      "arabic": "وَسُمِّيَ الْمُطْلَقُ مُطْلَقًا لِأَنَّهُ إذَا أُطْلِقَ الْمَاءُ انْصَرَفَ إلَيْهِ",
+      "malay": "Air mutlak dinamakan demikian kerana apabila disebut air tanpa sebarang batasan, maksudnya merujuk kepada air tersebut.",
+      "source": [
+        "https://shamela.ws/book/2186/80"
+      ],
+      "translationCredit": "Draf terjemahan DinNote",
+      "volume": 1,
+      "page": 81
+    },
+    {
+      "id": "majmu-6",
+      "number": 6,
+      "titleArabic": "الطهارة بماء السماء",
+      "titleMalay": "Bersuci dengan air dari langit",
+      "arabic": "وَوَجْهُ الدَّلَالَةِ مِنْ الْآيَةِ لِمَا اسْتَدَلَّ بِهِ الْمُصَنِّفُ هُنَا وَهُوَ جَوَازُ الطَّهَارَةِ بِمَاءِ السَّمَاءِ ظَاهِرٌ وَهَذَا الْحُكْمُ مُجْمَعٌ عَلَيْهِ",
+      "malay": "Sudut pendalilan daripada ayat yang dijadikan dalil oleh pengarang di sini, iaitu keharusan bersuci dengan air dari langit, adalah jelas. Hukum ini telah disepakati secara ijmak.",
+      "source": [
+        "https://shamela.ws/book/2186/80"
+      ],
+      "translationCredit": "Draf terjemahan DinNote",
+      "volume": 1,
+      "page": 81
+    },
+    {
+      "id": "majmu-7",
+      "number": 7,
+      "titleArabic": "الوضوء بالثلج والبرد",
+      "titleMalay": "Berwuduk dengan salji dan hujan batu",
+      "arabic": "إذَا اُسْتُعْمِلَ الثَّلْجُ وَالْبَرَدُ قَبْلَ إذَابَتِهِمَا فَإِنْ كَانَ يَسِيلُ عَلَى الْعُضْوِ لِشِدَّةِ حَرٍّ وَحَرَارَةِ الْجِسْمِ وَرَخَاوَةِ الثَّلْجِ صَحَّ الْوُضُوءُ عَلَى الصَّحِيحِ وَبِهِ قَطَعَ الْجُمْهُورُ لِحُصُولِ جَرَيَانِ الْمَاءِ عَلَى الْعُضْوِ",
+      "malay": "Apabila salji dan hujan batu digunakan sebelum dicairkan, jika airnya mengalir pada anggota kerana cuaca yang sangat panas, suhu badan dan kelembutan salji, maka sah wuduk menurut pendapat sahih. Jumhur ulama mazhab menetapkan demikian kerana air telah mengalir pada anggota.",
+      "source": [
+        "https://shamela.ws/book/2186/80"
+      ],
+      "translationCredit": "Draf terjemahan DinNote",
+      "volume": 1,
+      "page": 81
+    },
+    {
+      "id": "majmu-8",
+      "number": 8,
+      "titleArabic": "الفرق بين الغسل والمسح",
+      "titleMalay": "Perbezaan membasuh dan menyapu",
+      "arabic": "وَإِنْ كَانَ لَا يَسِيلُ لَمْ يَصِحَّ الْغُسْلُ بِلَا خِلَافٍ وَيَصِحُّ مَسْحُ الْمَمْسُوحِ وَهُوَ الرَّأْسُ وَالْخُفُّ وَالْجَبِيرَةُ هَذَا مَذْهَبُنَا",
+      "malay": "Jika airnya tidak mengalir, maka basuhan tidak sah tanpa khilaf. Namun sah menyapu bahagian yang disyariatkan sapuan, iaitu kepala, khuf dan balutan anggota cedera. Inilah mazhab kita.",
+      "source": [
+        "https://shamela.ws/book/2186/80"
+      ],
+      "translationCredit": "Draf terjemahan DinNote",
+      "volume": 1,
+      "page": 81
+    },
+    {
+      "id": "majmu-9",
+      "number": 9,
+      "titleArabic": "مياه البحار والأنهار والآبار",
+      "titleMalay": "Air laut, sungai dan telaga",
+      "arabic": "وما نبع من الارض ماء البحار وماء الانهار وماء الآبار والاصل فِيهِ قَوْلُهُ صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ فِي الْبَحْرِ هُوَ الطَّهُورُ مَاؤُهُ الْحِلُّ مَيْتَتُهُ",
+      "malay": "Antara air yang memancar dari bumi ialah air laut, air sungai dan air telaga. Dalil asalnya ialah sabda Nabi SAW mengenai laut: Airnya menyucikan dan bangkainya halal.",
+      "source": [
+        "https://shamela.ws/book/2186/81"
+      ],
+      "translationCredit": "Draf terjemahan DinNote",
+      "volume": 1,
+      "page": 82
+    },
+    {
+      "id": "majmu-10",
+      "number": 10,
+      "titleArabic": "حديث ماء البحر",
+      "titleMalay": "Hadis tentang air laut",
+      "arabic": "فَرَوَى أَبُو هُرَيْرَةَ قَالَ سَأَلَ سَائِلٌ رَسُولِ اللَّهِ صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ فَقَالَ يَا رَسُولَ اللَّهِ إنَّا نَرْكَبُ الْبَحْرَ وَنَحْمِلُ مَعَنَا الْقَلِيلَ مِنْ الْمَاءِ فَإِنْ تَوَضَّأْنَا بِهِ عَطِشْنَا أَفَنَتَوَضَّأُ بِمَاءِ الْبَحْرِ فَقَالَ رَسُولُ اللَّهِ صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ هُوَ الطَّهُورُ مَاؤُهُ الْحِلُّ مَيْتَتُهُ",
+      "malay": "Abu Hurairah meriwayatkan bahawa seseorang bertanya kepada Rasulullah SAW: Wahai Rasulullah, kami belayar di laut dan membawa sedikit air. Jika kami berwuduk dengannya, kami akan kehausan. Bolehkah kami berwuduk dengan air laut? Rasulullah SAW menjawab: Airnya menyucikan dan bangkainya halal.",
+      "source": [
+        "https://shamela.ws/book/2186/81"
+      ],
+      "translationCredit": "Draf terjemahan DinNote",
+      "volume": 1,
+      "page": 82
     }
   ]
 }
