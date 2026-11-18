@@ -3939,6 +3939,7 @@ private fun TurathStarterCard(search: String, assetPath: String = "turath/arba_i
     var selected by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(-1) }
     var language by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf("Bersebelahan") }
     val readerPrefs = remember(context) { context.getSharedPreferences("turath_reader", android.content.Context.MODE_PRIVATE) }
+    var readerScale by remember(readerPrefs) { mutableStateOf(readerPrefs.getInt("reader_scale", 0).coerceIn(-4, 8)) }
     var lastRead by remember(assetPath) { mutableStateOf(readerPrefs.getInt(assetPath, -1)) }
     val visible = search.isBlank() || matchesMaktabahSearch(book.optString("titleArabic")+" "+book.optString("titleMalay"), search) ||
         entries.any { matchesMaktabahSearch(it.optString("arabic")+" "+it.optString("malay"),search) }
@@ -3985,11 +3986,16 @@ private fun TurathStarterCard(search: String, assetPath: String = "turath/arba_i
                                 FilterChip(selected=language==mode,onClick={language=mode},label={Text(mode,fontSize=11.sp)})
                             }
                         }
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement=Arrangement.End, verticalAlignment=androidx.compose.ui.Alignment.CenterVertically) {
+                            TextButton(enabled=readerScale > -4, onClick={ readerScale--; readerPrefs.edit().putInt("reader_scale", readerScale).apply() }) { Text("A−") }
+                            TextButton(onClick={ readerScale=0; readerPrefs.edit().putInt("reader_scale", 0).apply() }) { Text("${20 + readerScale} sp") }
+                            TextButton(enabled=readerScale < 8, onClick={ readerScale++; readerPrefs.edit().putInt("reader_scale", readerScale).apply() }) { Text("A+") }
+                        }
                         key(selected) {
                             Column(Modifier.weight(1f).verticalScroll(rememberScrollState()),verticalArrangement=Arrangement.spacedBy(12.dp)) {
-                                Text(e.optString("titleMalay"),fontWeight=FontWeight.Bold,fontSize=24.sp,lineHeight=31.sp,color=Color(0xFF171717))
-                                val arabicStyle = androidx.compose.ui.text.TextStyle(fontSize=23.sp,lineHeight=39.sp,textDirection=TextDirection.ContentOrRtl,textAlign=TextAlign.End,color=MaterialTheme.colorScheme.onSurface)
-                                val malayStyle = androidx.compose.ui.text.TextStyle(fontSize=18.sp,lineHeight=29.sp,textDirection=TextDirection.Ltr,color=Color(0xFF171717))
+                                Text(e.optString("titleMalay"),fontWeight=FontWeight.Bold,fontSize=20.sp,lineHeight=26.sp,color=Color(0xFF171717))
+                                val arabicStyle = androidx.compose.ui.text.TextStyle(fontSize=(20+readerScale).sp,lineHeight=((20+readerScale)*1.6f).sp,textDirection=TextDirection.ContentOrRtl,textAlign=TextAlign.End,color=MaterialTheme.colorScheme.onSurface)
+                                val malayStyle = androidx.compose.ui.text.TextStyle(fontSize=(16+readerScale).sp,lineHeight=((16+readerScale)*1.5f).sp,textDirection=TextDirection.Ltr,color=Color(0xFF171717))
                                 if(language=="Bersebelahan") {
                                     BoxWithConstraints(Modifier.fillMaxWidth()) {
                                     if(maxWidth < 600.dp) {
