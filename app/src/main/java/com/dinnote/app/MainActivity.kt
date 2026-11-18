@@ -3007,6 +3007,45 @@ private fun SmartVaultDialog(onDismiss: () -> Unit, onInsert: (String) -> Unit) 
     var relatedBlock by remember { mutableStateOf<String?>(null) }
     fun themeSet(block: String): Set<String> = tags[block].orEmpty().split(",")
         .map { it.trim().lowercase(java.util.Locale.ROOT) }.filter { it.isNotBlank() }.toSet()
+    var atlasOpen by remember { mutableStateOf(false) }
+    var atlasField by remember { mutableIntStateOf(0) }
+    var atlasSelected by remember { mutableStateOf<String?>(null) }
+    if (atlasOpen) {
+        val directory = remember(references, atlasField) {
+            items.groupBy { references[it]?.getOrNull(atlasField).orEmpty().trim() }
+                .filterKeys { it.isNotBlank() }
+        }
+        AlertDialog(onDismissRequest = { atlasOpen = false },
+            title = { Text("Smart Knowledge Atlas") },
+            text = {
+                Column(Modifier.heightIn(max = 420.dp)) {
+                    Row {
+                        TextButton(onClick = { atlasField = 0; atlasSelected = null }) { Text("Kitab") }
+                        TextButton(onClick = { atlasField = 1; atlasSelected = null }) { Text("Pengarang") }
+                    }
+                    val selected = atlasSelected
+                    if (selected == null) {
+                        if (directory.isEmpty()) Text("Tambah maklumat Smart Reference terlebih dahulu.")
+                        LazyColumn(Modifier.heightIn(max = 340.dp)) {
+                            items(directory.entries.sortedBy { it.key }, key = { it.key }) { entry ->
+                                TextButton(onClick = { atlasSelected = entry.key }) { Text(entry.key + " · " + entry.value.size) }
+                            }
+                        }
+                    } else {
+                        Text(selected, color = Color(0xFF087F83))
+                        LazyColumn(Modifier.heightIn(max = 340.dp)) {
+                            items(directory[selected].orEmpty(), key = { it }) { block ->
+                                TextButton(onClick = { atlasOpen = false; relatedBlock = block }) {
+                                    Text(formattedNoteText(block), maxLines = 4)
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = { TextButton(onClick = { if (atlasSelected != null) atlasSelected = null else atlasOpen = false }) { Text("Kembali") } })
+        return
+    }
     var graphOpen by remember { mutableStateOf(false) }
     var graphTheme by remember { mutableStateOf<String?>(null) }
     var atlasOpen by remember { mutableStateOf(false) }
@@ -3225,6 +3264,9 @@ private fun SmartVaultDialog(onDismiss: () -> Unit, onInsert: (String) -> Unit) 
                 OutlinedTextField(value = query, onValueChange = { query = it },
                     label = { Text("Cari teks, tema atau rujukan") }, singleLine = true, modifier = Modifier.fillMaxWidth())
                 TextButton(onClick = { atlasSelection = null; atlasOpen = true }) {
+                    Text("Smart Knowledge Atlas", color = Color(0xFF087F83))
+                }
+                TextButton(onClick = { atlasSelected = null; atlasOpen = true }) {
                     Text("Smart Knowledge Atlas", color = Color(0xFF087F83))
                 }
                 TextButton(onClick = { graphTheme = null; graphOpen = true }) {
