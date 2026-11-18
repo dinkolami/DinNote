@@ -137,6 +137,7 @@ class NoteDatabase(context: Context) :
     }
 
     fun delete(id: Long) {
+        require(id > 0L) { "ID nota tidak sah" }
         writableDatabase.delete("notes", "id = ?", arrayOf(id.toString()))
     }
 
