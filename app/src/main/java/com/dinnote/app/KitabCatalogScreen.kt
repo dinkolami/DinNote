@@ -25,6 +25,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.drawscope.scale
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -32,6 +35,36 @@ import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+
+
+@Composable
+private fun KitabGlyph(name: String, label: String?, active: Boolean = false, modifier: Modifier = Modifier) {
+    val strokes = when (name) {
+        "search" -> listOf("M21 21 L16 16", "M18 10 A8 8 0 1 1 2 10 A8 8 0 1 1 18 10")
+        "sort" -> listOf("M7 3 V21 M3 7 L7 3 L11 7", "M17 21 V3 M13 17 L17 21 L21 17")
+        "add" -> listOf("M3 4 H10 Q12 4 12 7 V20 Q10 17 3 18 Z", "M12 7 Q15 4 21 4 V18 Q15 17 12 20", "M17 7 V15 M13 11 H21")
+        "library" -> listOf("M3 4 H7 V20 H3 Z M10 4 H14 V20 H10 Z M17 5 L21 19")
+        "grid" -> listOf("M3 3 H10 V10 H3 Z M14 3 H21 V10 H14 Z M3 14 H10 V21 H3 Z M14 14 H21 V21 H14 Z")
+        "star" -> listOf("M12 3 L15 9 L22 10 L17 15 L18 22 L12 18 L6 22 L7 15 L2 10 L9 9 Z")
+        "bookmark" -> listOf("M6 3 H18 V21 L12 17 L6 21 Z")
+        "filter" -> listOf("M3 6 H21 M6 12 H18 M10 18 H14")
+        "book" -> listOf("M3 4 Q9 3 12 7 Q15 3 21 4 V19 Q15 17 12 21 Q9 17 3 19 Z M12 7 V21")
+        "edit" -> listOf("M12 4 H4 V20 H20 V12 M10 14 L11 10 L19 2 L22 5 L14 13 Z")
+        "more" -> listOf("M12 4 V5 M12 11 V12 M12 18 V19")
+        else -> emptyList()
+    }
+    val ink = if (active) Color(0xFFB48B39) else Color(0xFF17685C)
+    val semanticModifier = if (label != null) modifier.semantics { contentDescription = label } else modifier
+    androidx.compose.foundation.Canvas(semanticModifier.size(24.dp)) {
+        scale(size.width / 24f, size.height / 24f, pivot = androidx.compose.ui.geometry.Offset.Zero) {
+            strokes.forEach { data ->
+                val path = androidx.compose.ui.graphics.vector.PathParser().parsePathString(data).toPath()
+                drawPath(path, ink, style = androidx.compose.ui.graphics.drawscope.Stroke(width = 1.7f,
+                    cap = androidx.compose.ui.graphics.StrokeCap.Round, join = androidx.compose.ui.graphics.StrokeJoin.Round))
+            }
+        }
+    }
+}
 
 private fun normalizedKitabText(value: String): String =
     value.lowercase(java.util.Locale.ROOT)
@@ -290,23 +323,12 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 OutlinedTextField(query, { query = it }, modifier = Modifier.weight(1f),
-                    placeholder = { Text("Cari kitab / اسم الكتاب", fontSize = 13.sp, maxLines = 1) },
+                    placeholder = { Text("Cari kitab", fontSize = 13.sp, maxLines = 1) },
+                    leadingIcon = { KitabGlyph("search", null) },
                     textStyle = TextStyle(fontSize = 14.sp), singleLine = true, shape = RoundedCornerShape(12.dp))
-                OutlinedButton(onClick = { ascending = !ascending }, contentPadding = PaddingValues(horizontal = 10.dp)) {
-                    Text(if (ascending) "↑ A–Z" else "↓ Z–A", fontSize = 11.sp)
-                }
-            }
-            Row(Modifier.fillMaxWidth().padding(top = 4.dp), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                Button(onClick = { startEdit(null) }, contentPadding = PaddingValues(horizontal = 12.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF17685C))) {
-                    Text("+ Tambah kitab", fontSize = 12.sp, maxLines = 1)
-                }
-                TextButton(onClick = { showSuggestions = true }, modifier = Modifier.weight(1f),
-                    contentPadding = PaddingValues(horizontal = 4.dp)) {
-                    Text("Cadangan kitab", fontSize = 12.sp, maxLines = 1)
-                }
-                Text("${books.size} kitab", fontSize = 11.sp, color = Color(0xFF53736F), maxLines = 1)
+                IconButton(onClick = { ascending = !ascending }) { KitabGlyph("sort", if (ascending) "Susun Z–A" else "Susun A–Z") }
+                IconButton(onClick = { startEdit(null) }) { KitabGlyph("add", "Tambah kitab") }
+                IconButton(onClick = { showSuggestions = true }) { KitabGlyph("library", "Cadangan kitab") }
             }
             val availableCategories = listOf("Semua bidang") + books.map { it.category }
                 .filter { it.isNotBlank() }.distinct().sorted()
@@ -315,12 +337,12 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
                 horizontalArrangement = Arrangement.spacedBy(5.dp)) {
                 listOf("Semua", "Kegemaran", "Penanda").forEach { name ->
                     FilterChip(selected = filter == name, onClick = { filter = name },
-                        label = { Text(name, fontSize = 12.sp, maxLines = 1) })
+                        label = { KitabGlyph(when (name) { "Semua" -> "grid"; "Kegemaran" -> "star"; else -> "bookmark" }, name, filter == name) })
                 }
                 Box {
                     FilterChip(selected = categoryFilter != "Semua bidang",
                         onClick = { fieldsExpanded = true },
-                        label = { Text("Kategori ▾", fontSize = 12.sp, maxLines = 1) })
+                        label = { KitabGlyph("filter", "Kategori", categoryFilter != "Semua bidang") })
                     DropdownMenu(expanded = fieldsExpanded, onDismissRequest = { fieldsExpanded = false }) {
                         availableCategories.forEach { field ->
                             DropdownMenuItem(text = { Text(field) }, onClick = {
@@ -361,8 +383,7 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
                         Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                             Surface(color = Color(0xFFE5EFE9), shape = RoundedCornerShape(10.dp)) {
-                                Text("▤", fontSize = 24.sp, color = Color(0xFF17685C),
-                                    modifier = Modifier.padding(horizontal = 13.dp, vertical = 8.dp))
+                                Box(Modifier.padding(10.dp)) { KitabGlyph("book", null) }
                             }
                             Column(Modifier.weight(1f).clickable { opened = b }) {
                                 Text(b.title, fontSize = 19.sp, fontWeight = FontWeight.SemiBold,
@@ -375,7 +396,7 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
                             }
                             var menuOpen by remember(b.id) { mutableStateOf(false) }
                             Box {
-                                IconButton(onClick = { menuOpen = true }) { Text("⋮", fontSize = 24.sp) }
+                                IconButton(onClick = { menuOpen = true }) { KitabGlyph("more", "Pilihan kitab") }
                                 DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
                                     DropdownMenuItem(text = { Text("Edit kitab") }, onClick = { menuOpen = false; startEdit(b) })
                                 }
@@ -383,19 +404,16 @@ fun KitabCatalogScreen(modifier: Modifier = Modifier) {
                         }
                         Row(Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                            TextButton(onClick = {
+                            IconButton(onClick = { startEdit(b) }) { KitabGlyph("edit", "Edit kitab") }
+                            IconButton(onClick = {
                                 val idx = books.indexOfFirst { it.id == b.id }
                                 if (idx >= 0) { books[idx] = b.copy(favorite = !b.favorite); persist() }
-                            }, contentPadding = PaddingValues(horizontal = 6.dp)) {
-                                Text(if (b.favorite) "★" else "☆", fontSize = 20.sp)
-                            }
-                            TextButton(onClick = { toggleBookmark(b.id) }, contentPadding = PaddingValues(horizontal = 6.dp)) {
-                                Text(if (isBookmarked(b.id)) "✓ Penanda" else "Penanda", fontSize = 12.sp, maxLines = 1)
+                            }) { KitabGlyph("star", if (b.favorite) "Buang kegemaran" else "Tambah kegemaran", b.favorite) }
+                            IconButton(onClick = { toggleBookmark(b.id) }) {
+                                KitabGlyph("bookmark", if (isBookmarked(b.id)) "Buang penanda" else "Tambah penanda", isBookmarked(b.id))
                             }
                             Spacer(Modifier.weight(1f))
-                            FilledTonalButton(onClick = { opened = b }, contentPadding = PaddingValues(horizontal = 12.dp)) {
-                                Text("Baca kitab", fontSize = 12.sp, maxLines = 1)
-                            }
+                            IconButton(onClick = { opened = b }) { KitabGlyph("book", "Baca kitab") }
                         }
                     }
                     }
