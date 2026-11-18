@@ -2871,6 +2871,72 @@ private fun SmartRecallDialog(items: List<String>, onClose: () -> Unit) {
 }
 
 @Composable
+private fun SmartDualView(items: List<String>, onClose: () -> Unit, onInsert: (String) -> Unit) {
+    var selected by remember { mutableStateOf(items.firstOrNull().orEmpty()) }
+    var query by remember { mutableStateOf("") }
+    var draft by remember { mutableStateOf("") }
+    val wide = androidx.compose.ui.platform.LocalConfiguration.current.screenWidthDp >= 600
+    val filtered = remember(items, query) { items.filter { formattedNoteText(it).text.contains(query.trim(), ignoreCase = true) } }
+    androidx.compose.ui.window.Dialog(onDismissRequest = onClose,
+        properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false)) {
+        Surface(Modifier.fillMaxSize(), color = Color.White) {
+            Column(Modifier.fillMaxSize().padding(12.dp)) {
+                Row(Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                    Text("Smart Dual View", Modifier.weight(1f), color = Color(0xFF087F83), fontSize = 20.sp)
+                    TextButton(onClick = onClose) { Text("Tutup") }
+                    TextButton(enabled = draft.isNotBlank(), onClick = { onInsert(draft); onClose() }) { Text("Tampal nota") }
+                }
+                HorizontalDivider()
+                val sourcePanel: @Composable () -> Unit = {
+                    Column(Modifier.fillMaxSize().padding(6.dp)) {
+                        Text("Khazanah rujukan", color = Color(0xFF087F83))
+                        OutlinedTextField(query, { query = it }, label = { Text("Cari petikan") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                        LazyColumn(Modifier.weight(1f)) {
+                            items(filtered, key = { it }) { block ->
+                                TextButton(onClick = { selected = block }) {
+                                    Text(remember(block) { formattedNoteText(block) }, maxLines = 2)
+                                }
+                            }
+                        }
+                        HorizontalDivider()
+                        Column(Modifier.weight(2f).verticalScroll(rememberScrollState())) {
+                            Text(remember(selected) { formattedNoteText(selected) }, fontSize = 20.sp, lineHeight = 32.sp)
+                        }
+                        TextButton(enabled = selected.isNotBlank(), onClick = {
+                            draft = if (draft.isBlank()) selected else draft + "\n\n" + selected
+                        }) { Text("+ Petikan ke nota") }
+                    }
+                }
+                val editorPanel: @Composable () -> Unit = {
+                    Column(Modifier.fillMaxSize().padding(6.dp)) {
+                        Text("Catatan pengajian", color = Color(0xFF087F83))
+                        OutlinedTextField(draft, { draft = it }, modifier = Modifier.fillMaxSize(),
+                            placeholder = { Text("Tulis faedah dan huraian di sini…") },
+                            textStyle = androidx.compose.ui.text.TextStyle(fontSize = 19.sp, textDirection = TextDirection.ContentOrRtl),
+                            visualTransformation = androidx.compose.ui.text.input.VisualTransformation { value ->
+                                androidx.compose.ui.text.input.TransformedText(value, androidx.compose.ui.text.input.OffsetMapping.Identity)
+                            })
+                    }
+                }
+                if (wide) {
+                    Row(Modifier.weight(1f).fillMaxWidth()) {
+                        Box(Modifier.weight(1f).fillMaxHeight()) { sourcePanel() }
+                        Box(Modifier.width(1.dp).fillMaxHeight().background(Color(0xFFB7DCD7)))
+                        Box(Modifier.weight(1f).fillMaxHeight()) { editorPanel() }
+                    }
+                } else {
+                    Column(Modifier.weight(1f).fillMaxWidth()) {
+                        Box(Modifier.weight(1f).fillMaxWidth()) { sourcePanel() }
+                        HorizontalDivider()
+                        Box(Modifier.weight(1f).fillMaxWidth()) { editorPanel() }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
 private fun SmartVaultDialog(onDismiss: () -> Unit, onInsert: (String) -> Unit) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val items = remember { readSmartVault(context) }
@@ -2890,6 +2956,7 @@ private fun SmartVaultDialog(onDismiss: () -> Unit, onInsert: (String) -> Unit) 
     var references by remember { mutableStateOf(items.associateWith { readReference(it) }) }
     var refEditing by remember { mutableStateOf<String?>(null) }
     var refDraft by remember { mutableStateOf(List(referenceLabels.size) { "" }) }
+    var dualOpen by remember { mutableStateOf(false) }
     var insightOpen by remember { mutableStateOf(false) }
     var recallOpen by remember { mutableStateOf(false) }
     var majlisMode by remember { mutableStateOf(false) }
@@ -2915,6 +2982,10 @@ private fun SmartVaultDialog(onDismiss: () -> Unit, onInsert: (String) -> Unit) 
                 tags[it].orEmpty().contains(term, ignoreCase = true) ||
                 referenceText(references[it].orEmpty()).contains(term, ignoreCase = true)
         }
+    }
+    if (dualOpen) {
+        SmartDualView(items, onClose = { dualOpen = false }, onInsert = { onInsert(it); onDismiss() })
+        return
     }
     if (insightOpen) {
         val recallPrefs = context.getSharedPreferences("dinnote_smart_recall", android.content.Context.MODE_PRIVATE)
@@ -2966,6 +3037,9 @@ private fun SmartVaultDialog(onDismiss: () -> Unit, onInsert: (String) -> Unit) 
             Column(Modifier.heightIn(max = 480.dp).verticalScroll(rememberScrollState())) {
                 OutlinedTextField(value = query, onValueChange = { query = it },
                     label = { Text("Cari teks, tema atau rujukan") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                TextButton(onClick = { dualOpen = true }) {
+                    Text("Smart Dual View · Ruang Pengajian", color = Color(0xFF087F83))
+                }
                 TextButton(onClick = { insightOpen = true }) {
                     Text("Smart Insight · Statistik Ilmu", color = Color(0xFF087F83))
                 }
