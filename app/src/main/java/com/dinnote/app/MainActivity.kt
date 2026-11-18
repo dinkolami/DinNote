@@ -3621,6 +3621,20 @@ private fun IslamicStructuredReader(source: String, fontSize: Float, onEdit: () 
                         lineHeight = if (kind == "arabic") 31.sp else 33.sp,
                         textAlign = TextAlign.Right,
                         style = androidx.compose.ui.text.TextStyle(textDirection = TextDirection.ContentOrRtl))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        androidx.compose.material3.HorizontalDivider(
+                            modifier = Modifier.weight(1f), thickness = 0.5.dp,
+                            color = Color(0xFFD3A63B))
+                        Text("✦", modifier = Modifier.padding(horizontal = 12.dp),
+                            color = Color(0xFFB68A29), fontSize = 14.sp)
+                        androidx.compose.material3.HorizontalDivider(
+                            modifier = Modifier.weight(1f), thickness = 0.5.dp,
+                            color = Color(0xFFD3A63B))
+                    }
                 }
             }
             cursor = match.range.last + 1
