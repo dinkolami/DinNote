@@ -1158,8 +1158,11 @@ fun NotesScreen(
                 }
             }
         }
-        fun persistNote() {
-            if (title.isNotBlank() || body.text.isNotBlank()) {
+        fun persistNote(): Boolean {
+            if (title.isBlank() && body.text.isBlank()) return true
+            recoveryPrefs.edit().putString("title", title).putString("body", body.text)
+                .putString("color", selectedColor).putString("category", selectedCategory).apply()
+            return try {
                 val id = database.save(title.trim(), body.text, editingId)
                 editingId = id
                 database.setColor(id, selectedColor)
@@ -1167,6 +1170,11 @@ fun NotesScreen(
                 refreshNotes()
                 recoveryPrefs.edit().clear().apply()
                 recoveryAvailable = false
+                true
+            } catch (e: Exception) {
+                android.util.Log.e("DinNote", "Note save failed", e)
+                android.widget.Toast.makeText(context, "Nota belum disimpan. Draf dikekalkan. Cuba lagi.", android.widget.Toast.LENGTH_LONG).show()
+                false
             }
         }
         LaunchedEffect(title, body.text, selectedCategory, selectedColor, readingMode) {
@@ -1263,7 +1271,7 @@ fun NotesScreen(
                             Modifier.fillMaxWidth().height(46.dp).padding(horizontal = 8.dp),
                             verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
                         ) {
-                            TextButton(onClick = { persistNote(); showEditor = false }) {
+                            TextButton(onClick = { if (persistNote()) showEditor = false }) {
                                 Text("←", color = Color(0xFF087F83), fontSize = 23.sp)
                             }
                             Text(
@@ -1278,7 +1286,7 @@ fun NotesScreen(
                             TextButton(enabled = redoStack.isNotEmpty(), onClick = {
                                 if (redoStack.isNotEmpty()) { undoStack.add(body); body = redoStack.removeAt(redoStack.lastIndex) }
                             }) { Text("↷", color = if (redoStack.isNotEmpty()) Color(0xFF087F83) else Color.LightGray, fontSize = 21.sp) }
-                            TextButton(onClick = { persistNote(); readingMode = true }) {
+                            TextButton(onClick = { if (persistNote()) readingMode = true }) {
                                 Text("Simpan", color = Color(0xFF087F83), fontSize = 13.sp, fontWeight = FontWeight.Bold)
                             }
                         }
