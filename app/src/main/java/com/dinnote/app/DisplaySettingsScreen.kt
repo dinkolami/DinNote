@@ -157,6 +157,7 @@ fun DisplaySettingsScreen(modifier: Modifier = Modifier) {
         if (settingsStatus.isNotBlank()) {
             Text(settingsStatus, fontSize = 13.sp, color = Color(0xFF075B59))
         }
+        SettingsPanel { SmartReferenceSettings() }
         SettingsPanel {
         Text("Latar Halaman Utama", fontWeight = FontWeight.Bold, color = Color(0xFF075B59))
         Text("Pilih gambar latar atau gunakan corak asal.", fontSize = 12.sp)
