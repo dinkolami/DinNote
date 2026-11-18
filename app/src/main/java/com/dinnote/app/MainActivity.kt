@@ -608,17 +608,19 @@ fun HomeScreen(
                     fontWeight = FontWeight.SemiBold, color = Color.White)
             }
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(9.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             DinNoteDashboardTile("Nota Saya", "Tulis & urus catatan", "note",
                 Modifier.weight(1f), onOpenNotes)
             DinNoteDashboardTile("Maktabah", "Kitab & rujukan", "library",
                 Modifier.weight(1f), onOpenLibrary)
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             DinNoteDashboardTile("Carian", "Arab & Melayu", "search",
                 Modifier.weight(1f), onOpenSearch)
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(9.dp)) {
             DinNoteDashboardTile("Penanda", "Kitab & bacaan", "bookmark",
                 Modifier.weight(1f), onOpenLibrary)
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             DinNoteDashboardTile("Mazhab Syafi‘i", "Kitab & hukum", "school",
                 Modifier.weight(1f), onOpenLibrary)
             DinNoteDashboardTile("Tetapan", "Paparan & data", "settings",
