@@ -425,16 +425,11 @@ fun HomeScreen(
         }.getOrNull()
     }
     val pinnedNotes = remember { mutableStateListOf<DinNote>() }
-    val recentlyAddedNotes = remember { mutableStateListOf<DinNote>() }
-    val reminder = remember { kalimahEntries.randomOrNull() }
-    var expandedReminder by remember { mutableStateOf(false) }
     val pinnedDatabase = remember { NoteDatabase(context).also { it.migrateOldSingleNote(context) } }
     LaunchedEffect(Unit) {
         val activeNotes = pinnedDatabase.allNotes().filter { !it.archived }
         pinnedNotes.clear()
         pinnedNotes.addAll(activeNotes.filter { it.pinned }.sortedByDescending { it.updatedAt })
-        recentlyAddedNotes.clear()
-        recentlyAddedNotes.addAll(activeNotes.sortedByDescending { it.id }.take(1))
     }
     Box(modifier = modifier.fillMaxSize()) {
         // Never stack the geometric pattern beneath a user-selected wallpaper.
@@ -507,82 +502,6 @@ fun HomeScreen(
                 }
             }
         }
-        if (recentlyAddedNotes.isNotEmpty()) {
-            PremiumSectionHeading("Terakhir Ditambah", "✎")
-            recentlyAddedNotes.forEach { note ->
-                Surface(
-                    modifier = Modifier.fillMaxWidth().clickable { onOpenPinnedNote(note.id) },
-                    color = Color(0xFFFFFEFA),
-                    shape = RoundedCornerShape(14.dp),
-                    border = BorderStroke(1.dp, Color(0xFFB9D6CE)),
-                    shadowElevation = 2.dp
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 11.dp, vertical = 8.dp),
-                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(7.dp)
-                    ) {
-                        Text("✎", fontSize = 12.sp, color = Color(0xFF08766C))
-                        Text(note.title.ifBlank { "Tanpa tajuk" },
-                            modifier = Modifier.weight(1f),
-                            fontSize = 12.sp, fontWeight = FontWeight.Medium,
-                            color = Color(0xFF075B59), maxLines = 1,
-                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
-                        Text("›", fontSize = 16.sp, color = Color(0xFF08766C))
-                    }
-                }
-            }
-        }
-        reminder?.let { entry ->
-            Surface(
-                modifier = Modifier.fillMaxWidth().clickable { expandedReminder = true },
-                shape = RoundedCornerShape(10.dp),
-                color = Color.White,
-                border = BorderStroke(1.dp, Color(0xFFB9D6CE))
-            ) {
-                Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
-                    Text("Ingatan", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color(0xFF08766C))
-                    Text(formattedNoteText(entry.arabic), modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Right,
-                        fontSize = 18.sp, color = Color(0xFF183A30))
-                    Text(formattedNoteText(entry.meaning), fontSize = 13.sp, color = Color(0xFF52666A))
-                }
-            }
-        }
-        if (expandedReminder && reminder != null) {
-            val entry = reminder
-            AlertDialog(
-                onDismissRequest = { expandedReminder = false },
-                shape = RoundedCornerShape(12.dp),
-                containerColor = Color.White,
-                title = { Text(entry.title, color = Color(0xFF075B59)) },
-                text = {
-                    Column(
-                        modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Text(
-                            formattedNoteText(entry.arabic),
-                            modifier = Modifier.fillMaxWidth(),
-                            textAlign = TextAlign.Right,
-                            style = androidx.compose.ui.text.TextStyle(textDirection = TextDirection.Rtl),
-                            fontSize = 22.sp,
-                            lineHeight = 36.sp
-                        )
-                        UnifiedEditorDivider()
-                        Text(formattedNoteText(entry.meaning), fontSize = 16.sp, lineHeight = 25.sp)
-                        if (entry.transliteration.isNotBlank()) {
-                            Text(formattedNoteText(entry.transliteration), fontWeight = FontWeight.Medium)
-                        }
-                        if (entry.reference.isNotBlank()) {
-                            Text(formattedNoteText("Rujukan: ${entry.reference}"), fontSize = 13.sp)
-                        }
-                    }
-                },
-                confirmButton = {
-                    TextButton(onClick = { expandedReminder = false }) { Text("Tutup") }
-                }
-            )
-        }
         Surface(
             color = Color(0xFF006B5B),
             shape = RoundedCornerShape(12.dp),
@@ -614,24 +533,6 @@ fun HomeScreen(
                 Modifier.weight(1f), onOpenLibrary)
             DinNoteDashboardTile("Tetapan", "Paparan & data", "settings",
                 Modifier.weight(1f), onOpenSettings)
-        }
-        Surface(
-            modifier = Modifier.fillMaxWidth().clickable(onClick = onOpenLibrary),
-            color = Color(0xFF006B5B),
-            shape = RoundedCornerShape(12.dp),
-            border = BorderStroke(1.dp, Color(0xFFC69A3C)),
-            shadowElevation = 2.dp
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 6.dp),
-                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text("▤", fontSize = 14.sp, color = Color(0xFFF1C86B))
-                Text("Sambung Bacaan", modifier = Modifier.weight(1f),
-                    fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
-                Text("Teruskan ›", fontSize = 12.sp, color = Color.White)
-            }
         }
     }
     }
