@@ -432,7 +432,7 @@ fun HomeScreen(
     LaunchedEffect(Unit) {
         val activeNotes = pinnedDatabase.allNotes().filter { !it.archived }
         pinnedNotes.clear()
-        pinnedNotes.addAll(activeNotes.filter { it.pinned }.sortedByDescending { it.updatedAt })
+        pinnedNotes.addAll(activeNotes.filter { it.pinned }.sortedByDescending { it.updatedAt }.take(5))
         recentlyAddedNotes.clear()
         recentlyAddedNotes.addAll(activeNotes.sortedByDescending { it.updatedAt }.take(3))
     }
