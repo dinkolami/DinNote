@@ -2414,8 +2414,8 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
             }
             "Kitab-Kitab" -> {
                 Text("📚 Maktabah Kitab", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                TurathStarterCard(search)
-                TurathStarterCard(search, "turath/al_majmu.json")
+                TurathStarterCard(search, onNavigate = onNavigate)
+                TurathStarterCard(search, "turath/al_majmu.json", onNavigate)
 
                 Button(onClick = { openLibraryEditor("entry_Kitab-Kitab_" + System.currentTimeMillis()) }) { Text("+ Tambah Kitab") }
                 libraryItems.filter { matchesMaktabahSearch(libraryPrefs.getString(it + "_title", "") ?: "", search) ||
@@ -3925,7 +3925,7 @@ private fun DinNoteFrontHeaderFallback() {
 
 
 @Composable
-private fun TurathStarterCard(search: String, assetPath: String = "turath/arba_in_nawawiyyah.json") {
+private fun TurathStarterCard(search: String, assetPath: String = "turath/arba_in_nawawiyyah.json", onNavigate: (Int) -> Unit = {}) {
     val context = LocalContext.current
     val book = remember(context, assetPath) {
         runCatching { context.assets.open(assetPath).bufferedReader(Charsets.UTF_8).use { org.json.JSONObject(it.readText()) } }.getOrNull()
@@ -3950,8 +3950,8 @@ private fun TurathStarterCard(search: String, assetPath: String = "turath/arba_i
     }
     if(opened) {
         androidx.compose.ui.window.Dialog(onDismissRequest={opened=false},properties=androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth=false, decorFitsSystemWindows=false)) {
-            Surface(modifier=Modifier.fillMaxSize().safeDrawingPadding().padding(12.dp),shape=RoundedCornerShape(16.dp),color=MaterialTheme.colorScheme.surface) {
-                Column(Modifier.fillMaxSize().padding(14.dp),verticalArrangement=Arrangement.spacedBy(8.dp)) {
+            Surface(modifier=Modifier.fillMaxSize().safeDrawingPadding(),color=Color.White) {
+                Column(Modifier.fillMaxSize().padding(horizontal=18.dp, vertical=8.dp),verticalArrangement=Arrangement.spacedBy(8.dp)) {
                     Row(Modifier.fillMaxWidth(),verticalAlignment=androidx.compose.ui.Alignment.CenterVertically) {
                         TextButton(onClick={if(selected>=0) selected=-1 else opened=false}) { Text(if(selected>=0) "Senarai" else "Tutup") }
                         Text(book.optString("titleArabic"),modifier=Modifier.weight(1f),textAlign=TextAlign.End,fontSize=22.sp,fontWeight=FontWeight.Bold)
@@ -3977,10 +3977,19 @@ private fun TurathStarterCard(search: String, assetPath: String = "turath/arba_i
                         }
                         key(selected) {
                             Column(Modifier.weight(1f).verticalScroll(rememberScrollState()),verticalArrangement=Arrangement.spacedBy(12.dp)) {
-                                Text(e.optString("titleMalay"),fontWeight=FontWeight.Bold)
+                                Text(e.optString("titleMalay"),fontWeight=FontWeight.Bold,fontSize=24.sp,lineHeight=31.sp,color=Color(0xFF171717))
                                 val arabicStyle = androidx.compose.ui.text.TextStyle(fontSize=23.sp,lineHeight=39.sp,textDirection=TextDirection.ContentOrRtl,textAlign=TextAlign.End,color=MaterialTheme.colorScheme.onSurface)
-                                val malayStyle = androidx.compose.ui.text.TextStyle(fontSize=17.sp,lineHeight=27.sp,textDirection=TextDirection.Ltr)
+                                val malayStyle = androidx.compose.ui.text.TextStyle(fontSize=18.sp,lineHeight=29.sp,textDirection=TextDirection.Ltr,color=Color(0xFF171717))
                                 if(language=="Bersebelahan") {
+                                    BoxWithConstraints(Modifier.fillMaxWidth()) {
+                                    if(maxWidth < 600.dp) {
+                                        Column(verticalArrangement=Arrangement.spacedBy(16.dp)) {
+                                            ReferenceReaderText(text=AnnotatedString(e.optString("arabic")),modifier=Modifier.fillMaxWidth(),style=arabicStyle)
+                                            HorizontalDivider(color=Color(0xFFE7E7E7))
+                                            Text("Terjemahan Melayu • Draf",fontSize=12.sp,color=Color.Gray)
+                                            ReferenceReaderText(text=AnnotatedString(e.optString("malay")),modifier=Modifier.fillMaxWidth(),style=malayStyle)
+                                        }
+                                    } else {
                                     androidx.compose.runtime.CompositionLocalProvider(androidx.compose.ui.platform.LocalLayoutDirection provides androidx.compose.ui.unit.LayoutDirection.Ltr) {
                                         Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(10.dp)) {
                                             Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(6.dp)) {
@@ -3992,6 +4001,8 @@ private fun TurathStarterCard(search: String, assetPath: String = "turath/arba_i
                                                 ReferenceReaderText(text=AnnotatedString(e.optString("arabic")),modifier=Modifier.fillMaxWidth(),style=arabicStyle)
                                             }
                                         }
+                                    }
+                                }
                                     }
                                 } else if(language=="Arab") {
                                     ReferenceReaderText(text=AnnotatedString(e.optString("arabic")),modifier=Modifier.fillMaxWidth(),style=arabicStyle)
@@ -4011,6 +4022,15 @@ private fun TurathStarterCard(search: String, assetPath: String = "turath/arba_i
                             TextButton(enabled=selected>0,onClick={selected--}) { Text("Sebelum") }
                             Text("${selected+1} / ${entries.size}")
                             TextButton(enabled=selected<entries.lastIndex,onClick={selected++}) { Text("Seterusnya") }
+                        }
+                    }
+                    HorizontalDivider(color=Color(0xFFE7E7E7))
+                    Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceEvenly) {
+                        listOf(Triple("Utama","⌂",0),Triple("Nota","✎",1),Triple("Maktabah","▤",2),Triple("Tetapan","⚙",4)).forEach { tab ->
+                            Column(Modifier.weight(1f).clickable { opened=false; if(tab.third!=2) onNavigate(tab.third) }.padding(vertical=8.dp),horizontalAlignment=androidx.compose.ui.Alignment.CenterHorizontally) {
+                                Text(tab.second,fontSize=20.sp,color=if(tab.third==2) Color(0xFF087F83) else Color.DarkGray)
+                                Text(tab.first,fontSize=11.sp,color=if(tab.third==2) Color(0xFF087F83) else Color.DarkGray)
+                            }
                         }
                     }
                 }
