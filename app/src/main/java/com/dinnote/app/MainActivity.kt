@@ -523,10 +523,10 @@ private fun DinNoteReferenceShowcase(
                     Text(" ✦ ", color = gold)
                 }
                 Surface(shape = RoundedCornerShape(16.dp),
-                    color = Color(0xFFFFFDF6), border = BorderStroke(1.5.dp, gold),
+                    color = Color(0xFFFFFDF6), border = BorderStroke(2.dp, gold),
                     shadowElevation = 2.dp) {
                     Column(Modifier.fillMaxWidth().padding(14.dp)) {
-                        Text("❖", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center,
+                        Text("❖  ﷽  ❖", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center,
                             fontSize = 18.sp, color = gold)
                         Text(formattedNoteText(arabic),
                             modifier = Modifier.fillMaxWidth().padding(vertical = 7.dp),
@@ -544,13 +544,13 @@ private fun DinNoteReferenceShowcase(
                         fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.White)
                 }
                 Surface(shape = RoundedCornerShape(14.dp), color = Color(0xFFFFFDF6),
-                    border = BorderStroke(1.5.dp, gold), shadowElevation = 2.dp) {
+                    border = BorderStroke(2.dp, gold), shadowElevation = 2.dp) {
                     Text(formattedNoteText(meaning),
                         modifier = Modifier.fillMaxWidth().padding(16.dp),
                         fontSize = 15.sp, lineHeight = 25.sp, color = Color(0xFF25382F))
                 }
                 Text(
-                    "✦  ❖  ✦",
+                    "❖  ✦  ❖  ✦  ❖",
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Center,
                     color = gold,
