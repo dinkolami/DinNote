@@ -1,6 +1,7 @@
 package com.dinnote.app
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.*
@@ -146,11 +147,19 @@ fun GlobalSearchScreen(modifier: Modifier = Modifier) {
             text = {
                 Column(Modifier.heightIn(max = 480.dp)
                     .verticalScroll(rememberScrollState())) {
-                    Text(formattedNoteText(hit.content), modifier = Modifier.fillMaxWidth(),
-                        style = MaterialTheme.typography.bodyLarge.copy(
-                            textDirection = TextDirection.Content),
-                        textAlign = TextAlign.Start)
+                    SelectionContainer {
+                        Text(formattedNoteText(hit.content), modifier = Modifier.fillMaxWidth(),
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                textDirection = TextDirection.Content),
+                            textAlign = TextAlign.Start)
+                    }
                 }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                    clipboard.setPrimaryClip(android.content.ClipData.newPlainText("DinNote", cleanSearchText(hit.content)))
+                }) { Text("Salin teks") }
             },
             confirmButton = { TextButton(onClick = { openedKey = null }) { Text("Tutup") } })
     }
