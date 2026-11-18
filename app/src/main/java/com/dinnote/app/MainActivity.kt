@@ -4158,7 +4158,7 @@ private fun TurathStarterCard(search: String, assetPath: String = "turath/arba_i
                             lastRead = selected
                             readerPrefs.edit().putInt(assetPath, selected).apply()
                         }
-                        Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(4.dp)) {
+                        Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),horizontalArrangement=Arrangement.spacedBy(4.dp)) {
                             (if (assetPath.contains("al_hikam")) listOf("Hikmah","Arab","Melayu","Bersebelahan") else listOf("Arab","Melayu","Bersebelahan")).forEach { mode ->
                                 FilterChip(selected=language==mode,onClick={language=mode},label={Text(mode,fontSize=11.sp)})
                             }
@@ -4170,7 +4170,10 @@ private fun TurathStarterCard(search: String, assetPath: String = "turath/arba_i
                         }
                         key(selected) {
                             Column(Modifier.weight(1f).verticalScroll(rememberScrollState()),verticalArrangement=Arrangement.spacedBy(12.dp)) {
-                                Text(e.optString("titleMalay"),fontWeight=FontWeight.Bold,fontSize=20.sp,lineHeight=26.sp,color=Color(0xFF171717))
+                                Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                                    Text(if (assetPath.contains("al_hikam")) "HIKMAH ${selected+1} / ${entries.size}" else "BACAAN ${selected+1} / ${entries.size}", fontSize = 11.sp, color = Color(0xFF075B49), fontWeight = FontWeight.Medium)
+                                    Text(e.optString("titleMalay"),fontWeight=FontWeight.Bold,fontSize=17.sp,lineHeight=23.sp,color=Color(0xFF171717))
+                                }
                                 val arabicStyle = androidx.compose.ui.text.TextStyle(fontSize=(20+readerScale).sp,lineHeight=((20+readerScale)*1.6f).sp,textDirection=TextDirection.ContentOrRtl,textAlign=TextAlign.End,color=MaterialTheme.colorScheme.onSurface)
                                 val malayStyle = androidx.compose.ui.text.TextStyle(fontSize=(16+readerScale).sp,lineHeight=((16+readerScale)*1.5f).sp,textDirection=TextDirection.Ltr,color=Color(0xFF171717))
                                 if (language == "Hikmah" && assetPath.contains("al_hikam")) {
@@ -4225,6 +4228,10 @@ private fun TurathStarterCard(search: String, assetPath: String = "turath/arba_i
                                     ReferenceReaderText(text=AnnotatedString(e.optString("malay")),modifier=Modifier.fillMaxWidth(),style=malayStyle)
                                 }
                                 if(e.has("page")) Text("Jilid ${e.optInt("volume")} • Halaman ${e.optInt("page")}",fontSize=12.sp)
+                                val bookSource = book.optString("source")
+                                if (bookSource.startsWith("https://")) {
+                                    TextButton(onClick = { runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(bookSource))) } }) { Text("Rujukan edisi sumber", color = Color(0xFF075B49)) }
+                                }
                                 val sources=e.optJSONArray("source")
                                 if(sources!=null) for(i in 0 until sources.length()) {
                                     val url=sources.optString(i)
