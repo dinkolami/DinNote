@@ -121,7 +121,7 @@ class NoteDatabase(context: Context) :
         require(category.isNotBlank()) { "Kategori nota tidak boleh kosong" }
         writableDatabase.execSQL(
             "UPDATE notes SET category = ?, updated_at = ? WHERE id = ?",
-            arrayOf(category, System.currentTimeMillis(), id)
+            arrayOf(category.trim(), System.currentTimeMillis(), id)
         )
     }
 
