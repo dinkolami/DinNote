@@ -423,10 +423,10 @@ private fun DinNoteReferenceShowcase(
     val gold = Color(0xFFD7A740)
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
-        color = Color(0xFFFFF6E3),
-        border = BorderStroke(2.dp, gold),
-        shadowElevation = 5.dp
+        shape = RoundedCornerShape(20.dp),
+        color = Color(0xFFFFF8EA),
+        border = BorderStroke(2.5.dp, gold),
+        shadowElevation = 4.dp
     ) {
         Column {
             if (referenceArtwork != null) {
@@ -463,8 +463,8 @@ private fun DinNoteReferenceShowcase(
                 )
             }
             Box(
-                modifier = Modifier.fillMaxWidth().height(140.dp)
-                    .background(Brush.verticalGradient(listOf(Color(0xFF003A2C), Color(0xFF00634B)))),
+                modifier = Modifier.fillMaxWidth().height(124.dp)
+                    .background(Brush.verticalGradient(listOf(Color(0xFF002F26), Color(0xFF00634B)))),
                 contentAlignment = androidx.compose.ui.Alignment.Center
             ) {
                 Canvas(Modifier.matchParentSize()) {
@@ -481,22 +481,22 @@ private fun DinNoteReferenceShowcase(
                         close()
                     }
                     drawPath(arch, Color(0xFF0A7257))
-                    drawPath(arch, gold, style = Stroke(width = 3.dp.toPx()))
+                    drawPath(arch, gold, style = Stroke(width = 4.dp.toPx()))
                     drawLine(gold, Offset(0f, h - 3.dp.toPx()),
                         Offset(w, h - 3.dp.toPx()), 2.dp.toPx())
                 }
                 Column(horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                     modifier = Modifier.padding(top = 24.dp)) {
-                    Text("۞  DinNote  ۞", fontSize = 27.sp, fontWeight = FontWeight.Bold,
+                    Text("۞  DinNote  ۞", fontSize = 25.sp, fontWeight = FontWeight.Bold,
                         color = Color(0xFFFFDC86))
                     Text("دَفْتَرُ الْعِلْمِ وَالْمَعْرِفَةِ",
-                        fontSize = 15.sp, color = Color(0xFFFFF4D7),
+                        fontSize = 13.sp, color = Color(0xFFFFF4D7),
                         style = androidx.compose.ui.text.TextStyle(textDirection = TextDirection.Rtl))
                 }
             }
             Column(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 14.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                verticalArrangement = Arrangement.spacedBy(9.dp)) {
                 Text(
                     "❖  كَلِمَاتٌ نَافِعَةٌ  ❖",
                     modifier = Modifier.fillMaxWidth(),
@@ -509,7 +509,7 @@ private fun DinNoteReferenceShowcase(
                     border = BorderStroke(2.dp, gold), shadowElevation = 2.dp) {
                     Text("✦   Nota Pilihan   ✦",
                         modifier = Modifier.fillMaxWidth().padding(12.dp),
-                        textAlign = TextAlign.Center, fontSize = 20.sp,
+                        textAlign = TextAlign.Center, fontSize = 18.sp,
                         fontWeight = FontWeight.Bold, color = Color(0xFFFFDC86))
                 }
                 Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
@@ -530,7 +530,7 @@ private fun DinNoteReferenceShowcase(
                             fontSize = 18.sp, color = gold)
                         Text(formattedNoteText(arabic),
                             modifier = Modifier.fillMaxWidth().padding(vertical = 7.dp),
-                            textAlign = TextAlign.Right, fontSize = 20.sp, lineHeight = 36.sp,
+                            textAlign = TextAlign.Right, fontSize = 18.sp, lineHeight = 32.sp,
                             style = androidx.compose.ui.text.TextStyle(textDirection = TextDirection.Rtl),
                             color = Color(0xFF172C26))
                         Text("❖", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center,
