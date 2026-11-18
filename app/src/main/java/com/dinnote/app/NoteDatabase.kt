@@ -108,6 +108,7 @@ class NoteDatabase(context: Context) :
     }
 
     fun setArchived(id: Long, archived: Boolean) {
+        require(id > 0L) { "ID nota tidak sah" }
         writableDatabase.execSQL(
             "UPDATE notes SET is_archived = ?, updated_at = ? WHERE id = ?",
             arrayOf(if (archived) 1 else 0, System.currentTimeMillis(), id)
