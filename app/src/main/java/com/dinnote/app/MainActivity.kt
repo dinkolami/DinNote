@@ -1338,6 +1338,38 @@ fun NotesScreen(
                                 smartBlockMenu = false
                                 body = body.copy(selection = TextRange(blockStart, blockEnd), composition = null)
                             })
+                            DropdownMenuItem(text = { Text("Duplikasi perenggan") }, onClick = {
+                                smartBlockMenu = false
+                                val paragraph = blockText.substring(blockStart, blockEnd)
+                                undoStack.add(body)
+                                if (undoStack.size > 60) undoStack.removeAt(0)
+                                redoStack.clear()
+                                val updated = blockText.substring(0, blockEnd) + "\n" + paragraph + blockText.substring(blockEnd)
+                                body = TextFieldValue(updated, selection = TextRange(blockEnd + 1, blockEnd + 1 + paragraph.length))
+                            })
+                            DropdownMenuItem(text = { Text("Pindah ke atas") }, enabled = blockStart > 0, onClick = {
+                                smartBlockMenu = false
+                                val previousEnd = blockStart - 1
+                                val previousStart = if (previousEnd == 0) 0 else blockText.lastIndexOf('\n', previousEnd - 1) + 1
+                                val paragraph = blockText.substring(blockStart, blockEnd)
+                                val previous = blockText.substring(previousStart, previousEnd)
+                                undoStack.add(body)
+                                if (undoStack.size > 60) undoStack.removeAt(0)
+                                redoStack.clear()
+                                body = TextFieldValue(blockText.substring(0, previousStart) + paragraph + "\n" + previous + blockText.substring(blockEnd), selection = TextRange(previousStart, previousStart + paragraph.length))
+                            })
+                            DropdownMenuItem(text = { Text("Pindah ke bawah") }, enabled = blockEnd < blockText.length, onClick = {
+                                smartBlockMenu = false
+                                val nextStart = blockEnd + 1
+                                val nextEnd = blockText.indexOf('\n', nextStart).let { if (it < 0) blockText.length else it }
+                                val paragraph = blockText.substring(blockStart, blockEnd)
+                                val next = blockText.substring(nextStart, nextEnd)
+                                undoStack.add(body)
+                                if (undoStack.size > 60) undoStack.removeAt(0)
+                                redoStack.clear()
+                                val newStart = blockStart + next.length + 1
+                                body = TextFieldValue(blockText.substring(0, blockStart) + next + "\n" + paragraph + blockText.substring(nextEnd), selection = TextRange(newStart, newStart + paragraph.length))
+                            })
                             DropdownMenuItem(text = { Text("Simpan sebagai petikan") }, onClick = {
                                 smartBlockMenu = false
                                 database.save("Petikan: " + title.ifBlank { "Nota" }, blockText.substring(blockStart, blockEnd), null)
