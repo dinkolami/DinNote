@@ -512,7 +512,7 @@ fun HomeScreen(
             modifier = Modifier.fillMaxWidth().clickable(onClick = onOpenNotes),
             shape = RoundedCornerShape(14.dp),
             color = Color(0xFF075B50),
-            border = BorderStroke(1.dp, Color(0xFFB48B39))
+            border = BorderStroke(1.5.dp, Color(0xFFB48B39))
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp),
