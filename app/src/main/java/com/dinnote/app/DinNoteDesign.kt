@@ -31,6 +31,7 @@ object DinNoteDesign {
     val CardVerticalPadding = 10.dp
     val ReaderParagraphSpacing = 6.dp
     val ReaderArabicSize = 18.sp
+    val ReaderMalaySize = 14.sp
 }
 
 @Composable
