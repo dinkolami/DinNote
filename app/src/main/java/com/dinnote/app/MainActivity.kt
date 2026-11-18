@@ -2465,9 +2465,10 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                             val decoration = remember(context) { runCatching { context.assets.open("maktabah_card.webp").use { android.graphics.BitmapFactory.decodeStream(it) } }.getOrNull() }
                             decoration?.let { bitmap ->
                                 androidx.compose.foundation.Image(bitmap = bitmap.asImageBitmap(), contentDescription = null,
-                                    modifier = Modifier.fillMaxWidth().height(48.dp),
-                                    contentScale = androidx.compose.ui.layout.ContentScale.FillBounds)
+                                    modifier = Modifier.align(androidx.compose.ui.Alignment.End).width(180.dp).height(52.dp),
+                                    contentScale = androidx.compose.ui.layout.ContentScale.Fit)
                             }
+                            Box(Modifier.fillMaxWidth().height(4.dp).background(Brush.horizontalGradient(listOf(Color(0xFF075B59), Color(0xFFD6AF58), Color(0xFF087F83)))))
                         }
                     }
                 }
