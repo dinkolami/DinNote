@@ -3605,8 +3605,15 @@ private fun IslamicStructuredReader(source: String, fontSize: Float, onEdit: () 
                 border = androidx.compose.foundation.BorderStroke(1.5.dp, Color(0xFFD3A63B))) {
                 Column(Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text(label, fontSize = 12.sp, color = Color(0xFF075D49),
-                        fontWeight = FontWeight.Bold)
+                    Surface(
+                        color = Color(0xFF075D49),
+                        shape = RoundedCornerShape(10.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFD3A63B))
+                    ) {
+                        Text(label, modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                            fontSize = 12.sp, color = Color.White,
+                            fontWeight = FontWeight.Bold)
+                    }
                     androidx.compose.material3.HorizontalDivider(
                         thickness = 0.5.dp, color = Color(0xFFD8C9A7))
                     Text(formattedNoteText(match.groupValues[2]), modifier = Modifier.fillMaxWidth(),
