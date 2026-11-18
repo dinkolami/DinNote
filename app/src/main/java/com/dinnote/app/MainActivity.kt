@@ -1686,6 +1686,21 @@ private class SmartSelectionToolbar(
     }
 }
 
+private fun exactEditorFormatOpener(source: String, start: Int, end: Int, kind: String): NoteFormatToken? {
+    val (tokens, ranges) = noteFormatRanges(source)
+    val hidden = BooleanArray(source.length)
+    tokens.forEach { token -> for (i in token.start until token.end) hidden[i] = true }
+    fun visibleBetween(a: Int, b: Int): Boolean =
+        (a.coerceIn(0, source.length) until b.coerceIn(0, source.length)).any { !hidden[it] }
+    val visibleSelected = (start until end).filter { !hidden[it] }
+    val first = visibleSelected.firstOrNull() ?: return null
+    val last = visibleSelected.last()
+    return ranges.asSequence().mapNotNull { (a, b, _) ->
+        val opener = tokens.firstOrNull { it.end == a && it.kind == kind && !it.closing } ?: return@mapNotNull null
+        if (a <= first && b > last && !visibleBetween(a, first) && !visibleBetween(last + 1, b)) opener else null
+    }.maxByOrNull { it.start }
+}
+
 private fun selectedEditorFontSize(value: TextFieldValue, fallback: Int): Int {
     val start = value.selection.min.coerceIn(0, value.text.length)
     val end = value.selection.max.coerceIn(start, value.text.length)
@@ -1707,11 +1722,8 @@ private fun resizeEditorTextSelection(value: TextFieldValue, delta: Int, default
     val source = value.text
     val opening = Regex("""\{\{size:(\d{1,2})\}\}""")
     // Replace an existing exact selection wrapper instead of nesting size spans.
-    val preceding = opening.findAll(source.substring(0, start)).lastOrNull()
-    val existing = preceding?.takeIf {
-        it.range.last + 1 == start && source.startsWith("{{/size}}", end)
-    }
-    val current = existing?.groupValues?.get(1)?.toIntOrNull()
+    val existing = exactEditorFormatOpener(source, start, end, "size")
+    val current = existing?.let { opening.matchEntire(source.substring(it.start, it.end))?.groupValues?.get(1)?.toIntOrNull() }
         ?: noteFormatRanges(source).second
             .filter { (a, b, style) -> a <= start && b >= end && style.fontSize.isSp }
             .lastOrNull()?.third?.fontSize?.value?.toInt()
@@ -1720,9 +1732,10 @@ private fun resizeEditorTextSelection(value: TextFieldValue, delta: Int, default
     if (size == current) return value
     if (existing != null) {
         val replacement = "{{size:$size}}"
-        val updated = source.replaceRange(existing.range, replacement)
-        val shift = replacement.length - existing.value.length
-        return TextFieldValue(updated, selection = TextRange(start + shift, end + shift))
+        val updated = source.replaceRange(existing.start, existing.end, replacement)
+        val shift = replacement.length - (existing.end - existing.start)
+        fun remap(offset: Int) = if (offset >= existing.end) offset + shift else if (offset > existing.start) existing.start else offset
+        return TextFieldValue(updated, selection = TextRange(remap(start), remap(end)))
     }
     val prefix = "{{size:$size}}"
     return TextFieldValue(
@@ -1744,15 +1757,10 @@ private fun colorEditorSelection(value: TextFieldValue, color: Long): TextFieldV
     val prefix = "{{color:$hex}}"
     val source = value.text
     // Recolor an existing selection without nesting color markers.
-    val opening = Regex("""\{\{color:#[0-9A-Fa-f]{6}\}\}""")
-    val previous = opening.findAll(source.substring(0, start)).lastOrNull()
-    val existing = previous?.takeIf {
-        it.range.last + 1 == start && source.startsWith("{{/color}}", end)
-    }
+    val existing = exactEditorFormatOpener(source, start, end, "color")
     if (existing != null) {
-        val updated = source.replaceRange(existing.range, prefix)
-        val shift = prefix.length - existing.value.length
-        return TextFieldValue(updated, selection = TextRange(start + shift, end + shift))
+        val updated = source.replaceRange(existing.start, existing.end, prefix)
+        return TextFieldValue(updated, selection = TextRange(start, end))
     }
     val selected = source.substring(start, end)
     return TextFieldValue(
