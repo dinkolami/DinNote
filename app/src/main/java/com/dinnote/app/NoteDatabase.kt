@@ -84,6 +84,7 @@ class NoteDatabase(context: Context) :
         return if (id == null) {
             writableDatabase.insertOrThrow("notes", null, values)
         } else {
+            require(id > 0L) { "ID nota tidak sah" }
             val affected = writableDatabase.update("notes", values, "id = ?", arrayOf(id.toString()))
             check(affected == 1) { "Nota tidak ditemui: $id" }
             id
