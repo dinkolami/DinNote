@@ -1331,12 +1331,8 @@ fun NotesScreen(
                             body = updated
                         }
                     }, ::resizeSelection)
-                    Row(Modifier.fillMaxWidth().height(34.dp), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                        TextButton(onClick = { showEditorTools = !showEditorTools }, contentPadding = PaddingValues(horizontal = 10.dp)) {
-                            Text(if (showEditorTools) "Tutup alat ▴" else "⋯ Alat editor", fontSize = 12.sp)
-                        }
-                    }
-                    if (showEditorTools || smartMenu) {
+                    // Editor toolbar intentionally hidden for a clean writing surface.
+                    if (false) {
                         Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
 
                     var smartSource by remember { mutableStateOf("") }
@@ -2634,14 +2630,11 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                         })
                     SharedParagraphTools(libraryBody) { libraryBody = it }
                     Row(Modifier.fillMaxWidth().height(36.dp), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                        TextButton(onClick = { libraryToolsExpanded = !libraryToolsExpanded }) {
-                            Text(if (libraryToolsExpanded) "Tutup alat ▴" else "⋯ Alat editor", fontSize = 12.sp)
-                        }
                         TextButton(onClick = { libraryTranslationExpanded = !libraryTranslationExpanded }) {
                             Text(if (libraryTranslationExpanded) "Tutup terjemahan" else "Terjemahan", fontSize = 12.sp)
                         }
                     }
-                    if (libraryToolsExpanded) {
+                    if (false) {
                         Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                     var clearLibraryFormatConfirm by remember { mutableStateOf(false) }
                     TextButton(enabled = !libraryBody.selection.collapsed, onClick = {
