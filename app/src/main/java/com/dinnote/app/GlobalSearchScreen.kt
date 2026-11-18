@@ -72,7 +72,10 @@ fun GlobalSearchScreen(modifier: Modifier = Modifier) {
         Text("Carian Pintar & Kegemaran", fontWeight = FontWeight.SemiBold)
         OutlinedTextField(value = query, onValueChange = { query = it },
             modifier = Modifier.fillMaxWidth(), singleLine = true,
-            placeholder = { Text("Cari nota, kitab, hikmah dan kalimah") })
+            placeholder = { Text("Cari nota, kitab, hikmah dan kalimah") },
+            trailingIcon = {
+                if (query.isNotEmpty()) TextButton(onClick = { query = "" }) { Text("Padam") }
+            })
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             FilterChip(selected = !favoritesOnly, onClick = { favoritesOnly = false },
                 label = { Text("Semua") })
@@ -80,6 +83,14 @@ fun GlobalSearchScreen(modifier: Modifier = Modifier) {
                 label = { Text("★ Kegemaran") })
         }
         Text("${hits.size} hasil", style = MaterialTheme.typography.labelMedium)
+        if (hits.isEmpty()) {
+            Text(if (query.isBlank() && !favoritesOnly) "Taip kata kunci dalam bahasa Arab atau Melayu untuk mencari."
+                else if (query.isBlank()) "Belum ada kegemaran. Tekan bintang pada hasil carian untuk menyimpan."
+                else "Tiada hasil. Cuba kata kunci lain.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(vertical = 16.dp))
+        }
         LazyColumn(verticalArrangement = Arrangement.spacedBy(7.dp)) {
             items(hits, key = { "${it.source}:${it.key}" }) { hit ->
                 Surface(modifier = Modifier.fillMaxWidth(),
