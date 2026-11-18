@@ -2421,7 +2421,7 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                         runCatching { context.assets.open("kalam_hikmah_bg.webp").use { BitmapFactory.decodeStream(it)?.asImageBitmap() } }.getOrNull()
                     }
                     Surface(shape = RoundedCornerShape(14.dp), color = Color(0xFFFFF9EC),
-                        modifier = Modifier.fillMaxWidth().height(66.dp)) {
+                        modifier = Modifier.fillMaxWidth().height(42.dp)) {
                         Box(Modifier.fillMaxSize()) {
                             banner?.let {
                                 androidx.compose.foundation.Image(bitmap = it, contentDescription = null,
@@ -2431,7 +2431,7 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                                 verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                                 Text("▤", fontSize = 25.sp, color = Color(0xFF087F83))
                                 Spacer(Modifier.width(10.dp))
-                                Text("Kalam Hikmah", fontSize = 19.sp, fontWeight = FontWeight.Bold, color = Color(0xFF20332F))
+                                Text("Kalam Hikmah", fontSize = 17.sp, fontWeight = FontWeight.Bold, color = Color(0xFF20332F))
                             }
                         }
                     }
@@ -2442,10 +2442,15 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                 Button(onClick = { openLibraryEditor("entry_" + selectedCategory + "_" + System.currentTimeMillis()) }) { Text("+ Tambah Kandungan") }
                 libraryItems.filter { matchesMaktabahSearch(libraryPrefs.getString(it + "_title", "") ?: "", search) ||
                     matchesMaktabahSearch(libraryPrefs.getString(it + "_body", "") ?: "", search) }.forEach { key ->
-                    Card(modifier = Modifier.fillMaxWidth().clickable { openLibraryEditor(key) }, elevation = CardDefaults.cardElevation(defaultElevation = 2.dp), shape = RoundedCornerShape(14.dp), colors = CardDefaults.cardColors(containerColor = Color.White)) {
-                        Column(Modifier.padding(16.dp)) {
+                    Card(modifier = Modifier.fillMaxWidth().clickable { openLibraryEditor(key) }, elevation = CardDefaults.cardElevation(defaultElevation = 2.dp), shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Color(0xFFC8A34D)), colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFDF7))) {
+                        Column(Modifier.fillMaxWidth()) {
+                            Column(Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
                             Row(Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                                Text(libraryPrefs.getString(key + "_title", "Tanpa tajuk") ?: "Tanpa tajuk", fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                                Surface(shape = RoundedCornerShape(bottomStart = 8.dp, bottomEnd = 8.dp), color = Color(0xFF075B59), border = BorderStroke(1.dp, Color(0xFFC8A34D))) {
+                                    Text("▤", color = Color(0xFFFFE4A0), fontSize = 20.sp, modifier = Modifier.padding(horizontal = 9.dp, vertical = 7.dp))
+                                }
+                                Spacer(Modifier.width(10.dp))
+                                Text(libraryPrefs.getString(key + "_title", "Tanpa tajuk") ?: "Tanpa tajuk", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Color(0xFF075B59), modifier = Modifier.weight(1f))
                                 Box {
                                     var menuOpen by remember(key) { mutableStateOf(false) }
                                     TextButton(onClick = { menuOpen = true }) { Text("⋮", fontSize = 22.sp, color = Color(0xFF075B59)) }
@@ -2456,11 +2461,12 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
                                 }
                             }
                             Text(formattedNoteText(libraryPrefs.getString(key + "_body", "") ?: ""), modifier = Modifier.fillMaxWidth(), style = androidx.compose.ui.text.TextStyle(textDirection = TextDirection.ContentOrLtr), maxLines = 3, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                            }
                             val decoration = remember(context) { runCatching { context.assets.open("maktabah_card.webp").use { android.graphics.BitmapFactory.decodeStream(it) } }.getOrNull() }
                             decoration?.let { bitmap ->
                                 androidx.compose.foundation.Image(bitmap = bitmap.asImageBitmap(), contentDescription = null,
-                                    modifier = Modifier.align(androidx.compose.ui.Alignment.End).width(116.dp).height(39.dp),
-                                    contentScale = androidx.compose.ui.layout.ContentScale.Fit)
+                                    modifier = Modifier.fillMaxWidth().height(48.dp),
+                                    contentScale = androidx.compose.ui.layout.ContentScale.FillBounds)
                             }
                         }
                     }
