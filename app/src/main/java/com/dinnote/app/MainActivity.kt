@@ -1635,9 +1635,14 @@ fun NotesScreen(
                                 Text("☝ ✦ Smart Touch", color = Color(0xFF087F83), fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
                             }
                             DropdownMenu(expanded = smartMenu, onDismissRequest = { smartMenu = false }, containerColor = Color.White, shape = RoundedCornerShape(12.dp)) {
-                                listOf("Terjemah", "Tambah syarah", "Simpan petikan").forEach { action ->
+                                listOf("Highlight emas", "Highlight hijau", "Terjemah", "Tambah syarah", "Simpan petikan").forEach { action ->
                                     DropdownMenuItem(modifier = Modifier.height(48.dp), leadingIcon = { Text(when (action) { "Terjemah" -> "文"; "Tambah syarah" -> "✎"; else -> "❞" }, color = Color(0xFF087F83), fontSize = 20.sp) }, text = { Text(action, fontSize = 14.sp) }, onClick = {
                                         smartMenu = false
+                                        if (action.startsWith("Highlight")) {
+                                            undoStack.add(body)
+                                            redoStack.clear()
+                                            body = highlightEditorSelection(body, if (action == "Highlight emas") "#F5E3A0" else "#D5ECDD")
+                                        } else {
                                         val start = body.selection.min.coerceIn(0, body.text.length)
                                         val end = body.selection.max.coerceIn(start, body.text.length)
                                         smartSource = smartFormattedExcerpt(body.text, start, end)
@@ -1650,6 +1655,7 @@ fun NotesScreen(
                                                 smartBusy = false
                                                 smartResult = result.getOrElse { "" }
                                             }
+                                        }
                                         }
                                     })
                                 }
@@ -1987,11 +1993,12 @@ private fun EditorColorPicker(onPick: (Long) -> Unit) {
 private data class NoteFormatToken(val start: Int, val end: Int, val style: SpanStyle?, val closing: Boolean, val kind: String)
 
 private fun noteFormatTokens(source: String): List<NoteFormatToken> {
-    val pattern = Regex("""\{\{size:(\d{1,2})\}\}|\{\{/size\}\}|\{\{color:(#[0-9A-Fa-f]{6})\}\}|\{\{/color\}\}|\*\*|\+\+|_""")
+    val pattern = Regex("""\{\{size:(\d{1,2})\}\}|\{\{/size\}\}|\{\{color:(#[0-9A-Fa-f]{6})\}\}|\{\{/color\}\}|\{\{highlight:(#[0-9A-Fa-f]{6})\}\}|\{\{/highlight\}\}|\*\*|\+\+|_""")
     return pattern.findAll(source).map { m ->
         val token = m.value
         val kind = when {
             token.startsWith("{{color:") || token == "{{/color}}" -> "color"
+            token.startsWith("{{highlight:") || token == "{{/highlight}}" -> "highlight"
             token.startsWith("{{") -> "size"
             token == "**" -> "bold"
             token == "++" -> "underline"
@@ -2002,9 +2009,10 @@ private fun noteFormatTokens(source: String): List<NoteFormatToken> {
             "underline" -> SpanStyle(textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline)
             "italic" -> SpanStyle(fontStyle = FontStyle.Italic)
             "color" -> m.groups[2]?.value?.let { SpanStyle(color = Color(android.graphics.Color.parseColor(it))) }
+            "highlight" -> m.groups[3]?.value?.let { SpanStyle(background = Color(android.graphics.Color.parseColor(it))) }
             else -> m.groups[1]?.value?.toIntOrNull()?.let { SpanStyle(fontSize = it.coerceIn(14, 30).sp) }
         }
-        NoteFormatToken(m.range.first, m.range.last + 1, style, (token == "{{/size}}" || token == "{{/color}}"), kind)
+        NoteFormatToken(m.range.first, m.range.last + 1, style, (token == "{{/size}}" || token == "{{/color}}" || token == "{{/highlight}}"), kind)
     }.toList()
 }
 
@@ -2028,6 +2036,7 @@ private fun smartFormattedExcerpt(source: String, start: Int, end: Int): String 
             out.append(when (token.kind) {
                 "size" -> "{{/size}}"
                 "color" -> "{{/color}}"
+                "highlight" -> "{{/highlight}}"
                 else -> source.substring(token.start, token.end)
             })
         }
@@ -2077,7 +2086,7 @@ private fun noteFormatRanges(source: String): Pair<List<NoteFormatToken>, List<T
     // these orphan tokens in both the reader and editor. Unpaired emphasis
     // remains literal because underscores and asterisks can be intentional.
     val hiddenTokens = (recognized + noteFormatTokens(source).filter {
-        it.kind == "size" || it.kind == "color"
+        it.kind == "size" || it.kind == "color" || it.kind == "highlight"
     }).distinctBy { it.start }.sortedBy { it.start }
     return hiddenTokens to ranges.sortedWith(compareBy<Triple<Int, Int, SpanStyle>> { it.first }.thenByDescending { it.second })
 }
@@ -3476,6 +3485,17 @@ private fun SmartVaultDialog(onDismiss: () -> Unit, onInsert: (String) -> Unit) 
 }
 
 // Shared paragraph selection for library and structured content editors.
+private fun highlightEditorSelection(value: TextFieldValue, hex: String): TextFieldValue {
+    val a = value.selection.min.coerceIn(0, value.text.length)
+    val b = value.selection.max.coerceIn(a, value.text.length)
+    if (a == b) return value
+    val before = smartFormattedExcerpt(value.text, 0, a)
+    val selected = smartFormattedExcerpt(value.text, a, b)
+    val after = smartFormattedExcerpt(value.text, b, value.text.length)
+    val marked = "{{highlight:$hex}}" + selected + "{{/highlight}}"
+    return TextFieldValue(before + marked + after, selection = TextRange(before.length + marked.length))
+}
+
 @Composable
 private fun SharedParagraphTools(value: TextFieldValue, onChange: (TextFieldValue) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
@@ -3514,11 +3534,18 @@ private fun SharedParagraphTools(value: TextFieldValue, onChange: (TextFieldValu
         onChange(TextFieldValue(before + block + after, selection = TextRange(before.length + block.length)))
     })
     val selected = value.copy(selection = TextRange(start, end), composition = null)
+    val target = if (value.selection.collapsed) selected else value
     Box(Modifier.wrapContentWidth()) {
         TextButton(onClick = { hasTransfer = transfer.contains("block"); expanded = true }) {
             Text("▤ Smart Block", color = if (enabled) Color(0xFF087F83) else Color.Gray, fontSize = 13.sp)
         }
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            listOf("Highlight emas" to "#F5E3A0", "Highlight hijau" to "#D5ECDD").forEach { (label, hex) ->
+                DropdownMenuItem(text = { Text(label) }, enabled = !target.selection.collapsed, onClick = {
+                    expanded = false
+                    onChange(highlightEditorSelection(target, hex))
+                })
+            }
             DropdownMenuItem(text = { Text("Pilih perenggan") }, enabled = enabled, onClick = {
                 expanded = false
                 onChange(selected)
