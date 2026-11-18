@@ -3938,6 +3938,8 @@ private fun TurathStarterCard(search: String, assetPath: String = "turath/arba_i
     var opened by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(false) }
     var selected by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(-1) }
     var language by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf("Bersebelahan") }
+    val readerPrefs = remember(context) { context.getSharedPreferences("turath_reader", android.content.Context.MODE_PRIVATE) }
+    var lastRead by remember(assetPath) { mutableStateOf(readerPrefs.getInt(assetPath, -1)) }
     val visible = search.isBlank() || matchesMaktabahSearch(book.optString("titleArabic")+" "+book.optString("titleMalay"), search) ||
         entries.any { matchesMaktabahSearch(it.optString("arabic")+" "+it.optString("malay"),search) }
     if(visible) {
@@ -3958,6 +3960,9 @@ private fun TurathStarterCard(search: String, assetPath: String = "turath/arba_i
                         Text(book.optString("titleArabic"),modifier=Modifier.weight(1f),textAlign=TextAlign.End,fontSize=22.sp,fontWeight=FontWeight.Bold)
                     }
                     if(selected !in entries.indices) {
+                        if (lastRead in entries.indices) {
+                            TextButton(onClick = { selected = lastRead }) { Text("Sambung bacaan • ${lastRead + 1}", color = Color(0xFF075B49)) }
+                        }
                         LazyColumn(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(8.dp)) {
                             items(entries.size) { index ->
                                 val e=entries[index]
@@ -3971,6 +3976,10 @@ private fun TurathStarterCard(search: String, assetPath: String = "turath/arba_i
                         }
                     } else {
                         val e=entries[selected]
+                        androidx.compose.runtime.LaunchedEffect(selected, assetPath) {
+                            lastRead = selected
+                            readerPrefs.edit().putInt(assetPath, selected).apply()
+                        }
                         Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(4.dp)) {
                             listOf("Arab","Melayu","Bersebelahan").forEach { mode ->
                                 FilterChip(selected=language==mode,onClick={language=mode},label={Text(mode,fontSize=11.sp)})
