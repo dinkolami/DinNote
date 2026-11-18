@@ -1322,6 +1322,30 @@ fun NotesScreen(
                         ) { Text("A+", color = Color(0xFF087F83)) }
                     }
 
+                    // Smart Block: select the paragraph at the cursor without changing stored text.
+                    var smartBlockMenu by remember { mutableStateOf(false) }
+                    val blockText = body.text
+                    val blockCursor = body.selection.min.coerceIn(0, blockText.length)
+                    val blockStart = if (blockCursor == 0) 0 else blockText.lastIndexOf('\n', blockCursor - 1) + 1
+                    val blockEnd = blockText.indexOf('\n', blockCursor).let { if (it < 0) blockText.length else it }
+                    val canSelectBlock = blockEnd > blockStart && blockText.substring(blockStart, blockEnd).isNotBlank()
+                    Box(Modifier.fillMaxWidth().padding(horizontal = 12.dp)) {
+                        TextButton(enabled = canSelectBlock, onClick = { smartBlockMenu = true }) {
+                            Text("▤ Smart Block", color = if (canSelectBlock) Color(0xFF087F83) else Color.Gray, fontSize = 13.sp)
+                        }
+                        DropdownMenu(expanded = smartBlockMenu, onDismissRequest = { smartBlockMenu = false }) {
+                            DropdownMenuItem(text = { Text("Pilih perenggan") }, onClick = {
+                                smartBlockMenu = false
+                                body = body.copy(selection = TextRange(blockStart, blockEnd), composition = null)
+                            })
+                            DropdownMenuItem(text = { Text("Simpan sebagai petikan") }, onClick = {
+                                smartBlockMenu = false
+                                database.save("Petikan: " + title.ifBlank { "Nota" }, blockText.substring(blockStart, blockEnd), null)
+                                refreshNotes()
+                            })
+                        }
+                    }
+
                     // Smart Touch: only appears for an explicit text selection.
                     var smartMenu by remember { mutableStateOf(false) }
                     var smartSource by remember { mutableStateOf("") }
