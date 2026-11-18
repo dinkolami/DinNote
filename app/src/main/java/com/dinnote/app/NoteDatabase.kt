@@ -138,7 +138,7 @@ class NoteDatabase(context: Context) :
         if (category.isBlank() || category == defaultCategory) return
         writableDatabase.execSQL(
             "UPDATE notes SET category = ?, updated_at = ? WHERE category = ?",
-            arrayOf(defaultCategory, System.currentTimeMillis(), category)
+            arrayOf(defaultCategory, System.currentTimeMillis(), category.trim())
         )
     }
 
