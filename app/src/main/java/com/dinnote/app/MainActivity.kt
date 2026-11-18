@@ -767,11 +767,14 @@ fun NotesScreen(
         }
     }
 
-    val visibleNotes = notes.filter {
-        it.archived == showArchived &&
-            (selectedCategory == "Semua" || it.category == selectedCategory) &&
-            (it.title.contains(search, ignoreCase = true) ||
-                it.body.contains(search, ignoreCase = true))
+    val visibleNotes = remember(notes, showArchived, selectedCategory, search) {
+        val term = normalizeArabicSearch(search.trim())
+        notes.filter {
+            it.archived == showArchived &&
+                (selectedCategory == "Semua" || it.category == selectedCategory) &&
+                (term.isEmpty() || normalizeArabicSearch(it.title).contains(term) ||
+                    normalizeArabicSearch(formattedNoteText(it.body).text).contains(term))
+        }
     }
 
     Box(modifier = modifier.fillMaxSize()) {
@@ -2893,7 +2896,10 @@ private fun SmartDualView(items: List<String>, onClose: () -> Unit, onInsert: (S
     val wide = configuration.screenWidthDp >= 600 ||
         (configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE &&
             configuration.screenWidthDp >= 480)
-    val filtered = remember(items, query) { items.filter { formattedNoteText(it).text.contains(query.trim(), ignoreCase = true) } }
+    val filtered = remember(items, query) {
+        val term = normalizeArabicSearch(query.trim())
+        if (term.isEmpty()) items else items.filter { normalizeArabicSearch(formattedNoteText(it).text).contains(term) }
+    }
     androidx.compose.ui.window.Dialog(onDismissRequest = onClose,
         properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false)) {
         Surface(Modifier.fillMaxSize(), color = Color.White) {
@@ -3000,11 +3006,11 @@ private fun SmartVaultDialog(onDismiss: () -> Unit, onInsert: (String) -> Unit) 
     var draft by remember { mutableStateOf("") }
     val searchText = remember(items) { mutableMapOf<String, String>() }
     val filtered = remember(items, query, tags, references) {
-        val term = query.trim()
+        val term = normalizeArabicSearch(query.trim())
         if (term.isEmpty()) items else items.filter {
-            tags[it].orEmpty().contains(term, ignoreCase = true) ||
-                referenceText(references[it].orEmpty()).contains(term, ignoreCase = true) ||
-                searchText.getOrPut(it) { formattedNoteText(it).text }.contains(term, ignoreCase = true)
+            normalizeArabicSearch(tags[it].orEmpty()).contains(term) ||
+                normalizeArabicSearch(referenceText(references[it].orEmpty())).contains(term) ||
+                searchText.getOrPut(it) { normalizeArabicSearch(formattedNoteText(it).text) }.contains(term)
         }
     }
     var relatedBlock by remember { mutableStateOf<String?>(null) }
