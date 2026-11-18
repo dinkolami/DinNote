@@ -1236,7 +1236,9 @@ fun NotesScreen(
                             // Render the complete note in one text layout, matching the editor.
                             // Compose resolves mixed Arabic/Malay direction per paragraph.
                             var readingTextLayout by remember { mutableStateOf<androidx.compose.ui.text.TextLayoutResult?>(null) }
-                            Text(
+                            if (body.text.contains("{{block:")) {
+                                IslamicStructuredReader(body.text, editorFontSize) { readingMode = false }
+                            } else Text(
                                 text = formattedNoteText(body.text),
                                 modifier = Modifier.fillMaxWidth().pointerInput(body.text) {
                                     detectTapGestures(onDoubleTap = { position ->
@@ -1635,10 +1637,19 @@ fun NotesScreen(
                                 Text("☝ ✦ Smart Touch", color = Color(0xFF087F83), fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
                             }
                             DropdownMenu(expanded = smartMenu, onDismissRequest = { smartMenu = false }, containerColor = Color.White, shape = RoundedCornerShape(12.dp)) {
-                                listOf("Highlight emas", "Highlight hijau", "Terjemah", "Tambah syarah", "Simpan petikan").forEach { action ->
+                                listOf("Box al-Quran", "Box Hadis", "Box Teks Arab", "Box Kalam Hikmah", "Highlight emas", "Highlight hijau", "Terjemah", "Tambah syarah", "Simpan petikan").forEach { action ->
                                     DropdownMenuItem(modifier = Modifier.height(48.dp), leadingIcon = { Text(when (action) { "Terjemah" -> "文"; "Tambah syarah" -> "✎"; else -> "❞" }, color = Color(0xFF087F83), fontSize = 20.sp) }, text = { Text(action, fontSize = 14.sp) }, onClick = {
                                         smartMenu = false
-                                        if (action.startsWith("Highlight")) {
+                                        if (action.startsWith("Box")) {
+                                            undoStack.add(body)
+                                            redoStack.clear()
+                                            body = insertIslamicEditorBlock(body, when (action) {
+                                                "Box al-Quran" -> "quran"
+                                                "Box Hadis" -> "hadith"
+                                                "Box Teks Arab" -> "arabic"
+                                                else -> "hikmah"
+                                            })
+                                        } else if (action.startsWith("Highlight")) {
                                             undoStack.add(body)
                                             redoStack.clear()
                                             body = highlightEditorSelection(body, if (action == "Highlight emas") "#F5E3A0" else "#D5ECDD")
@@ -1993,12 +2004,13 @@ private fun EditorColorPicker(onPick: (Long) -> Unit) {
 private data class NoteFormatToken(val start: Int, val end: Int, val style: SpanStyle?, val closing: Boolean, val kind: String)
 
 private fun noteFormatTokens(source: String): List<NoteFormatToken> {
-    val pattern = Regex("""\{\{size:(\d{1,2})\}\}|\{\{/size\}\}|\{\{color:(#[0-9A-Fa-f]{6})\}\}|\{\{/color\}\}|\{\{highlight:(#[0-9A-Fa-f]{6})\}\}|\{\{/highlight\}\}|\*\*|\+\+|_""")
+    val pattern = Regex("""\{\{size:(\d{1,2})\}\}|\{\{/size\}\}|\{\{color:(#[0-9A-Fa-f]{6})\}\}|\{\{/color\}\}|\{\{highlight:(#[0-9A-Fa-f]{6})\}\}|\{\{/highlight\}\}|\{\{block:(quran|hadith|arabic|hikmah)\}\}|\{\{/block\}\}|\*\*|\+\+|_""")
     return pattern.findAll(source).map { m ->
         val token = m.value
         val kind = when {
             token.startsWith("{{color:") || token == "{{/color}}" -> "color"
             token.startsWith("{{highlight:") || token == "{{/highlight}}" -> "highlight"
+            token.startsWith("{{block:") || token == "{{/block}}" -> "block"
             token.startsWith("{{") -> "size"
             token == "**" -> "bold"
             token == "++" -> "underline"
@@ -2010,9 +2022,10 @@ private fun noteFormatTokens(source: String): List<NoteFormatToken> {
             "italic" -> SpanStyle(fontStyle = FontStyle.Italic)
             "color" -> m.groups[2]?.value?.let { SpanStyle(color = Color(android.graphics.Color.parseColor(it))) }
             "highlight" -> m.groups[3]?.value?.let { SpanStyle(background = Color(android.graphics.Color.parseColor(it))) }
+            "block" -> m.groups[4]?.value?.let { SpanStyle(background = smartBlockColor(it), fontSize = 22.sp) }
             else -> m.groups[1]?.value?.toIntOrNull()?.let { SpanStyle(fontSize = it.coerceIn(14, 30).sp) }
         }
-        NoteFormatToken(m.range.first, m.range.last + 1, style, (token == "{{/size}}" || token == "{{/color}}" || token == "{{/highlight}}"), kind)
+        NoteFormatToken(m.range.first, m.range.last + 1, style, (token == "{{/size}}" || token == "{{/color}}" || token == "{{/highlight}}" || token == "{{/block}}"), kind)
     }.toList()
 }
 
@@ -2037,6 +2050,7 @@ private fun smartFormattedExcerpt(source: String, start: Int, end: Int): String 
                 "size" -> "{{/size}}"
                 "color" -> "{{/color}}"
                 "highlight" -> "{{/highlight}}"
+                "block" -> "{{/block}}"
                 else -> source.substring(token.start, token.end)
             })
         }
@@ -2086,7 +2100,7 @@ private fun noteFormatRanges(source: String): Pair<List<NoteFormatToken>, List<T
     // these orphan tokens in both the reader and editor. Unpaired emphasis
     // remains literal because underscores and asterisks can be intentional.
     val hiddenTokens = (recognized + noteFormatTokens(source).filter {
-        it.kind == "size" || it.kind == "color" || it.kind == "highlight"
+        it.kind == "size" || it.kind == "color" || it.kind == "highlight" || it.kind == "block"
     }).distinctBy { it.start }.sortedBy { it.start }
     return hiddenTokens to ranges.sortedWith(compareBy<Triple<Int, Int, SpanStyle>> { it.first }.thenByDescending { it.second })
 }
@@ -3485,6 +3499,66 @@ private fun SmartVaultDialog(onDismiss: () -> Unit, onInsert: (String) -> Unit) 
 }
 
 // Shared paragraph selection for library and structured content editors.
+private fun smartBlockColor(kind: String): Color = when (kind) {
+    "quran" -> Color(0xFFE9F3E7)
+    "hadith" -> Color(0xFFFAF0D8)
+    "arabic" -> Color(0xFFE6F2EF)
+    else -> Color(0xFFF2ECE1)
+}
+
+private fun insertIslamicEditorBlock(value: TextFieldValue, kind: String): TextFieldValue {
+    val a = value.selection.min.coerceIn(0, value.text.length)
+    val b = value.selection.max.coerceIn(a, value.text.length)
+    val before = smartFormattedExcerpt(value.text, 0, a)
+    val after = smartFormattedExcerpt(value.text, b, value.text.length)
+    val selected = smartFormattedExcerpt(value.text, a, b)
+    val content = selected.ifBlank { when (kind) {
+        "quran" -> "Ayat al-Quran"
+        "hadith" -> "Matan hadis"
+        "arabic" -> "Teks Arab"
+        else -> "Kalam hikmah"
+    } }
+    val opening = "\n{{block:$kind}}"
+    val closing = "{{/block}}\n"
+    val start = before.length + opening.length
+    return TextFieldValue(before + opening + content + closing + after,
+        selection = TextRange(start, start + content.length))
+}
+
+@Composable
+private fun IslamicStructuredReader(source: String, fontSize: Float, onEdit: () -> Unit) {
+    val pattern = Regex("""\{\{block:(quran|hadith|arabic|hikmah)\}\}([\s\S]*?)\{\{/block\}\}""")
+    var cursor = 0
+    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        pattern.findAll(source).forEach { match ->
+            val plain = source.substring(cursor, match.range.first)
+            if (plain.isNotBlank()) Text(formattedNoteText(plain), fontSize = fontSize.sp,
+                lineHeight = (fontSize * 1.6f).sp, modifier = Modifier.fillMaxWidth())
+            val kind = match.groupValues[1]
+            val label = when (kind) {
+                "quran" -> "Ayat al-Quran"
+                "hadith" -> "Hadis"
+                "arabic" -> "Teks Arab"
+                else -> "Kalam Hikmah"
+            }
+            Surface(modifier = Modifier.fillMaxWidth().clickable(onClick = onEdit),
+                color = smartBlockColor(kind), shape = RoundedCornerShape(12.dp),
+                border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFC49B47))) {
+                Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text(label, fontSize = 12.sp, color = Color(0xFF075D49), fontWeight = FontWeight.SemiBold)
+                    Text(formattedNoteText(match.groupValues[2]), modifier = Modifier.fillMaxWidth(),
+                        fontSize = 22.sp, lineHeight = 36.sp, textAlign = TextAlign.Right,
+                        style = androidx.compose.ui.text.TextStyle(textDirection = TextDirection.ContentOrRtl))
+                }
+            }
+            cursor = match.range.last + 1
+        }
+        val tail = source.substring(cursor)
+        if (tail.isNotBlank()) Text(formattedNoteText(tail), fontSize = fontSize.sp,
+            lineHeight = (fontSize * 1.6f).sp, modifier = Modifier.fillMaxWidth())
+    }
+}
+
 private fun highlightEditorSelection(value: TextFieldValue, hex: String): TextFieldValue {
     val a = value.selection.min.coerceIn(0, value.text.length)
     val b = value.selection.max.coerceIn(a, value.text.length)
@@ -3540,6 +3614,12 @@ private fun SharedParagraphTools(value: TextFieldValue, onChange: (TextFieldValu
             Text("▤ Smart Block", color = if (enabled) Color(0xFF087F83) else Color.Gray, fontSize = 13.sp)
         }
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            listOf("Box al-Quran" to "quran", "Box Hadis" to "hadith", "Box Teks Arab" to "arabic", "Box Kalam Hikmah" to "hikmah").forEach { (label, kind) ->
+                DropdownMenuItem(text = { Text(label) }, onClick = {
+                    expanded = false
+                    onChange(insertIslamicEditorBlock(value, kind))
+                })
+            }
             listOf("Highlight emas" to "#F5E3A0", "Highlight hijau" to "#D5ECDD").forEach { (label, hex) ->
                 DropdownMenuItem(text = { Text(label) }, enabled = !target.selection.collapsed, onClick = {
                     expanded = false
