@@ -137,6 +137,7 @@ fun DinNoteApp() {
         surfaceVariant = Color(0xFFF7F6F2),
         outline = Color(0xFFD7DEDA)
     )
+    val appKeyboardVisible = WindowInsets.ime.getBottom(androidx.compose.ui.platform.LocalDensity.current) > 0
     MaterialTheme(colorScheme = islamicScheme) {
         Scaffold(
             modifier = Modifier.navigationBarsPadding().imePadding(),
@@ -147,7 +148,7 @@ fun DinNoteApp() {
                 Spacer(Modifier.fillMaxWidth().statusBarsPadding())
             },
             bottomBar = {
-                Surface(
+                if (!appKeyboardVisible) Surface(
                     modifier = Modifier.fillMaxWidth().padding(start = 10.dp, end = 10.dp, top = 3.dp, bottom = 6.dp),
                     shape = RoundedCornerShape(10.dp),
                     color = Color.White,
@@ -1247,6 +1248,10 @@ fun NotesScreen(
                         }
                     }
                     HorizontalDivider(color = Color(0xFFF0F0F0))
+                    val focusKeyboard = WindowInsets.ime.getBottom(androidx.compose.ui.platform.LocalDensity.current) > 0
+                    var smartMenu by remember { mutableStateOf(false) }
+                    var showEditorTools by remember { mutableStateOf(false) }
+                    if (!focusKeyboard) {
                     Row(
                         Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 0.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -1273,6 +1278,107 @@ fun NotesScreen(
                         }
                     }
                     HorizontalDivider(color = Color(0xFFF0F0F0))
+                    }
+                    Surface(
+                        modifier = Modifier.fillMaxWidth().weight(1f).padding(start = 8.dp, end = 8.dp, top = 2.dp, bottom = 0.dp),
+                        shape = RoundedCornerShape(0.dp),
+                        color = Color.White
+                    ) {
+                        Box(Modifier.fillMaxSize()) {
+                            Column(
+                                Modifier.fillMaxSize().padding(horizontal = 8.dp, vertical = 4.dp)
+                            ) {
+                                androidx.compose.foundation.text.BasicTextField(
+                                    value = title,
+                                    onValueChange = { title = it },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    singleLine = true,
+                                    textStyle = androidx.compose.ui.text.TextStyle(
+                                        fontSize = 18.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = Color(0xFF087F83),
+                                        textDirection = TextDirection.ContentOrRtl
+                                    ),
+                                    decorationBox = { inner ->
+                                        Box {
+                                            if (title.isEmpty()) Text("Catatan Baharu", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF087F83))
+                                            inner()
+                                        }
+                                    }
+                                )
+                                Spacer(Modifier.height(4.dp))
+                                HorizontalDivider(color = Color(0xFFD5DADD), thickness = 1.dp)
+                                Spacer(Modifier.height(4.dp))
+                                val bodyScrollState = rememberScrollState()
+                                var bodyTextLayout by remember { mutableStateOf<androidx.compose.ui.text.TextLayoutResult?>(null) }
+                                var bodyViewportHeight by remember { mutableIntStateOf(0) }
+                                val keyboardVisible = WindowInsets.ime.getBottom(androidx.compose.ui.platform.LocalDensity.current) > 0
+                                LaunchedEffect(body.selection, bodyTextLayout, bodyViewportHeight, keyboardVisible) {
+                                    // Allow IME resize and text layout to settle before positioning the caret.
+                                    kotlinx.coroutines.delay(80)
+                                    val layout = bodyTextLayout ?: return@LaunchedEffect
+                                    if (bodyViewportHeight <= 0) return@LaunchedEffect
+                                    val caret = runCatching { layout.getCursorRect(body.selection.end.coerceIn(0, body.text.length)) }.getOrNull() ?: return@LaunchedEffect
+                                    val target = when {
+                                        caret.bottom > bodyScrollState.value + bodyViewportHeight - 24f ->
+                                            (caret.bottom - bodyViewportHeight + 48f).toInt()
+                                        caret.top < bodyScrollState.value + 16f ->
+                                            (caret.top - 24f).toInt()
+                                        else -> bodyScrollState.value
+                                    }
+                                    if (target != bodyScrollState.value) {
+                                        bodyScrollState.animateScrollTo(target.coerceIn(0, bodyScrollState.maxValue))
+                                    }
+                                }
+                                val nativeToolbar = androidx.compose.ui.platform.LocalTextToolbar.current
+                                val toolbarView = androidx.compose.ui.platform.LocalView.current
+                                val openSmartMenu by rememberUpdatedState(newValue = { smartMenu = true })
+                                val selectionToolbar = remember(toolbarView, nativeToolbar) {
+                                    SmartSelectionToolbar(toolbarView, nativeToolbar) { openSmartMenu() }
+                                }
+                                DisposableEffect(selectionToolbar) {
+                                    onDispose { selectionToolbar.hide() }
+                                }
+                                CompositionLocalProvider(androidx.compose.ui.platform.LocalTextToolbar provides selectionToolbar) {
+                                androidx.compose.foundation.text.BasicTextField(
+                                    value = body,
+                                    // Same-length transformation keeps IME cursor offsets stable.
+                                    onValueChange = { next ->
+                                        if (next.text != body.text) {
+                                            undoStack.add(body)
+                                            if (undoStack.size > 60) undoStack.removeAt(0)
+                                            redoStack.clear()
+                                        }
+                                        body = next
+                                    },
+                                    visualTransformation = remember { NoteFormattingTransformation() },
+                                    modifier = Modifier.weight(1f).fillMaxWidth()
+                                        .focusRequester(noteBodyFocusRequester)
+                                        .onSizeChanged { bodyViewportHeight = it.height }
+                                        .verticalScroll(bodyScrollState),
+                                    onTextLayout = { bodyTextLayout = it },
+                                    textStyle = androidx.compose.ui.text.TextStyle(
+                                        fontSize = editorFontSize.sp,
+                                        color = Color(0xFF263B3E),
+                                        lineHeight = (editorFontSize * displayPrefs.getFloat("line_spacing", 1.6f).coerceIn(1.2f, 2.2f)).sp,
+                                        textDirection = TextDirection.ContentOrRtl
+                                    ),
+                                    decorationBox = { inner ->
+                                        Box {
+                                            if (body.text.isEmpty()) Text(
+                                                "Sentuh di sini untuk menulis...",
+                                                fontSize = 16.sp,
+                                                fontStyle = FontStyle.Italic,
+                                                color = Color(0xFF667A7B)
+                                            )
+                                            inner()
+                                        }
+                                    }
+                                )
+                                }
+                            }
+                        }
+                    }
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 5.dp),
                         horizontalArrangement = Arrangement.spacedBy(5.dp),
@@ -1321,8 +1427,14 @@ fun NotesScreen(
                             modifier = Modifier.weight(1f).height(34.dp)
                         ) { Text("A+", color = Color(0xFF087F83)) }
                     }
+                    Row(Modifier.fillMaxWidth().height(34.dp), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                        TextButton(onClick = { showEditorTools = !showEditorTools }, contentPadding = PaddingValues(horizontal = 10.dp)) {
+                            Text(if (showEditorTools) "Tutup alat ▴" else "⋯ Alat editor", fontSize = 12.sp)
+                        }
+                    }
+                    if (showEditorTools || smartMenu || !focusKeyboard) {
+                        Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
 
-                                        var smartMenu by remember { mutableStateOf(false) }
                     var smartSource by remember { mutableStateOf("") }
                     var smartResult by remember { mutableStateOf("") }
                     var smartLabel by remember { mutableStateOf("") }
@@ -1393,7 +1505,7 @@ fun NotesScreen(
                     val blockStart = if (blockCursor == 0) 0 else blockText.lastIndexOf('\n', blockCursor - 1) + 1
                     val blockEnd = blockText.indexOf('\n', blockCursor).let { if (it < 0) blockText.length else it }
                     val canSelectBlock = blockEnd > blockStart && blockText.substring(blockStart, blockEnd).isNotBlank()
-                    Box(Modifier.fillMaxWidth().padding(horizontal = 12.dp)) {
+                    Box(Modifier.wrapContentWidth()) {
                         TextButton(enabled = canSelectBlock, onClick = { smartBlockMenu = true }) {
                             Text("▤ Smart Block", color = if (canSelectBlock) Color(0xFF087F83) else Color.Gray, fontSize = 13.sp)
                         }
@@ -1467,7 +1579,7 @@ fun NotesScreen(
 
                     // Smart Touch: only appears for an explicit text selection.
                     if (!body.selection.collapsed) {
-                        Box(Modifier.fillMaxWidth().padding(horizontal = 12.dp)) {
+                        Box(Modifier.wrapContentWidth()) {
                             TextButton(onClick = { smartMenu = true }) {
                                 Text("☝ ✦ Smart Touch", color = Color(0xFF087F83), fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
                             }
@@ -1529,7 +1641,7 @@ fun NotesScreen(
 
                     // Smart Article: editable templates using existing note formatting tokens.
                     var showNoteTemplateMenu by remember { mutableStateOf(false) }
-                    Box(Modifier.fillMaxWidth().padding(horizontal = 12.dp)) {
+                    Box(Modifier.wrapContentWidth()) {
                         TextButton(onClick = { showNoteTemplateMenu = true }) {
                             Text("＋ Smart Article", color = Color(0xFF075D49), fontSize = 13.sp)
                         }
@@ -1572,105 +1684,6 @@ fun NotesScreen(
                             }
                         }
                     }
-
-                    Surface(
-                        modifier = Modifier.fillMaxWidth().weight(1f).padding(start = 8.dp, end = 8.dp, top = 2.dp, bottom = 0.dp),
-                        shape = RoundedCornerShape(0.dp),
-                        color = Color.White
-                    ) {
-                        Box(Modifier.fillMaxSize()) {
-                            Column(
-                                Modifier.fillMaxSize().padding(horizontal = 8.dp, vertical = 18.dp)
-                            ) {
-                                androidx.compose.foundation.text.BasicTextField(
-                                    value = title,
-                                    onValueChange = { title = it },
-                                    modifier = Modifier.fillMaxWidth(),
-                                    singleLine = true,
-                                    textStyle = androidx.compose.ui.text.TextStyle(
-                                        fontSize = 18.sp,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = Color(0xFF087F83),
-                                        textDirection = TextDirection.ContentOrRtl
-                                    ),
-                                    decorationBox = { inner ->
-                                        Box {
-                                            if (title.isEmpty()) Text("Catatan Baharu", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF087F83))
-                                            inner()
-                                        }
-                                    }
-                                )
-                                Spacer(Modifier.height(12.dp))
-                                HorizontalDivider(color = Color(0xFFD5DADD), thickness = 1.dp)
-                                Spacer(Modifier.height(12.dp))
-                                val bodyScrollState = rememberScrollState()
-                                var bodyTextLayout by remember { mutableStateOf<androidx.compose.ui.text.TextLayoutResult?>(null) }
-                                var bodyViewportHeight by remember { mutableIntStateOf(0) }
-                                val keyboardVisible = WindowInsets.ime.getBottom(androidx.compose.ui.platform.LocalDensity.current) > 0
-                                LaunchedEffect(body.selection, bodyTextLayout, bodyViewportHeight, keyboardVisible) {
-                                    // Allow IME resize and text layout to settle before positioning the caret.
-                                    kotlinx.coroutines.delay(80)
-                                    val layout = bodyTextLayout ?: return@LaunchedEffect
-                                    if (bodyViewportHeight <= 0) return@LaunchedEffect
-                                    val caret = runCatching { layout.getCursorRect(body.selection.end.coerceIn(0, body.text.length)) }.getOrNull() ?: return@LaunchedEffect
-                                    val target = when {
-                                        caret.bottom > bodyScrollState.value + bodyViewportHeight - 24f ->
-                                            (caret.bottom - bodyViewportHeight + 48f).toInt()
-                                        caret.top < bodyScrollState.value + 16f ->
-                                            (caret.top - 24f).toInt()
-                                        else -> bodyScrollState.value
-                                    }
-                                    if (target != bodyScrollState.value) {
-                                        bodyScrollState.animateScrollTo(target.coerceIn(0, bodyScrollState.maxValue))
-                                    }
-                                }
-                                val nativeToolbar = androidx.compose.ui.platform.LocalTextToolbar.current
-                                val toolbarView = androidx.compose.ui.platform.LocalView.current
-                                val openSmartMenu by rememberUpdatedState(newValue = { smartMenu = true })
-                                val selectionToolbar = remember(toolbarView, nativeToolbar) {
-                                    SmartSelectionToolbar(toolbarView, nativeToolbar) { openSmartMenu() }
-                                }
-                                DisposableEffect(selectionToolbar) {
-                                    onDispose { selectionToolbar.hide() }
-                                }
-                                CompositionLocalProvider(androidx.compose.ui.platform.LocalTextToolbar provides selectionToolbar) {
-                                androidx.compose.foundation.text.BasicTextField(
-                                    value = body,
-                                    // Same-length transformation keeps IME cursor offsets stable.
-                                    onValueChange = { next ->
-                                        if (next.text != body.text) {
-                                            undoStack.add(body)
-                                            if (undoStack.size > 60) undoStack.removeAt(0)
-                                            redoStack.clear()
-                                        }
-                                        body = next
-                                    },
-                                    visualTransformation = remember { NoteFormattingTransformation() },
-                                    modifier = Modifier.weight(1f).fillMaxWidth()
-                                        .focusRequester(noteBodyFocusRequester)
-                                        .onSizeChanged { bodyViewportHeight = it.height }
-                                        .verticalScroll(bodyScrollState),
-                                    onTextLayout = { bodyTextLayout = it },
-                                    textStyle = androidx.compose.ui.text.TextStyle(
-                                        fontSize = editorFontSize.sp,
-                                        color = Color(0xFF263B3E),
-                                        lineHeight = (editorFontSize * displayPrefs.getFloat("line_spacing", 1.6f).coerceIn(1.2f, 2.2f)).sp,
-                                        textDirection = TextDirection.ContentOrRtl
-                                    ),
-                                    decorationBox = { inner ->
-                                        Box {
-                                            if (body.text.isEmpty()) Text(
-                                                "Sentuh di sini untuk menulis...",
-                                                fontSize = 16.sp,
-                                                fontStyle = FontStyle.Italic,
-                                                color = Color(0xFF667A7B)
-                                            )
-                                            inner()
-                                        }
-                                    }
-                                )
-                                }
-                            }
                         }
                     }
 
