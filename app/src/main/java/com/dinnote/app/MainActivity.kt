@@ -2761,20 +2761,53 @@ private fun saveSmartVault(context: android.content.Context, block: String) {
 private fun SmartVaultDialog(onDismiss: () -> Unit, onInsert: (String) -> Unit) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val items = remember { readSmartVault(context) }
+    val index = remember { context.getSharedPreferences("dinnote_smart_index", android.content.Context.MODE_PRIVATE) }
+    fun tagKey(block: String): String {
+        val digest = java.security.MessageDigest.getInstance("SHA-256").digest(block.toByteArray(Charsets.UTF_8))
+        return android.util.Base64.encodeToString(digest, android.util.Base64.NO_WRAP)
+    }
+    var tags by remember { mutableStateOf(items.associateWith { index.getString(tagKey(it), "") ?: "" }) }
     var query by remember { mutableStateOf("") }
+    var editing by remember { mutableStateOf<String?>(null) }
+    var draft by remember { mutableStateOf("") }
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Smart Vault · Khazanah Faedah") },
         text = {
             Column {
                 OutlinedTextField(value = query, onValueChange = { query = it },
-                    label = { Text("Cari petikan") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                    label = { Text("Cari teks atau tema") }, singleLine = true, modifier = Modifier.fillMaxWidth())
                 Column(Modifier.heightIn(max = 300.dp).verticalScroll(rememberScrollState())) {
-                    val filtered = items.filter { formattedNoteText(it).text.contains(query.trim(), ignoreCase = true) }
+                    val filtered = items.filter {
+                        formattedNoteText(it).text.contains(query.trim(), ignoreCase = true) ||
+                            tags[it].orEmpty().contains(query.trim(), ignoreCase = true)
+                    }
                     if (filtered.isEmpty()) Text("Tiada petikan ditemui", modifier = Modifier.padding(12.dp))
                     filtered.forEach { block ->
-                        TextButton(onClick = { onInsert(block); onDismiss() }) {
-                            Text(formattedNoteText(block), maxLines = 4)
+                        Column(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+                            TextButton(onClick = { onInsert(block); onDismiss() }) {
+                                Text(formattedNoteText(block), maxLines = 4)
+                            }
+                            Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                                TextButton(onClick = { editing = block; draft = tags[block].orEmpty() }) {
+                                    Text("Tema / tag", color = Color(0xFF087F83))
+                                }
+                                Text(tags[block].orEmpty(), fontSize = 12.sp, maxLines = 2)
+                            }
+                            if (editing == block) {
+                                OutlinedTextField(value = draft, onValueChange = { draft = it },
+                                    label = { Text("Contoh: Fiqh, Solat") }, singleLine = true,
+                                    modifier = Modifier.fillMaxWidth())
+                                Row {
+                                    TextButton(onClick = {
+                                        val clean = draft.split(",").map { it.trim() }.filter { it.isNotEmpty() }.distinct().joinToString(", ")
+                                        index.edit().putString(tagKey(block), clean).apply()
+                                        tags = tags + (block to clean)
+                                        editing = null
+                                    }) { Text("Simpan") }
+                                    TextButton(onClick = { editing = null }) { Text("Batal") }
+                                }
+                            }
                         }
                         HorizontalDivider()
                     }
