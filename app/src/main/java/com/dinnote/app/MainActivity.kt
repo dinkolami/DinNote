@@ -2415,6 +2415,7 @@ fun LibraryScreen(modifier: Modifier = Modifier, onNavigate: (Int) -> Unit = {})
             "Kitab-Kitab" -> {
                 Text("📚 Maktabah Kitab", fontSize = 20.sp, fontWeight = FontWeight.Bold)
                 TurathStarterCard(search)
+                TurathStarterCard(search, "turath/al_majmu.json")
 
                 Button(onClick = { openLibraryEditor("entry_Kitab-Kitab_" + System.currentTimeMillis()) }) { Text("+ Tambah Kitab") }
                 libraryItems.filter { matchesMaktabahSearch(libraryPrefs.getString(it + "_title", "") ?: "", search) ||
@@ -3924,10 +3925,10 @@ private fun DinNoteFrontHeaderFallback() {
 
 
 @Composable
-private fun TurathStarterCard(search: String) {
+private fun TurathStarterCard(search: String, assetPath: String = "turath/arba_in_nawawiyyah.json") {
     val context = LocalContext.current
-    val book = remember(context) {
-        runCatching { context.assets.open("turath/arba_in_nawawiyyah.json").bufferedReader(Charsets.UTF_8).use { org.json.JSONObject(it.readText()) } }.getOrNull()
+    val book = remember(context, assetPath) {
+        runCatching { context.assets.open(assetPath).bufferedReader(Charsets.UTF_8).use { org.json.JSONObject(it.readText()) } }.getOrNull()
     } ?: return
     val entries = remember(book) {
         val array = book.getJSONArray("entries")
@@ -3935,7 +3936,7 @@ private fun TurathStarterCard(search: String) {
     }
     var opened by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(false) }
     var selected by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(-1) }
-    var language by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf("Kedua-duanya") }
+    var language by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf("Bersebelahan") }
     val visible = search.isBlank() || matchesMaktabahSearch(book.optString("titleArabic")+" "+book.optString("titleMalay"), search) ||
         entries.any { matchesMaktabahSearch(it.optString("arabic")+" "+it.optString("malay"),search) }
     if(visible) {
@@ -3943,7 +3944,7 @@ private fun TurathStarterCard(search: String) {
             Column(Modifier.padding(16.dp)) {
                 Text(book.optString("titleArabic"),modifier=Modifier.fillMaxWidth(),textAlign=TextAlign.End,fontSize=24.sp,fontWeight=FontWeight.Bold,color=Color(0xFF075B49))
                 Text(book.optString("titleMalay"),fontWeight=FontWeight.Bold)
-                Text("${entries.size} / ${book.optInt("expectedEntries")} hadis • Contoh awal • Offline",fontSize=12.sp)
+                Text(if(book.has("expectedEntries")) "${entries.size} / ${book.optInt("expectedEntries")} hadis • Contoh awal • Offline" else "${entries.size} petikan • Koleksi awal • Offline",fontSize=12.sp)
             }
         }
     }
@@ -3970,22 +3971,35 @@ private fun TurathStarterCard(search: String) {
                     } else {
                         val e=entries[selected]
                         Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(4.dp)) {
-                            listOf("Arab","Melayu","Kedua-duanya").forEach { mode ->
+                            listOf("Arab","Melayu","Bersebelahan").forEach { mode ->
                                 FilterChip(selected=language==mode,onClick={language=mode},label={Text(mode,fontSize=11.sp)})
                             }
                         }
                         key(selected) {
                             Column(Modifier.weight(1f).verticalScroll(rememberScrollState()),verticalArrangement=Arrangement.spacedBy(12.dp)) {
                                 Text(e.optString("titleMalay"),fontWeight=FontWeight.Bold)
-                                if(language!="Melayu") {
-                                    Surface(color=Color(0xFFF6EFDF),shape=RoundedCornerShape(12.dp)) {
-                                        ReferenceReaderText(text=AnnotatedString(e.optString("arabic")),modifier=Modifier.fillMaxWidth().padding(14.dp),style=androidx.compose.ui.text.TextStyle(fontSize=23.sp,lineHeight=39.sp,textDirection=TextDirection.ContentOrRtl,textAlign=TextAlign.End,color=Color(0xFF254D3A)))
+                                val arabicStyle = androidx.compose.ui.text.TextStyle(fontSize=23.sp,lineHeight=39.sp,textDirection=TextDirection.ContentOrRtl,textAlign=TextAlign.End,color=MaterialTheme.colorScheme.onSurface)
+                                val malayStyle = androidx.compose.ui.text.TextStyle(fontSize=17.sp,lineHeight=27.sp,textDirection=TextDirection.Ltr)
+                                if(language=="Bersebelahan") {
+                                    androidx.compose.runtime.CompositionLocalProvider(androidx.compose.ui.platform.LocalLayoutDirection provides androidx.compose.ui.unit.LayoutDirection.Ltr) {
+                                        Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(10.dp)) {
+                                            Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(6.dp)) {
+                                                Text("Melayu • Draf",fontSize=12.sp,fontWeight=FontWeight.Bold)
+                                                ReferenceReaderText(text=AnnotatedString(e.optString("malay")),modifier=Modifier.fillMaxWidth(),style=malayStyle)
+                                            }
+                                            Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(6.dp)) {
+                                                Text("النص العربي",modifier=Modifier.fillMaxWidth(),textAlign=TextAlign.End,fontSize=14.sp,fontWeight=FontWeight.Bold)
+                                                ReferenceReaderText(text=AnnotatedString(e.optString("arabic")),modifier=Modifier.fillMaxWidth(),style=arabicStyle)
+                                            }
+                                        }
                                     }
-                                }
-                                if(language!="Arab") {
+                                } else if(language=="Arab") {
+                                    ReferenceReaderText(text=AnnotatedString(e.optString("arabic")),modifier=Modifier.fillMaxWidth(),style=arabicStyle)
+                                } else {
                                     Text("Terjemahan Melayu • Draf",fontWeight=FontWeight.Bold)
-                                    ReferenceReaderText(text=AnnotatedString(e.optString("malay")),style=androidx.compose.ui.text.TextStyle(fontSize=17.sp,lineHeight=27.sp))
+                                    ReferenceReaderText(text=AnnotatedString(e.optString("malay")),modifier=Modifier.fillMaxWidth(),style=malayStyle)
                                 }
+                                if(e.has("page")) Text("Jilid ${e.optInt("volume")} • Halaman ${e.optInt("page")}",fontSize=12.sp)
                                 val sources=e.optJSONArray("source")
                                 if(sources!=null) for(i in 0 until sources.length()) {
                                     val url=sources.optString(i)
