@@ -33,6 +33,7 @@ object DinNoteDesign {
     val ReaderArabicSize = 18.sp
     val ReaderMalaySize = 14.sp
     val ReaderArabicLineHeight = 31.sp
+    val ReaderMalayLineHeight = 22.sp
 }
 
 @Composable
