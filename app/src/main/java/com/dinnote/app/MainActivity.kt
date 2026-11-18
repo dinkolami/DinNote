@@ -3007,6 +3007,53 @@ private fun SmartVaultDialog(onDismiss: () -> Unit, onInsert: (String) -> Unit) 
     var relatedBlock by remember { mutableStateOf<String?>(null) }
     fun themeSet(block: String): Set<String> = tags[block].orEmpty().split(",")
         .map { it.trim().lowercase(java.util.Locale.ROOT) }.filter { it.isNotBlank() }.toSet()
+    var graphOpen by remember { mutableStateOf(false) }
+    var graphTheme by remember { mutableStateOf<String?>(null) }
+    if (graphOpen) {
+        val themeIndex = remember(tags) {
+            items.flatMap { block -> themeSet(block).map { it to block } }
+                .groupBy({ it.first }, { it.second })
+        }
+        val active = graphTheme
+        AlertDialog(onDismissRequest = { graphOpen = false; graphTheme = null },
+            title = { Text(if (active == null) "Smart Knowledge Graph · Tema ilmu" else active) },
+            text = {
+                Column(Modifier.heightIn(max = 420.dp)) {
+                    if (active == null) {
+                        Text("Pilih tema untuk meneroka jaringan petikan.", fontSize = 13.sp)
+                        LazyColumn(Modifier.heightIn(max = 360.dp)) {
+                            items(themeIndex.entries.sortedByDescending { it.value.size }, key = { it.key }) { entry ->
+                                TextButton(onClick = { graphTheme = entry.key }, modifier = Modifier.fillMaxWidth()) {
+                                    Text(entry.key, Modifier.weight(1f))
+                                    Text(entry.value.size.toString())
+                                }
+                            }
+                        }
+                        if (themeIndex.isEmpty()) Text("Tambah tag tema pada petikan Smart Vault dahulu.")
+                    } else {
+                        val blocks = themeIndex[active].orEmpty()
+                        val neighbors = blocks.flatMap { themeSet(it) }.filter { it != active }
+                            .groupingBy { it }.eachCount().entries.sortedByDescending { it.value }
+                        LazyColumn(Modifier.heightIn(max = 380.dp)) {
+                            item { Text("Tema bersambung", color = Color(0xFF087F83)) }
+                            items(neighbors, key = { "theme:" + it.key }) { neighbor ->
+                                TextButton(onClick = { graphTheme = neighbor.key }) { Text(neighbor.key + " · " + neighbor.value) }
+                            }
+                            item { HorizontalDivider(); Text("Petikan · " + blocks.size, color = Color(0xFF087F83)) }
+                            items(blocks, key = { "block:" + it }) { block ->
+                                TextButton(onClick = { graphOpen = false; graphTheme = null; relatedBlock = block }) {
+                                    Text(formattedNoteText(block), maxLines = 4)
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = { TextButton(onClick = { if (active != null) graphTheme = null else graphOpen = false }) {
+                Text(if (active != null) "Semua tema" else "Kembali")
+            } })
+        return
+    }
     relatedBlock?.let { source ->
         val themes = themeSet(source)
         val related = remember(source, tags, references) {
@@ -3097,6 +3144,9 @@ private fun SmartVaultDialog(onDismiss: () -> Unit, onInsert: (String) -> Unit) 
             Column(Modifier.heightIn(max = 480.dp).verticalScroll(rememberScrollState())) {
                 OutlinedTextField(value = query, onValueChange = { query = it },
                     label = { Text("Cari teks, tema atau rujukan") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                TextButton(onClick = { graphTheme = null; graphOpen = true }) {
+                    Text("Smart Knowledge Graph", color = Color(0xFF087F83))
+                }
                 TextButton(onClick = { dualOpen = true }) {
                     Text("Smart Dual View · Ruang Pengajian", color = Color(0xFF087F83))
                 }
