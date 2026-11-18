@@ -169,8 +169,8 @@ fun DisplaySettingsScreen(modifier: Modifier = Modifier) {
             }
         }
         if (imageUri.isNotBlank()) {
-            Text("Kelegapan gambar: ${(imageOpacity * 100).toInt()}%", fontSize = 13.sp)
-            Slider(value = imageOpacity, onValueChange = { imageOpacity = it; settingsStatus = "Perubahan belum disimpan" }, valueRange = 0.05f..0.65f)
+            Text("Kelegapan gambar: ${kotlin.math.round(imageOpacity * 100).toInt()}%", fontSize = 13.sp)
+            Slider(value = imageOpacity, onValueChange = { imageOpacity = it; settingsStatus = "Perubahan belum disimpan" }, valueRange = 0.05f..1f)
             val bitmap = remember(imageUri) {
                 runCatching {
                     context.contentResolver.openInputStream(Uri.parse(imageUri))?.use {
