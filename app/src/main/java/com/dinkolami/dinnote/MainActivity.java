@@ -119,7 +119,7 @@ public class MainActivity extends Activity {
     }
     private void createNotebook() {
         EditText input=new EditText(this); input.setSingleLine(true); input.setHint("Nama notebook");
-        new AlertDialog.Builder(this).setTitle("Notebook baharu").setView(input)
+        new AlertDialog.Builder(this).setTitle("Cipta notebook baharu").setView(input)
             .setPositiveButton("Simpan",(d,w)->{
                 String name=input.getText().toString().trim();
                 if(!name.isEmpty()){
@@ -132,6 +132,7 @@ public class MainActivity extends Activity {
     private void showNotebook(long id,String name) {
         base(name);
         body.addView(action("← Semua nota",this::showHome));
+        body.addView(text("Koleksi nota dalam notebook ini",13,false));
         body.addView(action("+ Nota dalam notebook",()->{currentNotebook=id;openNote(-1);}));
         body.addView(action("Namakan semula",()->renameNotebook(id,name)));
         body.addView(action("Padam notebook",()->new AlertDialog.Builder(this).setMessage("Padam notebook dan semua notanya?")
@@ -142,7 +143,7 @@ public class MainActivity extends Activity {
     }
     private void renameNotebook(long id,String old) {
         EditText input=new EditText(this);input.setSingleLine(true);input.setText(old);
-        new AlertDialog.Builder(this).setTitle("Namakan semula").setView(input).setPositiveButton("Simpan",(d,w)->{
+        new AlertDialog.Builder(this).setTitle("Namakan semula notebook").setView(input).setPositiveButton("Simpan",(d,w)->{
             android.content.ContentValues cv=new android.content.ContentValues();cv.put("name",input.getText().toString().trim());
             try {store.getWritableDatabase().update("notebooks",cv,"id=?",new String[]{""+id});showNotebook(id,input.getText().toString());}
             catch(Exception ex){Toast.makeText(this,"Nama sudah digunakan",Toast.LENGTH_SHORT).show();}
@@ -277,13 +278,13 @@ public class MainActivity extends Activity {
         Cursor c=store.getReadableDatabase().rawQuery("SELECT id,name FROM notebooks ORDER BY name",null);
         ArrayList<Long> ids=new ArrayList<>();ArrayList<String> names=new ArrayList<>();
         try{while(c.moveToNext()){ids.add(c.getLong(0));names.add(c.getString(1));}}finally{c.close();}
-        new AlertDialog.Builder(this).setTitle("Pilih notebook").setItems(names.toArray(new String[0]),(d,w)->{
+        new AlertDialog.Builder(this).setTitle("Pindahkan ke notebook").setItems(names.toArray(new String[0]),(d,w)->{
             currentNotebook=ids.get(w);scheduleSave();
         }).show();
     }
     private void deleteNote() {
         if(currentNote<0){showHome();return;}
-        new AlertDialog.Builder(this).setMessage("Padam nota ini?")
+        new AlertDialog.Builder(this).setTitle("Sahkan pemadaman").setMessage("Padam nota ini secara kekal?")
             .setPositiveButton("Padam",(d,w)->{
                 if(pendingSave!=null)handler.removeCallbacks(pendingSave);
                 store.getWritableDatabase().delete("notes","id=?",new String[]{""+currentNote});
@@ -291,13 +292,14 @@ public class MainActivity extends Activity {
             }).setNegativeButton("Batal",null).show();
     }
     private void scheduleSave() {
+        if(isFinishing())return;
         if(loading||!showingEditor)return;
         if(pendingSave!=null)handler.removeCallbacks(pendingSave);
-        pendingSave=this::saveNow;handler.postDelayed(pendingSave,500);
+        pendingSave=this::saveNow;handler.postDelayed(pendingSave,650);
     }
     private void saveNow() {
         if(!showingEditor||titleEdit==null||contentEdit==null)return;
-        if(pendingSave!=null)handler.removeCallbacks(pendingSave);
+        if(pendingSave!=null){handler.removeCallbacks(pendingSave);pendingSave=null;}
         String title=titleEdit.getText().toString();
         String content=Html.toHtml(contentEdit.getText(),Html.TO_HTML_PARAGRAPH_LINES_CONSECUTIVE);
         if(currentNote<0&&title.trim().isEmpty()&&contentEdit.getText().toString().trim().isEmpty())return;
