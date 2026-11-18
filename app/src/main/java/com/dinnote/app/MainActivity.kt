@@ -2758,6 +2758,48 @@ private fun saveSmartVault(context: android.content.Context, block: String) {
 }
 
 @Composable
+private fun SmartMinbarDialog(material: String, onClose: () -> Unit) {
+    val scroll = rememberScrollState()
+    var size by remember { mutableStateOf(28f) }
+    var speed by remember { mutableStateOf(30f) }
+    var playing by remember { mutableStateOf(false) }
+    LaunchedEffect(playing, speed) {
+        while (playing) {
+            kotlinx.coroutines.delay(50)
+            if (scroll.value >= scroll.maxValue) { playing = false; break }
+            scroll.scrollTo((scroll.value + (speed / 10f).toInt().coerceAtLeast(1)).coerceAtMost(scroll.maxValue))
+        }
+    }
+    androidx.compose.ui.window.Dialog(onDismissRequest = onClose,
+        properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false)) {
+        val view = androidx.compose.ui.platform.LocalView.current
+        DisposableEffect(view) {
+            val window = (view.parent as? androidx.compose.ui.window.DialogWindowProvider)?.window
+            window?.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            onDispose { window?.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) }
+        }
+        Surface(modifier = Modifier.fillMaxSize(), color = Color.White) {
+            Column(Modifier.fillMaxSize().padding(16.dp)) {
+                Row(Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                    Text("Smart Minbar", modifier = Modifier.weight(1f), color = Color(0xFF087F83), fontSize = 20.sp)
+                    TextButton(onClick = onClose) { Text("Tutup") }
+                }
+                Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                    TextButton(onClick = { size = (size - 2f).coerceAtLeast(18f) }) { Text("A−") }
+                    TextButton(onClick = { size = (size + 2f).coerceAtMost(48f) }) { Text("A+") }
+                    TextButton(onClick = { playing = !playing }) { Text(if (playing) "Jeda" else "Auto-scroll") }
+                }
+                Text("Kelajuan", fontSize = 12.sp)
+                Slider(value = speed, onValueChange = { speed = it }, valueRange = 10f..100f)
+                HorizontalDivider()
+                Text(formattedNoteText(material), modifier = Modifier.weight(1f).fillMaxWidth().verticalScroll(scroll).padding(vertical = 12.dp),
+                    fontSize = size.sp, lineHeight = (size * 1.65f).sp, color = Color(0xFF263B3E))
+            }
+        }
+    }
+}
+
+@Composable
 private fun SmartVaultDialog(onDismiss: () -> Unit, onInsert: (String) -> Unit) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val items = remember { readSmartVault(context) }
@@ -2780,6 +2822,19 @@ private fun SmartVaultDialog(onDismiss: () -> Unit, onInsert: (String) -> Unit) 
     var majlisMode by remember { mutableStateOf(false) }
     var majlisSelection by remember { mutableStateOf(emptyList<String>()) }
     var majlisTitle by remember { mutableStateOf("") }
+    var minbarMaterial by remember { mutableStateOf<String?>(null) }
+    fun assembleMajlis(): String {
+        val sections = majlisSelection.mapIndexed { number, block ->
+            val citation = referenceText(references[block].orEmpty())
+            (number + 1).toString() + ".\n" + block + if (citation.isNotBlank()) "\n" + citation else ""
+        }
+        val title = majlisTitle.trim()
+        return (if (title.isNotBlank()) title + "\n\n" else "") + sections.joinToString("\n\n")
+    }
+    minbarMaterial?.let { material ->
+        SmartMinbarDialog(material, onClose = { minbarMaterial = null })
+        return
+    }
     var query by remember { mutableStateOf("") }
     var editing by remember { mutableStateOf<String?>(null) }
     var draft by remember { mutableStateOf("") }
@@ -2797,6 +2852,9 @@ private fun SmartVaultDialog(onDismiss: () -> Unit, onInsert: (String) -> Unit) 
                     OutlinedTextField(value = majlisTitle, onValueChange = { majlisTitle = it },
                         label = { Text("Tajuk kuliah") }, singleLine = true, modifier = Modifier.fillMaxWidth())
                     Text("Dipilih: " + majlisSelection.size, fontSize = 12.sp)
+                    TextButton(enabled = majlisSelection.isNotEmpty(), onClick = { minbarMaterial = assembleMajlis() }) {
+                        Text("Baca dalam Smart Minbar")
+                    }
                 }
                 Column(Modifier.heightIn(max = 300.dp).verticalScroll(rememberScrollState())) {
                     val filtered = items.filter {
