@@ -331,8 +331,8 @@ private fun DinNoteDashboardTile(
             Spacer(Modifier.height(5.dp))
             Box(Modifier.width(25.dp).height(1.dp).background(Color(0xFFD3AE65)))
             Spacer(Modifier.height(5.dp))
-            Text(title, fontSize = 12.sp, fontWeight = FontWeight.Bold,
-                color = Color(0xFF183A30), maxLines = 2, lineHeight = 14.sp,
+            Text(title, fontSize = 14.sp, fontWeight = FontWeight.Bold,
+                color = Color(0xFF183A30), maxLines = 2, lineHeight = 17.sp,
                 textAlign = TextAlign.Center)
             Spacer(Modifier.height(2.dp))
             Text(subtitle, fontSize = 10.sp, color = Color(0xFF53736F),
