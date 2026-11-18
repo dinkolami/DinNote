@@ -61,7 +61,7 @@ fun DinNoteBilingualCard(
 ) {
     DinNoteContentCard(modifier) {
         SelectionContainer {
-            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(DinNoteDesign.ReaderParagraphSpacing)) {
                 if (arabic.isBlank() && malay.isBlank()) {
                     Text(
                         text = "Tiada kandungan untuk dipaparkan.",
