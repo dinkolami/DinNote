@@ -3035,7 +3035,38 @@ private fun SmartVaultDialog(onDismiss: () -> Unit, onInsert: (String) -> Unit) 
                         val neighbors = blocks.flatMap { themeSet(it) }.filter { it != active }
                             .groupingBy { it }.eachCount().entries.sortedByDescending { it.value }
                         LazyColumn(Modifier.heightIn(max = 380.dp)) {
-                            item { Text("Tema bersambung", color = Color(0xFF087F83)) }
+                            item {
+                                val visible = neighbors.take(6)
+                                BoxWithConstraints(Modifier.fillMaxWidth().height(230.dp)) {
+                                    val w = maxWidth
+                                    androidx.compose.foundation.Canvas(Modifier.fillMaxSize()) {
+                                        val center = androidx.compose.ui.geometry.Offset(size.width / 2, size.height / 2)
+                                        visible.forEachIndexed { n, _ ->
+                                            val angle = 2.0 * Math.PI * n / visible.size - Math.PI / 2
+                                            val target = androidx.compose.ui.geometry.Offset(
+                                                center.x + (size.width / 2 - 42.dp.toPx()).coerceAtLeast(0f) * kotlin.math.cos(angle).toFloat(),
+                                                center.y + 79.dp.toPx() * kotlin.math.sin(angle).toFloat())
+                                            drawLine(Color(0xFF9FC8BD), center, target, strokeWidth = 2.dp.toPx())
+                                        }
+                                    }
+                                    Surface(Modifier.align(androidx.compose.ui.Alignment.Center).width(88.dp),
+                                        shape = RoundedCornerShape(22.dp), color = Color(0xFF087F83)) {
+                                        Text(active, Modifier.padding(8.dp), color = Color.White, textAlign = TextAlign.Center, maxLines = 2)
+                                    }
+                                    visible.forEachIndexed { n, neighbor ->
+                                        val angle = 2.0 * Math.PI * n / visible.size - Math.PI / 2
+                                        val x = ((w.value / 2 - 42).coerceAtLeast(0f) * kotlin.math.cos(angle)).toFloat().dp
+                                        val y = (79 * kotlin.math.sin(angle)).toFloat().dp
+                                        Surface(Modifier.align(androidx.compose.ui.Alignment.Center).offset(x, y).width(78.dp)
+                                            .clickable { graphTheme = neighbor.key },
+                                            shape = RoundedCornerShape(14.dp), color = Color(0xFFE4F2ED)) {
+                                            Text(neighbor.key, Modifier.padding(6.dp), color = Color(0xFF075B59),
+                                                textAlign = TextAlign.Center, fontSize = 12.sp, maxLines = 2)
+                                        }
+                                    }
+                                }
+                                Text("Tema bersambung", color = Color(0xFF087F83))
+                            }
                             items(neighbors, key = { "theme:" + it.key }) { neighbor ->
                                 TextButton(onClick = { graphTheme = neighbor.key }) { Text(neighbor.key + " · " + neighbor.value) }
                             }
