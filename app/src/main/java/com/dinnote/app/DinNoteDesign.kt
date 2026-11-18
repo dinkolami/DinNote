@@ -69,8 +69,10 @@ fun DinNoteBilingualCard(
         )
                 Text(
             text = malay,
-            fontSize = 15.sp,
-            lineHeight = 24.sp,
+            fontSize = 14.sp,
+            lineHeight = 22.sp,
+            textAlign = TextAlign.Start,
+            style = TextStyle(textDirection = TextDirection.Ltr),
             color = Color(0xFF334B4A)
                 )
             }
