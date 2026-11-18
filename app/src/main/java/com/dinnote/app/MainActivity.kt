@@ -418,6 +418,7 @@ private fun DinNoteReferenceShowcase(
             }
         }.getOrNull()
     }
+    var showReference by remember { mutableStateOf(false) }
     val emerald = Color(0xFF004E3C)
     val gold = Color(0xFFD7A740)
     Surface(
@@ -429,6 +430,22 @@ private fun DinNoteReferenceShowcase(
     ) {
         Column {
             if (referenceArtwork != null) {
+                Surface(
+                    modifier = Modifier.fillMaxWidth().clickable { showReference = !showReference },
+                    color = emerald,
+                    border = BorderStroke(1.dp, gold),
+                    shape = RoundedCornerShape(topStart = 22.dp, topEnd = 22.dp)
+                ) {
+                    Text(
+                        if (showReference) "▴  Sembunyikan gambar rujukan" else "▾  Bandingkan dengan gambar rujukan",
+                        modifier = Modifier.fillMaxWidth().padding(10.dp),
+                        color = Color(0xFFFFDC86),
+                        textAlign = TextAlign.Center,
+                        fontSize = 12.sp
+                    )
+                }
+            }
+            if (referenceArtwork != null && showReference) {
                 androidx.compose.foundation.Image(
                     bitmap = referenceArtwork,
                     contentDescription = "Ilustrasi asal DinNote dengan bingkai emas dan gerbang Islamik",
@@ -438,7 +455,7 @@ private fun DinNoteReferenceShowcase(
                         .clickable(onClick = onRead)
                 )
                 Text(
-                    "Ilustrasi rujukan • Sentuh untuk membaca teks sebenar",
+                    "Pratonton rujukan • Sentuh gambar untuk membaca teks penuh",
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 5.dp),
                     fontSize = 11.sp,
                     textAlign = TextAlign.Center,
