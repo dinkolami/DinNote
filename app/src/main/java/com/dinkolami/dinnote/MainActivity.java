@@ -17,6 +17,9 @@ import android.widget.*;
 
 public class MainActivity extends Activity {
   DB db;
+  Runnable pendingSave;
+  void flushPendingSave(){if(pendingSave!=null){Runnable action=pendingSave;pendingSave=null;action.run();}}
+  @Override protected void onPause(){flushPendingSave();super.onPause();}
   LinearLayout root, list;
   EditText search;
   int background = Color.rgb(248,249,252);
@@ -35,6 +38,7 @@ public class MainActivity extends Activity {
   TextView text(String value,int size) { TextView t=new TextView(this);t.setText(value);t.setTextSize(size);t.setTextColor(Color.rgb(36,43,57));t.setPadding(18,16,18,16);return t; }
   LinearLayout column() { LinearLayout l=new LinearLayout(this);l.setOrientation(1);l.setPadding(18,18,18,18);l.setBackgroundColor(background);return l; }
   void showHome() {
+    flushPendingSave();
     root=column();setContentView(root);
     TextView title=text("▤  DinNote",28);title.setTypeface(null,2);root.addView(title);
     Button notesMenu=new Button(this);notesMenu.setText("📝  Nota");root.addView(notesMenu);
@@ -62,6 +66,7 @@ public class MainActivity extends Activity {
     if(visibleCount==0)list.addView(text(query.trim().isEmpty()?"Belum ada nota. Tekan + Nota baharu untuk mula.":"Tiada nota ditemui.",16));
   }
   void edit(int id) {
+    flushPendingSave();
     LinearLayout page=column();setContentView(page);
     Button back=new Button(this);back.setText("← Kembali");page.addView(back);
     EditText title=new EditText(this);title.setHint("Tajuk nota");title.setSingleLine(true);title.setTextSize(20);page.addView(title);
@@ -88,12 +93,14 @@ public class MainActivity extends Activity {
     };
     TextWatcher watcher=new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){save.run();}public void afterTextChanged(Editable e){}};
     title.addTextChangedListener(watcher);body.addTextChangedListener(watcher);
-    back.setOnClickListener(v->{save.run();showHome();});
+    pendingSave=save;
+    back.setOnClickListener(v->{flushPendingSave();showHome();});
     title.setContentDescription("Tajuk nota");body.setContentDescription("Kandungan nota Arab dan Rumi");
     Button delete=new Button(this);delete.setText("Padam nota");page.addView(delete);
-    delete.setOnClickListener(v->new AlertDialog.Builder(this).setMessage("Padam nota ini?").setNegativeButton("Batal",null).setPositiveButton("Padam",(d,w)->{if(noteId[0]>=0)db.getWritableDatabase().delete("notes","id=?",new String[]{""+noteId[0]});showHome();}).show());
+    delete.setOnClickListener(v->new AlertDialog.Builder(this).setMessage("Padam nota ini?").setNegativeButton("Batal",null).setPositiveButton("Padam",(d,w)->{pendingSave=null;if(noteId[0]>=0)db.getWritableDatabase().delete("notes","id=?",new String[]{""+noteId[0]});showHome();}).show());
   }
   void showLibrary() {
+    flushPendingSave();
     LinearLayout page=column();setContentView(page);
     Button back=new Button(this);back.setText("← DinNote");page.addView(back);back.setOnClickListener(v->showHome());
     page.addView(text("📚  Maktabah",26));
@@ -122,6 +129,7 @@ public class MainActivity extends Activity {
     }).show();
   }
   void showBooks(int categoryId,String categoryName){
+    flushPendingSave();
     LinearLayout page=column();setContentView(page);
     Button back=new Button(this);back.setText("← Maktabah");page.addView(back);back.setOnClickListener(v->showLibrary());
     page.addView(text("📁  "+categoryName,24));
@@ -145,6 +153,7 @@ public class MainActivity extends Activity {
   }
 
   void editBook(int id,int categoryId,String categoryName){
+    flushPendingSave();
     LinearLayout page=column();setContentView(page);
     Button back=new Button(this);back.setText("← Maktabah");page.addView(back);
     EditText title=new EditText(this);title.setHint("Tajuk kitab");title.setSingleLine(true);title.setTextSize(20);page.addView(title);
@@ -177,11 +186,12 @@ public class MainActivity extends Activity {
       public void onTextChanged(CharSequence s,int st,int before,int count){save.run();}
       public void afterTextChanged(Editable e){}};
     title.addTextChangedListener(watcher);body.addTextChangedListener(watcher);
-    back.setOnClickListener(v->{save.run();showBooks(categoryId,categoryName);});
+    pendingSave=save;
+    back.setOnClickListener(v->{flushPendingSave();showBooks(categoryId,categoryName);});
     Button delete=new Button(this);delete.setText("Padam kitab");page.addView(delete);
     delete.setOnClickListener(v->new AlertDialog.Builder(this).setMessage("Padam kitab ini?")
       .setNegativeButton("Batal",null).setPositiveButton("Padam",(d,w)->{
-        if(bookId[0]>=0)db.getWritableDatabase().delete("books","id=?",new String[]{""+bookId[0]});
+        pendingSave=null;if(bookId[0]>=0)db.getWritableDatabase().delete("books","id=?",new String[]{""+bookId[0]});
         showBooks(categoryId,categoryName);
       }).show());
   }
@@ -193,6 +203,7 @@ public class MainActivity extends Activity {
     DB(Context c){super(c,"dinnote.db",null,3);}
     public void onCreate(SQLiteDatabase db){db.execSQL("CREATE TABLE notes (id INTEGER PRIMARY KEY AUTOINCREMENT,title TEXT NOT NULL DEFAULT '',body TEXT NOT NULL DEFAULT '',updated INTEGER NOT NULL,color INTEGER NOT NULL DEFAULT -1)");createLibrary(db);}
     static void createLibrary(SQLiteDatabase db){db.execSQL("CREATE TABLE IF NOT EXISTS categories (id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT NOT NULL)");db.execSQL("CREATE TABLE IF NOT EXISTS books (id INTEGER PRIMARY KEY AUTOINCREMENT,category_id INTEGER NOT NULL,title TEXT NOT NULL DEFAULT '',body TEXT NOT NULL DEFAULT '',updated INTEGER NOT NULL)");}
+    @Override public void onOpen(SQLiteDatabase database){super.onOpen(database);createLibrary(database);}
     public void onUpgrade(SQLiteDatabase db,int oldVersion,int newVersion){if(oldVersion<2) { try { db.execSQL("ALTER TABLE notes ADD COLUMN color INTEGER NOT NULL DEFAULT -1"); } catch (android.database.sqlite.SQLiteException ignored) { /* Column may already exist in older builds. */ } } if(oldVersion<3)createLibrary(db); }
   }
 }
