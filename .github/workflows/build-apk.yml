@@ -6,6 +6,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      HAS_SIGNING_KEY: ${{ secrets.DINNOTE_KEYSTORE_BASE64 != '' && 'true' || 'false' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -42,4 +44,23 @@ jobs:
         with:
           name: DinNote-fresh-apk
           path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+
+      - name: Build signed release APK
+        if: env.HAS_SIGNING_KEY == 'true'
+        env:
+          DINNOTE_KEYSTORE_BASE64: ${{ secrets.DINNOTE_KEYSTORE_BASE64 }}
+          DINNOTE_STORE_PASSWORD: ${{ secrets.DINNOTE_STORE_PASSWORD }}
+          DINNOTE_KEY_ALIAS: ${{ secrets.DINNOTE_KEY_ALIAS }}
+          DINNOTE_KEY_PASSWORD: ${{ secrets.DINNOTE_KEY_PASSWORD }}
+        run: |
+          echo "$DINNOTE_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/dinnote-release.jks"
+          export DINNOTE_KEYSTORE_PATH="$RUNNER_TEMP/dinnote-release.jks"
+          gradle :app:assembleRelease --no-daemon --console=plain
+      - name: Upload signed release APK
+        if: env.HAS_SIGNING_KEY == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: DinNote-signed-release-apk
+          path: app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
