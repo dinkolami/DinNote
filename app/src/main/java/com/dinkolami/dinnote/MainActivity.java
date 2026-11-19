@@ -74,12 +74,12 @@ public class MainActivity extends Activity {
   root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
   LinearLayout page=new LinearLayout(this);page.setOrientation(1);
   page.setPadding(dp(16),dp(18),dp(16),dp(28));scroll.addView(page);
-  TextView recent=dashboardText("◷  Baru dilihat  ▾",15,true);
+  TextView recent=dashboardText("Baru dilihat  ▾",15,true);
   recent.setBackground(rounded(0xfff6f8fa,0xffd0d7de,12));
   LinearLayout.LayoutParams rp=new LinearLayout.LayoutParams(-2,-2);rp.bottomMargin=dp(20);
   page.addView(recent,rp);
   recent.setOnClickListener(v->new AlertDialog.Builder(this).setItems(new String[]{"Baru dilihat","Semua nota","Maktabah"},(d,i)->{if(i==2)openSection(true);else openSection(false);}).show());
-  TextView heading=dashboardText("Baru dilihat",23,true);heading.setPadding(dp(2),dp(8),0,dp(16));page.addView(heading);
+  TextView heading=dashboardText("Baru dilihat",22,true);heading.setPadding(dp(2),dp(8),0,dp(16));page.addView(heading);
   EditText search=new EditText(this);search.setSingleLine(true);search.setTextSize(16);
   search.setHint("Cari nota atau kitab");search.setContentDescription("Carian nota dan kitab");
   search.setPadding(dp(14),dp(10),dp(14),dp(10));
@@ -95,8 +95,8 @@ public class MainActivity extends Activity {
   View divider=new View(this);divider.setBackgroundColor(0xffd0d7de);
   card.addView(divider,new LinearLayout.LayoutParams(-1,dp(1)));
   LinearLayout tiles=new LinearLayout(this);tiles.setPadding(dp(10),dp(18),dp(10),dp(16));card.addView(tiles);
-  TextView note=dashboardText("▤  Nota",19,true);
-  TextView book=dashboardText("▤  Maktabah",19,true);
+  TextView note=dashboardText("▤  Nota",18,true);
+  TextView book=dashboardText("▤  Maktabah",18,true);
   note.setGravity(Gravity.CENTER);book.setGravity(Gravity.CENTER);
   note.setBackground(rounded(0xfff6f8fa,0xffd0d7de,10));
   book.setBackground(rounded(0xfff6f8fa,0xffd0d7de,10));
@@ -105,7 +105,7 @@ public class MainActivity extends Activity {
   tiles.addView(note,a);tiles.addView(book,b);
   note.setOnClickListener(v->openSection(false));book.setOnClickListener(v->openSection(true));
   LinearLayout recentNotes=new LinearLayout(this);recentNotes.setOrientation(1);
-  recentNotes.setPadding(dp(12),0,dp(12),dp(16));card.addView(recentNotes);
+  recentNotes.setPadding(dp(12),dp(12),dp(12),dp(28));card.addView(recentNotes);
   ArrayList<String> keys=new ArrayList<>();
   for(String k:prefs.getAll().keySet())if(k.startsWith("n_"))keys.add(k);
   Collections.sort(keys,Collections.reverseOrder());
