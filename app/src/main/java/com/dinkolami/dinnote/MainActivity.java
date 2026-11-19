@@ -521,6 +521,40 @@ public class MainActivity extends Activity {
     View headerDivider=new View(this);headerDivider.setBackgroundColor(borderColor());headerDivider.setContentDescription("Pemisah tajuk");LinearLayout.LayoutParams hd=new LinearLayout.LayoutParams(-1,1);hd.setMargins(0,12,0,18);root.addView(headerDivider,hd);
     ScrollView homeScroll=new ScrollView(this);homeScroll.setFillViewport(false);homeScroll.setScrollbarFadingEnabled(true);homeScroll.setVerticalFadingEdgeEnabled(false);homeScroll.setContentDescription("Kandungan halaman utama DinNote");homeScroll.setFocusable(false);homeScroll.setVerticalScrollBarEnabled(false);homeScroll.setFadingEdgeLength(0);homeScroll.setSmoothScrollingEnabled(true);homeScroll.setDescendantFocusability(android.view.ViewGroup.FOCUS_AFTER_DESCENDANTS);homeScroll.setOverScrollMode(View.OVER_SCROLL_IF_CONTENT_SCROLLS);homeScroll.setClipToPadding(false);homeScroll.setPadding(0,0,0,2);root.addView(homeScroll,new LinearLayout.LayoutParams(-1,0,1));
     LinearLayout homeContent=new LinearLayout(this);homeContent.setOrientation(1);homeContent.setPadding(0,0,0,32);homeContent.setFocusableInTouchMode(false);homeContent.setClipToPadding(false);homeScroll.addView(homeContent);
+    // Emerald-and-gold DinNote identity, contained entirely within the app window.
+    LinearLayout hero=new LinearLayout(this);
+    hero.setOrientation(LinearLayout.VERTICAL);
+    hero.setGravity(Gravity.CENTER);
+    hero.setPadding(16,22,16,22);
+    android.graphics.drawable.GradientDrawable heroBackground=new android.graphics.drawable.GradientDrawable(
+      android.graphics.drawable.GradientDrawable.Orientation.TL_BR,
+      new int[]{0xFF064B3B,0xFF08765B,0xFF0C614B});
+    heroBackground.setCornerRadius(28f*getResources().getDisplayMetrics().density);
+    heroBackground.setStroke((int)(1*getResources().getDisplayMetrics().density),0xFFC9A65A);
+    hero.setBackground(heroBackground);
+    hero.setElevation(4f*getResources().getDisplayMetrics().density);
+    LinearLayout.LayoutParams heroParams=new LinearLayout.LayoutParams(-1,-2);
+    heroParams.setMargins(0,4,0,18);
+    homeContent.addView(hero,heroParams);
+    TextView emblem=text("✦  📖  ✦",27);
+    emblem.setGravity(Gravity.CENTER);
+    emblem.setTextColor(0xFFF3DCA1);
+    hero.addView(emblem);
+    TextView heroName=text("DinNote",34);
+    heroName.setTypeface(Typeface.SERIF,Typeface.BOLD);
+    heroName.setGravity(Gravity.CENTER);
+    heroName.setTextColor(Color.WHITE);
+    heroName.setPadding(0,0,0,0);
+    hero.addView(heroName);
+    TextView heroCaption=text("Nota & Maktabah Islam",15);
+    heroCaption.setGravity(Gravity.CENTER);
+    heroCaption.setTextColor(0xFFF3DCA1);
+    heroCaption.setPadding(0,0,0,8);
+    hero.addView(heroCaption);
+    TextView heroRule=text("◆ ───────── ◆",12);
+    heroRule.setGravity(Gravity.CENTER);
+    heroRule.setTextColor(0xFFD7B56B);
+    hero.addView(heroRule);
     TextView welcome=text("DINNOTE  /  NOTA & MAKTABAH",11);
     welcome.setLetterSpacing(0.12f);welcome.setTypeface(null,Typeface.BOLD);
     welcome.setTextColor(accent());welcome.setIncludeFontPadding(false);welcome.setMaxLines(1);welcome.setEllipsize(android.text.TextUtils.TruncateAt.END);welcome.setPadding(4,8,4,2);welcome.setAccessibilityHeading(true);homeContent.addView(welcome);
