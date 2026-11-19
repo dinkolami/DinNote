@@ -556,9 +556,12 @@ public class MainActivity extends Activity {
      if(value instanceof String||value instanceof Boolean||value instanceof Number)values.put(entry.getKey(),value);
     }
     obj.put("data",values);
+    byte[] backupBytes=obj.toString(2).getBytes(java.nio.charset.StandardCharsets.UTF_8);
+    if(backupBytes.length>20*1024*1024)throw new java.io.IOException("Sandaran melebihi had 20 MB");
     try(java.io.OutputStream out=getContentResolver().openOutputStream(uri,"wt")){
      if(out==null)throw new java.io.IOException("Tidak dapat membuka fail");
-     out.write(obj.toString(2).getBytes(java.nio.charset.StandardCharsets.UTF_8));
+     out.write(backupBytes);
+     out.flush();
     }
     Toast.makeText(this,"Backup berjaya disimpan",Toast.LENGTH_LONG).show();
    }catch(Exception e){Toast.makeText(this,"Backup gagal: "+e.getMessage(),Toast.LENGTH_LONG).show();}
@@ -621,6 +624,12 @@ public class MainActivity extends Activity {
         key.startsWith("cat_n_")||key.startsWith("cat_m_")||
         key.equals("categories_n")||key.equals("categories_m"))&&!(value instanceof String))
      throw new java.io.IOException("Jenis data nota atau kategori tidak sah; data sedia ada tidak diubah");
+    // Validate types of known settings to prevent runtime ClassCastException after restore.
+    if((key.startsWith("updated_")||key.startsWith("viewed_"))&&
+       (!(value instanceof Number)||((Number)value).doubleValue()%1!=0))
+     throw new java.io.IOException("Tarikh nota dalam sandaran tidak sah; data sedia ada tidak diubah");
+    if((key.startsWith("pinned_")||key.startsWith("deleted_"))&&!(value instanceof Boolean))
+     throw new java.io.IOException("Status nota dalam sandaran tidak sah; data sedia ada tidak diubah");
     // Validate all numeric values before creating the destructive restore transaction.
     if(value instanceof Number&&!(value instanceof Integer)&&!(value instanceof Long)){
      double number=((Number)value).doubleValue();
