@@ -28,7 +28,7 @@ public class MainActivity extends Activity {
   root=new LinearLayout(this);root.setOrientation(1);root.setBackgroundColor(Color.WHITE);
   setContentView(root);applySystemBarInsets(root);
   LinearLayout header=new LinearLayout(this);header.setGravity(Gravity.CENTER_VERTICAL);
-  header.setPadding(dp(12),0,dp(12),0);header.setBackgroundColor(0xfff6f8fa);
+  header.setPadding(dp(8),dp(4),dp(8),dp(4));header.setBackgroundColor(0xfff6f8fa);
   ImageView menu=headerIcon("☰",0xff102b25,"Buka menu DinNote");header.addView(menu);
   menu.setOnClickListener(v->new AlertDialog.Builder(this).setItems(new String[]{"Halaman utama","Nota","Maktabah","Kategori"},(d,i)->{if(i==0)home();else if(i==3)manageCategories();else openSection(i==2);}).show());
   ImageView logo=new ImageView(this);logo.setImageResource(R.drawable.dinnote_header_logo);logo.setScaleType(ImageView.ScaleType.FIT_CENTER);logo.setContentDescription("Logo DinNote");logo.setClickable(true);
@@ -39,24 +39,28 @@ public class MainActivity extends Activity {
   name.setOnClickListener(v->home());
   ImageView searchIcon=headerIcon("⌕",0xff102b25,"Cari nota");header.addView(searchIcon);
   searchIcon.setOnClickListener(v->searchNotesDialog());
-  ImageView inbox=headerIcon("▱",0xff102b25,"Buka nota");header.addView(inbox);
+  ImageView inbox=headerIcon("▣",0xff102b25,"Buka nota");header.addView(inbox);
   inbox.setOnClickListener(v->openSection(false));
-  ImageView avatar=headerIcon("⚙",0xff126b43,"Urus kategori");header.addView(avatar);
+  ImageView bell=headerIcon("♧",0xff126b43,"Peringatan nota");header.addView(bell);
+  bell.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Peringatan").setMessage("Peringatan nota belum tersedia.").setPositiveButton("OK",null).show());
+  ImageView avatar=headerIcon("☪",0xff126b43,"Urus kategori");header.addView(avatar);
   avatar.setOnClickListener(v->manageCategories());
   root.addView(header,new LinearLayout.LayoutParams(-1,dp(62)));
   View border=new View(this);border.setBackgroundColor(0xffd0d7de);
   root.addView(border,new LinearLayout.LayoutParams(-1,dp(1)));
  }
  ImageView headerIcon(String symbol,int color,String description){
-  int px=dp(44);android.graphics.Bitmap bitmap=android.graphics.Bitmap.createBitmap(px,px,android.graphics.Bitmap.Config.ARGB_8888);
+  int px=dp(38);android.graphics.Bitmap bitmap=android.graphics.Bitmap.createBitmap(px,px,android.graphics.Bitmap.Config.ARGB_8888);
   android.graphics.Canvas canvas=new android.graphics.Canvas(bitmap);
   android.graphics.Paint paint=new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
-  paint.setColor(color);paint.setTextSize(dp(27));paint.setTypeface(android.graphics.Typeface.DEFAULT);
+  paint.setColor(color);paint.setTextSize(dp(24));paint.setTypeface(android.graphics.Typeface.DEFAULT);
   paint.setTextAlign(android.graphics.Paint.Align.CENTER);
   android.graphics.Paint.FontMetrics fm=paint.getFontMetrics();
   canvas.drawText(symbol,px/2f,px/2f-(fm.ascent+fm.descent)/2f,paint);
   ImageView view=new ImageView(this);view.setImageBitmap(bitmap);view.setContentDescription(description);
   view.setClickable(true);view.setFocusable(true);view.setScaleType(ImageView.ScaleType.FIT_CENTER);
+  android.graphics.drawable.GradientDrawable frame=new android.graphics.drawable.GradientDrawable();frame.setColor(0xffffffff);frame.setCornerRadius(dp(10));frame.setStroke(dp(1),0xffaeb9bb);view.setBackground(frame);
+  view.setPadding(dp(4),dp(4),dp(4),dp(4));
   return view;
  }
  void searchNotesDialog(){
