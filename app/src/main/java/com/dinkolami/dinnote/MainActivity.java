@@ -515,14 +515,14 @@ public class MainActivity extends Activity {
     LinearLayout homeCards=new LinearLayout(this);homeCards.setOrientation(LinearLayout.HORIZONTAL);
     homeCards.setGravity(Gravity.CENTER_VERTICAL);homeCards.setPadding(0,4,0,8);homeCards.setBaselineAligned(false);homeCards.setMinimumHeight(146);homeCards.setClipChildren(false);homeCards.setContentDescription("Menu utama Nota dan Maktabah");homeCards.setFocusable(false);homeContent.addView(homeCards);
     Button notesMenu=button();notesMenu.setText("✎\nNota\nTulis & susun");notesMenu.setTextColor(accent());notesMenu.setTypeface(null,Typeface.BOLD);notesMenu.setTextSize(16);notesMenu.setIncludeFontPadding(false);notesMenu.setLetterSpacing(0.015f);notesMenu.setBackground(rounded(cardSurface(),borderColor(),20));
-    notesMenu.setGravity(Gravity.CENTER);notesMenu.setElevation(1.5f);notesMenu.setStateListAnimator(null);notesMenu.setLineSpacing(6,1f);notesMenu.setMinWidth(0);notesMenu.setMinHeight(140);notesMenu.setHapticFeedbackEnabled(true);notesMenu.setMaxLines(4);notesMenu.setEllipsize(android.text.TextUtils.TruncateAt.END);notesMenu.setPadding(10,16,10,16);notesMenu.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
+    notesMenu.setGravity(Gravity.CENTER);notesMenu.setElevation(1.5f);notesMenu.setStateListAnimator(null);notesMenu.setLineSpacing(6,1f);notesMenu.setMinWidth(0);notesMenu.setMinHeight(140);notesMenu.setHapticFeedbackEnabled(true);notesMenu.setSoundEffectsEnabled(true);notesMenu.setMaxLines(4);notesMenu.setEllipsize(android.text.TextUtils.TruncateAt.END);notesMenu.setPadding(10,16,10,16);notesMenu.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
     Button libraryMenu=button();libraryMenu.setText("▤\nMaktabah\nKitab & rujukan");libraryMenu.setTextColor(accent());libraryMenu.setTypeface(null,Typeface.BOLD);
-    libraryMenu.setTextSize(16);libraryMenu.setIncludeFontPadding(false);libraryMenu.setLetterSpacing(0.015f);libraryMenu.setBackground(rounded(cardSurface(),borderColor(),20));libraryMenu.setElevation(1.5f);libraryMenu.setStateListAnimator(null);libraryMenu.setGravity(Gravity.CENTER);libraryMenu.setLineSpacing(6,1f);libraryMenu.setMinWidth(0);libraryMenu.setMinHeight(140);libraryMenu.setHapticFeedbackEnabled(true);libraryMenu.setMaxLines(4);libraryMenu.setEllipsize(android.text.TextUtils.TruncateAt.END);libraryMenu.setPadding(10,16,10,16);libraryMenu.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
+    libraryMenu.setTextSize(16);libraryMenu.setIncludeFontPadding(false);libraryMenu.setLetterSpacing(0.015f);libraryMenu.setBackground(rounded(cardSurface(),borderColor(),20));libraryMenu.setElevation(1.5f);libraryMenu.setStateListAnimator(null);libraryMenu.setGravity(Gravity.CENTER);libraryMenu.setLineSpacing(6,1f);libraryMenu.setMinWidth(0);libraryMenu.setMinHeight(140);libraryMenu.setHapticFeedbackEnabled(true);libraryMenu.setSoundEffectsEnabled(true);libraryMenu.setMaxLines(4);libraryMenu.setEllipsize(android.text.TextUtils.TruncateAt.END);libraryMenu.setPadding(10,16,10,16);libraryMenu.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
     LinearLayout.LayoutParams noteCardParams=new LinearLayout.LayoutParams(0,-2,1);noteCardParams.setMargins(0,8,6,20);
     LinearLayout.LayoutParams libraryCardParams=new LinearLayout.LayoutParams(0,-2,1);libraryCardParams.setMargins(6,8,0,20);
     homeCards.addView(notesMenu,noteCardParams);homeCards.addView(libraryMenu,libraryCardParams);
-    libraryMenu.setContentDescription("Buka kategori kitab Maktabah");libraryMenu.setTooltipText("Buka Maktabah");libraryMenu.setFocusable(true);libraryMenu.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);libraryMenu.setAllCaps(false);libraryMenu.setMinHeight(128);libraryMenu.setOnClickListener(v->showLibrary());
-    notesMenu.setContentDescription("Buka kategori Nota peribadi");notesMenu.setTooltipText("Buka Nota");notesMenu.setFocusable(true);notesMenu.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);notesMenu.setAllCaps(false);notesMenu.setMinHeight(128);notesMenu.setOnClickListener(v->showNoteCategories());
+    libraryMenu.setContentDescription("Buka kategori kitab Maktabah");libraryMenu.setTooltipText("Buka Maktabah");libraryMenu.setFocusable(true);libraryMenu.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);libraryMenu.setAllCaps(false);libraryMenu.setMinHeight(140);libraryMenu.setOnClickListener(v->showLibrary());
+    notesMenu.setContentDescription("Buka kategori Nota peribadi");notesMenu.setTooltipText("Buka Nota");notesMenu.setFocusable(true);notesMenu.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);notesMenu.setAllCaps(false);notesMenu.setMinHeight(140);notesMenu.setOnClickListener(v->showNoteCategories());
     // Front-page pinned notes: compact, accessible, and independent of category filtering.
     LinearLayout pinnedSection=new LinearLayout(this);pinnedSection.setOrientation(1);pinnedSection.setContentDescription("Bahagian nota penting dipin pada halaman utama");pinnedSection.setPadding(0,16,0,22);
     homeContent.addView(pinnedSection);
@@ -539,7 +539,7 @@ public class MainActivity extends Activity {
         pinnedHeader.addView(pinnedHeading,new LinearLayout.LayoutParams(0,-2,1));
         Button togglePinned=button();
         boolean collapsed=getPreferences(MODE_PRIVATE).getBoolean("pinnedCollapsed",false);
-        togglePinned.setText(collapsed?"Papar":"Sembunyi");togglePinned.setMinWidth(88);togglePinned.setTooltipText("Papar atau sembunyikan nota dipin");togglePinned.setTextSize(12);togglePinned.setAllCaps(false);togglePinned.setFocusable(true);togglePinned.setMinHeight(48);togglePinned.setHapticFeedbackEnabled(true);
+        togglePinned.setText(collapsed?"Papar":"Sembunyi");togglePinned.setMinWidth(88);togglePinned.setTooltipText("Papar atau sembunyikan nota dipin");togglePinned.setTextSize(12);togglePinned.setAllCaps(false);togglePinned.setFocusable(true);togglePinned.setMinHeight(48);togglePinned.setHapticFeedbackEnabled(true);togglePinned.setSoundEffectsEnabled(true);
         togglePinned.setContentDescription(collapsed?"Paparkan nota dipin":"Sembunyikan nota dipin");
         pinnedHeader.addView(togglePinned,new LinearLayout.LayoutParams(-2,-2));
         LinearLayout pinnedItems=new LinearLayout(this);
@@ -566,7 +566,7 @@ public class MainActivity extends Activity {
           LinearLayout pinnedCard=new LinearLayout(this);
           pinnedCard.setOrientation(1);
           pinnedCard.setPadding(18,14,18,14);
-          pinnedCard.setBackground(rounded(cardSurface(),borderColor(),18));pinnedCard.setElevation(1f);pinnedCard.setHapticFeedbackEnabled(true);
+          pinnedCard.setBackground(rounded(cardSurface(),borderColor(),18));pinnedCard.setElevation(1f);pinnedCard.setHapticFeedbackEnabled(true);pinnedCard.setSoundEffectsEnabled(true);
           LinearLayout.LayoutParams cardParams=new LinearLayout.LayoutParams(0,-2,1);
           cardParams.setMargins(0,6,7,6);pinnedRow.addView(pinnedCard,cardParams);
           TextView pinnedTitleView=text(pinnedTitle,15);
@@ -591,7 +591,7 @@ public class MainActivity extends Activity {
           pinnedCard.setClickable(true);pinnedCard.setFocusable(true);pinnedCard.setMinimumHeight(56);pinnedCard.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);
           pinnedCard.setOnClickListener(v->edit(pinnedId));pinnedCard.setTooltipText("Buka nota penting");
           Button unpin=button();unpin.setText("⌁");
-          unpin.setContentDescription("Nyahpin "+pinnedTitle+" daripada halaman utama");unpin.setTextSize(17);unpin.setMinHeight(48);unpin.setHapticFeedbackEnabled(true);unpin.setTooltipText("Buang pin");
+          unpin.setContentDescription("Nyahpin "+pinnedTitle+" daripada halaman utama");unpin.setTextSize(17);unpin.setMinHeight(48);unpin.setHapticFeedbackEnabled(true);unpin.setSoundEffectsEnabled(true);unpin.setTooltipText("Buang pin");
           pinnedRow.addView(unpin,new LinearLayout.LayoutParams(56,-2));
           unpin.setOnClickListener(v->{
             db.getWritableDatabase().execSQL("UPDATE notes SET pinned=0 WHERE id=?",new Object[]{pinnedId});
@@ -607,9 +607,9 @@ public class MainActivity extends Activity {
     recentHeading.setTextColor(accent());recentHeading.setPadding(4,18,4,9);recentHeading.setAccessibilityHeading(true);
     homeContent.addView(recentHeading);
     Button sort=button();sort.setText("↕ Susun: "+new String[]{"Terkini","Terlama","Tajuk A-Z"}[noteSort]);homeContent.addView(sort);
-    sort.setTextSize(13);sort.setTooltipText("Tukar susunan nota");sort.setFocusable(true);sort.setMinHeight(48);sort.setHapticFeedbackEnabled(true);sort.setContentDescription("Pilih susunan nota: "+new String[]{"Terkini","Terlama","Tajuk A-Z"}[noteSort]);sort.setOnClickListener(v->new AlertDialog.Builder(this).setItems(new String[]{"Terkini","Terlama","Tajuk A-Z"},(d,w)->{noteSort=w;getPreferences(MODE_PRIVATE).edit().putInt("noteSort",w).apply();sort.setText("↕ Susun: "+new String[]{"Terkini","Terlama","Tajuk A-Z"}[w]);refresh(noteFilter);}).show());
+    sort.setTextSize(13);sort.setTooltipText("Tukar susunan nota");sort.setFocusable(true);sort.setMinHeight(48);sort.setHapticFeedbackEnabled(true);sort.setSoundEffectsEnabled(true);sort.setContentDescription("Pilih susunan nota: "+new String[]{"Terkini","Terlama","Tajuk A-Z"}[noteSort]);sort.setOnClickListener(v->new AlertDialog.Builder(this).setItems(new String[]{"Terkini","Terlama","Tajuk A-Z"},(d,w)->{noteSort=w;getPreferences(MODE_PRIVATE).edit().putInt("noteSort",w).apply();sort.setText("↕ Susun: "+new String[]{"Terkini","Terlama","Tajuk A-Z"}[w]);refresh(noteFilter);}).show());
     search=field();search.setContentDescription("Cari tajuk dan kandungan nota");search.setSingleLine(true);search.setMinHeight(52);search.setMaxLines(1);search.setHintTextColor(dark()?0xFF8B949E:0xFF656D76);search.setTextSize(15);search.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);search.setSelectAllOnFocus(false);search.setHint("⌕  Cari tajuk atau kandungan…");search.setText(noteFilter);search.setSelection(search.length());homeContent.addView(search);
-    Button add=button();add.setText("＋  Nota baharu");add.setBackground(rounded(cardSurface(),accent(),16));add.setTextColor(accent());add.setTypeface(null,Typeface.BOLD);add.setTooltipText("Cipta nota baharu");add.setMinHeight(52);add.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);add.setHapticFeedbackEnabled(true);add.setContentDescription("Tulis nota peribadi baharu");homeContent.addView(add);add.setOnClickListener(v->edit(-1));
+    Button add=button();add.setText("＋  Nota baharu");add.setBackground(rounded(cardSurface(),accent(),16));add.setTextColor(accent());add.setTypeface(null,Typeface.BOLD);add.setTooltipText("Cipta nota baharu");add.setMinHeight(52);add.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);add.setHapticFeedbackEnabled(true);add.setSoundEffectsEnabled(true);add.setContentDescription("Tulis nota peribadi baharu");homeContent.addView(add);add.setOnClickListener(v->edit(-1));
     list=new LinearLayout(this);list.setOrientation(1);list.setContentDescription("Senarai nota");homeContent.addView(list,new LinearLayout.LayoutParams(-1,-2));
     search.addTextChangedListener(new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){noteFilter=s.toString();refresh(noteFilter);}public void afterTextChanged(Editable e){}});
     try{refresh(noteFilter);}catch(Exception e){android.util.Log.e("DinNote","Failed loading notes",e);Toast.makeText(this,"Gagal memuatkan nota",Toast.LENGTH_LONG).show();}
@@ -620,7 +620,7 @@ public class MainActivity extends Activity {
     navigator.setContentDescription("Navigasi dalaman DinNote: Utama, Nota dan Maktabah");
     navigator.setBackground(rounded(cardSurface(),borderColor(),14));navigator.setPadding(4,8,4,6);
     Button homeNav=button();homeNav.setText("⌂ Utama");homeNav.setTextSize(13);homeNav.setTooltipText("Kembali ke utama");homeNav.setContentDescription("Kembali ke halaman utama DinNote");
-    Button noteNav=button();noteNav.setText("▤ Nota");noteNav.setTextSize(13);noteNav.setTooltipText("Cari nota");noteNav.setContentDescription("Fokus carian Nota");noteNav.setTextColor(accent());
+    Button noteNav=button();noteNav.setText("▤ Nota");noteNav.setTextSize(13);noteNav.setTooltipText("Cari nota");noteNav.setOnFocusChangeListener((v,hasFocus)->{if(hasFocus)noteNav.setTextColor(accent());});noteNav.setContentDescription("Fokus carian Nota");noteNav.setTextColor(accent());
     Button bookNav=button();bookNav.setText("▥ Maktabah");bookNav.setTextSize(13);bookNav.setTooltipText("Buka Maktabah");bookNav.setContentDescription("Buka halaman Maktabah");bookNav.setTextColor(accent());
     navigator.addView(homeNav,new LinearLayout.LayoutParams(0,-2,1));
     navigator.addView(noteNav,new LinearLayout.LayoutParams(0,-2,1));
