@@ -138,7 +138,7 @@ public class MainActivity extends Activity {
     }catch(Exception e){android.util.Log.w("DinNote","Category shortcuts unavailable",e);}
     Button manageCategories=button();manageCategories.setText("Lihat & urus semua kategori Nota");manageCategories.setContentDescription("Lihat tambah ubah atau padam kategori Nota");noteShortcuts.addView(manageCategories);
     manageCategories.setOnClickListener(v->showNoteCategories());
-    Button sort=button();sort.setText("Susun: "+new String[]{"Terkini","Terlama","Tajuk A-Z"}[noteSort]);root.addView(sort);
+    Button sort=button();sort.setText("Susun: "+new String[]{"Terkini","Terlama","Tajuk A-Z"}[noteSort]);homeContent.addView(sort);
     sort.setContentDescription("Pilih susunan nota: "+new String[]{"Terkini","Terlama","Tajuk A-Z"}[noteSort]);sort.setOnClickListener(v->new AlertDialog.Builder(this).setItems(new String[]{"Terkini","Terlama","Tajuk A-Z"},(d,w)->{noteSort=w;getPreferences(MODE_PRIVATE).edit().putInt("noteSort",w).apply();sort.setText("Susun: "+new String[]{"Terkini","Terlama","Tajuk A-Z"}[w]);refresh(noteFilter);}).show());
     search=field();search.setContentDescription("Cari tajuk dan kandungan nota");search.setSingleLine(true);search.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);search.setSelectAllOnFocus(false);search.setHint("Cari tajuk atau kandungan nota…");search.setText(noteFilter);search.setSelection(search.length());root.addView(search);
     Button add=button();add.setText("+ Tulis nota baharu");add.setTextColor(accent());add.setContentDescription("Tulis nota peribadi baharu");root.addView(add);add.setOnClickListener(v->edit(-1));
