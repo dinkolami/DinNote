@@ -209,7 +209,7 @@ public class MainActivity extends Activity {
         options.addView(statLabel1);
       }
     }catch(Exception statError1){android.util.Log.w("DinNote","Unable to read statistic 2",statError1);}
-    try(Cursor stat2=db.getReadableDatabase().rawQuery("SELECT COUNT(*) FROM notes WHERE category_id IS NULL OR category_id=0",null)){
+    try(Cursor stat2=db.getReadableDatabase().rawQuery("SELECT COUNT(*) FROM notes WHERE category_id IS NULL OR category_id=-1 OR category_id=0",null)){
       if(stat2.moveToFirst()){
         TextView statLabel2=text("Nota tanpa kategori: "+stat2.getLong(0),14);
         statLabel2.setContentDescription("Nota tanpa kategori, "+stat2.getLong(0));
