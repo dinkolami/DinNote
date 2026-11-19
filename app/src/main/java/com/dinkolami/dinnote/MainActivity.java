@@ -191,31 +191,7 @@ public class MainActivity extends Activity {
         }while(pinnedNotes.moveToNext());
       }
     }catch(Exception e){android.util.Log.w("DinNote","Pinned notes preview unavailable",e);}
-    TextView libraryHeading=text("Kategori Maktabah",17);libraryHeading.setContentDescription("Senarai kategori Maktabah");libraryHeading.setTypeface(null,Typeface.BOLD);libraryHeading.setPadding(10,14,10,9);homeContent.addView(libraryHeading);
-    LinearLayout libraryShortcuts=new LinearLayout(this);libraryShortcuts.setOrientation(1);libraryShortcuts.setContentDescription("Senarai pintasan kategori Maktabah");libraryShortcuts.setPadding(0,0,0,8);homeContent.addView(libraryShortcuts);
-    try(Cursor cats=db.getReadableDatabase().rawQuery("SELECT id,name FROM categories ORDER BY name COLLATE NOCASE LIMIT 8",null)){
-      while(cats.moveToNext()){
-        final int categoryId=cats.getInt(0);final String categoryName=cats.getString(1);
-        Button shortcut=button();shortcut.setText("▥  "+categoryName);shortcut.setContentDescription("Buka kitab kategori "+categoryName);libraryShortcuts.addView(shortcut);
-        shortcut.setOnClickListener(v->showBooks(categoryId,categoryName));
-      }
-    }catch(Exception e){android.util.Log.w("DinNote","Library shortcuts unavailable",e);}
-    Button allLibrary=button();allLibrary.setText("Lihat & urus semua kategori Maktabah");allLibrary.setContentDescription("Lihat tambah ubah atau padam kategori Maktabah");libraryShortcuts.addView(allLibrary);
-    allLibrary.setOnClickListener(v->showLibrary());
-    // Home category shortcuts, matching the original DinNote two-section layout.
-    TextView noteHeading=text("Kategori Nota",17);noteHeading.setContentDescription("Senarai kategori Nota");noteHeading.setTypeface(null,Typeface.BOLD);noteHeading.setPadding(10,14,10,9);homeContent.addView(noteHeading);
-    LinearLayout noteShortcuts=new LinearLayout(this);noteShortcuts.setOrientation(1);noteShortcuts.setContentDescription("Pintasan kategori Nota");noteShortcuts.setPadding(0,0,0,8);homeContent.addView(noteShortcuts);
-    Button personal=button();personal.setText("▤  Semua nota peribadi");personal.setContentDescription("Tunjukkan semua nota daripada semua kategori");noteShortcuts.addView(personal);
-    personal.setOnClickListener(v->{selectedNoteCategory=-1;showHome();});
-    try(Cursor cats=db.getReadableDatabase().rawQuery("SELECT id,name FROM note_categories ORDER BY name COLLATE NOCASE LIMIT 6",null)){
-      while(cats.moveToNext()){
-        final int catId=cats.getInt(0);String catName=cats.getString(1);
-        Button item=button();item.setText("▤  "+catName);item.setContentDescription("Lihat nota kategori "+catName);noteShortcuts.addView(item);
-        item.setOnClickListener(v->{selectedNoteCategory=catId;showHome();});
-      }
-    }catch(Exception e){android.util.Log.w("DinNote","Category shortcuts unavailable",e);}
-    Button manageCategories=button();manageCategories.setText("Lihat & urus semua kategori Nota");manageCategories.setContentDescription("Lihat tambah ubah atau padam kategori Nota");noteShortcuts.addView(manageCategories);
-    manageCategories.setOnClickListener(v->showNoteCategories());
+    // Category management belongs inside Nota and Maktabah, not on the home page.
     Button sort=button();sort.setText("Susun: "+new String[]{"Terkini","Terlama","Tajuk A-Z"}[noteSort]);homeContent.addView(sort);
     sort.setContentDescription("Pilih susunan nota: "+new String[]{"Terkini","Terlama","Tajuk A-Z"}[noteSort]);sort.setOnClickListener(v->new AlertDialog.Builder(this).setItems(new String[]{"Terkini","Terlama","Tajuk A-Z"},(d,w)->{noteSort=w;getPreferences(MODE_PRIVATE).edit().putInt("noteSort",w).apply();sort.setText("Susun: "+new String[]{"Terkini","Terlama","Tajuk A-Z"}[w]);refresh(noteFilter);}).show());
     search=field();search.setContentDescription("Cari tajuk dan kandungan nota");search.setSingleLine(true);search.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);search.setSelectAllOnFocus(false);search.setHint("Cari tajuk atau kandungan nota…");search.setText(noteFilter);search.setSelection(search.length());homeContent.addView(search);
