@@ -157,7 +157,7 @@ public class MainActivity extends Activity {
     navigator.addView(homeNav,new LinearLayout.LayoutParams(0,-2,1));
     navigator.addView(noteNav,new LinearLayout.LayoutParams(0,-2,1));
     navigator.addView(bookNav,new LinearLayout.LayoutParams(0,-2,1));
-    navigator.setMinimumHeight(56);root.addView(navigator,new LinearLayout.LayoutParams(-1,-2));
+    navigator.setMinimumHeight(56);navigator.setFocusable(false);root.addView(navigator,new LinearLayout.LayoutParams(-1,-2));
     homeNav.setOnClickListener(v->showHome());
     noteNav.setOnClickListener(v->{search.requestFocus();});
     bookNav.setOnClickListener(v->showLibrary());
