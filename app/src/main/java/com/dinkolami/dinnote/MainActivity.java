@@ -134,7 +134,7 @@ public class MainActivity extends Activity {
         item.setOnClickListener(v->{selectedNoteCategory=catId;showHome();});
       }
     }catch(Exception e){android.util.Log.w("DinNote","Category shortcuts unavailable",e);}
-    Button manageCategories=button();manageCategories.setText("Lihat & urus semua kategori Nota");noteShortcuts.addView(manageCategories);
+    Button manageCategories=button();manageCategories.setText("Lihat & urus semua kategori Nota");manageCategories.setContentDescription("Buka pengurusan kategori Nota");noteShortcuts.addView(manageCategories);
     manageCategories.setOnClickListener(v->showNoteCategories());
     Button sort=button();sort.setText("Susun: "+new String[]{"Terkini","Terlama","Tajuk A-Z"}[noteSort]);root.addView(sort);
     sort.setContentDescription("Pilih susunan nota");sort.setOnClickListener(v->new AlertDialog.Builder(this).setItems(new String[]{"Terkini","Terlama","Tajuk A-Z"},(d,w)->{noteSort=w;getPreferences(MODE_PRIVATE).edit().putInt("noteSort",w).apply();sort.setText("Susun: "+new String[]{"Terkini","Terlama","Tajuk A-Z"}[w]);refresh(noteFilter);}).show());
