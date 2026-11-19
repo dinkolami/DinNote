@@ -381,25 +381,27 @@ public class MainActivity extends Activity {
  void returnFromReader(){selected=null;if(sectionOpen)notesPage();else home();}
  void read(String key){
   editor=null;titleEditor=null;saveIndicator=null;selected=key;prefs.edit().putLong("viewed_"+key,System.currentTimeMillis()).apply();cleanBase();
-  LinearLayout bar=new LinearLayout(this);bar.setGravity(Gravity.CENTER_VERTICAL);root.addView(bar);
+  LinearLayout bar=new LinearLayout(this);bar.setGravity(Gravity.CENTER_VERTICAL);bar.setPadding(dp(8),dp(3),dp(8),dp(3));bar.setBackgroundColor(0xfff8faf8);root.addView(bar);
   Button readerBack=action("‹",bar,()->returnFromReader());readerBack.setContentDescription(key.startsWith("m_")?"Kembali ke senarai kitab":"Kembali ke senarai nota");
   TextView spacer=text("",12);bar.addView(spacer,new LinearLayout.LayoutParams(0,1,1));
-  Button readerFont=action("Aa",bar,()->{new AlertDialog.Builder(this).setTitle("Saiz tulisan bacaan").setSingleChoiceItems(new String[]{"Kecil","Biasa","Besar","Sangat besar"},prefs.getInt("editor_font_level",1),(dialog,which)->{prefs.edit().putInt("editor_font_level",which).apply();dialog.dismiss();read(key);}).setNegativeButton("Batal",null).show();});readerFont.setContentDescription("Ubah saiz tulisan Nota dan Maktabah");
+  Button readerFont=action("Aa",bar,()->{new AlertDialog.Builder(this).setTitle("Saiz tulisan bacaan").setSingleChoiceItems(new String[]{"Kecil","Biasa","Besar","Sangat besar"},prefs.getInt("reader_font_level",1),(dialog,which)->{prefs.edit().putInt("reader_font_level",which).apply();dialog.dismiss();read(key);}).setNegativeButton("Batal",null).show();});readerFont.setContentDescription("Ubah saiz tulisan Nota dan Maktabah");
   Button readerEdit=action("✎ Edit",bar,()->edit(key));readerEdit.setContentDescription(key.startsWith("m_")?"Sunting kandungan kitab":"Sunting kandungan nota");
   Button readerOptions=action("⋮",bar,()->new AlertDialog.Builder(this).setItems(new String[]{"Edit","Semat / Buka sematan","Duplikasi","Padam"},(d,i)->{if(i==0)edit(key);else if(i==1){boolean pinned=prefs.getBoolean("pinned_"+key,false);prefs.edit().putBoolean("pinned_"+key,!pinned).apply();android.widget.Toast.makeText(this,pinned?"Sematan dibuang":"Nota disemat",android.widget.Toast.LENGTH_SHORT).show();read(key);}else if(i==2)duplicateNote(key);else confirmDelete(key);}).show());readerOptions.setContentDescription(key.startsWith("m_")?"Menu tindakan kitab":"Menu tindakan nota");
   String heading=prefs.getString("title_"+key,"");
+  TextView sectionLabel=text(key.startsWith("m_")?"▤  Maktabah":"✎  Nota",12);sectionLabel.setTextColor(0xff23714b);sectionLabel.setPadding(dp(20),dp(10),dp(20),dp(2));
   ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);scroll.setOverScrollMode(View.OVER_SCROLL_NEVER);
-  LinearLayout body=new LinearLayout(this);body.setOrientation(1);scroll.addView(body);
-  TextView title=text(heading,21);title.setBackgroundColor(Color.WHITE);title.setTextColor(0xff30343b);title.setPadding(dp(20),dp(14),dp(20),dp(10));title.setTextIsSelectable(true);title.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);title.setIncludeFontPadding(true);
+  LinearLayout body=new LinearLayout(this);body.setOrientation(1);body.setBackgroundColor(0xfffdfefd);scroll.addView(body);body.addView(sectionLabel);
+  TextView title=text(heading,21);title.setBackgroundColor(Color.WHITE);title.setTextColor(0xff173d2a);title.setTypeface(null,android.graphics.Typeface.BOLD);title.setPadding(dp(20),dp(6),dp(20),dp(8));title.setTextIsSelectable(true);title.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);title.setIncludeFontPadding(true);
   if(!heading.isEmpty())body.addView(title);
+  String readingCategory=prefs.getString("cat_"+key,"Tanpa kategori");TextView categoryLine=text("⌑  "+readingCategory,12);categoryLine.setTextColor(0xff61766a);categoryLine.setPadding(dp(20),0,dp(20),dp(8));body.addView(categoryLine);
   int fontLevel=Math.max(0,Math.min(3,prefs.getInt("editor_font_level",1)));
-  int[] readingSizes=new int[]{14,16,19,23};
+  int[] readingSizes=key.startsWith("m_")?new int[]{16,19,22,26}:new int[]{14,16,19,23};
   TextView content=text(prefs.getString(key,""),readingSizes[fontLevel]);
-  content.setTextColor(0xff30343b);content.setGravity(Gravity.TOP);content.setTextIsSelectable(true);content.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);content.setPadding(dp(20),dp(10),dp(20),dp(12));content.setLineSpacing(dp(4),1.08f);content.setIncludeFontPadding(true);
+  content.setTextColor(0xff30343b);content.setGravity(Gravity.TOP);content.setTextIsSelectable(true);content.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);int readingSide=getResources().getConfiguration().screenWidthDp>=500?dp(32):dp(20);content.setPadding(readingSide,dp(10),readingSide,dp(12));content.setLineSpacing(dp(3),1.12f);content.setIncludeFontPadding(true);
   body.addView(content,new LinearLayout.LayoutParams(-1,-2));
   String readingText=prefs.getString(key,"").trim();
   int wordCount=readingText.isEmpty()?0:readingText.split("\\s+").length;
-  TextView wordCounter=text(wordCount+" perkataan",12);
+  long readingUpdated=prefs.getLong("updated_"+key,0L);String updatedLabel=readingUpdated>0?new java.text.SimpleDateFormat("dd/MM/yyyy",java.util.Locale.getDefault()).format(new java.util.Date(readingUpdated)):"—";TextView wordCounter=text(wordCount+" perkataan  ·  Dikemas kini "+updatedLabel,12);
   wordCounter.setTextColor(0xff687078);
   wordCounter.setPadding(dp(24),dp(4),dp(24),dp(16));
   body.addView(wordCounter);
