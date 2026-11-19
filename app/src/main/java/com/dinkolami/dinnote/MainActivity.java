@@ -288,7 +288,7 @@ public class MainActivity extends Activity {
    empty.setTextColor(0xff656d76);empty.setPadding(dp(10),dp(4),dp(10),dp(7));
    if(pin)target.addView(empty);return;
   }
-  for(int i=0;i<Math.min(pin?5:3,keys.size());i++){
+  for(int i=0;i<Math.min(5,keys.size());i++){
    String key=keys.get(i),label=prefs.getString("title_"+key,"").trim();
    TextView entry=dashboardText("▤  "+(label.isEmpty()?"Tanpa tajuk":label),13,false);
    entry.setTextColor(0xff26352e);
