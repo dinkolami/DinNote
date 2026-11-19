@@ -880,7 +880,25 @@ public class MainActivity extends Activity {
       Button back=button();back.setText("← Kembali");actions.addView(back,new LinearLayout.LayoutParams(0,-2,1));back.setOnClickListener(v->showHome());
       Button editButton=button();editButton.setText("✎ Edit");actions.addView(editButton,new LinearLayout.LayoutParams(0,-2,1));editButton.setOnClickListener(v->edit(id));
       page.addView(actions,new LinearLayout.LayoutParams(-1,-2));actions.setVisibility(View.GONE);
-      ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);scroll.setVerticalScrollBarEnabled(true);
+      // Dispatch gestures at the ScrollView level before child TextViews consume events.
+      // Only a confirmed double tap reveals the reader toolbar.
+      final android.view.GestureDetector readerGestures=new android.view.GestureDetector(this,
+        new android.view.GestureDetector.SimpleOnGestureListener(){
+          @Override public boolean onDown(android.view.MotionEvent e){return true;}
+          @Override public boolean onDoubleTap(android.view.MotionEvent e){
+            actions.setVisibility(View.VISIBLE);
+            actions.bringToFront();
+            actions.requestLayout();
+            return true;
+          }
+        });
+      ScrollView scroll=new ScrollView(this){
+        @Override public boolean dispatchTouchEvent(android.view.MotionEvent event){
+          readerGestures.onTouchEvent(event);
+          return super.dispatchTouchEvent(event);
+        }
+      };
+      scroll.setFillViewport(true);scroll.setVerticalScrollBarEnabled(true);
       page.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
       LinearLayout content=new LinearLayout(this);content.setOrientation(LinearLayout.VERTICAL);content.setPadding(20,24,20,28);
       content.setBackgroundColor(noteColor==Color.WHITE?surface():noteColor);scroll.addView(content);
@@ -893,35 +911,8 @@ public class MainActivity extends Activity {
       bodyView.setTextColor(ink);bodyView.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
       bodyView.setTextIsSelectable(false);bodyView.setPadding(0,16,0,20);
       bodyView.setLineSpacing(5,1.1f);content.addView(bodyView);
-      // Keep reader actions hidden initially; a tap anywhere on the reading surface reveals them.
-      // A single-tap fallback is intentional: selectable text and ScrollView touch dispatch
-      // differ across Android devices and previously swallowed double-tap gestures.
-      Runnable revealActions=()->{
-        if(actions.getVisibility()!=View.VISIBLE){
-          actions.setVisibility(View.VISIBLE);
-          actions.requestLayout();
-        }
-      };
-      android.view.GestureDetector gestures=new android.view.GestureDetector(this,new android.view.GestureDetector.SimpleOnGestureListener(){
-        @Override public boolean onDown(android.view.MotionEvent e){return true;}
-        @Override public boolean onSingleTapConfirmed(android.view.MotionEvent e){revealActions.run();return true;}
-        @Override public boolean onDoubleTap(android.view.MotionEvent e){revealActions.run();return true;}
-      });
-      View.OnTouchListener readingGestures=(v,event)->{
-        gestures.onTouchEvent(event);
-        if(event.getActionMasked()==android.view.MotionEvent.ACTION_UP)revealActions.run();
-        return false;
-      };
-      scroll.setOnTouchListener(readingGestures);
-      content.setOnTouchListener(readingGestures);
-      titleView.setOnTouchListener(readingGestures);
-      bodyView.setOnTouchListener(readingGestures);
-      content.setClickable(true);
-      titleView.setClickable(true);
-      bodyView.setClickable(true);
-      content.setOnClickListener(v->revealActions.run());
-      titleView.setOnClickListener(v->revealActions.run());
-      bodyView.setOnClickListener(v->revealActions.run());
+      // Keep reading mode distraction-free until a genuine double tap.
+      // The toolbar buttons use their own click listeners and remain clickable.
       content.setContentDescription("Paparan baca nota. Ketik untuk memaparkan butang Edit dan Kembali.");
     }catch(Exception e){android.util.Log.e("DinNote","Cannot open note reader",e);Toast.makeText(this,"Gagal membuka nota",Toast.LENGTH_LONG).show();showHome();}
   }
