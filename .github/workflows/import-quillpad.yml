@@ -22,12 +22,14 @@ jobs:
           ref: quillpad-migration
           persist-credentials: true
       - name: Fetch complete upstream Quillpad source
+        if: ${{ hashFiles('app/build.gradle.kts') == '' }}
         run: |
           set -euo pipefail
           git clone --depth 1 https://github.com/quillpad/quillpad.git /tmp/quillpad-upstream
           git -C /tmp/quillpad-upstream rev-parse HEAD | tee /tmp/quillpad-upstream-sha
           test -f /tmp/quillpad-upstream/LICENSE || test -f /tmp/quillpad-upstream/LICENSE.md || test -f /tmp/quillpad-upstream/COPYING
       - name: Import source while retaining this migration workflow
+        if: ${{ hashFiles('app/build.gradle.kts') == '' }}
         run: |
           set -euo pipefail
           mkdir -p /tmp/dinnote-workflow
