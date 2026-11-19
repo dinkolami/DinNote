@@ -417,9 +417,51 @@ public class MainActivity extends Activity {
    ScrollView scroll=new ScrollView(this);
    scroll.addView(image,new ScrollView.LayoutParams(-1,-2));
    new AlertDialog.Builder(this).setTitle("Pratonton foto kitab")
-    .setMessage("Foto ini belum ditukar kepada tulisan. OCR Arab dan Rumi akan dibangunkan pada peringkat seterusnya. Foto belum disimpan dalam Maktabah.")
-    .setView(scroll).setPositiveButton("Tutup",null).show();
+    .setMessage("OCR Rumi tersedia untuk dicuba. Tulisan Arab belum disokong. Semak hasil OCR sebelum memasukkannya ke Maktabah; foto asal tidak disimpan.")
+    .setView(scroll).setNegativeButton("Tutup",null)
+    .setPositiveButton("Imbas tulisan Rumi",(dialog,which)->recognizeLatinKitab(bitmap)).show();
   }catch(Exception e){new AlertDialog.Builder(this).setTitle("Foto tidak dapat dibuka").setMessage(e.getMessage()).setPositiveButton("OK",null).show();}
+ }
+ void recognizeLatinKitab(android.graphics.Bitmap bitmap){
+  com.google.mlkit.vision.text.TextRecognizer recognizer=
+   com.google.mlkit.vision.text.TextRecognition.getClient(
+    com.google.mlkit.vision.text.latin.TextRecognizerOptions.DEFAULT_OPTIONS);
+  com.google.mlkit.vision.common.InputImage input=
+   com.google.mlkit.vision.common.InputImage.fromBitmap(bitmap,0);
+  recognizer.process(input)
+   .addOnSuccessListener(result->{
+    String extracted=result.getText();
+    if(extracted==null||extracted.trim().isEmpty()){
+     new AlertDialog.Builder(this).setTitle("Tiada tulisan Rumi dikesan")
+      .setMessage("Cuba foto yang lebih jelas. OCR Arab belum tersedia.")
+      .setPositiveButton("OK",null).show();
+     return;
+    }
+    EditText review=new EditText(this);
+    review.setText(extracted);
+    review.setTextSize(16);
+    review.setMinLines(5);
+    review.setMaxLines(12);
+    review.setGravity(Gravity.TOP);
+    review.setInputType(android.text.InputType.TYPE_CLASS_TEXT|android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE);
+    new AlertDialog.Builder(this).setTitle("Semak teks imbasan Rumi")
+     .setMessage("Betulkan hasil OCR sebelum memasukkannya pada kedudukan kursor dalam editor Maktabah. Tulisan Arab belum disokong.")
+     .setView(review)
+     .setNegativeButton("Batal",null)
+     .setPositiveButton("Masukkan ke Maktabah",(dialog,which)->{
+      if(editor==null||!maktabah)return;
+      String value=review.getText().toString();
+      int start=Math.max(0,editor.getSelectionStart());
+      int end=Math.max(0,editor.getSelectionEnd());
+      editor.getText().replace(Math.min(start,end),Math.max(start,end),value);
+      save();
+     }).show();
+   })
+   .addOnFailureListener(error->new AlertDialog.Builder(this)
+    .setTitle("Imbasan tidak berjaya")
+    .setMessage("Tidak dapat mengenal pasti teks. Cuba foto lain.")
+    .setPositiveButton("OK",null).show())
+   .addOnCompleteListener(task->recognizer.close());
  }
  void insertCurrentDateTime(int mode){
   if(editor==null)return;
