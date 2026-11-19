@@ -17,11 +17,11 @@ android {
     namespace = "org.qosp.notes"
 
     defaultConfig {
-        applicationId = "io.github.quillpad"
+        applicationId = "com.dinkolami.dinnote.quillpad"
         minSdk = 24
         targetSdk = 37
-        versionCode = 59
-        versionName = "1.5.16"
+        versionCode = 1
+        versionName = "3.0.0-migration1"
 
         testInstrumentationRunner = "org.qosp.notes.TestRunner"
 
