@@ -475,7 +475,18 @@ public class MainActivity extends Activity {
     TextView message=text("DinNote gagal dibuka. Data nota tidak dipadam.\n\nRalat: "+e.getClass().getSimpleName()+": "+e.getMessage(),16);
     page.addView(message);
     Button retry=button();retry.setText("Cuba lagi");page.addView(retry);
-    retry.setOnClickListener(v->{try {db=new DB(this);db.getWritableDatabase();showHome();}catch(Exception error){showStartupError(error);}});
+    retry.setOnClickListener(v->{
+      retry.setEnabled(false);
+      try {
+        if(db!=null){db.close();}
+        db=new DB(this);
+        db.getWritableDatabase();
+        showHome();
+      } catch(Exception error){
+        android.util.Log.e("DinNote","Retry startup failed",error);
+        showStartupError(error);
+      }
+    });
   }
   int cardSurface(){return dark()?0xFF161B22:0xFFFFFFFF;}
   int accent(){return dark()?0xFF68C7A1:(pearlPalette()?0xFF008F8B:0xFF087C59);}
