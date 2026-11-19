@@ -59,14 +59,35 @@ jobs:
           grep -Fq "package: name='com.dinkolami.dinnote.quillpad'" /tmp/dinnote-apk-badging.txt
           grep -Eq "application-label(-[a-zA-Z0-9_-]+)?:'DinNote'" /tmp/dinnote-apk-badging.txt
           echo 'Verified APK package and launcher label.'
-      - name: Upload Gradle failure log
+      - name: Collect failure diagnostics
+        if: failure()
+        shell: bash
+        run: |
+          {
+            echo "## DinNote failed build diagnostics"
+            echo "Commit: ${GITHUB_SHA}"
+            echo "Branch: ${GITHUB_REF_NAME}"
+            echo "Runner: ${RUNNER_OS}"
+            echo "Java:"
+            java -version 2>&1 || true
+            echo "Android SDK: ${ANDROID_HOME:-unset}"
+            echo "Available build tools:"
+            ls -la "${ANDROID_HOME:-/nonexistent}/build-tools" 2>&1 || true
+            echo "Android platforms:"
+            ls -la "${ANDROID_HOME:-/nonexistent}/platforms" 2>&1 || true
+            echo "Gradle log:"
+            if [ -f gradle-build.log ]; then tail -n 200 gradle-build.log; else echo "Gradle build did not start or did not produce a log"; fi
+          } | tee dinnote-failure-diagnostics.txt
+      - name: Upload failure diagnostics
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: dinnote-gradle-failure-log
-          path: gradle-build.log
-          if-no-files-found: warn
-          retention-days: 7
+          name: dinnote-build-failure-diagnostics
+          path: |
+            gradle-build.log
+            dinnote-failure-diagnostics.txt
+          if-no-files-found: error
+          retention-days: 14
       - name: Record build diagnostics
         if: always()
         run: |
