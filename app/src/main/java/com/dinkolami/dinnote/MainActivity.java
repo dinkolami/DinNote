@@ -69,6 +69,8 @@ public class MainActivity extends Activity {
     options.addView(palette);palette.setOnClickListener(v->{getPreferences(MODE_PRIVATE).edit().putBoolean("pearlTurquoiseGold",!pearlPalette()).apply();applyAppearance();showSettings();});
     Button smoothHeader=button();smoothHeader.setText("◈  Header lembut ketika skrol  ·  "+(getPreferences(MODE_PRIVATE).getBoolean("smoothHeader",true)?"Aktif":"Mati"));
     options.addView(smoothHeader);smoothHeader.setOnClickListener(v->{boolean enabled=getPreferences(MODE_PRIVATE).getBoolean("smoothHeader",true);getPreferences(MODE_PRIVATE).edit().putBoolean("smoothHeader",!enabled).apply();showSettings();});
+    Button reduceMotion=button();reduceMotion.setText("◌  Kurangkan animasi  ·  "+(getPreferences(MODE_PRIVATE).getBoolean("reduceMotion",false)?"Aktif":"Mati"));
+    options.addView(reduceMotion);reduceMotion.setOnClickListener(v->{boolean enabled=getPreferences(MODE_PRIVATE).getBoolean("reduceMotion",false);getPreferences(MODE_PRIVATE).edit().putBoolean("reduceMotion",!enabled).apply();showSettings();});
     Button sort=button();sort.setText("↕  Susunan nota  ·  "+new String[]{"Terkini","Terlama","Tajuk A-Z"}[Math.max(0,Math.min(noteSort,2))]);
     options.addView(sort);sort.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Susunan nota")
       .setSingleChoiceItems(new String[]{"Terkini","Terlama","Tajuk A-Z"},Math.max(0,Math.min(2,noteSort)),(dialog,which)->{
@@ -519,6 +521,8 @@ public class MainActivity extends Activity {
     body.setFadingEdgeLength(12);
     body.setScrollBarFadeDuration(380);
     body.setScrollbarFadingEnabled(true);
+    body.setVerticalFadingEdgeEnabled(false);
+    body.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
     status.setTextColor(dark()?0xFF8B949E:0xFF57606A);
     status.setTextSize(12);
     status.setGravity(Gravity.END);
@@ -558,6 +562,7 @@ public class MainActivity extends Activity {
     popup.getMenu().add(0,3,2,"▤  Maktabah");
     popup.getMenu().add(0,4,3,"⚙  Tetapan & penampilan");
     popup.getMenu().add(0,5,4,"⌕  Cari kategori Nota");
+    popup.getMenu().add(0,6,5,"✦  Tema Pearl Gold & Turquoise");
     popup.setOnMenuItemClickListener(item->{
       switch(item.getItemId()){
         case 1:showHome();return true;
@@ -565,6 +570,7 @@ public class MainActivity extends Activity {
         case 3:showLibrary();return true;
         case 4:showSettings();return true;
         case 5:showNoteCategories();return true;
+        case 6:getPreferences(MODE_PRIVATE).edit().putBoolean("pearlTurquoiseGold",!pearlPalette()).apply();applyAppearance();showHome();return true;
         default:return false;
       }
     });
@@ -580,12 +586,12 @@ public class MainActivity extends Activity {
     header.setElevation(4f*getResources().getDisplayMetrics().density);
     LinearLayout topBar=new LinearLayout(this);topBar.setGravity(Gravity.CENTER_VERTICAL);header.addView(topBar);
     TextView menu=text("☰",24);menu.setGravity(Gravity.CENTER);menu.setMinWidth(48);menu.setMinHeight(48);menu.setContentDescription("Menu dan tetapan");menu.setBackground(rounded(cardSurface(),borderColor(),12));menu.setOnClickListener(v->showHomeDropdown(menu));topBar.addView(menu);
-    TextView title=text("  ◈  DinNote  ▾",21);title.setTypeface(null,Typeface.BOLD);title.setSingleLine(true);title.setEllipsize(android.text.TextUtils.TruncateAt.END);title.setContentDescription("Buka dropdown navigasi DinNote");title.setGravity(Gravity.CENTER_VERTICAL);title.setMinHeight(48);title.setClickable(true);title.setOnClickListener(v->showHomeDropdown(title));topBar.addView(title,new LinearLayout.LayoutParams(0,-2,1));
+    TextView title=text("  ◈  DinNote  ▾",20);title.setTypeface(null,Typeface.BOLD);title.setSingleLine(true);title.setEllipsize(android.text.TextUtils.TruncateAt.END);title.setContentDescription("Buka dropdown navigasi DinNote");title.setGravity(Gravity.CENTER_VERTICAL);title.setMinHeight(48);title.setClickable(true);title.setOnClickListener(v->showHomeDropdown(title));topBar.addView(title,new LinearLayout.LayoutParams(0,-2,1));
     TextView search=text("⌕",27);search.setGravity(Gravity.CENTER);search.setMinWidth(48);search.setMinHeight(48);search.setContentDescription("Cari nota");search.setBackground(rounded(cardSurface(),borderColor(),12));search.setOnClickListener(v->showNoteCategories());topBar.addView(search);
-    TextView settings=text("⚙",22);settings.setGravity(Gravity.CENTER);settings.setMinWidth(48);settings.setMinHeight(48);settings.setTextColor(accent());settings.setContentDescription("Tetapan penampilan");settings.setOnClickListener(v->showSettings());topBar.addView(settings);
-    HorizontalScrollView tabScroll=new HorizontalScrollView(this);tabScroll.setHorizontalScrollBarEnabled(false);tabScroll.setFillViewport(true);header.addView(tabScroll);
+    TextView settings=text("⚙",22);settings.setGravity(Gravity.CENTER);settings.setMinWidth(48);settings.setMinHeight(48);settings.setTextColor(accent());settings.setContentDescription("Tetapan penampilan");settings.setBackground(rounded(cardSurface(),pearlPalette()?0xFFD5BD83:borderColor(),12));settings.setOnClickListener(v->showSettings());topBar.addView(settings);
+    HorizontalScrollView tabScroll=new HorizontalScrollView(this);tabScroll.setHorizontalScrollBarEnabled(false);tabScroll.setSmoothScrollingEnabled(true);tabScroll.setFillViewport(true);header.addView(tabScroll);
     LinearLayout tabs=new LinearLayout(this);tabs.setGravity(Gravity.CENTER_VERTICAL);tabScroll.addView(tabs);
-    TextView tabHome=text("Utama",15);tabHome.setTypeface(null,Typeface.BOLD);tabHome.setTextColor(accent());tabHome.setPadding(14,12,14,12);tabs.addView(tabHome);
+    TextView tabHome=text("Utama",15);tabHome.setTypeface(null,Typeface.BOLD);tabHome.setTextColor(pearlPalette()?0xFF0C9B9A:accent());tabHome.setPadding(14,12,14,12);tabs.addView(tabHome);
     TextView tabNotes=text("Nota",15);tabNotes.setPadding(14,12,14,12);tabNotes.setOnClickListener(v->showNoteCategories());tabs.addView(tabNotes);
     TextView tabBooks=text("Maktabah",15);tabBooks.setPadding(14,12,14,12);tabBooks.setOnClickListener(v->showLibrary());tabs.addView(tabBooks);
     TextView tabMore=text("Lagi  ▾",15);tabMore.setPadding(14,12,14,12);tabMore.setOnClickListener(v->showHomeDropdown(tabMore));tabs.addView(tabMore);
@@ -600,7 +606,7 @@ public class MainActivity extends Activity {
         float target=1f-Math.min(0.10f,Math.max(0,scrollY)/600f);
         if(Math.abs(header.getAlpha()-target)>0.015f){
           header.animate().cancel();
-          header.animate().alpha(target).setDuration(220).setInterpolator(new android.view.animation.DecelerateInterpolator()).start();
+          header.animate().alpha(target).setDuration(getPreferences(MODE_PRIVATE).getBoolean("reduceMotion",false)?0:220).setInterpolator(new android.view.animation.DecelerateInterpolator()).start();
         }
       } else if(header.getAlpha()!=1f){header.animate().cancel();header.setAlpha(1f);}
     });
