@@ -78,32 +78,32 @@ public class MainActivity extends Activity {
   }
   Button button(){
     Button b=new Button(this);b.setAllCaps(false);b.setTextSize(14);b.setLetterSpacing(0);
-    b.setMinHeight(44);b.setTextColor(foreground());b.setBackground(rounded(cardSurface(),borderColor(),12));
-    b.setPadding(14,9,14,9);
-    LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2);p.setMargins(0,5,0,5);b.setLayoutParams(p);
+    b.setMinHeight(44);b.setTextColor(foreground());b.setBackground(rounded(cardSurface(),borderColor(),8));
+    b.setPadding(12,8,12,8);
+    LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2);p.setMargins(0,3,0,3);b.setLayoutParams(p);
     return b;
   }
   EditText field(){
     EditText e=new EditText(this);e.setTextColor(foreground());
     e.setHintTextColor(dark()?0xFF8B949E:0xFF656D76);
     e.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);e.setTextSize(15);e.setPadding(14,12,14,12);
-    e.setBackground(rounded(cardSurface(),borderColor(),12));return e;
+    e.setBackground(rounded(cardSurface(),borderColor(),8));return e;
   }
   TextView text(String value,int size) { TextView t=new TextView(this);t.setText(value);t.setTextSize(size);t.setTextColor(foreground());t.setPadding(10,9,10,9);return t; }
-  LinearLayout column() { LinearLayout l=new LinearLayout(this);l.setOrientation(1);l.setPadding(14,14,14,14);l.setBackgroundColor(surface());return l; }
+  LinearLayout column() { LinearLayout l=new LinearLayout(this);l.setOrientation(1);l.setPadding(12,12,12,12);l.setBackgroundColor(surface());return l; }
   void showHome() {
     flushPendingSave();
     editingBook=false;editingNote=false;saveIndicator=null;
     root=column();root.setFocusableInTouchMode(true);setContentView(root);
     LinearLayout header=new LinearLayout(this);header.setOrientation(LinearLayout.HORIZONTAL);header.setGravity(Gravity.CENTER_VERTICAL);root.addView(header);
-    TextView title=text("▤  DinNote",22);title.setTypeface(null,Typeface.BOLD);header.addView(title,new LinearLayout.LayoutParams(0,-2,1));
+    TextView title=text("DinNote",20);title.setTypeface(null,Typeface.BOLD);header.addView(title,new LinearLayout.LayoutParams(0,-2,1));
     TextView appearance=text("⚙",22);appearance.setContentDescription("Tetapan");appearance.setFocusable(true);appearance.setOnClickListener(v->showSettings());header.addView(appearance);
     View headerDivider=new View(this);headerDivider.setBackgroundColor(borderColor());LinearLayout.LayoutParams hd=new LinearLayout.LayoutParams(-1,1);hd.setMargins(0,4,0,12);root.addView(headerDivider,hd);
-    Button notesMenu=button();notesMenu.setText("📝  Nota");notesMenu.setTypeface(null,Typeface.BOLD);root.addView(notesMenu);
-    Button libraryMenu=button();libraryMenu.setText("📚  Maktabah");libraryMenu.setTypeface(null,Typeface.BOLD);root.addView(libraryMenu);
+    Button notesMenu=button();notesMenu.setText("Nota");notesMenu.setTypeface(null,Typeface.BOLD);root.addView(notesMenu);
+    Button libraryMenu=button();libraryMenu.setText("Maktabah");libraryMenu.setTypeface(null,Typeface.BOLD);root.addView(libraryMenu);
     libraryMenu.setContentDescription("Buka Maktabah");libraryMenu.setOnClickListener(v->showLibrary());
     notesMenu.setContentDescription("Buka Nota");notesMenu.setOnClickListener(v->showHome());
-    Button categoriesButton=button();categoriesButton.setText("Kategori Nota  •  Tambah / Ubah / Padam");root.addView(categoriesButton);
+    Button categoriesButton=button();categoriesButton.setText("Kategori Nota");root.addView(categoriesButton);
     categoriesButton.setOnClickListener(v->showNoteCategories());
     Button sort=button();sort.setText("Susun: "+new String[]{"Terkini","Terlama","Tajuk A-Z"}[noteSort]);root.addView(sort);
     sort.setContentDescription("Pilih susunan nota");sort.setOnClickListener(v->new AlertDialog.Builder(this).setItems(new String[]{"Terkini","Terlama","Tajuk A-Z"},(d,w)->{noteSort=w;getPreferences(MODE_PRIVATE).edit().putInt("noteSort",w).apply();sort.setText("Susun: "+new String[]{"Terkini","Terlama","Tajuk A-Z"}[w]);refresh(noteFilter);}).show());
@@ -145,7 +145,7 @@ public class MainActivity extends Activity {
       while(c.moveToNext()){
         final int id=c.getInt(0);final String name=c.getString(1);
         LinearLayout row=new LinearLayout(this);row.setOrientation(LinearLayout.HORIZONTAL);items.addView(row);
-        Button open=button();open.setText("📁 "+name);row.addView(open,new LinearLayout.LayoutParams(0,-2,1));
+        Button open=button();open.setText(name);row.addView(open,new LinearLayout.LayoutParams(0,-2,1));
         open.setOnClickListener(v->{selectedNoteCategory=id;showHome();});
         Button rename=button();rename.setText("Edit");row.addView(rename,new LinearLayout.LayoutParams(-2,-2));
         rename.setOnClickListener(v->promptNoteCategory(id,name));
@@ -229,13 +229,13 @@ public class MainActivity extends Activity {
     flushPendingSave();editingBook=false;editingNote=false;saveIndicator=null;
     LinearLayout page=column();setContentView(page);
     Button back=button();back.setText("← DinNote");back.setTextSize(14);page.addView(back);back.setOnClickListener(v->showHome());
-    page.addView(text("📚  Maktabah",23));
+    page.addView(text("Maktabah",21));
     Button add=button();add.setText("+ Kategori baharu");page.addView(add);
     add.setOnClickListener(v->promptCategory());
     ScrollView scroll=new ScrollView(this);LinearLayout items=new LinearLayout(this);items.setOrientation(1);scroll.addView(items);page.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
     try(Cursor c=db.getReadableDatabase().rawQuery("SELECT id,name FROM categories ORDER BY name COLLATE NOCASE",null)){
       while(c.moveToNext()){int categoryId=c.getInt(0);String name=c.getString(1);
-        Button item=button();item.setText("📁  "+name);item.setContentDescription("Buka kategori "+name);items.addView(item);item.setOnClickListener(v->showBooks(categoryId,name));
+        Button item=button();item.setText(name);item.setContentDescription("Buka kategori "+name);items.addView(item);item.setOnClickListener(v->showBooks(categoryId,name));
         item.setOnLongClickListener(v->{new AlertDialog.Builder(this).setItems(new String[]{"Ubah nama","Padam kategori"},(d,which)->{
           if(which==0)promptRenameCategory(categoryId,name);else new AlertDialog.Builder(this).setMessage("Padam kategori dan semua kitab di dalamnya?").setNegativeButton("Batal",null).setPositiveButton("Padam",(dd,w)->{db.getWritableDatabase().delete("books","category_id=?",new String[]{""+categoryId});db.getWritableDatabase().delete("categories","id=?",new String[]{""+categoryId});showLibrary();}).show();
         }).show();return true;});
@@ -259,7 +259,7 @@ public class MainActivity extends Activity {
     flushPendingSave();editingBook=false;editingNote=false;saveIndicator=null;activeCategoryId=categoryId;activeCategoryName=categoryName;
     LinearLayout page=column();setContentView(page);
     Button back=button();back.setText("← Maktabah");back.setTextSize(14);page.addView(back);back.setOnClickListener(v->showLibrary());
-    page.addView(text("📁  "+categoryName,21));page.setFocusableInTouchMode(true);
+    page.addView(text(categoryName,20));page.setFocusableInTouchMode(true);
     Button add=button();add.setText("+ Tambah kitab");add.setContentDescription("Cipta kitab dalam kategori "+categoryName);page.addView(add);add.setOnClickListener(v->editBook(-1,categoryId,categoryName));
     EditText bookSearch=field();bookSearch.setSingleLine(true);bookSearch.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);bookSearch.setSelectAllOnFocus(false);bookSearch.setHint("Cari kitab dalam kategori…");page.addView(bookSearch);
     ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);LinearLayout items=new LinearLayout(this);items.setOrientation(1);scroll.addView(items);page.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
@@ -272,7 +272,7 @@ public class MainActivity extends Activity {
     try(Cursor c=db.getReadableDatabase().rawQuery("SELECT id,title FROM books WHERE category_id=? AND (title LIKE ? OR body LIKE ?) ORDER BY updated DESC,id DESC",
       new String[]{""+categoryId,"%"+query+"%","%"+query+"%"})){
       while(c.moveToNext()){visibleCount++;int bookId=c.getInt(0);String heading=c.getString(1);
-        Button item=button();item.setText("📖  "+(heading==null||heading.trim().isEmpty()?"Tanpa tajuk":heading));
+        Button item=button();item.setText((heading==null||heading.trim().isEmpty()?"Tanpa tajuk":heading));
         item.setContentDescription("Buka kitab "+(heading==null?"Tanpa tajuk":heading));items.addView(item);item.setOnClickListener(v->editBook(bookId,categoryId,categoryName));
       }
     }
