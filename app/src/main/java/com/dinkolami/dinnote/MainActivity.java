@@ -412,6 +412,7 @@ public class MainActivity extends Activity {
   // Display list rows with subtle mint dividers; preserve the original stored text.
   String[] displayLines=fullReadingText.split("\\n",-1);
   boolean hasLists=false;
+  for(String line:displayLines)if(line.trim().equals("---")){hasLists=true;break;}
   for(String line:displayLines)if(line.matches("^\\s*(?:\\d+\\.\\s+|[•☐☑✓]\\s+).*")){hasLists=true;break;}
   if(!hasLists)body.addView(content,new LinearLayout.LayoutParams(-1,-2));
   else{
@@ -422,7 +423,17 @@ public class MainActivity extends Activity {
     java.util.regex.Matcher numbered=java.util.regex.Pattern.compile("^\\s*(\\d+)\\.\\s+(.*)$").matcher(line);
     java.util.regex.Matcher marked=java.util.regex.Pattern.compile("^\\s*([•☐☑✓])\\s+(.*)$").matcher(line);
     boolean isNumber=numbered.matches(),isMarked=!isNumber&&marked.matches();
-    if(isNumber||isMarked){
+    if(line.trim().equals("---")){
+     LinearLayout ornament=new LinearLayout(this);ornament.setGravity(Gravity.CENTER_VERTICAL);
+     ornament.setPadding(dp(16),dp(12),dp(16),dp(12));
+     View leftRule=new View(this);leftRule.setBackgroundColor(0xffc4a45a);
+     ornament.addView(leftRule,new LinearLayout.LayoutParams(0,dp(1),1));
+     TextView diamond=text("◇",17);diamond.setTextColor(0xffae913d);
+     diamond.setPadding(dp(10),0,dp(10),0);ornament.addView(diamond);
+     View rightRule=new View(this);rightRule.setBackgroundColor(0xffc4a45a);
+     ornament.addView(rightRule,new LinearLayout.LayoutParams(0,dp(1),1));
+     readingRows.addView(ornament);
+    }else if(isNumber||isMarked){
      LinearLayout itemRow=new LinearLayout(this);itemRow.setOrientation(LinearLayout.HORIZONTAL);
      itemRow.setGravity(Gravity.TOP|Gravity.CENTER_VERTICAL);itemRow.setPadding(dp(6),dp(8),dp(6),dp(8));
      String marker=isNumber?numbered.group(1):marked.group(1);
