@@ -503,21 +503,9 @@ public class MainActivity extends Activity {
     control.setPadding(4,8,4,8);
     control.setBackground(rounded(cardSurface(),borderColor(),12));
   }
+  // Android resizes the editor when Samsung Keyboard appears; system bars stay native.
   void enableKeyboardAwareEditor(LinearLayout page) {
-    getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
-    final int left=page.getPaddingLeft(), top=page.getPaddingTop(), right=page.getPaddingRight(), base=page.getPaddingBottom();
-    if(android.os.Build.VERSION.SDK_INT>=30) {
-      page.setOnApplyWindowInsetsListener((view,insets)->{
-        int ime=insets.getInsets(android.view.WindowInsets.Type.ime()).bottom;
-        int nav=insets.getInsets(android.view.WindowInsets.Type.navigationBars()).bottom;
-        boolean visible=insets.isVisible(android.view.WindowInsets.Type.ime());
-        page.setPadding(left,top,right,base+(visible?Math.max(0,ime-nav):0));
-        return insets;
-      });
-      page.requestApplyInsets();
-    } else {
-      getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-    }
+    getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
   }
   LinearLayout column() { LinearLayout l=new LinearLayout(this);l.setOrientation(1);l.setPadding(16,14,16,14);l.setBackgroundColor(surface());return l; }
   void showHome() {
@@ -767,7 +755,7 @@ public class MainActivity extends Activity {
     LinearLayout toolbar=new LinearLayout(this);toolbar.setOrientation(LinearLayout.HORIZONTAL);page.addView(toolbar,new LinearLayout.LayoutParams(-1,-2));
     Button pinButton=button();pinButton.setText("○ Pin");pinButton.setContentDescription("Pin nota ke halaman utama");page.addView(pinButton);pinButton.setOnClickListener(v->{notePinned[0]=!notePinned[0];pinButton.setText(notePinned[0]?"📌 Dipin":"○ Pin");pinButton.setContentDescription(notePinned[0]?"Nyahpin nota":"Pin nota ke halaman utama");if(saveAction[0]!=null)scheduleSave(saveAction[0]);});
     Button colorButton=button();colorButton.setText("● Warna");colorButton.setContentDescription("Pilih warna latar nota");toolbar.addView(colorButton,new LinearLayout.LayoutParams(0,-2,1));
-    Button fontColor=button();fontColor.setText("A●");fontColor.setContentDescription("Warna tulisan terpilih");toolbar.addView(fontColor,new LinearLayout.LayoutParams(0,-2,1));fontColor.setOnClickListener(v->chooseTextColor(body));
+    Button fontColor=button();fontColor.setText("A●");fontColor.setContentDescription("Warna tulisan terpilih");toolbar.addView(fontColor,new LinearLayout.LayoutParams(0,-2,1));fontColor.setOnClickListener(v->chooseTextColor(body,()->{if(saveAction[0]!=null)scheduleSave(saveAction[0]);}));
     Button checkButton=button();checkButton.setText("☐");toolbar.addView(checkButton,new LinearLayout.LayoutParams(0,-2,1));
     Button boldButton=button();boldButton.setText("B");boldButton.setContentDescription("Tebalkan teks dipilih");boldButton.setTypeface(null,Typeface.BOLD);toolbar.addView(boldButton,new LinearLayout.LayoutParams(0,-2,1));
     Button italicButton=button();italicButton.setText("I");italicButton.setContentDescription("Condongkan teks dipilih");italicButton.setTypeface(null,Typeface.ITALIC);toolbar.addView(italicButton,new LinearLayout.LayoutParams(0,-2,1));
@@ -904,6 +892,7 @@ public class MainActivity extends Activity {
     EditText body=field();body.setHint("Tulis kandungan kitab (Arab / Rumi)…");body.setTextSize(15);
     body.setGravity(Gravity.TOP|Gravity.START);body.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
     body.setMinLines(5);body.setSelectAllOnFocus(false);body.setContentDescription("Kandungan kitab");body.setHorizontallyScrolling(false);body.setTextIsSelectable(true);body.setImeOptions(android.view.inputmethod.EditorInfo.IME_FLAG_NO_EXTRACT_UI);page.addView(body,new LinearLayout.LayoutParams(-1,0,1));
+    styleEditorPage(page,title,body,saveIndicator,back);
     final Button[] deleteButton={null};
     final int[] bookId={id};final boolean[] loading={true};
     if(id>=0)try(Cursor c=db.getReadableDatabase().rawQuery("SELECT title,body,body_html FROM books WHERE id=?",new String[]{""+id})){
@@ -911,7 +900,7 @@ public class MainActivity extends Activity {
     }
     LinearLayout toolbar=new LinearLayout(this);toolbar.setOrientation(LinearLayout.HORIZONTAL);
     page.addView(toolbar,new LinearLayout.LayoutParams(-1,-2));
-    Button fontColor=button();fontColor.setText("A●");fontColor.setContentDescription("Warna tulisan kitab");toolbar.addView(fontColor,new LinearLayout.LayoutParams(0,-2,1));fontColor.setOnClickListener(v->chooseTextColor(body));
+    Button fontColor=button();fontColor.setText("A●");fontColor.setContentDescription("Warna tulisan kitab");toolbar.addView(fontColor,new LinearLayout.LayoutParams(0,-2,1));fontColor.setOnClickListener(v->chooseTextColor(body,()->body.getText().insert(Math.max(0,body.getSelectionStart()),"")));
     Button check=button();check.setText("☐");toolbar.addView(check,new LinearLayout.LayoutParams(0,-2,1));
     Button bold=button();bold.setText("B");bold.setContentDescription("Tebalkan teks dipilih");bold.setTypeface(null,Typeface.BOLD);toolbar.addView(bold,new LinearLayout.LayoutParams(0,-2,1));
     Button italic=button();italic.setText("I");italic.setContentDescription("Condongkan teks dipilih");italic.setTypeface(null,Typeface.ITALIC);toolbar.addView(italic,new LinearLayout.LayoutParams(0,-2,1));
@@ -943,7 +932,7 @@ public class MainActivity extends Activity {
       }).show());
   }
   void saveColor(int id,int color){if(id<0)return;ContentValues v=new ContentValues();v.put("color",color);db.getWritableDatabase().update("notes",v,"id=?",new String[]{""+id});}
-  void chooseTextColor(EditText editor){
+  void chooseTextColor(EditText editor,Runnable onChanged){
     int[] colors={0xFF1F2328,0xFFD1242F,0xFFB45309,0xFF15803D,0xFF0969DA,0xFF7C3AED,0xFFBE185D,0xFF0F766E,0xFF475569,0xFFFFFFFF,0xFFEA580C,0xFF4338CA};
     String[] names={"Hitam","Merah","Coklat","Hijau","Biru","Ungu","Merah jambu","Turquoise","Kelabu","Putih","Oren","Indigo"};
     int start=editor.getSelectionStart(),end=editor.getSelectionEnd();
@@ -951,6 +940,7 @@ public class MainActivity extends Activity {
     new AlertDialog.Builder(this).setTitle("Warna tulisan")
       .setItems(names,(dialog,index)->{
         editor.getText().setSpan(new android.text.style.ForegroundColorSpan(colors[index]),start,end,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        if(onChanged!=null)onChanged.run();
       }).setNegativeButton("Batal",null).show();
   }
   void underlineSelection(EditText edit){int a=edit.getSelectionStart(),b=edit.getSelectionEnd();if(a<0||b<=a){Toast.makeText(this,"Pilih teks dahulu",Toast.LENGTH_SHORT).show();return;}edit.getText().setSpan(new android.text.style.UnderlineSpan(),a,b,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);}
