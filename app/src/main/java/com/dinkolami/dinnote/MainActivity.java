@@ -578,6 +578,10 @@ public class MainActivity extends Activity {
    }
    org.json.JSONObject backup=new org.json.JSONObject(new String(buffer.toByteArray(),java.nio.charset.StandardCharsets.UTF_8));
    if(!"DinNote-backup-v1".equals(backup.optString("format")))throw new java.io.IOException("Format sandaran tidak sah");
+   // Backups from a different installed application must not overwrite DinNote data.
+   String backupPackage=backup.optString("app_package","");
+   if(!backupPackage.isEmpty()&&!getPackageName().equals(backupPackage))
+    throw new java.io.IOException("Sandaran daripada aplikasi lain; data sedia ada tidak diubah");
    org.json.JSONObject values=backup.getJSONObject("data");
    if(values.length()==0)throw new java.io.IOException("Sandaran kosong; data sedia ada tidak diubah");
    // Reject unrelated JSON before clearing the existing DinNote preferences.
