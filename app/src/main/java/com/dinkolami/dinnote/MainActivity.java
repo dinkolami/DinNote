@@ -284,7 +284,7 @@ public class MainActivity extends Activity {
     LinearLayout page=column();setContentView(page);
     Button back=button();back.setText("← DinNote");back.setContentDescription("Kembali ke halaman utama DinNote");back.setTextSize(14);page.addView(back);back.setOnClickListener(v->showHome());
     TextView libraryTitle=text("Maktabah",21);libraryTitle.setContentDescription("Maktabah, koleksi kitab dan ilmu Islam");libraryTitle.setTypeface(null,Typeface.BOLD);page.addView(libraryTitle);
-    EditText categorySearch=field();categorySearch.setSingleLine(true);categorySearch.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);categorySearch.setHint("Cari kategori Maktabah…");categorySearch.setContentDescription("Cari kategori Maktabah");page.addView(categorySearch);
+    EditText categorySearch=field();categorySearch.setSingleLine(true);categorySearch.setSelectAllOnFocus(false);categorySearch.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);categorySearch.setHint("Cari kategori Maktabah…");categorySearch.setContentDescription("Cari kategori Maktabah");page.addView(categorySearch);
     Button add=button();add.setText("+ Tambah kategori Maktabah");add.setContentDescription("Tambah kategori baharu Maktabah");add.setTextColor(accent());page.addView(add);
     add.setOnClickListener(v->promptCategory());
     ScrollView scroll=new ScrollView(this);LinearLayout items=new LinearLayout(this);items.setOrientation(1);scroll.addView(items);page.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
