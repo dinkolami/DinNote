@@ -153,7 +153,7 @@ public class MainActivity extends Activity {
     navigator.setBackgroundColor(cardSurface());
     Button homeNav=button();homeNav.setText("⌂ Utama");homeNav.setTextSize(13);homeNav.setContentDescription("Kembali ke halaman utama DinNote");
     Button noteNav=button();noteNav.setText("▤ Nota");noteNav.setTextSize(13);noteNav.setContentDescription("Fokus carian Nota");noteNav.setTextColor(accent());
-    Button bookNav=button();bookNav.setText("▥ Maktabah");bookNav.setContentDescription("Buka halaman Maktabah");bookNav.setTextColor(accent());
+    Button bookNav=button();bookNav.setText("▥ Maktabah");bookNav.setTextSize(13);bookNav.setContentDescription("Buka halaman Maktabah");bookNav.setTextColor(accent());
     navigator.addView(homeNav,new LinearLayout.LayoutParams(0,-2,1));
     navigator.addView(noteNav,new LinearLayout.LayoutParams(0,-2,1));
     navigator.addView(bookNav,new LinearLayout.LayoutParams(0,-2,1));
