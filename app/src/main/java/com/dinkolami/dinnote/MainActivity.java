@@ -126,12 +126,26 @@ public class MainActivity extends Activity {
  }
  void showSettings(){
   new AlertDialog.Builder(this).setTitle("Tetapan DinNote")
-   .setItems(new String[]{"Backup ke fail","Restore daripada fail","Maklumat aplikasi"},(dialog,which)->{
-    if(which==0)startBackup();
-    else if(which==1)startRestore();
-    else new AlertDialog.Builder(this).setTitle("Mengenai DinNote")
-     .setMessage("DinNote 1.0.1-fresh\nNota dan Maktabah\nOCR ditangguhkan.\nTetapan tambahan akan diperkenalkan secara berperingkat.")
-     .setPositiveButton("Tutup",null).show();
+   .setItems(new String[]{"Saiz tulisan bacaan","Backup ke fail","Restore daripada fail","Maklumat aplikasi"},(dialog,which)->{
+    if(which==0){
+     new AlertDialog.Builder(this).setTitle("Saiz tulisan bacaan")
+      .setSingleChoiceItems(new String[]{"Kecil","Biasa","Besar","Sangat besar"},
+       Math.max(0,Math.min(3,prefs.getInt("reader_font_level",1))),(d,choice)->{
+        prefs.edit().putInt("reader_font_level",choice).apply();
+        d.dismiss();
+        Toast.makeText(this,"Saiz tulisan bacaan dikemas kini",Toast.LENGTH_SHORT).show();
+       }).setNegativeButton("Batal",null).show();
+    }else if(which==1)startBackup();
+    else if(which==2)startRestore();
+    else{
+     String version="Tidak diketahui";
+     try{
+      version=getPackageManager().getPackageInfo(getPackageName(),0).versionName;
+     }catch(Exception ignored){}
+     new AlertDialog.Builder(this).setTitle("Mengenai DinNote")
+      .setMessage("DinNote "+version+"\\nNota dan Maktabah\\nOCR ditangguhkan.")
+      .setPositiveButton("Tutup",null).show();
+    }
    }).setNegativeButton("Tutup",null).show();
  }
  void searchNotesDialog(){
