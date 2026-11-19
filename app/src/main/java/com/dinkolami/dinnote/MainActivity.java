@@ -39,8 +39,9 @@ public class MainActivity extends Activity {
   int foreground(){return dark()?0xFFE6EDF3:0xFF1F2328;}
   int borderColor(){return dark()?0xFF30363D:0xFFD0D7DE;}
   int background = Color.rgb(246,248,250);
-  void applyAppearance(){background=surface();getWindow().setStatusBarColor(dark()?0xFF0D1117:0xFFF6F8FA);getWindow().setNavigationBarColor(background);
-    getWindow().getDecorView().setSystemUiVisibility(dark()?0:View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR|View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
+  void applyAppearance(){
+    // Theme only the app content. Android owns the top status bar and bottom navigation bar.
+    background=surface();
   }
   void showSettings(){new AlertDialog.Builder(this).setTitle("Tetapan DinNote").setItems(new String[]{"Penampilan","Backup ke DinPhone","Restore dari fail"},(d,w)->{if(w==0)appearanceSettings();else if(w==1)exportBackup();else importBackup();}).setNegativeButton("Tutup",null).show();}
   static final int REQUEST_EXPORT=7301,REQUEST_IMPORT=7302;
@@ -108,6 +109,21 @@ public class MainActivity extends Activity {
     ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);list=new LinearLayout(this);list.setOrientation(1);scroll.addView(list);root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
     search.addTextChangedListener(new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){noteFilter=s.toString();refresh(noteFilter);}public void afterTextChanged(Editable e){}});
     try{refresh(noteFilter);}catch(Exception e){android.util.Log.e("DinNote","Failed loading notes",e);Toast.makeText(this,"Gagal memuatkan nota",Toast.LENGTH_LONG).show();}
+    // In-app navigator sits ABOVE Android's own gesture/button navigation area.
+    LinearLayout navigator=new LinearLayout(this);
+    navigator.setOrientation(LinearLayout.HORIZONTAL);
+    navigator.setGravity(Gravity.CENTER_VERTICAL);
+    navigator.setBackgroundColor(cardSurface());
+    Button homeNav=button();homeNav.setText("⌂ Utama");
+    Button noteNav=button();noteNav.setText("▤ Nota");
+    Button bookNav=button();bookNav.setText("▥ Maktabah");
+    navigator.addView(homeNav,new LinearLayout.LayoutParams(0,-2,1));
+    navigator.addView(noteNav,new LinearLayout.LayoutParams(0,-2,1));
+    navigator.addView(bookNav,new LinearLayout.LayoutParams(0,-2,1));
+    root.addView(navigator,new LinearLayout.LayoutParams(-1,-2));
+    homeNav.setOnClickListener(v->showHome());
+    noteNav.setOnClickListener(v->{search.requestFocus();});
+    bookNav.setOnClickListener(v->showLibrary());
   }
   void refresh(String query) {
     if(query==null)query="";
