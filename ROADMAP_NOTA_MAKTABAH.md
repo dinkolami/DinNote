@@ -1,6 +1,6 @@
 # Pelan Induk DinNote — Nota dan Maktabah
 
-Dokumen ini menyimpan semua 20 cadangan supaya cadangan yang belum dipilih tidak hilang. Status awal **Menunggu** bermaksud belum disahkan siap; jangan anggap ciri tiada atau belum wujud tanpa audit kod.
+Dokumen ini menyimpan semua 50 cadangan supaya cadangan yang belum dipilih tidak hilang. Status awal **Menunggu** bermaksud belum disahkan siap; jangan anggap ciri tiada atau belum wujud tanpa audit kod.
 
 ## Nota
 - [ ] 1. Kategori fleksibel — tambah, ubah nama, susun dan padam kategori.
@@ -25,6 +25,42 @@ Dokumen ini menyimpan semua 20 cadangan supaya cadangan yang belum dipilih tidak
 - [ ] 18. Nota peribadi pada kitab — tanpa mengubah teks asal.
 - [ ] 19. Salin dan kongsi petikan — teks Arab dan terjemahan.
 - [ ] 20. Import dan eksport kitab — fail teks.
+
+## Cadangan tambahan: Nota dan produktiviti (21–30)
+- [ ] 21. Sejarah suntingan — pulihkan versi nota terdahulu.
+- [ ] 22. Undo dan Redo — batalkan atau ulang perubahan.
+- [ ] 23. Duplikasi nota — salin nota dengan satu klik.
+- [ ] 24. Gabungkan nota — cantum beberapa nota.
+- [ ] 25. Pindah kategori — alih nota antara kategori.
+- [ ] 26. Susunan manual — susun nota mengikut pilihan.
+- [ ] 27. Warna kategori — bezakan kategori dengan warna lembut.
+- [ ] 28. Kiraan perkataan — paparkan jumlah perkataan.
+- [ ] 29. Templat nota — kuliah, mesyuarat dan pengajian.
+- [ ] 30. Peringatan nota — tetapkan tarikh dan masa.
+
+## Cadangan tambahan: Maktabah dan bacaan (31–40)
+- [ ] 31. Indeks kitab — senarai kandungan boleh diklik.
+- [ ] 32. Kitab kegemaran — simpan kitab pilihan.
+- [ ] 33. Bacaan terakhir — sambung kitab dan bab terakhir.
+- [ ] 34. Perbandingan teks — Arab dan terjemahan bersebelahan.
+- [ ] 35. Rujukan silang — pautkan nota kepada kitab.
+- [ ] 36. Maklumat kitab — pengarang, penerbit dan edisi.
+- [ ] 37. Nombor halaman — rujukan mengikut halaman.
+- [ ] 38. Mod bacaan — sembunyikan alat editor.
+- [ ] 39. Sorotan teks — tandakan petikan penting.
+- [ ] 40. Eksport PDF — simpan nota atau kitab sebagai PDF.
+
+## Cadangan tambahan: keselamatan dan kestabilan (41–50)
+- [ ] 41. Kunci PIN — lindungi nota peribadi.
+- [ ] 42. Backup automatik — sandaran berkala ke folder DinNote.
+- [ ] 43. Semakan backup — pastikan fail sandaran boleh dipulihkan.
+- [ ] 44. Import selamat — elakkan nota pendua.
+- [ ] 45. Simpan luar talian — baca tanpa internet.
+- [ ] 46. Mod Fold6 adaptif — susunan responsif apabila dilipat.
+- [ ] 47. Kedudukan skrol — kekalkan tempat terakhir dibaca.
+- [ ] 48. Saiz font bacaan — kawal saiz tulisan Arab dan Rumi.
+- [ ] 49. Pengendalian ralat — kurangkan crash dan lindungi data.
+- [ ] 50. Ujian APK automatik — semak binaan sebelum pemasangan.
 
 ## Proses pelaksanaan
 1. Pengguna pilih beberapa nombor dahulu; selebihnya kekal dalam senarai.
