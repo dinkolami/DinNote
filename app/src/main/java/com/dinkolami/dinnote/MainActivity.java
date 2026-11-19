@@ -61,6 +61,29 @@ public class MainActivity extends Activity {
         noteSort=which;getPreferences(MODE_PRIVATE).edit().putInt("noteSort",which).apply();
         dialog.dismiss();showSettings();
       }).setNegativeButton("Batal",null).show());
+    TextView homeTitle=text("HALAMAN UTAMA",12);homeTitle.setTypeface(null,Typeface.BOLD);options.addView(homeTitle);
+    boolean pinnedCollapsed=getPreferences(MODE_PRIVATE).getBoolean("pinnedCollapsed",false);
+    Button pinnedVisibility=button();
+    pinnedVisibility.setText("📌  Nota dipin  ·  "+(pinnedCollapsed?"Disembunyikan":"Dipaparkan"));
+    pinnedVisibility.setContentDescription("Tukar paparan nota dipin pada halaman utama");
+    options.addView(pinnedVisibility);
+    pinnedVisibility.setOnClickListener(v->{
+      boolean current=getPreferences(MODE_PRIVATE).getBoolean("pinnedCollapsed",false);
+      getPreferences(MODE_PRIVATE).edit().putBoolean("pinnedCollapsed",!current).apply();
+      showSettings();
+    });
+    Button resetSearch=button();resetSearch.setText("⌕  Kosongkan carian dan penapis Nota");
+    resetSearch.setContentDescription("Kosongkan carian dan tunjuk semua kategori nota");
+    options.addView(resetSearch);
+    resetSearch.setOnClickListener(v->{
+      noteFilter="";selectedNoteCategory=-1;
+      Toast.makeText(this,"Carian dan penapis dikosongkan",Toast.LENGTH_SHORT).show();
+      showSettings();
+    });
+    Button openNotes=button();openNotes.setText("📝  Urus kategori Nota");
+    options.addView(openNotes);openNotes.setOnClickListener(v->showNoteCategories());
+    Button openLibrary=button();openLibrary.setText("📚  Urus kategori Maktabah");
+    options.addView(openLibrary);openLibrary.setOnClickListener(v->showLibrary());
     TextView dataTitle=text("DATA & BACKUP",12);dataTitle.setTypeface(null,Typeface.BOLD);options.addView(dataTitle);
     Button backup=button();backup.setText("⇧  Backup ke DinPhone");options.addView(backup);
     backup.setOnClickListener(v->exportBackup());
