@@ -111,21 +111,23 @@ public class MainActivity extends Activity {
   LinearLayout recentNotes=new LinearLayout(this);recentNotes.setOrientation(1);
   recentNotes.setPadding(dp(14),dp(14),dp(14),dp(28));card.addView(recentNotes);
   ArrayList<String> keys=new ArrayList<>();
-  for(String k:prefs.getAll().keySet())if(k.startsWith("n_"))keys.add(k);
-  Collections.sort(keys,Collections.reverseOrder());
+  for(String k:prefs.getAll().keySet())if((k.startsWith("n_")||k.startsWith("m_"))&&prefs.getLong("viewed_"+k,0L)>0L)keys.add(k);
+  Collections.sort(keys,(a,b)->Long.compare(prefs.getLong("viewed_"+b,0L),prefs.getLong("viewed_"+a,0L)));
   if(keys.isEmpty()){
    TextView emblem=dashboardText("☪\n▤",36,true);emblem.setTextColor(0xff176b47);
    emblem.setGravity(Gravity.CENTER);recentNotes.addView(emblem);
    TextView empty=dashboardText("Belum ada nota dilihat",18,true);
    empty.setGravity(Gravity.CENTER);recentNotes.addView(empty);
-   TextView hint=dashboardText("Nota anda akan dipaparkan di sini.",14,false);
+   TextView hint=dashboardText("Nota atau kitab yang dibuka akan muncul di sini.",14,false);
    hint.setGravity(Gravity.CENTER);hint.setTextColor(0xff656d76);hint.setTextSize(13);recentNotes.addView(hint);
   }else{
    for(int i=0;i<Math.min(5,keys.size());i++){
     String k=keys.get(i);String t=prefs.getString("title_"+k,"");
     if(t.trim().isEmpty())t="Tanpa tajuk";
     TextView item=dashboardText("▤  "+t+"   ›",16,true);
-    recentNotes.addView(item);item.setOnClickListener(v->{maktabah=false;read(k);});
+    item.setMaxLines(2);item.setEllipsize(android.text.TextUtils.TruncateAt.END);
+    item.setContentDescription("Buka "+(k.startsWith("m_")?"kitab ":"nota ")+t);
+    recentNotes.addView(item);item.setOnClickListener(v->{maktabah=k.startsWith("m_");read(k);});
    }
   }
   TextView add=dashboardText("＋  Nota baharu",15,true);add.setGravity(Gravity.CENTER);
@@ -161,7 +163,7 @@ public class MainActivity extends Activity {
  Button action(String label,LinearLayout bar,Runnable callback){Button b=new Button(this);b.setText(label);b.setAllCaps(false);b.setTextSize(14);bar.addView(b);b.setOnClickListener(v->callback.run());return b;}
  void returnFromReader(){selected=null;if(sectionOpen)notesPage();else home();}
  void read(String key){
-  editor=null;titleEditor=null;selected=key;cleanBase();
+  editor=null;titleEditor=null;selected=key;prefs.edit().putLong("viewed_"+key,System.currentTimeMillis()).apply();cleanBase();
   LinearLayout bar=new LinearLayout(this);bar.setGravity(Gravity.CENTER_VERTICAL);root.addView(bar);
   Button readerBack=action("‹",bar,()->returnFromReader());readerBack.setContentDescription("Kembali ke senarai");
   TextView spacer=text("",12);bar.addView(spacer,new LinearLayout.LayoutParams(0,1,1));
