@@ -303,7 +303,7 @@ public class MainActivity extends Activity {
         LinearLayout categoryRow=new LinearLayout(this);categoryRow.setOrientation(LinearLayout.HORIZONTAL);categoryRow.setGravity(Gravity.CENTER_VERTICAL);categoryRow.setMinimumHeight(48);items.addView(categoryRow);
         Button item=button();item.setText("▥  "+name);item.setContentDescription("Buka kategori "+name);
         categoryRow.addView(item,new LinearLayout.LayoutParams(0,-2,1));item.setOnClickListener(v->showBooks(categoryId,name));
-        Button options=button();options.setText("⋮");options.setContentDescription("Urus kategori "+name);
+        Button options=button();options.setText("⋮");options.setMinWidth(48);options.setContentDescription("Urus kategori "+name);
         categoryRow.addView(options,new LinearLayout.LayoutParams(-2,-2));
         options.setOnClickListener(v->new AlertDialog.Builder(this).setTitle(name)
           .setItems(new String[]{"Ubah nama","Padam kategori"},(d,which)->{
