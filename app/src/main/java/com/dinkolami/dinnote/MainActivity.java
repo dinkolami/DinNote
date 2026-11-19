@@ -741,16 +741,36 @@ public class MainActivity extends Activity {
     body.setMinLines(5);body.setSelectAllOnFocus(false);body.setContentDescription("Kandungan nota");body.setHorizontallyScrolling(false);body.setTextIsSelectable(true);body.setImeOptions(android.view.inputmethod.EditorInfo.IME_FLAG_NO_EXTRACT_UI);page.addView(body,new LinearLayout.LayoutParams(-1,0,1));
     final Button[] deleteButton={null};
     final int[] noteId={id};final boolean[] loading={true};final int[] noteColor={Color.WHITE};final boolean[] notePinned={false};final Runnable[] saveAction={null};
-    int[] colors={Color.WHITE,0xFFFFF4B8,0xFFDDF4DF,0xFFDCEEFF,0xFFFFE1E9,0xFFECE2FF};
+    int[] colors={Color.WHITE,0xFFFFF4B8,0xFFDDF4DF,0xFFDCEEFF,0xFFFFE1E9,0xFFECE2FF,0xFFFFE7CC,0xFFD9F5F0,0xFFE7EAFB,0xFFF3E7D3};
     LinearLayout toolbar=new LinearLayout(this);toolbar.setOrientation(LinearLayout.HORIZONTAL);page.addView(toolbar,new LinearLayout.LayoutParams(-1,-2));
     Button pinButton=button();pinButton.setText("○ Pin");pinButton.setContentDescription("Pin nota ke halaman utama");page.addView(pinButton);pinButton.setOnClickListener(v->{notePinned[0]=!notePinned[0];pinButton.setText(notePinned[0]?"📌 Dipin":"○ Pin");pinButton.setContentDescription(notePinned[0]?"Nyahpin nota":"Pin nota ke halaman utama");if(saveAction[0]!=null)scheduleSave(saveAction[0]);});
-    Button colorButton=button();colorButton.setText("Warna");toolbar.addView(colorButton,new LinearLayout.LayoutParams(0,-2,1));
+    Button colorButton=button();colorButton.setText("● Warna");colorButton.setContentDescription("Pilih warna latar nota");toolbar.addView(colorButton,new LinearLayout.LayoutParams(0,-2,1));
     Button checkButton=button();checkButton.setText("☐");toolbar.addView(checkButton,new LinearLayout.LayoutParams(0,-2,1));
     Button boldButton=button();boldButton.setText("B");boldButton.setContentDescription("Tebalkan teks dipilih");boldButton.setTypeface(null,Typeface.BOLD);toolbar.addView(boldButton,new LinearLayout.LayoutParams(0,-2,1));
     Button italicButton=button();italicButton.setText("I");italicButton.setContentDescription("Condongkan teks dipilih");italicButton.setTypeface(null,Typeface.ITALIC);toolbar.addView(italicButton,new LinearLayout.LayoutParams(0,-2,1));
     Button underlineButton=button();underlineButton.setText("U");underlineButton.setContentDescription("Gariskan teks dipilih");toolbar.addView(underlineButton,new LinearLayout.LayoutParams(0,-2,1));
     underlineButton.setOnClickListener(v->underlineSelection(body));
-    colorButton.setOnClickListener(v->{int index=0;for(int i=0;i<colors.length;i++)if(colors[i]==noteColor[0])index=i;noteColor[0]=colors[(index+1)%colors.length];body.setBackground(rounded(noteColor[0]==Color.WHITE?cardSurface():noteColor[0],borderColor(),16));body.setTextColor(noteColor[0]==Color.WHITE?foreground():Color.BLACK);scheduleSave(saveAction[0]);});
+    colorButton.setOnClickListener(v->{
+      String[] names={"Putih","Kuning lembut","Hijau lembut","Biru lembut","Merah jambu","Ungu lembut","Oren lembut","Turquoise","Indigo lembut","Krim"};
+      LinearLayout palette=new LinearLayout(this);palette.setOrientation(LinearLayout.VERTICAL);palette.setPadding(20,12,20,12);
+      AlertDialog dialog=new AlertDialog.Builder(this).setTitle("Warna nota").setView(palette).setNegativeButton("Batal",null).create();
+      for(int i=0;i<colors.length;i++){
+        final int selected=colors[i];
+        Button swatch=button();swatch.setText((selected==noteColor[0]?"✓  ":"●  ")+names[i]);
+        swatch.setAllCaps(false);swatch.setTextColor(Color.BLACK);
+        swatch.setBackground(rounded(selected,0xFFB9C2CC,14));
+        palette.addView(swatch,new LinearLayout.LayoutParams(-1,-2));
+        swatch.setOnClickListener(view->{
+          noteColor[0]=selected;
+          body.setBackground(rounded(selected==Color.WHITE?cardSurface():selected,borderColor(),16));
+          body.setTextColor(selected==Color.WHITE?foreground():Color.BLACK);
+          colorButton.setText("● Warna");
+          if(saveAction[0]!=null)scheduleSave(saveAction[0]);
+          dialog.dismiss();
+        });
+      }
+      dialog.show();
+    });
     checkButton.setOnClickListener(v->{int start=Math.max(0,body.getSelectionStart());body.getText().insert(start,"☐ ");});
     boldButton.setOnClickListener(v->styleSelection(body,Typeface.BOLD));
     italicButton.setOnClickListener(v->styleSelection(body,Typeface.ITALIC));
