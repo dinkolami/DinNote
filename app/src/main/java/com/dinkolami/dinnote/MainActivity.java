@@ -148,7 +148,7 @@ public class MainActivity extends Activity {
           String pinnedBody=pinnedNotes.getString(2);
           if(pinnedTitle==null||pinnedTitle.trim().isEmpty())pinnedTitle="Tanpa tajuk";
           if(pinnedBody==null)pinnedBody="";
-          pinnedBody=pinnedBody.replace("\r"," ").replace("\n"," ").trim();
+          pinnedBody=pinnedBody.replace("\r"," ").replace("\n"," ").replace("\t"," ").trim();
           LinearLayout pinnedRow=new LinearLayout(this);
           pinnedRow.setOrientation(LinearLayout.HORIZONTAL);
           pinnedRow.setGravity(Gravity.CENTER_VERTICAL);
@@ -161,12 +161,12 @@ public class MainActivity extends Activity {
           cardParams.setMargins(0,4,6,4);pinnedRow.addView(pinnedCard,cardParams);
           TextView pinnedTitleView=text("📌 "+pinnedTitle,15);
           pinnedTitleView.setTypeface(null,Typeface.BOLD);
-          pinnedTitleView.setMaxLines(2);
+          pinnedTitleView.setMaxLines(2);pinnedTitleView.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
           pinnedTitleView.setEllipsize(android.text.TextUtils.TruncateAt.END);
           pinnedCard.addView(pinnedTitleView);
           if(!pinnedBody.isEmpty()){
             TextView preview=text(pinnedBody.length()>110?pinnedBody.substring(0,110)+"…":pinnedBody,13);
-            preview.setMaxLines(2);
+            preview.setMaxLines(2);preview.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
             preview.setEllipsize(android.text.TextUtils.TruncateAt.END);
             pinnedCard.addView(preview);
           }
@@ -178,13 +178,14 @@ public class MainActivity extends Activity {
           meta.setTextColor(dark()?0xFF8B949E:0xFF656D76);
           pinnedCard.addView(meta);
           pinnedCard.setContentDescription("Buka nota dipin "+pinnedTitle);
-          pinnedCard.setClickable(true);
+          pinnedCard.setClickable(true);pinnedCard.setFocusable(true);
           pinnedCard.setOnClickListener(v->edit(pinnedId));
           Button unpin=button();unpin.setText("📌");
           unpin.setContentDescription("Nyahpin "+pinnedTitle);
           pinnedRow.addView(unpin,new LinearLayout.LayoutParams(56,-2));
           unpin.setOnClickListener(v->{
             db.getWritableDatabase().execSQL("UPDATE notes SET pinned=0 WHERE id=?",new Object[]{pinnedId});
+            Toast.makeText(this,"Nota dinyahpin",Toast.LENGTH_SHORT).show();
             showHome();
           });
         }while(pinnedNotes.moveToNext());
