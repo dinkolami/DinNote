@@ -113,14 +113,35 @@ public class MainActivity extends Activity {
     homeCards.addView(notesMenu,noteCardParams);homeCards.addView(libraryMenu,libraryCardParams);
     libraryMenu.setContentDescription("Buka kategori kitab Maktabah");libraryMenu.setOnClickListener(v->showLibrary());
     notesMenu.setContentDescription("Buka kategori Nota peribadi");notesMenu.setOnClickListener(v->showNoteCategories());
-    // Pinned notes preview on the front page, above the category sections.
+    // Front-page pinned notes: compact, accessible, and independent of category filtering.
     LinearLayout pinnedSection=new LinearLayout(this);pinnedSection.setOrientation(1);
     homeContent.addView(pinnedSection);
     try(Cursor pinnedNotes=db.getReadableDatabase().rawQuery(
-      "SELECT id,title,body FROM notes WHERE pinned=1 ORDER BY updated DESC,id DESC",null)){
+      "SELECT n.id,n.title,n.body,n.updated,n.category_id FROM notes n WHERE n.pinned=1 ORDER BY n.updated DESC,n.id DESC",null)){
       if(pinnedNotes.moveToFirst()){
-        TextView pinnedHeading=text("📌 Nota Dipin",17);
-        pinnedHeading.setTypeface(null,Typeface.BOLD);pinnedSection.addView(pinnedHeading);
+        int pinnedCount=pinnedNotes.getCount();
+        LinearLayout pinnedHeader=new LinearLayout(this);
+        pinnedHeader.setOrientation(LinearLayout.HORIZONTAL);
+        pinnedHeader.setGravity(Gravity.CENTER_VERTICAL);
+        pinnedSection.addView(pinnedHeader);
+        TextView pinnedHeading=text("📌 Nota Dipin ("+pinnedCount+")",17);
+        pinnedHeading.setTypeface(null,Typeface.BOLD);
+        pinnedHeader.addView(pinnedHeading,new LinearLayout.LayoutParams(0,-2,1));
+        Button togglePinned=button();
+        boolean collapsed=getPreferences(MODE_PRIVATE).getBoolean("pinnedCollapsed",false);
+        togglePinned.setText(collapsed?"Papar":"Sembunyi");
+        togglePinned.setContentDescription(collapsed?"Paparkan nota dipin":"Sembunyikan nota dipin");
+        pinnedHeader.addView(togglePinned,new LinearLayout.LayoutParams(-2,-2));
+        LinearLayout pinnedItems=new LinearLayout(this);
+        pinnedItems.setOrientation(1);pinnedSection.addView(pinnedItems);
+        pinnedItems.setVisibility(collapsed?View.GONE:View.VISIBLE);
+        togglePinned.setOnClickListener(v->{
+          boolean hide=pinnedItems.getVisibility()==View.VISIBLE;
+          pinnedItems.setVisibility(hide?View.GONE:View.VISIBLE);
+          togglePinned.setText(hide?"Papar":"Sembunyi");
+          togglePinned.setContentDescription(hide?"Paparkan nota dipin":"Sembunyikan nota dipin");
+          getPreferences(MODE_PRIVATE).edit().putBoolean("pinnedCollapsed",hide).apply();
+        });
         do{
           final int pinnedId=pinnedNotes.getInt(0);
           String pinnedTitle=pinnedNotes.getString(1);
@@ -128,11 +149,44 @@ public class MainActivity extends Activity {
           if(pinnedTitle==null||pinnedTitle.trim().isEmpty())pinnedTitle="Tanpa tajuk";
           if(pinnedBody==null)pinnedBody="";
           pinnedBody=pinnedBody.replace("\r"," ").replace("\n"," ").trim();
-          Button pinnedItem=button();
-          pinnedItem.setText("📌  "+pinnedTitle+"\\n"+(pinnedBody.length()>110?pinnedBody.substring(0,110)+"…":pinnedBody));
-          pinnedItem.setContentDescription("Buka nota dipin "+pinnedTitle);
-          pinnedSection.addView(pinnedItem);
-          pinnedItem.setOnClickListener(v->edit(pinnedId));
+          LinearLayout pinnedRow=new LinearLayout(this);
+          pinnedRow.setOrientation(LinearLayout.HORIZONTAL);
+          pinnedRow.setGravity(Gravity.CENTER_VERTICAL);
+          pinnedItems.addView(pinnedRow);
+          LinearLayout pinnedCard=new LinearLayout(this);
+          pinnedCard.setOrientation(1);
+          pinnedCard.setPadding(10,6,10,6);
+          pinnedCard.setBackground(rounded(cardSurface(),borderColor(),12));
+          LinearLayout.LayoutParams cardParams=new LinearLayout.LayoutParams(0,-2,1);
+          cardParams.setMargins(0,4,6,4);pinnedRow.addView(pinnedCard,cardParams);
+          TextView pinnedTitleView=text("📌 "+pinnedTitle,15);
+          pinnedTitleView.setTypeface(null,Typeface.BOLD);
+          pinnedTitleView.setMaxLines(2);
+          pinnedTitleView.setEllipsize(android.text.TextUtils.TruncateAt.END);
+          pinnedCard.addView(pinnedTitleView);
+          if(!pinnedBody.isEmpty()){
+            TextView preview=text(pinnedBody.length()>110?pinnedBody.substring(0,110)+"…":pinnedBody,13);
+            preview.setMaxLines(2);
+            preview.setEllipsize(android.text.TextUtils.TruncateAt.END);
+            pinnedCard.addView(preview);
+          }
+          String category=noteCategoryName(pinnedNotes.getInt(4));
+          java.text.DateFormat dateFormat=android.text.format.DateFormat.getDateFormat(this);
+          long updated=pinnedNotes.getLong(3);
+          String dateLabel=updated>0?dateFormat.format(new java.util.Date(updated)).toString():"";
+          TextView meta=text(category+(dateLabel.isEmpty()?"":" · "+dateLabel),12);
+          meta.setTextColor(dark()?0xFF8B949E:0xFF656D76);
+          pinnedCard.addView(meta);
+          pinnedCard.setContentDescription("Buka nota dipin "+pinnedTitle);
+          pinnedCard.setClickable(true);
+          pinnedCard.setOnClickListener(v->edit(pinnedId));
+          Button unpin=button();unpin.setText("✕");
+          unpin.setContentDescription("Nyahpin "+pinnedTitle);
+          pinnedRow.addView(unpin,new LinearLayout.LayoutParams(56,-2));
+          unpin.setOnClickListener(v->{
+            db.getWritableDatabase().execSQL("UPDATE notes SET pinned=0 WHERE id=?",new Object[]{pinnedId});
+            showHome();
+          });
         }while(pinnedNotes.moveToNext());
       }
     }catch(Exception e){android.util.Log.w("DinNote","Pinned notes preview unavailable",e);}
