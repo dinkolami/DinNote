@@ -43,6 +43,8 @@ public class MainActivity extends Activity {
   header.setPadding(dp(8),dp(4),dp(8),dp(4));header.setBackgroundColor(0xfff6f8fa);
   ImageView menu=headerIcon("⌂",0xff102b25,"Halaman utama DinNote");header.addView(menu);
   menu.setOnClickListener(v->home());
+  ImageView settingsMenu=headerIcon("☰",0xff102b25,"Menu DinNote dan Tetapan");header.addView(settingsMenu);
+  settingsMenu.setOnClickListener(v->showMainMenu());
   ImageView logo=new ImageView(this);logo.setImageBitmap(transparentHeaderLogo());logo.setScaleType(ImageView.ScaleType.FIT_CENTER);logo.setContentDescription("Logo DinNote");logo.setClickable(true);
   LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(dp(40),dp(40));lp.leftMargin=dp(7);lp.rightMargin=dp(5);header.addView(logo,lp);
   logo.setOnClickListener(v->home());
@@ -112,6 +114,25 @@ public class MainActivity extends Activity {
   view.setPadding(dp(5),dp(5),dp(5),dp(5));
   LinearLayout.LayoutParams iconParams=new LinearLayout.LayoutParams(dp(34),dp(34));iconParams.leftMargin=dp(3);iconParams.rightMargin=dp(3);view.setLayoutParams(iconParams);
   return view;
+ }
+ void showMainMenu(){
+  new AlertDialog.Builder(this).setTitle("Menu DinNote")
+   .setItems(new String[]{"Halaman utama","Nota","Maktabah","Tetapan"},(dialog,which)->{
+    if(which==0)home();
+    else if(which==1)openSection(false);
+    else if(which==2)openSection(true);
+    else showSettings();
+   }).show();
+ }
+ void showSettings(){
+  new AlertDialog.Builder(this).setTitle("Tetapan DinNote")
+   .setItems(new String[]{"Backup ke fail","Restore daripada fail","Maklumat aplikasi"},(dialog,which)->{
+    if(which==0)startBackup();
+    else if(which==1)startRestore();
+    else new AlertDialog.Builder(this).setTitle("Mengenai DinNote")
+     .setMessage("DinNote 1.0.1-fresh\nNota dan Maktabah\nOCR ditangguhkan.\nTetapan tambahan akan diperkenalkan secara berperingkat.")
+     .setPositiveButton("Tutup",null).show();
+   }).setNegativeButton("Tutup",null).show();
  }
  void searchNotesDialog(){
   final EditText field=new EditText(this);field.setSingleLine(true);field.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);field.setHint("Cari tajuk atau kandungan nota");field.setContentDescription("Carian tajuk dan kandungan");
