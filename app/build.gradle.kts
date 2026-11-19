@@ -6,8 +6,8 @@ android {
   applicationId = "com.dinkolami.dinnote"
   minSdk = 26
   targetSdk = 35
-  versionCode = 5
-  versionName = "2.0.2-beta3"
+  versionCode = 6
+  versionName = "2.0.3-beta4"
  }
  val keyFile = System.getenv("DINNOTE_KEYSTORE_FILE")
  val storePass = System.getenv("DINNOTE_STORE_PASSWORD")
