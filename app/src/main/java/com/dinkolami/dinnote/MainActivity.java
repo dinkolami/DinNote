@@ -104,9 +104,9 @@ public class MainActivity extends Activity {
     // Two equal-width, minimal home cards; keep Android system bars untouched.
     LinearLayout homeCards=new LinearLayout(this);homeCards.setOrientation(LinearLayout.HORIZONTAL);
     homeCards.setGravity(Gravity.CENTER_VERTICAL);homeCards.setBaselineAligned(false);homeCards.setMinimumHeight(128);homeCards.setContentDescription("Menu utama Nota dan Maktabah");homeContent.addView(homeCards);
-    Button notesMenu=button();notesMenu.setText("▤\nNota\nNota peribadi");notesMenu.setTextColor(accent());notesMenu.setTypeface(null,Typeface.BOLD);notesMenu.setTextSize(15);
+    Button notesMenu=button();notesMenu.setText("📝\nNota\nNota peribadi");notesMenu.setTextColor(accent());notesMenu.setTypeface(null,Typeface.BOLD);notesMenu.setTextSize(15);
     notesMenu.setGravity(Gravity.CENTER);notesMenu.setLineSpacing(3,1f);notesMenu.setMinWidth(0);notesMenu.setMinHeight(124);notesMenu.setMaxLines(4);notesMenu.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
-    Button libraryMenu=button();libraryMenu.setText("▥\nMaktabah\nKitab & ilmu Islam");libraryMenu.setTextColor(accent());libraryMenu.setTypeface(null,Typeface.BOLD);
+    Button libraryMenu=button();libraryMenu.setText("📚\nMaktabah\nKitab & ilmu Islam");libraryMenu.setTextColor(accent());libraryMenu.setTypeface(null,Typeface.BOLD);
     libraryMenu.setGravity(Gravity.CENTER);libraryMenu.setLineSpacing(3,1f);libraryMenu.setMinWidth(0);libraryMenu.setMinHeight(124);libraryMenu.setMaxLines(4);libraryMenu.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
     LinearLayout.LayoutParams noteCardParams=new LinearLayout.LayoutParams(0,-2,1);noteCardParams.setMargins(0,6,7,10);
     LinearLayout.LayoutParams libraryCardParams=new LinearLayout.LayoutParams(0,-2,1);libraryCardParams.setMargins(7,6,0,10);
@@ -225,10 +225,10 @@ public class MainActivity extends Activity {
     flushPendingSave();
     LinearLayout page=column();setContentView(page);
     Button back=button();back.setText("← DinNote");back.setContentDescription("Kembali ke halaman utama daripada kategori Nota");back.setMinHeight(48);page.addView(back);back.setOnClickListener(v->showHome());
-    TextView heading=text("Kategori Nota",21);heading.setContentDescription("Urus kategori nota peribadi");heading.setTypeface(null,Typeface.BOLD);heading.setPadding(10,12,10,14);page.addView(heading);
+    TextView heading=text("📁 Kategori Nota",21);heading.setContentDescription("Urus kategori nota peribadi");heading.setTypeface(null,Typeface.BOLD);heading.setPadding(10,12,10,14);page.addView(heading);
     EditText categorySearch=field();categorySearch.setSingleLine(true);categorySearch.setSelectAllOnFocus(false);categorySearch.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);categorySearch.setHint("Cari kategori Nota…");categorySearch.setContentDescription("Cari kategori Nota");categorySearch.setTextSize(15);categorySearch.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);categorySearch.setMinHeight(48);page.addView(categorySearch);
     Button all=button();all.setText("▤  Semua nota");all.setContentDescription("Lihat semua nota tanpa penapis kategori");all.setMinHeight(48);all.setAllCaps(false);page.addView(all);all.setOnClickListener(v->{selectedNoteCategory=-1;showHome();});
-    Button add=button();add.setText("+ Tambah kategori");add.setContentDescription("Cipta kategori Nota baharu");add.setTextColor(accent());add.setMinHeight(48);page.addView(add);add.setOnClickListener(v->promptNoteCategory(-1,""));
+    Button add=button();add.setText("＋ Tambah kategori");add.setContentDescription("Cipta kategori Nota baharu");add.setTextColor(accent());add.setMinHeight(48);page.addView(add);add.setOnClickListener(v->promptNoteCategory(-1,""));
     ScrollView scroll=new ScrollView(this);LinearLayout items=new LinearLayout(this);items.setOrientation(1);items.setPadding(0,4,0,12);scroll.setFillViewport(true);scroll.setSmoothScrollingEnabled(true);scroll.addView(items);scroll.setContentDescription("Senarai kategori Nota peribadi");page.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
     categorySearch.addTextChangedListener(new TextWatcher(){
       public void beforeTextChanged(CharSequence text,int start,int count,int after){}
@@ -339,9 +339,9 @@ public class MainActivity extends Activity {
     flushPendingSave();editingBook=false;editingNote=false;saveIndicator=null;
     LinearLayout page=column();setContentView(page);
     Button back=button();back.setText("← DinNote");back.setContentDescription("Kembali ke halaman utama DinNote");back.setTextSize(14);page.addView(back);back.setOnClickListener(v->showHome());
-    TextView libraryTitle=text("Maktabah",21);libraryTitle.setContentDescription("Maktabah, koleksi kitab dan ilmu Islam");libraryTitle.setTypeface(null,Typeface.BOLD);libraryTitle.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);libraryTitle.setPadding(10,12,10,14);page.addView(libraryTitle);
+    TextView libraryTitle=text("📚 Maktabah",21);libraryTitle.setContentDescription("Maktabah, koleksi kitab dan ilmu Islam");libraryTitle.setTypeface(null,Typeface.BOLD);libraryTitle.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);libraryTitle.setPadding(10,12,10,14);page.addView(libraryTitle);
     EditText categorySearch=field();categorySearch.setSingleLine(true);categorySearch.setSelectAllOnFocus(false);categorySearch.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);categorySearch.setHint("Cari kategori Maktabah…");categorySearch.setContentDescription("Cari kategori Maktabah");categorySearch.setTextSize(15);categorySearch.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);page.addView(categorySearch);
-    Button add=button();add.setText("+ Tambah kategori Maktabah");add.setContentDescription("Tambah kategori baharu Maktabah");add.setTextColor(accent());add.setMinHeight(48);page.addView(add);
+    Button add=button();add.setText("＋ Tambah kategori Maktabah");add.setContentDescription("Tambah kategori baharu Maktabah");add.setTextColor(accent());add.setMinHeight(48);page.addView(add);
     add.setOnClickListener(v->promptCategory());
     ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);scroll.setSmoothScrollingEnabled(true);LinearLayout items=new LinearLayout(this);items.setOrientation(1);items.setPadding(0,4,0,12);scroll.addView(items);page.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
     categorySearch.addTextChangedListener(new TextWatcher(){
