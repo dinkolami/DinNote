@@ -441,7 +441,7 @@ public class MainActivity extends Activity {
  @Override protected void onActivityResult(int request,int result,Intent data){
   super.onActivityResult(request,result,data);
   if(result!=RESULT_OK||data==null||data.getData()==null)return;
-  android.net.Uri uri=data.getData().getData();
+  android.net.Uri uri=data.getData();
   if(request==BACKUP_CREATE){
    try{
     org.json.JSONObject obj=new org.json.JSONObject();
