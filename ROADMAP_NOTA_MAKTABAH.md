@@ -129,3 +129,14 @@ Dokumen ini menyimpan semua 100 cadangan supaya cadangan yang belum dipilih tida
 4. Kekalkan reka bentuk asal yang diluluskan: home dua menu Nota dan Maktabah, logo/header, warna silver lembut, status bar dan navigation bar Android.
 5. Paparan Fold6: tertutup 5 nota satu kolum; terbuka 5 kiri + 5 kanan. Jangan ubah tanpa persetujuan.
 6. Kemas kini fail ini pada setiap peringkat; jangan padam cadangan berbaki.
+
+## Peraturan penjagaan pelan induk
+- Dokumen ini ialah rujukan tetap untuk **100 cadangan bernombor 1–100**; jangan padam, tukar nombor, atau anggap cadangan berbaki terbatal tanpa persetujuan pengguna.
+- Perincian pelaksanaan untuk nombor 51–100 hendaklah mengikut perbincangan pengguna: editor nota, pengurusan Maktabah, pengajian Arab/Melayu, keselamatan data, dan pengalaman pengguna.
+- Sebelum kerja kod, semak sama ada fungsi telah wujud; jangan cipta pendua atau tandakan selesai tanpa bukti ujian.
+- Gunakan status **Menunggu**, **Dalam proses**, **Selesai dan diuji**, atau **Ditangguh atas permintaan pengguna**.
+- Utamakan perlindungan data, autosave, pemulihan selepas crash, ketepatan paparan Arab/RTL dan migrasi data semasa kemas kini APK.
+- Setiap perubahan fungsi hendaklah mempunyai commit tersendiri atau commit berperingkat, bersama keputusan binaan/ujian apabila tersedia.
+- Jangan mengubah reka bentuk asal yang telah diluluskan, termasuk dua menu utama Nota dan Maktabah, header/logo, status bar, navigation bar dan susunan Fold6 5/5 tanpa kebenaran.
+- Backup ke folder DinNote pada telefon perlu boleh dipulihkan; data aplikasi **tidak** berpindah secara automatik ke telefon lain hanya dengan memasang APK.
+- Jika menambah cadangan baharu selepas nombor 100, sambung penomboran; kekalkan sejarah cadangan terdahulu.
