@@ -125,7 +125,7 @@ public class MainActivity extends Activity {
     Button allLibrary=button();allLibrary.setText("Lihat & urus semua kategori Maktabah");allLibrary.setContentDescription("Lihat tambah ubah atau padam kategori Maktabah");libraryShortcuts.addView(allLibrary);
     allLibrary.setOnClickListener(v->showLibrary());
     // Home category shortcuts, matching the original DinNote two-section layout.
-    TextView noteHeading=text("Kategori Nota",17);noteHeading.setContentDescription("Senarai kategori Nota");noteHeading.setTypeface(null,Typeface.BOLD);homeContent.addView(noteHeading);
+    TextView noteHeading=text("Kategori Nota",17);noteHeading.setContentDescription("Senarai kategori Nota");noteHeading.setTypeface(null,Typeface.BOLD);noteHeading.setPadding(10,14,10,9);homeContent.addView(noteHeading);
     LinearLayout noteShortcuts=new LinearLayout(this);noteShortcuts.setOrientation(1);noteShortcuts.setContentDescription("Pintasan kategori Nota");homeContent.addView(noteShortcuts);
     Button personal=button();personal.setText("▤  Semua nota peribadi");personal.setContentDescription("Tunjukkan semua nota daripada semua kategori");noteShortcuts.addView(personal);
     personal.setOnClickListener(v->{selectedNoteCategory=-1;showHome();});
