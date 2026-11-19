@@ -104,7 +104,7 @@ public class MainActivity extends Activity {
     homeCards.setGravity(Gravity.CENTER_VERTICAL);root.addView(homeCards);
     Button notesMenu=button();notesMenu.setText("▤\nNota\nNota peribadi");notesMenu.setTextColor(accent());notesMenu.setTypeface(null,Typeface.BOLD);
     notesMenu.setGravity(Gravity.CENTER);notesMenu.setMinHeight(124);
-    Button libraryMenu=button();libraryMenu.setText("▥\nMaktabah\nKoleksi kitab");libraryMenu.setTextColor(accent());libraryMenu.setTypeface(null,Typeface.BOLD);
+    Button libraryMenu=button();libraryMenu.setText("▥\nMaktabah\nKitab & ilmu Islam");libraryMenu.setTextColor(accent());libraryMenu.setTypeface(null,Typeface.BOLD);
     libraryMenu.setGravity(Gravity.CENTER);libraryMenu.setMinHeight(124);
     LinearLayout.LayoutParams noteCardParams=new LinearLayout.LayoutParams(0,-2,1);noteCardParams.setMargins(0,4,6,8);
     LinearLayout.LayoutParams libraryCardParams=new LinearLayout.LayoutParams(0,-2,1);libraryCardParams.setMargins(6,4,0,8);
