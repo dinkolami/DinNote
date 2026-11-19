@@ -187,7 +187,7 @@ public class MainActivity extends Activity {
       while(c.moveToNext()){
         final int id=c.getInt(0);final String name=c.getString(1);
         LinearLayout row=new LinearLayout(this);row.setOrientation(LinearLayout.HORIZONTAL);row.setGravity(Gravity.CENTER_VERTICAL);items.addView(row);
-        Button open=button();open.setText("▤  "+name);row.addView(open,new LinearLayout.LayoutParams(0,-2,1));
+        Button open=button();open.setText("▤  "+name);open.setContentDescription("Buka kategori Nota "+name);row.addView(open,new LinearLayout.LayoutParams(0,-2,1));
         open.setOnClickListener(v->{selectedNoteCategory=id;showHome();});
         Button options=button();options.setText("⋮");options.setContentDescription("Urus kategori "+name);row.addView(options,new LinearLayout.LayoutParams(-2,-2));
         options.setOnClickListener(v->new AlertDialog.Builder(this).setTitle(name)
