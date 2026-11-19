@@ -17,40 +17,36 @@ import android.widget.*;
 
 public class MainActivity extends Activity {
   DB db;
-  // Observe taps before nested ScrollView/TextView children can intercept them.
+  // Reader gesture is tracked at Activity level so ScrollView cannot swallow taps.
   LinearLayout readerToolbar;
-  long readerLastTap=0L;
-  float readerDownX,readerDownY,readerLastX,readerLastY;
-  boolean readerMoved=false;
-  @Override public boolean dispatchTouchEvent(MotionEvent event){
-    LinearLayout toolbar=readerToolbar;
-    boolean readerActive=toolbar!=null && toolbar.isAttachedToWindow()
-      && toolbar.getWindowToken()==getWindow().getDecorView().getWindowToken();
-    if(readerActive){
-      int action=event.getActionMasked();
-      int slop=ViewConfiguration.get(this).getScaledTouchSlop();
-      if(action==MotionEvent.ACTION_DOWN){
-        readerDownX=event.getX();readerDownY=event.getY();readerMoved=false;
-      }else if(action==MotionEvent.ACTION_MOVE){
-        if(Math.abs(event.getX()-readerDownX)>slop || Math.abs(event.getY()-readerDownY)>slop)readerMoved=true;
-      }else if(action==MotionEvent.ACTION_UP){
-        float x=event.getX(),y=event.getY();
-        if(!readerMoved && Math.abs(x-readerDownX)<=slop && Math.abs(y-readerDownY)<=slop){
-          long now=event.getEventTime();
-          float dx=x-readerLastX,dy=y-readerLastY;
-          if(readerLastTap>0 && now-readerLastTap<=ViewConfiguration.getDoubleTapTimeout()
-            && dx*dx+dy*dy<=slop*slop*16f){
-            readerLastTap=0L;
-            toolbar.setVisibility(toolbar.getVisibility()==View.VISIBLE?View.GONE:View.VISIBLE);
-            toolbar.bringToFront();
-            toolbar.requestLayout();
-            // Do not swallow ACTION_UP: child buttons and scrolling need normal dispatch.
-            return super.dispatchTouchEvent(event);
-          }
-          readerLastTap=now;readerLastX=x;readerLastY=y;
-        }else readerLastTap=0L;
-      }else if(action==MotionEvent.ACTION_CANCEL)readerLastTap=0L;
-    }else readerLastTap=0L;
+  ReaderDoubleTap readerDoubleTap;
+  float readerDownX, readerDownY;
+  boolean readerMoved;
+  @Override public boolean dispatchTouchEvent(MotionEvent event) {
+    LinearLayout toolbar = readerToolbar;
+    boolean active = toolbar != null && toolbar.isAttachedToWindow();
+    if (active) {
+      int action = event.getActionMasked();
+      int slop = ViewConfiguration.get(this).getScaledTouchSlop();
+      if (action == MotionEvent.ACTION_DOWN) {
+        readerDownX = event.getX();
+        readerDownY = event.getY();
+        readerMoved = false;
+      } else if (action == MotionEvent.ACTION_MOVE) {
+        if (Math.abs(event.getX()-readerDownX)>slop || Math.abs(event.getY()-readerDownY)>slop)
+          readerMoved = true;
+      } else if (action == MotionEvent.ACTION_UP && !readerMoved
+          && Math.abs(event.getX()-readerDownX)<=slop
+          && Math.abs(event.getY()-readerDownY)<=slop) {
+        if (readerDoubleTap == null) readerDoubleTap = new ReaderDoubleTap(slop);
+        if (readerDoubleTap.onTap(event.getX(), event.getY())) {
+          toolbar.setVisibility(toolbar.getVisibility()==View.VISIBLE ? View.GONE : View.VISIBLE);
+          toolbar.bringToFront();
+        }
+      } else if (action == MotionEvent.ACTION_CANCEL && readerDoubleTap != null) {
+        readerDoubleTap.reset();
+      }
+    }
     return super.dispatchTouchEvent(event);
   }
 
@@ -911,15 +907,15 @@ public class MainActivity extends Activity {
       if(!c.moveToFirst()){Toast.makeText(this,"Nota tidak ditemui",Toast.LENGTH_SHORT).show();showHome();return;}
       String heading=c.getString(0),plain=c.getString(1),html=c.getString(3);
       int noteColor=c.getInt(2);
-      readerToolbar=null;readerLastTap=0L;
+      readerToolbar=null;readerDoubleTap=null;
       LinearLayout page=column();page.setPadding(0,0,0,0);setContentView(page);
       LinearLayout actions=new LinearLayout(this);actions.setOrientation(LinearLayout.HORIZONTAL);
       actions.setPadding(8,4,8,4);actions.setBackgroundColor(cardSurface());
       Button back=button();back.setText("← Kembali");actions.addView(back,new LinearLayout.LayoutParams(0,-2,1));back.setOnClickListener(v->showHome());
-      Button editButton=button();editButton.setText("✎ Edit · v2.0.1");actions.addView(editButton,new LinearLayout.LayoutParams(0,-2,1));editButton.setOnClickListener(v->edit(id));
+      Button editButton=button();editButton.setText("✎ Edit");actions.addView(editButton,new LinearLayout.LayoutParams(0,-2,1));editButton.setOnClickListener(v->edit(id));
       // Safety fallback: Edit and Back must never disappear when gesture detection fails.
       page.addView(actions,new LinearLayout.LayoutParams(-1,-2));
-      readerToolbar=actions;readerLastTap=0L;
+      readerToolbar=actions;readerDoubleTap=new ReaderDoubleTap(ViewConfiguration.get(this).getScaledTouchSlop());
       actions.setVisibility(View.GONE);
       editButton.setContentDescription("Edit nota ini");
       editButton.setMinHeight(56);
@@ -959,6 +955,7 @@ public class MainActivity extends Activity {
     }catch(Exception e){android.util.Log.e("DinNote","Cannot open note reader",e);Toast.makeText(this,"Gagal membuka nota",Toast.LENGTH_LONG).show();showHome();}
   }
   void edit(int id) {
+    readerToolbar=null;readerDoubleTap=null;
     flushPendingSave();editingNote=true;
     LinearLayout page=column();setContentView(page);enableKeyboardAwareEditor(page);
     Button back=button();back.setText("← Nota");back.setTextSize(14);back.setContentDescription("Kembali ke halaman Nota");back.setMinHeight(48);page.addView(back);
