@@ -130,6 +130,9 @@ Dokumen ini menyimpan semua 100 cadangan supaya cadangan yang belum dipilih tida
 5. Paparan Fold6: tertutup 5 nota satu kolum; terbuka 5 kiri + 5 kanan. Jangan ubah tanpa persetujuan.
 6. Kemas kini fail ini pada setiap peringkat; jangan padam cadangan berbaki.
 
+## Cadangan tambahan selepas 100
+- [ ] **101. Imbas Kitab ke Teks (OCR Arab dan Rumi)** — ambil foto dengan kamera atau pilih imej galeri; kenal pasti tulisan Arab (termasuk harakat setakat kemampuan OCR), Melayu/Rumi dan Inggeris; paparkan hasil untuk semakan dan pembetulan sebelum disimpan sebagai teks boleh edit/cari dalam Maktabah. **Status: Menunggu pelaksanaan dan ujian.** Utamakan pemprosesan pada peranti jika enjin OCR menyokong bahasa yang diperlukan; jika tidak, nilai alternatif dengan persetujuan pengguna. Jangan ubah reka bentuk asal, status bar atau navigation bar Android.
+
 ## Peraturan penjagaan pelan induk
 - Dokumen ini ialah rujukan tetap untuk **100 cadangan bernombor 1–100**; jangan padam, tukar nombor, atau anggap cadangan berbaki terbatal tanpa persetujuan pengguna.
 - Perincian pelaksanaan untuk nombor 51–100 hendaklah mengikut perbincangan pengguna: editor nota, pengurusan Maktabah, pengajian Arab/Melayu, keselamatan data, dan pengalaman pengguna.
