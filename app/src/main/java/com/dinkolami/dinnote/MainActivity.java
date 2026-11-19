@@ -17,6 +17,42 @@ import android.widget.*;
 
 public class MainActivity extends Activity {
   DB db;
+  // Observe taps before nested ScrollView/TextView children can intercept them.
+  LinearLayout readerToolbar;
+  long readerLastTap=0L;
+  float readerDownX,readerDownY,readerLastX,readerLastY;
+  boolean readerMoved=false;
+  @Override public boolean dispatchTouchEvent(MotionEvent event){
+    LinearLayout toolbar=readerToolbar;
+    boolean readerActive=toolbar!=null && toolbar.isAttachedToWindow()
+      && toolbar.getRootView()==getWindow().getDecorView();
+    if(readerActive){
+      int action=event.getActionMasked();
+      int slop=ViewConfiguration.get(this).getScaledTouchSlop();
+      if(action==MotionEvent.ACTION_DOWN){
+        readerDownX=event.getX();readerDownY=event.getY();readerMoved=false;
+      }else if(action==MotionEvent.ACTION_MOVE){
+        if(Math.abs(event.getX()-readerDownX)>slop || Math.abs(event.getY()-readerDownY)>slop)readerMoved=true;
+      }else if(action==MotionEvent.ACTION_UP){
+        float x=event.getX(),y=event.getY();
+        if(!readerMoved && Math.abs(x-readerDownX)<=slop && Math.abs(y-readerDownY)<=slop){
+          long now=event.getEventTime();
+          float dx=x-readerLastX,dy=y-readerLastY;
+          if(readerLastTap>0 && now-readerLastTap<=ViewConfiguration.getDoubleTapTimeout()
+            && dx*dx+dy*dy<=slop*slop*16f){
+            readerLastTap=0L;
+            toolbar.setVisibility(toolbar.getVisibility()==View.VISIBLE?View.GONE:View.VISIBLE);
+            toolbar.bringToFront();
+            toolbar.requestLayout();
+            return true;
+          }
+          readerLastTap=now;readerLastX=x;readerLastY=y;
+        }else readerLastTap=0L;
+      }else if(action==MotionEvent.ACTION_CANCEL)readerLastTap=0L;
+    }else readerLastTap=0L;
+    return super.dispatchTouchEvent(event);
+  }
+
   Runnable pendingSave;
   TextView saveIndicator;
   void setSaveStatus(String message){if(saveIndicator!=null)saveIndicator.setText(message);}
@@ -881,6 +917,7 @@ public class MainActivity extends Activity {
       Button editButton=button();editButton.setText("✎ Edit · v2.0.1");actions.addView(editButton,new LinearLayout.LayoutParams(0,-2,1));editButton.setOnClickListener(v->edit(id));
       // Safety fallback: Edit and Back must never disappear when gesture detection fails.
       page.addView(actions,new LinearLayout.LayoutParams(-1,-2));
+      readerToolbar=actions;readerLastTap=0L;
       actions.setVisibility(View.GONE);
       editButton.setContentDescription("Edit nota ini");
       editButton.setMinHeight(56);
@@ -900,50 +937,7 @@ public class MainActivity extends Activity {
         }
       });
 
-      // Track completed taps at the ScrollView boundary, even when text children consume touch.
-      // Do not consume events: native scrolling and child interactions must continue working.
-      final long[] lastTapTime={0L};
-      final float[] lastTapX={0f},lastTapY={0f},downX={0f},downY={0f};
-      final boolean[] moved={false};
-      final int touchSlop=android.view.ViewConfiguration.get(this).getScaledTouchSlop();
-      final float maxDistance=touchSlop*4f;
-      ScrollView scroll=new ScrollView(this){
-        @Override public boolean dispatchTouchEvent(android.view.MotionEvent event){
-          switch(event.getActionMasked()){
-            case android.view.MotionEvent.ACTION_DOWN:
-              downX[0]=event.getX();downY[0]=event.getY();moved[0]=false;
-              break;
-            case android.view.MotionEvent.ACTION_MOVE:
-              if(Math.abs(event.getX()-downX[0])>touchSlop ||
-                 Math.abs(event.getY()-downY[0])>touchSlop)moved[0]=true;
-              break;
-            case android.view.MotionEvent.ACTION_UP:
-              if(!moved[0] && Math.abs(event.getX()-downX[0])<=touchSlop &&
-                 Math.abs(event.getY()-downY[0])<=touchSlop){
-                long now=event.getEventTime();
-                float dx=event.getX()-lastTapX[0],dy=event.getY()-lastTapY[0];
-                if(lastTapTime[0]>0 && now-lastTapTime[0]<=450 &&
-                   dx*dx+dy*dy<=maxDistance*maxDistance){
-                  lastTapTime[0]=0L;
-                  boolean show=actions.getVisibility()!=View.VISIBLE;
-                  actions.setVisibility(show?View.VISIBLE:View.GONE);
-                  if(show)actions.bringToFront();
-                  actions.requestLayout();
-                  android.util.Log.i("DinNote","Double tap toggled toolbar: "+show);
-                }else{
-                  lastTapTime[0]=now;lastTapX[0]=event.getX();lastTapY[0]=event.getY();
-                }
-              }else lastTapTime[0]=0L;
-              break;
-            case android.view.MotionEvent.ACTION_CANCEL:
-              lastTapTime[0]=0L;break;
-          }
-          return super.dispatchTouchEvent(event);
-        }
-      };
-      // Long press provides a reliable fallback when double-tap is intercepted by accessibility services.
-      scroll.setLongClickable(true);
-      scroll.setOnLongClickListener(v->{actions.setVisibility(View.VISIBLE);actions.bringToFront();return true;});
+      ScrollView scroll=new ScrollView(this);
       scroll.setFillViewport(true);scroll.setVerticalScrollBarEnabled(true);
       page.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
       LinearLayout content=new LinearLayout(this);content.setOrientation(LinearLayout.VERTICAL);content.setPadding(20,24,20,28);
