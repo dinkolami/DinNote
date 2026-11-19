@@ -117,7 +117,7 @@ Dokumen ini menyimpan semua 100 cadangan supaya cadangan yang belum dipilih tida
 - [ ] 94. Pilihan padat atau selesa — kepadatan senarai nota.
 - [ ] 95. Sokongan papan kekunci fizikal — pintasan ketika Fold6 dibuka.
 - [ ] 96. Sokongan putaran skrin — susun atur potret dan landskap.
-- [ ] 97. Petunjuk status simpan — paparkan sedang menyimpan atau tersimpan.
+- [ ] 97. Petunjuk status simpan — paparkan sedang menyimpan atau tersimpan. **Status: Kod di-commit, belum diuji APK/pengguna** (`92fb82f`); penunjuk ringkas autosimpan pada editor Nota dan Maktabah.
 - [ ] 98. Mod kontras tinggi — tingkatkan kebolehbacaan.
 - [ ] 99. Ujian migrasi data antara versi — pastikan kemas kini tidak hilangkan nota.
 - [ ] 100. Senarai semak keluaran APK — sahkan navigasi, editor, backup dan paparan Fold6.
