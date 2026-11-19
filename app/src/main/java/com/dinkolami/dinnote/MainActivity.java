@@ -213,7 +213,6 @@ public class MainActivity extends Activity {
     item.setContentDescription("Buka "+(k.startsWith("m_")?"kitab ":"nota ")+t);
     item.setOnClickListener(v->{maktabah=k.startsWith("m_");read(k);});
    }
-  }
   TextView add=dashboardText("＋  Nota baharu",15,true);add.setGravity(Gravity.CENTER);
   add.setBackground(rounded(0xfff6f8fa,0xffd0d7de,10));
   LinearLayout.LayoutParams ap=new LinearLayout.LayoutParams(-1,-2);
