@@ -99,7 +99,7 @@ public class MainActivity extends Activity {
   paint.setTextAlign(android.graphics.Paint.Align.CENTER);
   android.graphics.Paint.FontMetrics fm=paint.getFontMetrics();
   if("⌂".equals(symbol)){
-   paint.setStyle(android.graphics.Paint.Style.STROKE);paint.setStrokeWidth(dp(2));paint.setStrokeCap(android.graphics.Paint.Cap.ROUND);paint.setStrokeJoin(android.graphics.Paint.Join.ROUND);
+   paint.setStyle(android.graphics.Paint.Style.STROKE);paint.setStrokeWidth(dp(1.5f));paint.setStrokeCap(android.graphics.Paint.Cap.ROUND);paint.setStrokeJoin(android.graphics.Paint.Join.ROUND);
    android.graphics.Path house=new android.graphics.Path();
    house.moveTo(px*.20f,px*.46f);house.lineTo(px*.50f,px*.20f);house.lineTo(px*.80f,px*.46f);
    house.moveTo(px*.28f,px*.43f);house.lineTo(px*.28f,px*.78f);house.lineTo(px*.72f,px*.78f);house.lineTo(px*.72f,px*.43f);
@@ -108,7 +108,7 @@ public class MainActivity extends Activity {
   }else{canvas.drawText(symbol,px/2f,px/2f-(fm.ascent+fm.descent)/2f,paint);}
   ImageView view=new ImageView(this);view.setImageBitmap(bitmap);view.setContentDescription(description);
   view.setClickable(true);view.setFocusable(true);view.setScaleType(ImageView.ScaleType.FIT_CENTER);
-  android.graphics.drawable.GradientDrawable frame=new android.graphics.drawable.GradientDrawable();frame.setColor(0xffffffff);frame.setCornerRadius(dp(10));frame.setStroke(dp(1),0xffaeb9bb);view.setBackground(frame);
+  android.graphics.drawable.GradientDrawable frame=new android.graphics.drawable.GradientDrawable();frame.setColor(0xffffffff);frame.setCornerRadius(dp(10));frame.setStroke(dp(1),0xffe5e7eb);view.setBackground(frame);
   view.setPadding(dp(5),dp(5),dp(5),dp(5));
   LinearLayout.LayoutParams iconParams=new LinearLayout.LayoutParams(dp(34),dp(34));iconParams.leftMargin=dp(3);iconParams.rightMargin=dp(3);view.setLayoutParams(iconParams);
   return view;
@@ -127,6 +127,8 @@ public class MainActivity extends Activity {
  void notesPage(){editor=null;titleEditor=null;categoryPicker=null;selected=null;base("DinNote");LinearLayout tabs=new LinearLayout(this);tabs.setPadding(12,12,12,8);TextView notes=text("✎  Nota",16);TextView books=text("▤  Maktabah",16);notes.setGravity(Gravity.CENTER);books.setGravity(Gravity.CENTER);notes.setBackgroundColor(maktabah?0xfff6f8fa:0xffddf4ff);books.setBackgroundColor(maktabah?0xffddf4ff:0xfff6f8fa);tabs.addView(notes,new LinearLayout.LayoutParams(0,-2,1));tabs.addView(books,new LinearLayout.LayoutParams(0,-2,1));root.addView(tabs);notes.setOnClickListener(v->openSection(false));books.setOnClickListener(v->openSection(true));LinearLayout tools=new LinearLayout(this);tools.setPadding(12,4,12,4);Button add=new Button(this);add.setAllCaps(false);add.setText(maktabah?"+ Kitab baharu":"+ Nota baharu");tools.addView(add,new LinearLayout.LayoutParams(0,-2,1));add.setOnClickListener(v->edit(null));Button manage=new Button(this);manage.setAllCaps(false);manage.setText("⚙ Kategori");tools.addView(manage);manage.setOnClickListener(v->manageCategories());root.addView(tools);EditText search=new EditText(this);search.setSingleLine(true);search.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);search.setSelectAllOnFocus(false);search.setTextSize(15);search.setHint(maktabah?"Cari dalam Maktabah":"Cari nota");search.setContentDescription(maktabah?"Carian kitab":"Carian nota");search.setPadding(24,12,24,12);root.addView(search);LinearLayout filters=new LinearLayout(this);filters.setPadding(12,0,12,8);TextView folder=text("▤  "+(maktabah?"Maktabah":"Nota")+"  /",14);filters.addView(folder);Spinner catFilter=new Spinner(this);catFilter.setContentDescription("Tapis mengikut kategori");ArrayList<String> cats=new ArrayList<>();cats.add("Semua");cats.addAll(categories());catFilter.setAdapter(new ArrayAdapter<>(this,android.R.layout.simple_spinner_dropdown_item,cats));int ci=cats.indexOf(categoryFilter);catFilter.setSelection(ci<0?0:ci);filters.addView(catFilter,new LinearLayout.LayoutParams(0,-2,1));root.addView(filters);View line=new View(this);line.setBackgroundColor(0xffd0d7de);root.addView(line,new LinearLayout.LayoutParams(-1,1));ScrollView sc=new ScrollView(this);sc.setOverScrollMode(View.OVER_SCROLL_NEVER);items=new LinearLayout(this);items.setOrientation(1);sc.addView(items);root.addView(sc,new LinearLayout.LayoutParams(-1,0,1));catFilter.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener(){public void onNothingSelected(android.widget.AdapterView<?> p){}public void onItemSelected(android.widget.AdapterView<?> p,View v,int pos,long id){categoryFilter=cats.get(pos);list(search.getText().toString());}});search.addTextChangedListener(new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){list(s.toString());}public void afterTextChanged(Editable e){}});list("");}
 
  int dp(int n){return (int)(n*getResources().getDisplayMetrics().density+0.5f);}
+ int dp(float n){return (int)(n*getResources().getDisplayMetrics().density+0.5f);}
+ android.graphics.drawable.GradientDrawable subtleNoteBorder(int radius){android.graphics.drawable.GradientDrawable d=new android.graphics.drawable.GradientDrawable();d.setColor(Color.WHITE);d.setCornerRadius(dp(radius));d.setStroke(dp(0.5f),0xffe5e7eb);return d;}
  TextView dashboardText(String value,int size,boolean bold){TextView t=text(value,size);t.setPadding(dp(10),dp(8),dp(10),dp(8));if(bold)t.setTypeface(null,1);return t;}
  LinearLayout dashboardCard(){LinearLayout c=new LinearLayout(this);c.setOrientation(1);c.setPadding(dp(14),dp(12),dp(14),dp(12));android.graphics.drawable.GradientDrawable bg=new android.graphics.drawable.GradientDrawable();bg.setColor(Color.WHITE);bg.setCornerRadius(dp(17));bg.setStroke(dp(1),0xffe1e5e4);c.setBackground(bg);c.setElevation(dp(3));return c;}
  void applyTouchFeedback(View view){
@@ -145,7 +147,7 @@ public class MainActivity extends Activity {
   LinearLayout page=new LinearLayout(this);page.setOrientation(1);
   page.setPadding(dp(8),dp(6),dp(8),dp(12));scroll.addView(page);
   TextView recent=dashboardText("Baru dilihat  ▾",15,true);
-  recent.setBackground(rounded(0xfff6f8fa,0xffd0d7de,10));
+  recent.setBackground(rounded(0xfff6f8fa,0xffe5e7eb,8));
   LinearLayout quickTools=new LinearLayout(this);quickTools.setOrientation(LinearLayout.HORIZONTAL);quickTools.setGravity(Gravity.CENTER_VERTICAL);
   LinearLayout.LayoutParams quickParams=new LinearLayout.LayoutParams(-1,-2);quickParams.bottomMargin=dp(4);
   page.addView(quickTools,quickParams);
@@ -159,24 +161,24 @@ public class MainActivity extends Activity {
   search.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);
   search.setInputType(android.text.InputType.TYPE_CLASS_TEXT);
   search.setPadding(dp(12),dp(6),dp(12),dp(6));
-  search.setBackground(rounded(Color.WHITE,0xffd0d7de,11));
+  search.setBackground(rounded(Color.WHITE,0xffe5e7eb,8));
   LinearLayout.LayoutParams sp=new LinearLayout.LayoutParams(0,dp(42),1);
   quickTools.addView(search,sp);
   search.addTextChangedListener(new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){String q=s.toString().trim();if(!q.isEmpty())showHomeSearchResults(q);}public void afterTextChanged(Editable e){}});
   search.setOnEditorActionListener((v,id,event)->{String q=search.getText().toString().trim();if(q.isEmpty()){search.setError("Masukkan kata carian");return true;}openSection(false);list(q);return true;});
   LinearLayout card=new LinearLayout(this);card.setOrientation(1);card.setClipToPadding(false);
-  card.setBackground(rounded(Color.WHITE,0xffd0d7de,8));
+  card.setBackground(rounded(Color.WHITE,0xffe5e7eb,8));
   LinearLayout.LayoutParams cp=new LinearLayout.LayoutParams(-1,-2);page.addView(card,cp);
   TextView count=dashboardText("Nota dan Maktabah",15,true);
   count.setBackgroundColor(0xfff6f8fa);card.addView(count);
-  View divider=new View(this);divider.setBackgroundColor(0xffd0d7de);
+  View divider=new View(this);divider.setBackgroundColor(0xffe5e7eb);
   card.addView(divider,new LinearLayout.LayoutParams(-1,dp(1)));
   LinearLayout tiles=new LinearLayout(this);tiles.setPadding(dp(8),dp(5),dp(8),dp(4));card.addView(tiles);
   TextView note=dashboardText("▤  Nota",15,true);
   TextView book=dashboardText("▱  Maktabah",15,true);
   note.setGravity(Gravity.CENTER);book.setGravity(Gravity.CENTER);note.setFocusable(true);book.setFocusable(true);
-  note.setBackground(rounded(0xfff6f8fa,0xffd0d7de,8));
-  book.setBackground(rounded(0xfff6f8fa,0xffd0d7de,8));
+  note.setBackground(rounded(0xfff6f8fa,0xffe5e7eb,8));
+  book.setBackground(rounded(0xfff6f8fa,0xffe5e7eb,8));
   LinearLayout.LayoutParams a=new LinearLayout.LayoutParams(0,dp(64),1);a.rightMargin=dp(4);
   LinearLayout.LayoutParams b=new LinearLayout.LayoutParams(0,dp(64),1);b.leftMargin=dp(4);
   tiles.addView(note,a);tiles.addView(book,b);
@@ -216,16 +218,16 @@ public class MainActivity extends Activity {
     if(when>0L)item.setText(item.getText()+"   ·   "+new java.text.SimpleDateFormat("dd MMM",new java.util.Locale("ms","MY")).format(new java.util.Date(when)));
     item.setTextColor(0xff26352e);
     item.setCompoundDrawablePadding(dp(8));
-    item.setBackground(rounded(0xffffffff,0xffe5e7eb,10));
+    item.setBackground(subtleNoteBorder(8));
     LinearLayout.LayoutParams itemParams=new LinearLayout.LayoutParams(-1,-2);
-    itemParams.bottomMargin=dp(4);
+    itemParams.bottomMargin=dp(3);
     recentNotes.addView(item,itemParams);
-    item.setPadding(dp(10),dp(7),dp(10),dp(7));applyTouchFeedback(item);item.setMaxLines(1);item.setEllipsize(android.text.TextUtils.TruncateAt.END);
+    item.setPadding(dp(10),dp(5),dp(10),dp(5));applyTouchFeedback(item);item.setMaxLines(1);item.setEllipsize(android.text.TextUtils.TruncateAt.END);
     item.setContentDescription("Buka "+(k.startsWith("m_")?"kitab ":"nota ")+t);
     item.setOnClickListener(v->{maktabah=k.startsWith("m_");read(k);});
    }
   TextView add=dashboardText("＋  Nota baharu",15,true);add.setGravity(Gravity.CENTER);
-  add.setBackground(rounded(0xfff6f8fa,0xffd0d7de,8));
+  add.setBackground(rounded(0xfff6f8fa,0xffe5e7eb,8));
   add.setPadding(dp(12),dp(8),dp(12),dp(8));
   LinearLayout.LayoutParams ap=new LinearLayout.LayoutParams(-1,-2);
   ap.topMargin=dp(3);page.addView(add,ap);
@@ -265,7 +267,7 @@ public class MainActivity extends Activity {
    entry.setTextColor(0xff26352e);
    entry.setSingleLine(true);entry.setEllipsize(android.text.TextUtils.TruncateAt.END);
    entry.setPadding(dp(10),dp(6),dp(10),dp(6));
-   entry.setBackground(rounded(0xffffffff,0xffd0d7de,10));
+   entry.setBackground(subtleNoteBorder(8));
    LinearLayout.LayoutParams ep=new LinearLayout.LayoutParams(-1,-2);
    ep.bottomMargin=dp(3);target.addView(entry,ep);applyTouchFeedback(entry);
    entry.setFocusable(true);
