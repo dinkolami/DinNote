@@ -745,6 +745,7 @@ public class MainActivity extends Activity {
     LinearLayout toolbar=new LinearLayout(this);toolbar.setOrientation(LinearLayout.HORIZONTAL);page.addView(toolbar,new LinearLayout.LayoutParams(-1,-2));
     Button pinButton=button();pinButton.setText("○ Pin");pinButton.setContentDescription("Pin nota ke halaman utama");page.addView(pinButton);pinButton.setOnClickListener(v->{notePinned[0]=!notePinned[0];pinButton.setText(notePinned[0]?"📌 Dipin":"○ Pin");pinButton.setContentDescription(notePinned[0]?"Nyahpin nota":"Pin nota ke halaman utama");if(saveAction[0]!=null)scheduleSave(saveAction[0]);});
     Button colorButton=button();colorButton.setText("● Warna");colorButton.setContentDescription("Pilih warna latar nota");toolbar.addView(colorButton,new LinearLayout.LayoutParams(0,-2,1));
+    Button fontColor=button();fontColor.setText("A●");fontColor.setContentDescription("Warna tulisan terpilih");toolbar.addView(fontColor,new LinearLayout.LayoutParams(0,-2,1));fontColor.setOnClickListener(v->chooseTextColor(body));
     Button checkButton=button();checkButton.setText("☐");toolbar.addView(checkButton,new LinearLayout.LayoutParams(0,-2,1));
     Button boldButton=button();boldButton.setText("B");boldButton.setContentDescription("Tebalkan teks dipilih");boldButton.setTypeface(null,Typeface.BOLD);toolbar.addView(boldButton,new LinearLayout.LayoutParams(0,-2,1));
     Button italicButton=button();italicButton.setText("I");italicButton.setContentDescription("Condongkan teks dipilih");italicButton.setTypeface(null,Typeface.ITALIC);toolbar.addView(italicButton,new LinearLayout.LayoutParams(0,-2,1));
@@ -774,10 +775,10 @@ public class MainActivity extends Activity {
     checkButton.setOnClickListener(v->{int start=Math.max(0,body.getSelectionStart());body.getText().insert(start,"☐ ");});
     boldButton.setOnClickListener(v->styleSelection(body,Typeface.BOLD));
     italicButton.setOnClickListener(v->styleSelection(body,Typeface.ITALIC));
-    if(id>=0){try(Cursor c=db.getReadableDatabase().rawQuery("SELECT title,body,color,pinned FROM notes WHERE id=?",new String[]{""+id})){if(c.moveToFirst()){title.setText(c.getString(0));body.setText(c.getString(1));noteColor[0]=c.getInt(2);notePinned[0]=c.getInt(3)==1;pinButton.setText(notePinned[0]?"📌 Dipin":"○ Pin");pinButton.setContentDescription(notePinned[0]?"Nyahpin nota":"Pin nota ke halaman utama");body.setBackground(rounded(noteColor[0]==Color.WHITE?cardSurface():noteColor[0],borderColor(),16));body.setTextColor(noteColor[0]==Color.WHITE?foreground():Color.BLACK);}}}
+    if(id>=0){try(Cursor c=db.getReadableDatabase().rawQuery("SELECT title,body,color,pinned,body_html FROM notes WHERE id=?",new String[]{""+id})){if(c.moveToFirst()){title.setText(c.getString(0));body.setText(c.getString(4)!=null&&!c.getString(4).isEmpty()?android.text.Html.fromHtml(c.getString(4),android.text.Html.FROM_HTML_MODE_COMPACT):c.getString(1));noteColor[0]=c.getInt(2);notePinned[0]=c.getInt(3)==1;pinButton.setText(notePinned[0]?"📌 Dipin":"○ Pin");pinButton.setContentDescription(notePinned[0]?"Nyahpin nota":"Pin nota ke halaman utama");body.setBackground(rounded(noteColor[0]==Color.WHITE?cardSurface():noteColor[0],borderColor(),16));body.setTextColor(noteColor[0]==Color.WHITE?foreground():Color.BLACK);}}}
     loading[0]=false;
     Runnable save=()->{if(loading[0])return;String t=title.getText().toString(),b=body.getText().toString();if(noteId[0]<0&&t.trim().isEmpty()&&b.trim().isEmpty()){setSaveStatus("Nota kosong");return;}
-      ContentValues values=new ContentValues();values.put("title",t);values.put("body",b);values.put("updated",System.currentTimeMillis());values.put("color",noteColor[0]);values.put("category_id",chosenCategory[0]);values.put("pinned",notePinned[0]?1:0);
+      ContentValues values=new ContentValues();values.put("title",t);values.put("body",b);values.put("body_html",android.text.Html.toHtml(body.getText(),android.text.Html.TO_HTML_PARAGRAPH_LINES_CONSECUTIVE));values.put("updated",System.currentTimeMillis());values.put("color",noteColor[0]);values.put("category_id",chosenCategory[0]);values.put("pinned",notePinned[0]?1:0);
       try{if(noteId[0]<0){noteId[0]=(int)db.getWritableDatabase().insertOrThrow("notes",null,values);deleteButton[0].setEnabled(true);}else db.getWritableDatabase().update("notes",values,"id=?",new String[]{""+noteId[0]});setSaveStatus("✓ Disimpan");}catch(Exception e){android.util.Log.e("DinNote","Note save failed",e);setSaveStatus("Gagal disimpan");Toast.makeText(this,"Nota gagal disimpan",Toast.LENGTH_LONG).show();}
     };
     saveAction[0]=save;saveActionHolder[0]=save;
@@ -882,11 +883,12 @@ public class MainActivity extends Activity {
     body.setMinLines(5);body.setSelectAllOnFocus(false);body.setContentDescription("Kandungan kitab");body.setHorizontallyScrolling(false);body.setTextIsSelectable(true);body.setImeOptions(android.view.inputmethod.EditorInfo.IME_FLAG_NO_EXTRACT_UI);page.addView(body,new LinearLayout.LayoutParams(-1,0,1));
     final Button[] deleteButton={null};
     final int[] bookId={id};final boolean[] loading={true};
-    if(id>=0)try(Cursor c=db.getReadableDatabase().rawQuery("SELECT title,body FROM books WHERE id=?",new String[]{""+id})){
-      if(c.moveToFirst()){title.setText(c.getString(0));body.setText(c.getString(1));}
+    if(id>=0)try(Cursor c=db.getReadableDatabase().rawQuery("SELECT title,body,body_html FROM books WHERE id=?",new String[]{""+id})){
+      if(c.moveToFirst()){title.setText(c.getString(0));body.setText(c.getString(2)!=null&&!c.getString(2).isEmpty()?android.text.Html.fromHtml(c.getString(2),android.text.Html.FROM_HTML_MODE_COMPACT):c.getString(1));}
     }
     LinearLayout toolbar=new LinearLayout(this);toolbar.setOrientation(LinearLayout.HORIZONTAL);
     page.addView(toolbar,new LinearLayout.LayoutParams(-1,-2));
+    Button fontColor=button();fontColor.setText("A●");fontColor.setContentDescription("Warna tulisan kitab");toolbar.addView(fontColor,new LinearLayout.LayoutParams(0,-2,1));fontColor.setOnClickListener(v->chooseTextColor(body));
     Button check=button();check.setText("☐");toolbar.addView(check,new LinearLayout.LayoutParams(0,-2,1));
     Button bold=button();bold.setText("B");bold.setContentDescription("Tebalkan teks dipilih");bold.setTypeface(null,Typeface.BOLD);toolbar.addView(bold,new LinearLayout.LayoutParams(0,-2,1));
     Button italic=button();italic.setText("I");italic.setContentDescription("Condongkan teks dipilih");italic.setTypeface(null,Typeface.ITALIC);toolbar.addView(italic,new LinearLayout.LayoutParams(0,-2,1));
@@ -898,7 +900,7 @@ public class MainActivity extends Activity {
     loading[0]=false;
     Runnable save=()->{if(loading[0])return;String t=title.getText().toString(),content=body.getText().toString();
       if(bookId[0]<0&&t.trim().isEmpty()&&content.trim().isEmpty()){setSaveStatus("Kitab kosong");return;}
-      ContentValues cv=new ContentValues();cv.put("title",t);cv.put("body",content);
+      ContentValues cv=new ContentValues();cv.put("title",t);cv.put("body",content);cv.put("body_html",android.text.Html.toHtml(body.getText(),android.text.Html.TO_HTML_PARAGRAPH_LINES_CONSECUTIVE));
       cv.put("category_id",categoryId);cv.put("updated",System.currentTimeMillis());
       try{if(bookId[0]<0){bookId[0]=(int)db.getWritableDatabase().insertOrThrow("books",null,cv);deleteButton[0].setEnabled(true);}
       else db.getWritableDatabase().update("books",cv,"id=?",new String[]{""+bookId[0]});setSaveStatus("✓ Disimpan");}catch(Exception e){android.util.Log.e("DinNote","Book save failed",e);setSaveStatus("Gagal disimpan");Toast.makeText(this,"Kitab gagal disimpan",Toast.LENGTH_LONG).show();}
@@ -917,13 +919,23 @@ public class MainActivity extends Activity {
       }).show());
   }
   void saveColor(int id,int color){if(id<0)return;ContentValues v=new ContentValues();v.put("color",color);db.getWritableDatabase().update("notes",v,"id=?",new String[]{""+id});}
+  void chooseTextColor(EditText editor){
+    int[] colors={0xFF1F2328,0xFFD1242F,0xFFB45309,0xFF15803D,0xFF0969DA,0xFF7C3AED,0xFFBE185D,0xFF0F766E,0xFF475569,0xFFFFFFFF,0xFFEA580C,0xFF4338CA};
+    String[] names={"Hitam","Merah","Coklat","Hijau","Biru","Ungu","Merah jambu","Turquoise","Kelabu","Putih","Oren","Indigo"};
+    int start=editor.getSelectionStart(),end=editor.getSelectionEnd();
+    if(start<0||end<=start){Toast.makeText(this,"Pilih teks yang hendak diwarnakan dahulu",Toast.LENGTH_SHORT).show();return;}
+    new AlertDialog.Builder(this).setTitle("Warna tulisan")
+      .setItems(names,(dialog,index)->{
+        editor.getText().setSpan(new android.text.style.ForegroundColorSpan(colors[index]),start,end,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+      }).setNegativeButton("Batal",null).show();
+  }
   void underlineSelection(EditText edit){int a=edit.getSelectionStart(),b=edit.getSelectionEnd();if(a<0||b<=a){Toast.makeText(this,"Pilih teks dahulu",Toast.LENGTH_SHORT).show();return;}edit.getText().setSpan(new android.text.style.UnderlineSpan(),a,b,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);}
   void styleSelection(EditText edit,int style){int a=edit.getSelectionStart(),b=edit.getSelectionEnd();if(a<0||b<=a){Toast.makeText(this,"Pilih teks dahulu",Toast.LENGTH_SHORT).show();return;}SpannableStringBuilder t=new SpannableStringBuilder(edit.getText());t.setSpan(new StyleSpan(style),a,b,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);edit.setText(t);edit.setSelection(b);}
   @Override public void onBackPressed(){flushPendingSave();if(editingBook)showBooks(activeCategoryId,activeCategoryName);else showHome();}
   static class DB extends SQLiteOpenHelper {
-    DB(Context c){super(c,"dinnote.db",null,6);}
-    public void onCreate(SQLiteDatabase db){db.execSQL("CREATE TABLE notes (id INTEGER PRIMARY KEY AUTOINCREMENT,title TEXT NOT NULL DEFAULT '',body TEXT NOT NULL DEFAULT '',updated INTEGER NOT NULL,color INTEGER NOT NULL DEFAULT -1,category_id INTEGER NOT NULL DEFAULT -1,pinned INTEGER NOT NULL DEFAULT 0)");createLibrary(db);createNoteCategories(db);seedDefaultCategories(db);}
-    static void createLibrary(SQLiteDatabase db){db.execSQL("CREATE TABLE IF NOT EXISTS categories (id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT NOT NULL)");db.execSQL("CREATE TABLE IF NOT EXISTS books (id INTEGER PRIMARY KEY AUTOINCREMENT,category_id INTEGER NOT NULL,title TEXT NOT NULL DEFAULT '',body TEXT NOT NULL DEFAULT '',updated INTEGER NOT NULL,pinned INTEGER NOT NULL DEFAULT 0)");}
+    DB(Context c){super(c,"dinnote.db",null,7);}
+    public void onCreate(SQLiteDatabase db){db.execSQL("CREATE TABLE notes (id INTEGER PRIMARY KEY AUTOINCREMENT,title TEXT NOT NULL DEFAULT '',body TEXT NOT NULL DEFAULT '',updated INTEGER NOT NULL,color INTEGER NOT NULL DEFAULT -1,category_id INTEGER NOT NULL DEFAULT -1,pinned INTEGER NOT NULL DEFAULT 0,body_html TEXT NOT NULL DEFAULT '')");createLibrary(db);createNoteCategories(db);seedDefaultCategories(db);}
+    static void createLibrary(SQLiteDatabase db){db.execSQL("CREATE TABLE IF NOT EXISTS categories (id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT NOT NULL)");db.execSQL("CREATE TABLE IF NOT EXISTS books (id INTEGER PRIMARY KEY AUTOINCREMENT,category_id INTEGER NOT NULL,title TEXT NOT NULL DEFAULT '',body TEXT NOT NULL DEFAULT '',updated INTEGER NOT NULL,pinned INTEGER NOT NULL DEFAULT 0,body_html TEXT NOT NULL DEFAULT '')");}
     static void createNoteCategories(SQLiteDatabase db){db.execSQL("CREATE TABLE IF NOT EXISTS note_categories (id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT NOT NULL)");}
     static void seedDefaultCategories(SQLiteDatabase db){
       // Only seed during database creation or version migration; user changes remain editable.
@@ -933,6 +945,6 @@ public class MainActivity extends Activity {
       db.execSQL("INSERT INTO note_categories(name) SELECT ? WHERE NOT EXISTS (SELECT 1 FROM note_categories WHERE name=?)",new Object[]{"Peribadi","Peribadi"});
     }
     @Override public void onOpen(SQLiteDatabase database){super.onOpen(database);createLibrary(database);createNoteCategories(database);}
-    public void onUpgrade(SQLiteDatabase db,int oldVersion,int newVersion){if(oldVersion<2) { try { db.execSQL("ALTER TABLE notes ADD COLUMN color INTEGER NOT NULL DEFAULT -1"); } catch (android.database.sqlite.SQLiteException ignored) { /* Column may already exist in older builds. */ } } if(oldVersion<3)createLibrary(db);if(oldVersion<4){createNoteCategories(db);try{db.execSQL("ALTER TABLE notes ADD COLUMN category_id INTEGER NOT NULL DEFAULT -1");}catch(android.database.sqlite.SQLiteException ignored){}} if(oldVersion<5){createLibrary(db);createNoteCategories(db);seedDefaultCategories(db);} if(oldVersion<6){try{db.execSQL("ALTER TABLE notes ADD COLUMN pinned INTEGER NOT NULL DEFAULT 0");}catch(android.database.sqlite.SQLiteException ignored){}try{db.execSQL("ALTER TABLE books ADD COLUMN pinned INTEGER NOT NULL DEFAULT 0");}catch(android.database.sqlite.SQLiteException ignored){}} }
+    public void onUpgrade(SQLiteDatabase db,int oldVersion,int newVersion){if(oldVersion<2) { try { db.execSQL("ALTER TABLE notes ADD COLUMN color INTEGER NOT NULL DEFAULT -1"); } catch (android.database.sqlite.SQLiteException ignored) { /* Column may already exist in older builds. */ } } if(oldVersion<3)createLibrary(db);if(oldVersion<4){createNoteCategories(db);try{db.execSQL("ALTER TABLE notes ADD COLUMN category_id INTEGER NOT NULL DEFAULT -1");}catch(android.database.sqlite.SQLiteException ignored){}} if(oldVersion<5){createLibrary(db);createNoteCategories(db);seedDefaultCategories(db);} if(oldVersion<6){try{db.execSQL("ALTER TABLE notes ADD COLUMN pinned INTEGER NOT NULL DEFAULT 0");}catch(android.database.sqlite.SQLiteException ignored){}try{db.execSQL("ALTER TABLE books ADD COLUMN pinned INTEGER NOT NULL DEFAULT 0");}catch(android.database.sqlite.SQLiteException ignored){}} if(oldVersion<7){db.execSQL("ALTER TABLE notes ADD COLUMN body_html TEXT NOT NULL DEFAULT ''");db.execSQL("ALTER TABLE books ADD COLUMN body_html TEXT NOT NULL DEFAULT ''");} }
   }
 }
