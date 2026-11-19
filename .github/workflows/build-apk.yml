@@ -66,6 +66,20 @@ jobs:
           test -s "$APK"
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$APK"
           "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" | grep '^package:'
+      - name: Diagnose APK install compatibility
+        run: |
+          set -euo pipefail
+          APK=app/build/outputs/apk/release/app-release.apk
+          echo "=== APK file size ==="
+          ls -lh "$APK"
+          stat -c 'APK bytes: %s' "$APK"
+          echo "=== Package, SDK and version ==="
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" | grep -E "^(package:|sdkVersion:|targetSdkVersion:|launchable-activity:)"
+          echo "=== Signing certificate ==="
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$APK"
+          echo "=== APK entries ==="
+          unzip -l "$APK" | tail -n 25
+          echo "Note: GitHub cannot detect installed-app signature conflicts on a user's phone."
       - name: Upload signed release APK
         if: env.HAS_SIGNING_KEY == 'true'
         uses: actions/upload-artifact@v4
