@@ -19,7 +19,14 @@ jobs:
         with:
           gradle-version: '8.12'
       - name: Build test APK without signing secrets
-        run: gradle :app:assembleDebug --no-daemon --stacktrace
+        run: |
+          set -o pipefail
+          gradle :app:assembleDebug --no-daemon --console=plain --stacktrace 2>&1 | tee "$RUNNER_TEMP/dinnote-debug-build.log" || {
+            echo "::group::DinNote first compiler and Gradle errors"
+            grep -n -m 35 -E '(^|[[:space:]])(error:|e: |FAILURE:|What went wrong:|Execution failed for task|AAPT:|cannot find symbol|symbol:|location:)' "$RUNNER_TEMP/dinnote-debug-build.log" || true
+            echo "::endgroup::"
+            exit 1
+          }
       - name: Upload test APK
         uses: actions/upload-artifact@v4
         with:
