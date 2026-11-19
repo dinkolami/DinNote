@@ -320,7 +320,7 @@ public class MainActivity extends Activity {
           }).show());
       }
     }
-    if(items.getChildCount()==0)items.addView(text(filter.isEmpty()?"Belum ada kategori. Tekan + Kategori baharu untuk mula.":"Tiada kategori ditemui.",15));
+    if(items.getChildCount()==0)items.addView(text(filter.isEmpty()?"Belum ada kategori. Tekan Tambah kategori Maktabah untuk mula.":"Tiada kategori sepadan dengan carian.",15));
   }
   void promptCategory(){
     EditText input=field();input.setHint("Nama kategori");input.setFilters(new InputFilter[]{new InputFilter.LengthFilter(100)});
