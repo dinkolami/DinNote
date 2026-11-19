@@ -211,7 +211,20 @@ public class MainActivity extends Activity {
    empty.setGravity(Gravity.CENTER);recentNotes.addView(empty);
    TextView hint=dashboardText("Nota atau kitab yang dibuka akan muncul di sini.",14,false);
    hint.setGravity(Gravity.CENTER);hint.setTextColor(0xff656d76);hint.setTextSize(13);recentNotes.addView(hint);
-  }else for(int i=0;i<Math.min(5,keys.size());i++){
+  }else {
+   // Two balanced columns of five on an unfolded Fold6; one column on narrow screens.
+   boolean wide=getResources().getConfiguration().screenWidthDp>=600;
+   LinearLayout columns=null,left=null,right=null;
+   if(wide){
+    columns=new LinearLayout(this);columns.setOrientation(LinearLayout.HORIZONTAL);
+    left=new LinearLayout(this);left.setOrientation(LinearLayout.VERTICAL);
+    right=new LinearLayout(this);right.setOrientation(LinearLayout.VERTICAL);
+    LinearLayout.LayoutParams leftParams=new LinearLayout.LayoutParams(0,-2,1);leftParams.rightMargin=dp(4);
+    LinearLayout.LayoutParams rightParams=new LinearLayout.LayoutParams(0,-2,1);rightParams.leftMargin=dp(4);
+    columns.addView(left,leftParams);columns.addView(right,rightParams);
+    recentNotes.addView(columns,new LinearLayout.LayoutParams(-1,-2));
+   }
+   for(int i=0;i<Math.min(10,keys.size());i++){
     String k=keys.get(i);String t=prefs.getString("title_"+k,"");
     if(t.trim().isEmpty())t="Tanpa tajuk";
     TextView item=dashboardText((k.startsWith("m_")?"▱  ":"▤  ")+t,13,false);
@@ -222,11 +235,12 @@ public class MainActivity extends Activity {
     item.setBackground(subtleNoteBorder(8));
     LinearLayout.LayoutParams itemParams=new LinearLayout.LayoutParams(-1,-2);
     itemParams.bottomMargin=dp(3);
-    recentNotes.addView(item,itemParams);
+    if(wide)(i<5?left:right).addView(item,itemParams);else recentNotes.addView(item,itemParams);
     item.setPadding(dp(10),dp(5),dp(10),dp(5));applyTouchFeedback(item);item.setMaxLines(1);item.setEllipsize(android.text.TextUtils.TruncateAt.END);
     item.setContentDescription("Buka "+(k.startsWith("m_")?"kitab ":"nota ")+t);
     item.setOnClickListener(v->{maktabah=k.startsWith("m_");read(k);});
    }
+  }
   TextView add=dashboardText("＋  Nota baharu",15,true);add.setGravity(Gravity.CENTER);
   add.setBackground(silverGradient(8));
   add.setPadding(dp(12),dp(8),dp(12),dp(8));
