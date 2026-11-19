@@ -457,8 +457,37 @@ public class MainActivity extends Activity {
    choices.add(savedCat);
    categoryPicker.setAdapter(new ArrayAdapter<>(this,android.R.layout.simple_spinner_dropdown_item,choices));
   }
-  int pos=choices.indexOf(savedCat);categoryPicker.setSelection(pos<0?0:pos);root.addView(categoryPicker);saveIndicator=text("Autosimpan aktif",12);saveIndicator.setTextColor(0xff687078);saveIndicator.setPadding(dp(24),dp(4),dp(24),dp(4));root.addView(saveIndicator);titleEditor=new EditText(this);titleEditor.setSingleLine(true);titleEditor.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_NEXT);titleEditor.setTextSize(21);titleEditor.setHint(maktabah?"Tajuk kitab":"Tajuk nota");titleEditor.setContentDescription(maktabah?"Tajuk kitab":"Tajuk nota");titleEditor.setPadding(dp(24),dp(12),dp(24),dp(12));titleEditor.setBackgroundColor(Color.WHITE);titleEditor.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);root.addView(titleEditor);if(key!=null)titleEditor.setText(prefs.getString("title_"+key,""));editor=new EditText(this);editor.setGravity(Gravity.TOP);editor.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);editor.setTextSize(new int[]{14,16,19,23}[Math.max(0,Math.min(3,prefs.getInt("editor_font_level",1)))]);editor.setTextColor(0xff30343b);editor.setPadding(dp(24),dp(16),dp(24),dp(16));editor.setLineSpacing(dp(5),1.08f);editor.setIncludeFontPadding(true);editor.setHint(maktabah?"Tulis kandungan kitab di sini…":"Tulis nota di sini…");editor.setContentDescription(maktabah?"Kandungan kitab":"Kandungan nota");editor.setBackgroundColor(Color.WHITE);editor.setInputType(android.text.InputType.TYPE_CLASS_TEXT|android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE|android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);root.addView(editor,new LinearLayout.LayoutParams(-1,0,1));if(key!=null)editor.setText(prefs.getString(key,""));TextWatcher titleWatcher=new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){save();}public void afterTextChanged(Editable e){}};titleEditor.addTextChangedListener(titleWatcher);TextWatcher bodyWatcher=new TextWatcher(){String before="";public void beforeTextChanged(CharSequence s,int st,int count,int after){before=s.toString();}public void onTextChanged(CharSequence s,int st,int beforeCount,int count){}public void afterTextChanged(Editable e){if(!restoring[0]&&!before.equals(e.toString())){undoHistory.addLast(before);if(undoHistory.size()>100)undoHistory.removeFirst();redoHistory.clear();historyButtons[0].setAlpha(1f);historyButtons[1].setAlpha(0.35f);}save();}};editor.addTextChangedListener(bodyWatcher);categoryPicker.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener(){public void onNothingSelected(android.widget.AdapterView<?> p){}public void onItemSelected(android.widget.AdapterView<?> p,View v,int position,long id){save();}});}
+  int pos=choices.indexOf(savedCat);categoryPicker.setSelection(pos<0?0:pos);root.addView(categoryPicker);saveIndicator=text("Autosimpan aktif",12);saveIndicator.setTextColor(0xff687078);saveIndicator.setPadding(dp(24),dp(4),dp(24),dp(4));root.addView(saveIndicator);titleEditor=new EditText(this);titleEditor.setSingleLine(true);titleEditor.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_NEXT);titleEditor.setTextSize(21);titleEditor.setHint(maktabah?"Tajuk kitab":"Tajuk nota");titleEditor.setContentDescription(maktabah?"Tajuk kitab":"Tajuk nota");titleEditor.setPadding(dp(24),dp(12),dp(24),dp(12));titleEditor.setBackgroundColor(Color.WHITE);titleEditor.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);root.addView(titleEditor);if(key!=null)titleEditor.setText(prefs.getString("title_"+key,""));editor=new EditText(this);editor.setGravity(Gravity.TOP);editor.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);editor.setTextSize(new int[]{14,16,19,23}[Math.max(0,Math.min(3,prefs.getInt("editor_font_level",1)))]);editor.setTextColor(0xff30343b);editor.setPadding(dp(24),dp(16),dp(24),dp(16));editor.setLineSpacing(dp(5),1.08f);editor.setIncludeFontPadding(true);editor.setHint(maktabah?"Tulis kandungan kitab di sini…":"Tulis nota di sini…");editor.setContentDescription(maktabah?"Kandungan kitab":"Kandungan nota");editor.setBackgroundColor(Color.WHITE);editor.setInputType(android.text.InputType.TYPE_CLASS_TEXT|android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE|android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);LinearLayout formatBar=new LinearLayout(this);
+  formatBar.setGravity(Gravity.CENTER_VERTICAL);
+  formatBar.setPadding(dp(5),dp(2),dp(5),dp(2));
+  formatBar.setBackground(rounded(0xfff0faf2,0xffc9e8cf,12));
+  root.addView(formatBar);
+  Button boldButton=action("B",formatBar,()->wrapEditorSelection("**","**"));
+  boldButton.setTypeface(null,android.graphics.Typeface.BOLD);boldButton.setContentDescription("Tebal: tandakan teks terpilih");
+  Button italicButton=action("I",formatBar,()->wrapEditorSelection("*","*"));
+  italicButton.setTypeface(null,android.graphics.Typeface.ITALIC);italicButton.setContentDescription("Condong: tandakan teks terpilih");
+  Button bulletButton=action("☷",formatBar,()->insertEditorText("• "));
+  bulletButton.setContentDescription("Masukkan senarai");
+  Button checklistButton=action("☑",formatBar,()->insertEditorText("☐ "));
+  checklistButton.setContentDescription("Masukkan kotak semak");
+  Button fontButton=action("Aa",formatBar,()->new AlertDialog.Builder(this).setTitle("Saiz tulisan editor").setItems(new String[]{"Kecil","Biasa","Besar","Sangat besar"},(d,i)->{prefs.edit().putInt("editor_font_level",i).apply();if(editor!=null)editor.setTextSize(new int[]{14,16,19,23}[i]);}).show());
+  fontButton.setContentDescription("Saiz tulisan editor");
+  root.addView(editor,new LinearLayout.LayoutParams(-1,0,1));if(key!=null)editor.setText(prefs.getString(key,""));TextWatcher titleWatcher=new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){save();}public void afterTextChanged(Editable e){}};titleEditor.addTextChangedListener(titleWatcher);TextWatcher bodyWatcher=new TextWatcher(){String before="";public void beforeTextChanged(CharSequence s,int st,int count,int after){before=s.toString();}public void onTextChanged(CharSequence s,int st,int beforeCount,int count){}public void afterTextChanged(Editable e){if(!restoring[0]&&!before.equals(e.toString())){undoHistory.addLast(before);if(undoHistory.size()>100)undoHistory.removeFirst();redoHistory.clear();historyButtons[0].setAlpha(1f);historyButtons[1].setAlpha(0.35f);}save();}};editor.addTextChangedListener(bodyWatcher);categoryPicker.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener(){public void onNothingSelected(android.widget.AdapterView<?> p){}public void onItemSelected(android.widget.AdapterView<?> p,View v,int position,long id){save();}});}
 
+ void insertEditorText(String value){
+  if(editor==null)return;
+  int start=Math.max(0,editor.getSelectionStart());
+  editor.getText().insert(start,value);
+  editor.setSelection(start+value.length());
+ }
+ void wrapEditorSelection(String before,String after){
+  if(editor==null)return;
+  int a=Math.max(0,Math.min(editor.getSelectionStart(),editor.getSelectionEnd()));
+  int b=Math.max(0,Math.max(editor.getSelectionStart(),editor.getSelectionEnd()));
+  String selectedText=editor.getText().subSequence(a,b).toString();
+  editor.getText().replace(a,b,before+selectedText+after);
+  editor.setSelection(a+before.length(),a+before.length()+selectedText.length());
+ }
  void insertCurrentDateTime(int mode){
   if(editor==null)return;
   java.util.Date now=new java.util.Date();
