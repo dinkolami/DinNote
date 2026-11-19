@@ -114,7 +114,7 @@ public class MainActivity extends Activity {
     Button backupGuide=button();backupGuide.setText("?  Panduan backup");
     backupGuide.setContentDescription("Panduan membuat salinan data");options.addView(backupGuide);
     backupGuide.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Panduan Backup")
-      .setMessage("1. Tekan Backup ke DinPhone.\\n2. Pilih lokasi penyimpanan fail.\\n3. Simpan fail .db dengan selamat.\\n4. Gunakan Restore daripada fail untuk memulihkan data.")
+      .setMessage("1. Tekan Backup ke DinPhone.\n2. Pilih lokasi penyimpanan fail.\n3. Simpan fail .db dengan selamat.\n4. Gunakan Restore daripada fail untuk memulihkan data.")
       .setPositiveButton("OK",null).show());
     Button restoreGuide=button();restoreGuide.setText("?  Panduan restore");
     restoreGuide.setContentDescription("Panduan memulihkan data");options.addView(restoreGuide);
@@ -368,10 +368,10 @@ public class MainActivity extends Activity {
       }
       try(Cursor result=db.getReadableDatabase().rawQuery(queries[i],args)){
         report.append(i+1).append(". ").append(labels[i]).append(": ");
-        report.append(result.moveToFirst()?result.getLong(0):0).append("\\n");
+        report.append(result.moveToFirst()?result.getLong(0):0).append("\n");
       }catch(Exception e){
         android.util.Log.w("DinNote","Advanced statistic "+(i+1)+" unavailable",e);
-        report.append(i+1).append(". ").append(labels[i]).append(": Tidak tersedia\\n");
+        report.append(i+1).append(". ").append(labels[i]).append(": Tidak tersedia\n");
       }
     }
     new AlertDialog.Builder(this).setTitle("25 Statistik Lanjutan")
@@ -392,10 +392,10 @@ public class MainActivity extends Activity {
       }
       try(Cursor cursor=db.getReadableDatabase().rawQuery(queries[i],args)){
         report.append(i+1).append(". ").append(labels[i]).append(": ");
-        report.append(cursor.moveToFirst()?cursor.getLong(0):0).append("\\n");
+        report.append(cursor.moveToFirst()?cursor.getLong(0):0).append("\n");
       }catch(Exception e){
         android.util.Log.w("DinNote","Content insight "+(i+1)+" unavailable",e);
-        report.append(i+1).append(". ").append(labels[i]).append(": Tidak tersedia\\n");
+        report.append(i+1).append(". ").append(labels[i]).append(": Tidak tersedia\n");
       }
     }
     new AlertDialog.Builder(this).setTitle("27 Analisis Kandungan")
@@ -409,10 +409,10 @@ public class MainActivity extends Activity {
     for(int i=0;i<labels.length;i++){
       try(Cursor cursor=db.getReadableDatabase().rawQuery(queries[i],null)){
         report.append(i+1).append(". ").append(labels[i]).append(": ");
-        report.append(cursor.moveToFirst()?cursor.getLong(0):0).append("\\n");
+        report.append(cursor.moveToFirst()?cursor.getLong(0):0).append("\n");
       }catch(Exception e){
         android.util.Log.w("DinNote","Data quality insight "+(i+1)+" unavailable",e);
-        report.append(i+1).append(". ").append(labels[i]).append(": Tidak tersedia\\n");
+        report.append(i+1).append(". ").append(labels[i]).append(": Tidak tersedia\n");
       }
     }
     new AlertDialog.Builder(this).setTitle("23 Semakan Data")
