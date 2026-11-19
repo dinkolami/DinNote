@@ -224,7 +224,7 @@ public class MainActivity extends Activity {
     columns.addView(left,leftParams);columns.addView(right,rightParams);
     recentNotes.addView(columns,new LinearLayout.LayoutParams(-1,-2));
    }
-   for(int i=0;i<Math.min(10,keys.size());i++){
+   for(int i=0;i<Math.min(wide?10:5,keys.size());i++){
     String k=keys.get(i);String t=prefs.getString("title_"+k,"");
     if(t.trim().isEmpty())t="Tanpa tajuk";
     TextView item=dashboardText((k.startsWith("m_")?"▱  ":"▤  ")+t,13,false);
