@@ -67,33 +67,35 @@ public class MainActivity extends Activity {
     d.setColor(color);d.setCornerRadius(radius);d.setStroke(1,stroke);return d;
   }
   Button button(){
-    Button b=new Button(this);b.setAllCaps(false);b.setTextSize(14);
-    b.setMinHeight(44);b.setTextColor(foreground());b.setBackground(rounded(cardSurface(),borderColor(),18));
-    b.setPadding(16,10,16,10);
+    Button b=new Button(this);b.setAllCaps(false);b.setTextSize(14);b.setLetterSpacing(0);
+    b.setMinHeight(44);b.setTextColor(foreground());b.setBackground(rounded(cardSurface(),borderColor(),12));
+    b.setPadding(14,9,14,9);
     LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2);p.setMargins(0,5,0,5);b.setLayoutParams(p);
     return b;
   }
   EditText field(){
     EditText e=new EditText(this);e.setTextColor(foreground());
     e.setHintTextColor(dark()?0xFF8B949E:0xFF656D76);
-    e.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);e.setTextSize(16);e.setPadding(18,14,18,14);
-    e.setBackground(rounded(cardSurface(),borderColor(),16));return e;
+    e.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);e.setTextSize(15);e.setPadding(14,12,14,12);
+    e.setBackground(rounded(cardSurface(),borderColor(),12));return e;
   }
-  TextView text(String value,int size) { TextView t=new TextView(this);t.setText(value);t.setTextSize(size);t.setTextColor(foreground());t.setPadding(14,12,14,12);return t; }
-  LinearLayout column() { LinearLayout l=new LinearLayout(this);l.setOrientation(1);l.setPadding(16,16,16,16);l.setBackgroundColor(surface());return l; }
+  TextView text(String value,int size) { TextView t=new TextView(this);t.setText(value);t.setTextSize(size);t.setTextColor(foreground());t.setPadding(10,9,10,9);return t; }
+  LinearLayout column() { LinearLayout l=new LinearLayout(this);l.setOrientation(1);l.setPadding(14,14,14,14);l.setBackgroundColor(surface());return l; }
   void showHome() {
     flushPendingSave();
     editingBook=false;editingNote=false;
     root=column();root.setFocusableInTouchMode(true);setContentView(root);
-    TextView title=text("▤  DinNote",23);title.setTypeface(null,2);root.addView(title);
-    TextView appearance=text("⚙",22);appearance.setContentDescription("Tetapan penampilan");appearance.setFocusable(true);appearance.setOnClickListener(v->appearanceSettings());root.addView(appearance);
-    Button notesMenu=button();notesMenu.setText("📝  Nota");root.addView(notesMenu);
-    Button libraryMenu=button();libraryMenu.setText("📚  Maktabah");root.addView(libraryMenu);
+    LinearLayout header=new LinearLayout(this);header.setOrientation(LinearLayout.HORIZONTAL);header.setGravity(Gravity.CENTER_VERTICAL);root.addView(header);
+    TextView title=text("▤  DinNote",22);title.setTypeface(null,Typeface.BOLD);header.addView(title,new LinearLayout.LayoutParams(0,-2,1));
+    TextView appearance=text("⚙",22);appearance.setContentDescription("Tetapan penampilan");appearance.setFocusable(true);appearance.setOnClickListener(v->appearanceSettings());header.addView(appearance);
+    View headerDivider=new View(this);headerDivider.setBackgroundColor(borderColor());LinearLayout.LayoutParams hd=new LinearLayout.LayoutParams(-1,1);hd.setMargins(0,4,0,12);root.addView(headerDivider,hd);
+    Button notesMenu=button();notesMenu.setText("📝  Nota");notesMenu.setTypeface(null,Typeface.BOLD);root.addView(notesMenu);
+    Button libraryMenu=button();libraryMenu.setText("📚  Maktabah");libraryMenu.setTypeface(null,Typeface.BOLD);root.addView(libraryMenu);
     libraryMenu.setContentDescription("Buka Maktabah");libraryMenu.setOnClickListener(v->showLibrary());
     notesMenu.setContentDescription("Buka Nota");notesMenu.setOnClickListener(v->showHome());
     Button sort=button();sort.setText("Susun: "+new String[]{"Terkini","Terlama","Tajuk A-Z"}[noteSort]);root.addView(sort);
     sort.setContentDescription("Pilih susunan nota");sort.setOnClickListener(v->new AlertDialog.Builder(this).setItems(new String[]{"Terkini","Terlama","Tajuk A-Z"},(d,w)->{noteSort=w;getPreferences(MODE_PRIVATE).edit().putInt("noteSort",w).apply();sort.setText("Susun: "+new String[]{"Terkini","Terlama","Tajuk A-Z"}[w]);refresh(noteFilter);}).show());
-    search=field();search.setContentDescription("Cari nota");search.setSingleLine(true);search.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);search.setSelectAllOnFocus(false);search.setHint("Cari tajuk atau kandungan nota…");search.setText(noteFilter);search.setSelection(search.length());root.addView(search);
+    search=field();search.setContentDescription("Cari nota");search.setSingleLine(true);search.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);search.setSelectAllOnFocus(false);search.setHint("Cari nota…");search.setText(noteFilter);search.setSelection(search.length());root.addView(search);
     Button add=button();add.setText("+ Nota baharu");add.setContentDescription("Cipta nota baharu");root.addView(add);add.setOnClickListener(v->edit(-1));
     ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);list=new LinearLayout(this);list.setOrientation(1);scroll.addView(list);root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
     search.addTextChangedListener(new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){noteFilter=s.toString();refresh(noteFilter);}public void afterTextChanged(Editable e){}});
@@ -115,9 +117,9 @@ public class MainActivity extends Activity {
   void edit(int id) {
     flushPendingSave();editingNote=true;
     LinearLayout page=column();setContentView(page);
-    Button back=button();back.setText("← Kembali");page.addView(back);
-    EditText title=field();title.setContentDescription("Tajuk nota");title.setHint("Tajuk nota");title.setSingleLine(true);title.setFilters(new InputFilter[]{new InputFilter.LengthFilter(200)});title.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_NEXT);title.setTextSize(18);page.addView(title);
-    EditText body=field();body.setHint("Tulis nota di sini…");body.setTextSize(16);body.setGravity(Gravity.TOP|Gravity.START);body.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);body.setTextColor(foreground());
+    Button back=button();back.setText("← Nota");back.setTextSize(14);page.addView(back);
+    EditText title=field();title.setContentDescription("Tajuk nota");title.setHint("Tajuk nota");title.setSingleLine(true);title.setFilters(new InputFilter[]{new InputFilter.LengthFilter(200)});title.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_NEXT);title.setTextSize(17);page.addView(title);
+    EditText body=field();body.setHint("Tulis nota di sini…");body.setTextSize(15);body.setGravity(Gravity.TOP|Gravity.START);body.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);body.setTextColor(foreground());
     body.setMinLines(5);body.setSelectAllOnFocus(false);body.setContentDescription("Kandungan nota");page.addView(body,new LinearLayout.LayoutParams(-1,0,1));
     final int[] noteId={id};final boolean[] loading={true};final int[] noteColor={Color.WHITE};final Runnable[] saveAction={null};
     int[] colors={Color.WHITE,0xFFFFF4B8,0xFFDDF4DF,0xFFDCEEFF,0xFFFFE1E9,0xFFECE2FF};
@@ -150,7 +152,7 @@ public class MainActivity extends Activity {
   void showLibrary() {
     flushPendingSave();editingBook=false;editingNote=false;
     LinearLayout page=column();setContentView(page);
-    Button back=button();back.setText("← DinNote");page.addView(back);back.setOnClickListener(v->showHome());
+    Button back=button();back.setText("← DinNote");back.setTextSize(14);page.addView(back);back.setOnClickListener(v->showHome());
     page.addView(text("📚  Maktabah",23));
     Button add=button();add.setText("+ Kategori baharu");page.addView(add);
     add.setOnClickListener(v->promptCategory());
@@ -180,7 +182,7 @@ public class MainActivity extends Activity {
   void showBooks(int categoryId,String categoryName){
     flushPendingSave();editingBook=false;editingNote=false;activeCategoryId=categoryId;activeCategoryName=categoryName;
     LinearLayout page=column();setContentView(page);
-    Button back=button();back.setText("← Maktabah");page.addView(back);back.setOnClickListener(v->showLibrary());
+    Button back=button();back.setText("← Maktabah");back.setTextSize(14);page.addView(back);back.setOnClickListener(v->showLibrary());
     page.addView(text("📁  "+categoryName,21));page.setFocusableInTouchMode(true);
     Button add=button();add.setText("+ Tambah kitab");add.setContentDescription("Cipta kitab dalam kategori "+categoryName);page.addView(add);add.setOnClickListener(v->editBook(-1,categoryId,categoryName));
     EditText bookSearch=field();bookSearch.setSingleLine(true);bookSearch.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);bookSearch.setSelectAllOnFocus(false);bookSearch.setHint("Cari kitab dalam kategori…");page.addView(bookSearch);
@@ -206,7 +208,7 @@ public class MainActivity extends Activity {
     LinearLayout page=column();setContentView(page);
     Button back=button();back.setText("← Maktabah");page.addView(back);
     EditText title=field();title.setContentDescription("Tajuk kitab");title.setHint("Tajuk kitab");title.setSingleLine(true);title.setFilters(new InputFilter[]{new InputFilter.LengthFilter(200)});title.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_NEXT);title.setTextSize(18);page.addView(title);
-    EditText body=field();body.setHint("Tulis kandungan kitab (Arab / Rumi)…");body.setTextSize(16);
+    EditText body=field();body.setHint("Tulis kandungan kitab (Arab / Rumi)…");body.setTextSize(15);
     body.setGravity(Gravity.TOP|Gravity.START);body.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
     body.setMinLines(5);body.setSelectAllOnFocus(false);body.setContentDescription("Kandungan kitab");page.addView(body,new LinearLayout.LayoutParams(-1,0,1));
     final int[] bookId={id};final boolean[] loading={true};
