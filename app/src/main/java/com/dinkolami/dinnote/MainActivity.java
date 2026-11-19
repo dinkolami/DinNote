@@ -88,7 +88,14 @@ public class MainActivity extends Activity {
   paint.setColor(color);paint.setTextSize(dp(21));paint.setTypeface(android.graphics.Typeface.DEFAULT);
   paint.setTextAlign(android.graphics.Paint.Align.CENTER);
   android.graphics.Paint.FontMetrics fm=paint.getFontMetrics();
-  canvas.drawText(symbol,px/2f,px/2f-(fm.ascent+fm.descent)/2f,paint);
+  if("⌂".equals(symbol)){
+   paint.setStyle(android.graphics.Paint.Style.STROKE);paint.setStrokeWidth(dp(2.2f));paint.setStrokeCap(android.graphics.Paint.Cap.ROUND);paint.setStrokeJoin(android.graphics.Paint.Join.ROUND);
+   android.graphics.Path house=new android.graphics.Path();
+   house.moveTo(px*.20f,px*.46f);house.lineTo(px*.50f,px*.20f);house.lineTo(px*.80f,px*.46f);
+   house.moveTo(px*.28f,px*.43f);house.lineTo(px*.28f,px*.78f);house.lineTo(px*.72f,px*.78f);house.lineTo(px*.72f,px*.43f);
+   house.moveTo(px*.44f,px*.78f);house.lineTo(px*.44f,px*.57f);house.lineTo(px*.56f,px*.57f);house.lineTo(px*.56f,px*.78f);
+   canvas.drawPath(house,paint);
+  }else{canvas.drawText(symbol,px/2f,px/2f-(fm.ascent+fm.descent)/2f,paint);}
   ImageView view=new ImageView(this);view.setImageBitmap(bitmap);view.setContentDescription(description);
   view.setClickable(true);view.setFocusable(true);view.setScaleType(ImageView.ScaleType.FIT_CENTER);
   android.graphics.drawable.GradientDrawable frame=new android.graphics.drawable.GradientDrawable();frame.setColor(0xffffffff);frame.setCornerRadius(dp(10));frame.setStroke(dp(1),0xffaeb9bb);view.setBackground(frame);
