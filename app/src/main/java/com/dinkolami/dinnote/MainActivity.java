@@ -586,6 +586,11 @@ public class MainActivity extends Activity {
     throw new java.io.IOException("Maklumat storan dalam sandaran tidak sah");
    if(backup.has("exported_at")&&!(backup.opt("exported_at") instanceof Number))
     throw new java.io.IOException("Tarikh sandaran tidak sah");
+   if(backup.has("exported_at")){
+    double exportedAt=((Number)backup.opt("exported_at")).doubleValue();
+    if(Double.isNaN(exportedAt)||Double.isInfinite(exportedAt)||exportedAt<0)
+     throw new java.io.IOException("Tarikh sandaran tidak sah");
+   }
    String backupPackage=backup.optString("app_package","");
    if(!backupPackage.isEmpty()&&!getPackageName().equals(backupPackage))
     throw new java.io.IOException("Sandaran daripada aplikasi lain; data sedia ada tidak diubah");
