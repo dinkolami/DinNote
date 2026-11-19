@@ -37,8 +37,6 @@ public class MainActivity extends Activity {
   TextView name=text("DinNote",18);name.setTypeface(android.graphics.Typeface.DEFAULT,android.graphics.Typeface.NORMAL);name.setTextColor(0xff123e2b);
   name.setGravity(Gravity.BOTTOM);name.setPadding(dp(3),0,0,dp(7));header.addView(name,new LinearLayout.LayoutParams(0,dp(40),1));
   name.setOnClickListener(v->home());
-  ImageView searchIcon=headerIcon("⌕",0xff102b25,"Cari nota");header.addView(searchIcon);
-  searchIcon.setOnClickListener(v->searchNotesDialog());
   ImageView inbox=headerIcon("▣",0xff102b25,"Buka nota");header.addView(inbox);
   inbox.setOnClickListener(v->openSection(false));
   ImageView bell=headerIcon("♧",0xff126b43,"Peringatan nota");header.addView(bell);
