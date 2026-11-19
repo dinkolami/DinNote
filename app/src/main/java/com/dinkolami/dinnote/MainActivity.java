@@ -881,7 +881,7 @@ public class MainActivity extends Activity {
       Button editButton=button();editButton.setText("✎ Edit · v2.0.1");actions.addView(editButton,new LinearLayout.LayoutParams(0,-2,1));editButton.setOnClickListener(v->edit(id));
       // Safety fallback: Edit and Back must never disappear when gesture detection fails.
       page.addView(actions,new LinearLayout.LayoutParams(-1,-2));
-      actions.setVisibility(View.VISIBLE);
+      actions.setVisibility(View.GONE);
       editButton.setContentDescription("Edit nota ini");
       editButton.setMinHeight(56);
       editButton.setTextColor(Color.WHITE);
@@ -941,6 +941,9 @@ public class MainActivity extends Activity {
           return super.dispatchTouchEvent(event);
         }
       };
+      // Long press provides a reliable fallback when double-tap is intercepted by accessibility services.
+      scroll.setLongClickable(true);
+      scroll.setOnLongClickListener(v->{actions.setVisibility(View.VISIBLE);actions.bringToFront();return true;});
       scroll.setFillViewport(true);scroll.setVerticalScrollBarEnabled(true);
       page.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
       LinearLayout content=new LinearLayout(this);content.setOrientation(LinearLayout.VERTICAL);content.setPadding(20,24,20,28);
