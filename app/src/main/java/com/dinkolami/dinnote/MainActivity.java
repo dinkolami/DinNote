@@ -114,7 +114,7 @@ public class MainActivity extends Activity {
     libraryMenu.setContentDescription("Buka kategori kitab Maktabah");libraryMenu.setOnClickListener(v->showLibrary());
     notesMenu.setContentDescription("Buka kategori Nota peribadi");notesMenu.setOnClickListener(v->showNoteCategories());
     // Front-page pinned notes: compact, accessible, and independent of category filtering.
-    LinearLayout pinnedSection=new LinearLayout(this);pinnedSection.setOrientation(1);
+    LinearLayout pinnedSection=new LinearLayout(this);pinnedSection.setOrientation(1);pinnedSection.setContentDescription("Bahagian nota penting dipin pada halaman utama");
     homeContent.addView(pinnedSection);
     try(Cursor pinnedNotes=db.getReadableDatabase().rawQuery(
       "SELECT n.id,n.title,n.body,n.updated,n.category_id FROM notes n WHERE n.pinned=1 ORDER BY n.updated DESC,n.id DESC",null)){
@@ -125,7 +125,7 @@ public class MainActivity extends Activity {
         pinnedHeader.setGravity(Gravity.CENTER_VERTICAL);
         pinnedSection.addView(pinnedHeader);
         TextView pinnedHeading=text("📌 Nota Dipin ("+pinnedCount+")",17);
-        pinnedHeading.setTypeface(null,Typeface.BOLD);
+        pinnedHeading.setTypeface(null,Typeface.BOLD);pinnedHeading.setContentDescription("Jumlah nota dipin: "+pinnedCount);
         pinnedHeader.addView(pinnedHeading,new LinearLayout.LayoutParams(0,-2,1));
         Button togglePinned=button();
         boolean collapsed=getPreferences(MODE_PRIVATE).getBoolean("pinnedCollapsed",false);
@@ -155,13 +155,13 @@ public class MainActivity extends Activity {
           pinnedItems.addView(pinnedRow);
           LinearLayout pinnedCard=new LinearLayout(this);
           pinnedCard.setOrientation(1);
-          pinnedCard.setPadding(10,6,10,6);
+          pinnedCard.setPadding(12,8,12,8);
           pinnedCard.setBackground(rounded(cardSurface(),borderColor(),12));
           LinearLayout.LayoutParams cardParams=new LinearLayout.LayoutParams(0,-2,1);
           cardParams.setMargins(0,4,6,4);pinnedRow.addView(pinnedCard,cardParams);
           TextView pinnedTitleView=text("📌 "+pinnedTitle,15);
           pinnedTitleView.setTypeface(null,Typeface.BOLD);
-          pinnedTitleView.setMaxLines(2);pinnedTitleView.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
+          pinnedTitleView.setMaxLines(2);pinnedTitleView.setTextIsSelectable(false);pinnedTitleView.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
           pinnedTitleView.setEllipsize(android.text.TextUtils.TruncateAt.END);
           pinnedCard.addView(pinnedTitleView);
           if(!pinnedBody.isEmpty()){
@@ -178,7 +178,7 @@ public class MainActivity extends Activity {
           meta.setTextColor(dark()?0xFF8B949E:0xFF656D76);
           pinnedCard.addView(meta);
           pinnedCard.setContentDescription("Buka nota dipin "+pinnedTitle);
-          pinnedCard.setClickable(true);pinnedCard.setFocusable(true);
+          pinnedCard.setClickable(true);pinnedCard.setFocusable(true);pinnedCard.setMinimumHeight(56);
           pinnedCard.setOnClickListener(v->edit(pinnedId));
           Button unpin=button();unpin.setText("📌");
           unpin.setContentDescription("Nyahpin "+pinnedTitle);
@@ -309,7 +309,7 @@ public class MainActivity extends Activity {
     try(Cursor c=db.getReadableDatabase().rawQuery("SELECT id,title,body,color,pinned FROM notes WHERE (title LIKE ? OR body LIKE ?) AND (?=-1 OR category_id=?) ORDER BY pinned DESC,"+(noteSort==1?"updated ASC,id ASC":noteSort==2?"title COLLATE NOCASE ASC,id DESC":"updated DESC,id DESC"),new String[]{"%"+query+"%","%"+query+"%",""+selectedNoteCategory,""+selectedNoteCategory})) {
       while(c.moveToNext()){visibleCount++;final int id=c.getInt(0);String heading=c.getString(1);String body=c.getString(2);if(heading==null)heading="";if(body==null)body="";body=body.replace("\r"," ").replace("\n"," ").trim();int noteColor=c.getInt(3);boolean pinned=c.getInt(4)==1;
         TextView item=text((heading.trim().isEmpty()?"Tanpa tajuk":heading)+"\n"+(body.length()>90?body.substring(0,90)+"…":body),15);
-        item.setBackground(rounded(noteColor==Color.WHITE?cardSurface():noteColor,borderColor(),16));item.setTextColor(noteColor==Color.WHITE?foreground():Color.BLACK);LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2);p.setMargins(0,5,0,5);LinearLayout line=new LinearLayout(this);line.setOrientation(LinearLayout.HORIZONTAL);line.setGravity(Gravity.CENTER_VERTICAL);list.addView(line,p);line.addView(item,new LinearLayout.LayoutParams(0,-2,1));item.setOnClickListener(v->edit(id));Button pin=button();pin.setText(pinned?"📌":"○");pin.setContentDescription((pinned?"Nyahpin nota ":"Pin nota ")+(heading.trim().isEmpty()?"Tanpa tajuk":heading));line.addView(pin,new LinearLayout.LayoutParams(64,-2));pin.setOnClickListener(v->{db.getWritableDatabase().execSQL("UPDATE notes SET pinned=? WHERE id=?",new Object[]{pinned?0:1,id});showHome();});
+        item.setBackground(rounded(noteColor==Color.WHITE?cardSurface():noteColor,borderColor(),16));item.setTextColor(noteColor==Color.WHITE?foreground():Color.BLACK);LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2);p.setMargins(0,5,0,5);LinearLayout line=new LinearLayout(this);line.setOrientation(LinearLayout.HORIZONTAL);line.setGravity(Gravity.CENTER_VERTICAL);list.addView(line,p);line.addView(item,new LinearLayout.LayoutParams(0,-2,1));item.setOnClickListener(v->edit(id));Button pin=button();pin.setText(pinned?"📌":"○");pin.setContentDescription((pinned?"Nyahpin nota ":"Pin nota ")+(heading.trim().isEmpty()?"Tanpa tajuk":heading));line.addView(pin,new LinearLayout.LayoutParams(64,-2));pin.setOnClickListener(v->{db.getWritableDatabase().execSQL("UPDATE notes SET pinned=? WHERE id=?",new Object[]{pinned?0:1,id});Toast.makeText(this,pinned?"Nota dinyahpin":"Nota dipin",Toast.LENGTH_SHORT).show();showHome();});
       }
     }
     if(visibleCount==0)list.addView(text(query.trim().isEmpty()?"Belum ada nota. Tekan + Nota baharu untuk menulis.":"Tiada nota ditemui.",16));
@@ -434,7 +434,7 @@ public class MainActivity extends Activity {
       new String[]{""+categoryId,"%"+query+"%","%"+query+"%"})){
       while(c.moveToNext()){visibleCount++;int bookId=c.getInt(0);String heading=c.getString(1);
         Button item=button();item.setText((heading==null||heading.trim().isEmpty()?"Tanpa tajuk":heading));
-        item.setContentDescription("Buka kitab "+(heading==null?"Tanpa tajuk":heading));LinearLayout line=new LinearLayout(this);line.setOrientation(LinearLayout.HORIZONTAL);line.setGravity(Gravity.CENTER_VERTICAL);items.addView(line);line.addView(item,new LinearLayout.LayoutParams(0,-2,1));item.setOnClickListener(v->editBook(bookId,categoryId,categoryName));boolean pinned=c.getInt(2)==1;Button pin=button();pin.setText(pinned?"📌":"♧");pin.setContentDescription(pinned?"Nyahpin kitab":"Pin kitab");line.addView(pin,new LinearLayout.LayoutParams(64,-2));pin.setOnClickListener(v->{db.getWritableDatabase().execSQL("UPDATE books SET pinned=? WHERE id=?",new Object[]{pinned?0:1,bookId});populateBooks(items,categoryId,categoryName,queryText[0]);});
+        item.setContentDescription("Buka kitab "+(heading==null?"Tanpa tajuk":heading));item.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);LinearLayout line=new LinearLayout(this);line.setOrientation(LinearLayout.HORIZONTAL);line.setGravity(Gravity.CENTER_VERTICAL);items.addView(line);line.addView(item,new LinearLayout.LayoutParams(0,-2,1));item.setOnClickListener(v->editBook(bookId,categoryId,categoryName));boolean pinned=c.getInt(2)==1;Button pin=button();pin.setText(pinned?"📌":"○");pin.setContentDescription((pinned?"Nyahpin kitab ":"Pin kitab ")+(heading==null||heading.trim().isEmpty()?"Tanpa tajuk":heading));line.addView(pin,new LinearLayout.LayoutParams(64,-2));pin.setOnClickListener(v->{db.getWritableDatabase().execSQL("UPDATE books SET pinned=? WHERE id=?",new Object[]{pinned?0:1,bookId});populateBooks(items,categoryId,categoryName,queryText[0]);Toast.makeText(this,pinned?"Kitab dinyahpin":"Kitab dipin",Toast.LENGTH_SHORT).show();});
       }
     }
     if(visibleCount==0)items.addView(text(query.trim().isEmpty()?"Belum ada kitab. Tekan + Tambah kitab untuk mula.":"Tiada kitab ditemui.",16));
