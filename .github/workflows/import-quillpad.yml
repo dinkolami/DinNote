@@ -29,7 +29,11 @@ jobs:
           set -euo pipefail
           mkdir -p /tmp/dinnote-workflow
           cp .github/workflows/import-quillpad.yml /tmp/dinnote-workflow/import-quillpad.yml
-          rsync -a --delete --exclude='.git/' --exclude='.github/workflows/' /tmp/quillpad-upstream/ ./
+          if [ ! -f app/build.gradle.kts ]; then
+            rsync -a --delete --exclude='.git/' --exclude='.github/workflows/' /tmp/quillpad-upstream/ ./
+          else
+            echo 'Existing DinNote migration source detected; preserving local modifications.'
+          fi
           mkdir -p .github/workflows
           cp /tmp/dinnote-workflow/import-quillpad.yml .github/workflows/import-quillpad.yml
           git config user.name "github-actions[bot]"
