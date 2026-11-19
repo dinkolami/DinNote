@@ -419,11 +419,11 @@ public class MainActivity extends Activity {
   void showBooks(int categoryId,String categoryName){
     flushPendingSave();editingBook=false;editingNote=false;saveIndicator=null;activeCategoryId=categoryId;activeCategoryName=categoryName;
     LinearLayout page=column();setContentView(page);
-    Button back=button();back.setText("← Maktabah");back.setTextSize(14);page.addView(back);back.setOnClickListener(v->showLibrary());
-    page.addView(text(categoryName,20));page.setFocusableInTouchMode(true);
-    Button add=button();add.setText("+ Tambah kitab");add.setTextColor(accent());add.setContentDescription("Cipta kitab dalam kategori "+categoryName);page.addView(add);add.setOnClickListener(v->editBook(-1,categoryId,categoryName));
-    EditText bookSearch=field();bookSearch.setSingleLine(true);bookSearch.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);bookSearch.setSelectAllOnFocus(false);bookSearch.setHint("Cari kitab dalam kategori…");page.addView(bookSearch);
-    ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);LinearLayout items=new LinearLayout(this);items.setOrientation(1);scroll.addView(items);page.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
+    Button back=button();back.setText("← Maktabah");back.setTextSize(14);back.setContentDescription("Kembali ke kategori Maktabah");back.setMinHeight(48);page.addView(back);back.setOnClickListener(v->showLibrary());
+    TextView categoryHeading=text(categoryName,20);categoryHeading.setTypeface(null,Typeface.BOLD);categoryHeading.setContentDescription("Kategori Maktabah "+categoryName);categoryHeading.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);categoryHeading.setMaxLines(2);categoryHeading.setEllipsize(android.text.TextUtils.TruncateAt.END);page.addView(categoryHeading);page.setFocusableInTouchMode(true);
+    Button add=button();add.setText("+ Tambah kitab");add.setTextColor(accent());add.setMinHeight(48);add.setContentDescription("Cipta kitab dalam kategori "+categoryName);page.addView(add);add.setOnClickListener(v->editBook(-1,categoryId,categoryName));
+    EditText bookSearch=field();bookSearch.setSingleLine(true);bookSearch.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);bookSearch.setSelectAllOnFocus(false);bookSearch.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);bookSearch.setHint("Cari kitab dalam kategori…");bookSearch.setContentDescription("Cari tajuk atau kandungan kitab");bookSearch.setTextSize(15);page.addView(bookSearch);
+    ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);scroll.setSmoothScrollingEnabled(true);LinearLayout items=new LinearLayout(this);items.setOrientation(1);items.setPadding(0,4,0,12);scroll.addView(items);page.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
     bookSearch.addTextChangedListener(new TextWatcher(){public void beforeTextChanged(CharSequence s,int a,int c,int f){}public void onTextChanged(CharSequence s,int a,int b,int c){populateBooks(items,categoryId,categoryName,s.toString());}public void afterTextChanged(Editable e){}});
     populateBooks(items,categoryId,categoryName,"");
   }
