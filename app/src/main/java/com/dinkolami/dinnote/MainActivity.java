@@ -94,7 +94,7 @@ public class MainActivity extends Activity {
   void showHome() {
     flushPendingSave();
     editingBook=false;editingNote=false;saveIndicator=null;
-    root=column();root.setFocusableInTouchMode(true);setContentView(root);
+    root=column();root.setFocusableInTouchMode(true);root.requestFocus();setContentView(root);
     LinearLayout header=new LinearLayout(this);header.setOrientation(LinearLayout.HORIZONTAL);header.setGravity(Gravity.CENTER_VERTICAL);root.addView(header);
     TextView title=text("DinNote",22);title.setTypeface(null,Typeface.BOLD);header.addView(title,new LinearLayout.LayoutParams(0,-2,1));
     TextView appearance=text("⚙",22);appearance.setGravity(Gravity.CENTER);appearance.setContentDescription("Tetapan");appearance.setFocusable(true);appearance.setClickable(true);appearance.setMinWidth(48);appearance.setMinHeight(48);appearance.setOnClickListener(v->showSettings());header.addView(appearance);
