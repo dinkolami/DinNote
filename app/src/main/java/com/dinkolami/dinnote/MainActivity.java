@@ -879,7 +879,13 @@ public class MainActivity extends Activity {
       actions.setPadding(8,4,8,4);actions.setBackgroundColor(cardSurface());
       Button back=button();back.setText("← Kembali");actions.addView(back,new LinearLayout.LayoutParams(0,-2,1));back.setOnClickListener(v->showHome());
       Button editButton=button();editButton.setText("✎ Edit");actions.addView(editButton,new LinearLayout.LayoutParams(0,-2,1));editButton.setOnClickListener(v->edit(id));
-      page.addView(actions,new LinearLayout.LayoutParams(-1,-2));actions.setVisibility(View.GONE);
+      // Safety fallback: Edit and Back must never disappear when gesture detection fails.
+      page.addView(actions,new LinearLayout.LayoutParams(-1,-2));
+      actions.setVisibility(View.VISIBLE);
+      editButton.setContentDescription("Edit nota ini");
+      editButton.setMinHeight(56);
+      editButton.setOnClickListener(v->{try{edit(id);}catch(Exception error){android.util.Log.e("DinNote","Edit failed",error);Toast.makeText(this,"Editor gagal dibuka",Toast.LENGTH_LONG).show();}});
+
       // Dispatch gestures at the ScrollView level before child TextViews consume events.
       // Only a confirmed double tap reveals the reader toolbar.
       final android.view.GestureDetector readerGestures=new android.view.GestureDetector(this,
@@ -913,7 +919,7 @@ public class MainActivity extends Activity {
       bodyView.setLineSpacing(5,1.1f);content.addView(bodyView);
       // Keep reading mode distraction-free until a genuine double tap.
       // The toolbar buttons use their own click listeners and remain clickable.
-      content.setContentDescription("Paparan baca nota. Ketik untuk memaparkan butang Edit dan Kembali.");
+      content.setContentDescription("Paparan baca nota. Butang Edit dan Kembali sentiasa tersedia di atas.");
     }catch(Exception e){android.util.Log.e("DinNote","Cannot open note reader",e);Toast.makeText(this,"Gagal membuka nota",Toast.LENGTH_LONG).show();showHome();}
   }
   void edit(int id) {
