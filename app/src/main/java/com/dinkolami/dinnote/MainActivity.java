@@ -22,10 +22,29 @@ public class MainActivity extends Activity {
   @Override protected void onPause(){flushPendingSave();super.onPause();}
   LinearLayout root, list;
   EditText search;
-  int background = Color.rgb(248,249,252);
+  int themeMode=0;
+  boolean dark(){
+    if(themeMode==1)return false;
+    if(themeMode==2)return true;
+    return (getResources().getConfiguration().uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK)==android.content.res.Configuration.UI_MODE_NIGHT_YES;
+  }
+  int surface(){return dark()?0xFF0D1117:0xFFF6F8FA;}
+  int foreground(){return dark()?0xFFE6EDF3:0xFF1F2328;}
+  int borderColor(){return dark()?0xFF30363D:0xFFD0D7DE;}
+  int background = Color.rgb(246,248,250);
+  void applyAppearance(){background=surface();getWindow().setStatusBarColor(dark()?0xFF0D1117:0xFFF6F8FA);getWindow().setNavigationBarColor(background);
+    getWindow().getDecorView().setSystemUiVisibility(dark()?0:View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR|View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
+  }
+  void appearanceSettings(){
+    new AlertDialog.Builder(this).setTitle("Appearance")
+      .setSingleChoiceItems(new String[]{"System Default","Light","Dark"},themeMode,(dialog,which)->{
+        themeMode=which;getPreferences(MODE_PRIVATE).edit().putInt("appearance",which).apply();
+        dialog.dismiss();applyAppearance();showHome();
+      }).setNegativeButton("Batal",null).show();
+  }
   String noteFilter="";
   int noteSort=0;
-  @Override public void onCreate(Bundle b) { super.onCreate(b); try { db=new DB(this); db.getWritableDatabase(); showHome(); } catch (Exception e) { showStartupError(e); } }
+  @Override public void onCreate(Bundle b) { super.onCreate(b); try { themeMode=getPreferences(MODE_PRIVATE).getInt("appearance",0);applyAppearance();db=new DB(this); db.getWritableDatabase(); showHome(); } catch (Exception e) { showStartupError(e); } }
   void showStartupError(Exception e) {
     android.util.Log.e("DinNote", "Startup failed", e);
     LinearLayout page=column();
@@ -35,12 +54,13 @@ public class MainActivity extends Activity {
     Button retry=new Button(this);retry.setText("Cuba lagi");page.addView(retry);
     retry.setOnClickListener(v->{try {db=new DB(this);db.getWritableDatabase();showHome();}catch(Exception error){showStartupError(error);}});
   }
-  TextView text(String value,int size) { TextView t=new TextView(this);t.setText(value);t.setTextSize(size);t.setTextColor(Color.rgb(36,43,57));t.setPadding(18,16,18,16);return t; }
-  LinearLayout column() { LinearLayout l=new LinearLayout(this);l.setOrientation(1);l.setPadding(18,18,18,18);l.setBackgroundColor(background);return l; }
+  TextView text(String value,int size) { TextView t=new TextView(this);t.setText(value);t.setTextSize(size);t.setTextColor(foreground());t.setPadding(18,16,18,16);return t; }
+  LinearLayout column() { LinearLayout l=new LinearLayout(this);l.setOrientation(1);l.setPadding(18,18,18,18);l.setBackgroundColor(surface());return l; }
   void showHome() {
     flushPendingSave();
     root=column();setContentView(root);
     TextView title=text("▤  DinNote",28);title.setTypeface(null,2);root.addView(title);
+    Button appearance=new Button(this);appearance.setText("⚙ Appearance");root.addView(appearance);appearance.setOnClickListener(v->appearanceSettings());
     Button notesMenu=new Button(this);notesMenu.setText("📝  Nota");root.addView(notesMenu);
     Button libraryMenu=new Button(this);libraryMenu.setText("📚  Maktabah");root.addView(libraryMenu);
     libraryMenu.setOnClickListener(v->showLibrary());
@@ -60,7 +80,7 @@ public class MainActivity extends Activity {
     try(Cursor c=db.getReadableDatabase().rawQuery("SELECT id,title,body,color FROM notes WHERE title LIKE ? OR body LIKE ? ORDER BY "+(noteSort==1?"updated ASC":noteSort==2?"title COLLATE NOCASE ASC":"updated DESC"),new String[]{"%"+query+"%","%"+query+"%"})) {
       while(c.moveToNext()){visibleCount++;final int id=c.getInt(0);String heading=c.getString(1);String body=c.getString(2);if(heading==null)heading="";if(body==null)body="";int noteColor=c.getInt(3);
         TextView item=text((heading.isEmpty()?"Tanpa tajuk":heading)+"\n"+(body.length()>110?body.substring(0,110)+"…":body),17);
-        item.setBackgroundColor(noteColor);LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2);p.setMargins(0,10,0,10);list.addView(item,p);item.setOnClickListener(v->edit(id));
+        item.setBackgroundColor(noteColor==Color.WHITE&&dark()?0xFF161B22:noteColor);if(dark()&&noteColor==Color.WHITE)item.setTextColor(foreground());LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2);p.setMargins(0,10,0,10);list.addView(item,p);item.setOnClickListener(v->edit(id));
       }
     }
     if(visibleCount==0)list.addView(text(query.trim().isEmpty()?"Belum ada nota. Tekan + Nota baharu untuk mula.":"Tiada nota ditemui.",16));
