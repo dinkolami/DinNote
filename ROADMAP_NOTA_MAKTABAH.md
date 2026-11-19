@@ -140,3 +140,9 @@ Dokumen ini menyimpan semua 100 cadangan supaya cadangan yang belum dipilih tida
 - Jangan mengubah reka bentuk asal yang telah diluluskan, termasuk dua menu utama Nota dan Maktabah, header/logo, status bar, navigation bar dan susunan Fold6 5/5 tanpa kebenaran.
 - Backup ke folder DinNote pada telefon perlu boleh dipulihkan; data aplikasi **tidak** berpindah secara automatik ke telefon lain hanya dengan memasang APK.
 - Jika menambah cadangan baharu selepas nombor 100, sambung penomboran; kekalkan sejarah cadangan terdahulu.
+
+## Protokol peringatan sebelum dan selepas pelaksanaan
+- **Sebelum** memulakan setiap cadangan: maklumkan nombor dan nama fungsi, skop perubahan, risiko kepada data/reka bentuk, serta ujian yang dirancang. Dapatkan pengesahan jika skop baharu atau mengubah reka bentuk yang diluluskan.
+- **Selepas** pelaksanaan: laporkan apa yang benar-benar berubah, pautan/SHA commit, status GitHub Actions dan ujian APK, isu yang belum selesai, serta nombor cadangan seterusnya.
+- Jangan laporkan **Selesai** hanya kerana commit berjaya; bezakan commit, binaan APK, pemasangan dan ujian pengguna.
+- Peringatan sebelum/selepas dalam perbualan diberikan ketika kerja tersebut dijalankan. Pemberitahuan automatik di luar perbualan memerlukan automasi yang dikonfigurasi secara berasingan.
