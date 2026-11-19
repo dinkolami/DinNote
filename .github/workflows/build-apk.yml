@@ -27,6 +27,19 @@ jobs:
             echo "::endgroup::"
             exit 1
           }
+      - name: Summarize debug compilation failure
+        if: failure()
+        run: |
+          if [ -f "$RUNNER_TEMP/dinnote-debug-build.log" ]; then
+            {
+              echo "## DinNote debug APK build failed"
+              echo ""
+              echo "First compiler or Gradle diagnostics:"
+              echo '~~~text'
+              grep -n -m 45 -E 'error:|^e: |FAILURE:|What went wrong:|Execution failed for task|AAPT:|cannot find symbol|Could not resolve|Could not find' "$RUNNER_TEMP/dinnote-debug-build.log" || echo "No recognized compiler error lines; inspect uploaded build log."
+              echo '~~~'
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
       - name: Upload failed debug build log
         if: failure()
         uses: actions/upload-artifact@v4
