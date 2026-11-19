@@ -87,7 +87,7 @@ public class MainActivity extends Activity {
   paint.setTextAlign(android.graphics.Paint.Align.CENTER);
   android.graphics.Paint.FontMetrics fm=paint.getFontMetrics();
   if("⌂".equals(symbol)){
-   paint.setStyle(android.graphics.Paint.Style.STROKE);paint.setStrokeWidth(dp(2.2f));paint.setStrokeCap(android.graphics.Paint.Cap.ROUND);paint.setStrokeJoin(android.graphics.Paint.Join.ROUND);
+   paint.setStyle(android.graphics.Paint.Style.STROKE);paint.setStrokeWidth(dp(2));paint.setStrokeCap(android.graphics.Paint.Cap.ROUND);paint.setStrokeJoin(android.graphics.Paint.Join.ROUND);
    android.graphics.Path house=new android.graphics.Path();
    house.moveTo(px*.20f,px*.46f);house.lineTo(px*.50f,px*.20f);house.lineTo(px*.80f,px*.46f);
    house.moveTo(px*.28f,px*.43f);house.lineTo(px*.28f,px*.78f);house.lineTo(px*.72f,px*.78f);house.lineTo(px*.72f,px*.43f);
