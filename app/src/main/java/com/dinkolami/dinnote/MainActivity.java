@@ -252,6 +252,8 @@ public class MainActivity extends Activity {
     Button advancedStats=button();advancedStats.setText("▦  25 statistik lanjutan");
     advancedStats.setContentDescription("Lihat dua puluh lima statistik Nota dan Maktabah");
     options.addView(advancedStats);advancedStats.setOnClickListener(v->showAdvancedStatistics());
+    Button contentInsights=button();contentInsights.setText("▦  27 analisis kandungan");options.addView(contentInsights);
+    contentInsights.setOnClickListener(v->showContentInsights());
     TextView dataTitle=text("DATA & BACKUP",12);dataTitle.setTypeface(null,Typeface.BOLD);options.addView(dataTitle);
     Button backup=button();backup.setText("⇧  Backup ke DinPhone");options.addView(backup);
     backup.setOnClickListener(v->exportBackup());
@@ -369,6 +371,30 @@ public class MainActivity extends Activity {
       }
     }
     new AlertDialog.Builder(this).setTitle("25 Statistik Lanjutan")
+      .setMessage(report.toString()).setPositiveButton("Tutup",null).show();
+  }
+  void showContentInsights(){
+    flushPendingSave();
+    String[] labels=new String[]{"Nota 24 jam","Nota 14 hari","Nota 90 hari","Kitab 24 jam","Kitab 14 hari","Kitab 90 hari","Nota sangat panjang (5000+)","Kitab sangat panjang (5000+)","Nota ringkas (1-99 aksara)","Kitab ringkas (1-99 aksara)","Nota sederhana (100-999)","Kitab sederhana (100-999)","Nota 1000-4999 aksara","Kitab 1000-4999 aksara","Nota tajuk panjang (50+)","Kitab tajuk panjang (50+)","Nota dengan teks Arab","Kitab dengan teks Arab","Nota mempunyai baris baharu","Kitab mempunyai baris baharu","Nota tajuk dan isi kosong","Kitab tajuk dan isi kosong","Nota mempunyai tajuk dan isi","Kitab mempunyai tajuk dan isi","Purata aksara isi nota","Purata aksara isi kitab","Jumlah kategori keseluruhan"};
+    String[] queries=new String[]{"SELECT COUNT(*) FROM notes WHERE updated>=?","SELECT COUNT(*) FROM notes WHERE updated>=?","SELECT COUNT(*) FROM notes WHERE updated>=?","SELECT COUNT(*) FROM books WHERE updated>=?","SELECT COUNT(*) FROM books WHERE updated>=?","SELECT COUNT(*) FROM books WHERE updated>=?","SELECT COUNT(*) FROM notes WHERE LENGTH(body)>=5000","SELECT COUNT(*) FROM books WHERE LENGTH(body)>=5000","SELECT COUNT(*) FROM notes WHERE LENGTH(body) BETWEEN 1 AND 99","SELECT COUNT(*) FROM books WHERE LENGTH(body) BETWEEN 1 AND 99","SELECT COUNT(*) FROM notes WHERE LENGTH(body) BETWEEN 100 AND 999","SELECT COUNT(*) FROM books WHERE LENGTH(body) BETWEEN 100 AND 999","SELECT COUNT(*) FROM notes WHERE LENGTH(body) BETWEEN 1000 AND 4999","SELECT COUNT(*) FROM books WHERE LENGTH(body) BETWEEN 1000 AND 4999","SELECT COUNT(*) FROM notes WHERE LENGTH(title)>=50","SELECT COUNT(*) FROM books WHERE LENGTH(title)>=50","SELECT COUNT(*) FROM notes WHERE body GLOB '*[ء-ي]*'","SELECT COUNT(*) FROM books WHERE body GLOB '*[ء-ي]*'","SELECT COUNT(*) FROM notes WHERE INSTR(body,CHAR(10))>0","SELECT COUNT(*) FROM books WHERE INSTR(body,CHAR(10))>0","SELECT COUNT(*) FROM notes WHERE TRIM(title)='' AND TRIM(body)=''","SELECT COUNT(*) FROM books WHERE TRIM(title)='' AND TRIM(body)=''","SELECT COUNT(*) FROM notes WHERE TRIM(title)<>'' AND TRIM(body)<>''","SELECT COUNT(*) FROM books WHERE TRIM(title)<>'' AND TRIM(body)<>''","SELECT COALESCE(AVG(LENGTH(body)),0) FROM notes","SELECT COALESCE(AVG(LENGTH(body)),0) FROM books","SELECT (SELECT COUNT(*) FROM note_categories)+(SELECT COUNT(*) FROM categories)"};
+    String[] periods=new String[]{"24h","14d","90d","24h","14d","90d","","","","","","","","","","","","","","","","","","","","",""};
+    StringBuilder report=new StringBuilder();
+    long now=System.currentTimeMillis();
+    for(int i=0;i<labels.length;i++){
+      String[] args=null;
+      if(!periods[i].isEmpty()){
+        long days=periods[i].equals("24h")?1L:periods[i].equals("14d")?14L:90L;
+        args=new String[]{Long.toString(now-days*86400000L)};
+      }
+      try(Cursor cursor=db.getReadableDatabase().rawQuery(queries[i],args)){
+        report.append(i+1).append(". ").append(labels[i]).append(": ");
+        report.append(cursor.moveToFirst()?cursor.getLong(0):0).append("\\n");
+      }catch(Exception e){
+        android.util.Log.w("DinNote","Content insight "+(i+1)+" unavailable",e);
+        report.append(i+1).append(". ").append(labels[i]).append(": Tidak tersedia\\n");
+      }
+    }
+    new AlertDialog.Builder(this).setTitle("27 Analisis Kandungan")
       .setMessage(report.toString()).setPositiveButton("Tutup",null).show();
   }
   static final int REQUEST_EXPORT=7301,REQUEST_IMPORT=7302;
