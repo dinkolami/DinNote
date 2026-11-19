@@ -1,7 +1,7 @@
 package com.dinkolami.dinnote;
 import android.app.*;import android.os.*;import android.graphics.Color;import android.view.*;import android.widget.*;import android.text.*;import android.content.*;import java.util.*;
 public class MainActivity extends Activity {
- LinearLayout root,items; EditText editor,titleEditor; Spinner categoryPicker; String categoryFilter="Semua"; String selected=null; boolean maktabah=false; android.content.SharedPreferences prefs;
+ LinearLayout root,items; EditText editor,titleEditor; Spinner categoryPicker; String categoryFilter="Semua"; String selected=null; boolean maktabah=false, sectionOpen=false; android.content.SharedPreferences prefs;
  int green=Color.rgb(24,39,35), gold=Color.rgb(185,143,53);
  public void onCreate(Bundle b){super.onCreate(b);prefs=getSharedPreferences("notes",0);seedDefaultCategories();home();}
  void applySystemBarInsets(LinearLayout view){
@@ -29,9 +29,9 @@ public class MainActivity extends Activity {
  int dp(int n){return (int)(n*getResources().getDisplayMetrics().density+0.5f);}
  TextView dashboardText(String value,int size,boolean bold){TextView t=text(value,size);t.setPadding(dp(10),dp(8),dp(10),dp(8));if(bold)t.setTypeface(null,1);return t;}
  LinearLayout dashboardCard(){LinearLayout c=new LinearLayout(this);c.setOrientation(1);c.setPadding(dp(14),dp(12),dp(14),dp(12));android.graphics.drawable.GradientDrawable bg=new android.graphics.drawable.GradientDrawable();bg.setColor(Color.WHITE);bg.setCornerRadius(dp(17));bg.setStroke(dp(1),0xffe1e5e4);c.setBackground(bg);c.setElevation(dp(3));return c;}
- void openSection(boolean books){maktabah=books;categoryFilter="Semua";notesPage();}
+ void openSection(boolean books){sectionOpen=true;maktabah=books;categoryFilter="Semua";notesPage();}
  void home(){
-  editor=null;titleEditor=null;categoryPicker=null;selected=null;maktabah=false;
+  sectionOpen=false;editor=null;titleEditor=null;categoryPicker=null;selected=null;maktabah=false;
   base("DinNote");
   ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
   LinearLayout page=new LinearLayout(this);page.setOrientation(1);page.setPadding(dp(14),dp(14),dp(14),dp(28));scroll.addView(page);
@@ -120,5 +120,5 @@ public class MainActivity extends Activity {
  void manageCategories(){ArrayList<String> c=categories();String[] options=new String[c.size()+1];options[0]="+ Tambah kategori";for(int i=0;i<c.size();i++)options[i+1]=c.get(i);new AlertDialog.Builder(this).setTitle("Urus kategori").setItems(options,(d,which)->{if(which==0)categoryDialog(null);else categoryActions(c.get(which-1));}).setNegativeButton("Tutup",null).show();}
  void categoryActions(String old){new AlertDialog.Builder(this).setTitle(old).setItems(new String[]{"Ubah nama","Padam kategori"},(d,which)->{if(which==0)categoryDialog(old);else new AlertDialog.Builder(this).setMessage("Padam kategori? Nota tidak akan dipadam.").setPositiveButton("Padam",(a,b)->{ArrayList<String> c=categories();c.remove(old);storeCategories(c);for(String k:prefs.getAll().keySet())if(k.startsWith(maktabah?"m_":"n_")&&old.equals(prefs.getString("cat_"+k,"")))prefs.edit().putString("cat_"+k,"Tanpa kategori").apply();categoryFilter="Semua";home();}).setNegativeButton("Batal",null).show();}).show();}
  void categoryDialog(String old){EditText field=new EditText(this);field.setSingleLine(true);field.setHint("Nama kategori");if(old!=null)field.setText(old);new AlertDialog.Builder(this).setTitle(old==null?"Kategori baharu":"Ubah nama kategori").setView(field).setPositiveButton("Simpan",(d,w)->{String name=field.getText().toString().trim().replace("|","");if(name.isEmpty()||name.equals("Semua")||name.equals("Tanpa kategori"))return;ArrayList<String> c=categories();if(c.contains(name)&&!name.equals(old))return;if(old!=null)c.remove(old);c.add(name);storeCategories(c);if(old!=null){for(String k:prefs.getAll().keySet())if(k.startsWith(maktabah?"m_":"n_")&&old.equals(prefs.getString("cat_"+k,"")))prefs.edit().putString("cat_"+k,name).apply();}categoryFilter="Semua";home();}).setNegativeButton("Batal",null).show();}
- public void onBackPressed(){if(editor!=null){save();String key=selected;editor=null;if(key!=null)read(key);else home();}else if(selected!=null){home();}else super.onBackPressed();}
+ public void onBackPressed(){if(editor!=null){save();String key=selected;editor=null;if(key!=null)read(key);else home();}else if(selected!=null){home();}else if(sectionOpen){home();}else super.onBackPressed();}
 }
