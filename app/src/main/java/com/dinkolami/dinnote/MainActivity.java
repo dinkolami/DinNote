@@ -932,7 +932,7 @@ public class MainActivity extends Activity {
     EditText title=field();title.setContentDescription("Tajuk kitab");title.setHint("Tajuk kitab");title.setSingleLine(true);title.setFilters(new InputFilter[]{new InputFilter.LengthFilter(200)});title.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_NEXT);title.setTextSize(17);title.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);title.setSelectAllOnFocus(false);page.addView(title);
     EditText body=field();body.setHint("Tulis kandungan kitab (Arab / Rumi)…");body.setTextSize(15);
     body.setGravity(Gravity.TOP|Gravity.START);body.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
-    body.setMinLines(5);body.setSelectAllOnFocus(false);body.setContentDescription("Kandungan kitab");body.setHorizontallyScrolling(false);body.setTextIsSelectable(true);body.setImeOptions(android.view.inputmethod.EditorInfo.IME_FLAG_NO_EXTRACT_UI);page.addView(body,new LinearLayout.LayoutParams(-1,0,1));
+    body.setMinLines(5);body.setSelectAllOnFocus(false);body.setContentDescription("Kandungan kitab");body.setImeOptions(android.view.inputmethod.EditorInfo.IME_FLAG_NO_EXTRACT_UI);body.setHorizontallyScrolling(false);body.setTextIsSelectable(true);body.setImeOptions(android.view.inputmethod.EditorInfo.IME_FLAG_NO_EXTRACT_UI);page.addView(body,new LinearLayout.LayoutParams(-1,0,1));
     styleEditorPage(page,title,body,saveIndicator,back);
     final Button[] deleteButton={null};
     final int[] bookId={id};final boolean[] loading={true};final Runnable[] bookSaveHolder={null};
