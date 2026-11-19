@@ -901,14 +901,16 @@ public class MainActivity extends Activity {
       });
 
       // Dispatch gestures at the ScrollView level before child TextViews consume events.
-      // Double tap reaffirms the toolbar, but Edit remains permanently visible as a fallback.
+      // Double tap toggles the reader toolbar; initial toolbar remains visible for accessibility.
       final android.view.GestureDetector readerGestures=new android.view.GestureDetector(this,
         new android.view.GestureDetector.SimpleOnGestureListener(){
           @Override public boolean onDown(android.view.MotionEvent e){return true;}
           @Override public boolean onDoubleTap(android.view.MotionEvent e){
-            actions.setVisibility(View.VISIBLE);
-            actions.bringToFront();
+            int next=actions.getVisibility()==View.VISIBLE?View.GONE:View.VISIBLE;
+            actions.setVisibility(next);
+            if(next==View.VISIBLE) actions.bringToFront();
             actions.requestLayout();
+            android.util.Log.i("DinNote","Reader double tap: toolbar "+(next==View.VISIBLE?"shown":"hidden"));
             return true;
           }
         });
@@ -931,9 +933,9 @@ public class MainActivity extends Activity {
       bodyView.setTextColor(ink);bodyView.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
       bodyView.setTextIsSelectable(false);bodyView.setPadding(0,16,0,20);
       bodyView.setLineSpacing(5,1.1f);content.addView(bodyView);
-      // Keep reading mode distraction-free until a genuine double tap.
+      // A double tap toggles distraction-free reading and restores the toolbar.
       // The toolbar buttons use their own click listeners and remain clickable.
-      content.setContentDescription("Paparan baca nota. Butang Edit dan Kembali sentiasa tersedia di atas.");
+      content.setContentDescription("Paparan baca nota. Ketik dua kali untuk sembunyi atau papar butang Edit dan Kembali.");
     }catch(Exception e){android.util.Log.e("DinNote","Cannot open note reader",e);Toast.makeText(this,"Gagal membuka nota",Toast.LENGTH_LONG).show();showHome();}
   }
   void edit(int id) {
