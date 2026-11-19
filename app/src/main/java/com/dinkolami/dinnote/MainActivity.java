@@ -216,7 +216,7 @@ public class MainActivity extends Activity {
     if(when>0L)item.setText(item.getText()+"   ·   "+new java.text.SimpleDateFormat("dd MMM",new java.util.Locale("ms","MY")).format(new java.util.Date(when)));
     item.setTextColor(0xff26352e);
     item.setCompoundDrawablePadding(dp(8));
-    item.setBackground(rounded(0xffffffff,0xffd0d7de,10));
+    item.setBackground(rounded(0xffffffff,0xffe5e7eb,10));
     LinearLayout.LayoutParams itemParams=new LinearLayout.LayoutParams(-1,-2);
     itemParams.bottomMargin=dp(4);
     recentNotes.addView(item,itemParams);
