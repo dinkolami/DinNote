@@ -43,3 +43,30 @@ jobs:
           test -f settings.gradle || test -f settings.gradle.kts
           test -f gradlew
           echo "Upstream source imported. Rename and integration are separate steps."
+
+  build:
+    needs: import
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out imported Quillpad source
+        uses: actions/checkout@v4
+        with:
+          ref: quillpad-migration
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+      - name: Build debug APK
+        run: |
+          chmod +x ./gradlew
+          ./gradlew assembleDebug --stacktrace
+      - name: Upload debug APK
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quillpad-migration-debug-apk
+          path: '**/build/outputs/apk/debug/*.apk'
+          if-no-files-found: error
