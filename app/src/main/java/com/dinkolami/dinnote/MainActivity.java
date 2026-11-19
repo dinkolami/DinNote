@@ -149,6 +149,7 @@ public class MainActivity extends Activity {
     LinearLayout navigator=new LinearLayout(this);
     navigator.setOrientation(LinearLayout.HORIZONTAL);
     navigator.setGravity(Gravity.CENTER_VERTICAL);
+    navigator.setContentDescription("Navigasi dalaman DinNote");
     navigator.setBackgroundColor(cardSurface());
     Button homeNav=button();homeNav.setText("⌂ Utama");homeNav.setContentDescription("Kembali ke halaman utama DinNote");
     Button noteNav=button();noteNav.setText("▤ Nota");noteNav.setContentDescription("Fokus carian Nota");noteNav.setTextColor(accent());
