@@ -5,3 +5,8 @@ android { namespace = "com.dinkolami.dinnote"; compileSdk = 35
  buildTypes { getByName("release") { isMinifyEnabled = false; signingConfig = signingConfigs.getByName("persistent") } }
  compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
 }
+
+
+dependencies {
+ implementation("com.google.mlkit:text-recognition:16.0.1")
+}
