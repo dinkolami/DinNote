@@ -68,37 +68,70 @@ public class MainActivity extends Activity {
  void home(){
   items=null;sectionOpen=false;editor=null;titleEditor=null;categoryPicker=null;selected=null;maktabah=false;
   base("DinNote");
-  ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);scroll.setOverScrollMode(View.OVER_SCROLL_NEVER);root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
-  LinearLayout page=new LinearLayout(this);page.setOrientation(1);page.setPadding(dp(14),dp(14),dp(14),dp(28));scroll.addView(page);
-  
-  
-  LinearLayout tiles=new LinearLayout(this);tiles.setPadding(0,dp(6),0,dp(18));page.addView(tiles);
-  LinearLayout noteTile=dashboardCard(),bookTile=dashboardCard();
-  LinearLayout.LayoutParams np=new LinearLayout.LayoutParams(0,dp(150),1);np.setMargins(0,0,dp(7),0);tiles.addView(noteTile,np);
-  LinearLayout.LayoutParams bp=new LinearLayout.LayoutParams(0,dp(150),1);bp.setMargins(dp(7),0,0,0);tiles.addView(bookTile,bp);
-  TextView ni=dashboardText("▤",45,true);ni.setTextColor(0xff075d45);ni.setGravity(Gravity.CENTER);noteTile.addView(ni);
-  TextView nt=dashboardText("Nota",21,true);nt.setGravity(Gravity.CENTER);noteTile.addView(nt);
-  TextView nd=dashboardText("Catatan peribadi",14,false);nd.setGravity(Gravity.CENTER);noteTile.addView(nd);
-  TextView bi=dashboardText("▰",45,true);bi.setTextColor(0xff075d45);bi.setGravity(Gravity.CENTER);bookTile.addView(bi);
-  TextView bt=dashboardText("Maktabah",21,true);bt.setGravity(Gravity.CENTER);bookTile.addView(bt);
-  TextView bd=dashboardText("Kitab dan rujukan",14,false);bd.setGravity(Gravity.CENTER);bookTile.addView(bd);
-  noteTile.setContentDescription("Buka Nota");noteTile.setOnClickListener(v->openSection(false));bookTile.setContentDescription("Buka Maktabah");bookTile.setOnClickListener(v->openSection(true));
-
-  TextView section=dashboardText("Nota Saya",19,true);page.addView(section);
-  LinearLayout filters=new LinearLayout(this);filters.setGravity(Gravity.CENTER_VERTICAL);page.addView(filters);
-  String[] labels={"Semua","Penting","Terbaru","Kategori"};
-  for(String label:labels){TextView chip=dashboardText(label,12,false);chip.setGravity(Gravity.CENTER);chip.setTextColor(0xff075b43);android.graphics.drawable.GradientDrawable bg=new android.graphics.drawable.GradientDrawable();bg.setColor(0xffe9f2ed);bg.setCornerRadius(dp(20));chip.setBackground(bg);LinearLayout.LayoutParams cp=new LinearLayout.LayoutParams(0,dp(38),1);cp.setMargins(dp(2),dp(5),dp(2),dp(12));filters.addView(chip,cp);chip.setOnClickListener(v->{if(label.equals("Kategori")){maktabah=false;manageCategories();}else if(label.equals("Penting"))showDashboardNotes(page,true);else if(label.equals("Terbaru"))showDashboardNotes(page,false);else showDashboardNotes(page,false);});}
-  LinearLayout noteList=new LinearLayout(this);noteList.setOrientation(1);noteList.setTag("dashboard_notes");page.addView(noteList);populateDashboardNotes(noteList,false);
-  TextView libraryTitle=dashboardText("Maktabah                         Lihat semua  →",18,true);page.addView(libraryTitle);libraryTitle.setOnClickListener(v->openSection(true));
-  LinearLayout libraryCard=dashboardCard();page.addView(libraryCard);
-  ArrayList<String> mk=new ArrayList<>();for(String k:prefs.getAll().keySet())if(k.startsWith("m_"))mk.add(k);Collections.sort(mk,Collections.reverseOrder());
-  if(mk.isEmpty())libraryCard.addView(dashboardText("Belum ada bacaan. Tekan Maktabah untuk bermula.",14,false));
-  else{String k=mk.get(0);String title=prefs.getString("title_"+k,"Kitab");TextView item=dashboardText("▤  "+title,16,true);libraryCard.addView(item);item.setOnClickListener(v->{maktabah=true;read(k);});}
-  LinearLayout bottom=new LinearLayout(this);bottom.setGravity(Gravity.RIGHT);page.addView(bottom);
-  Button plus=new Button(this);plus.setText("+");plus.setContentDescription("Tambah nota baharu");plus.setTextSize(29);plus.setTextColor(Color.WHITE);plus.setAllCaps(false);
-  android.graphics.drawable.GradientDrawable circle=new android.graphics.drawable.GradientDrawable();circle.setColor(0xff075b43);circle.setCornerRadius(dp(60));plus.setBackground(circle);
-  LinearLayout.LayoutParams pp=new LinearLayout.LayoutParams(dp(62),dp(62));pp.setMargins(0,dp(20),dp(8),0);bottom.addView(plus,pp);plus.setOnClickListener(v->{maktabah=false;edit(null);});
-
+  ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);
+  scroll.setOverScrollMode(View.OVER_SCROLL_NEVER);
+  root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
+  LinearLayout page=new LinearLayout(this);page.setOrientation(1);
+  page.setPadding(dp(16),dp(18),dp(16),dp(28));scroll.addView(page);
+  TextView recent=dashboardText("◷  Baru dilihat  ▾",15,true);
+  recent.setBackground(rounded(0xfff6f8fa,0xffd0d7de,12));
+  LinearLayout.LayoutParams rp=new LinearLayout.LayoutParams(-2,-2);rp.bottomMargin=dp(20);
+  page.addView(recent,rp);
+  recent.setOnClickListener(v->new AlertDialog.Builder(this).setItems(new String[]{"Baru dilihat","Semua nota","Maktabah"},(d,i)->{if(i==2)openSection(true);else openSection(false);}).show());
+  TextView heading=dashboardText("Baru dilihat",23,true);heading.setPadding(dp(2),dp(8),0,dp(16));page.addView(heading);
+  EditText search=new EditText(this);search.setSingleLine(true);search.setTextSize(16);
+  search.setHint("Cari nota atau kitab");search.setContentDescription("Carian nota dan kitab");
+  search.setPadding(dp(14),dp(10),dp(14),dp(10));
+  search.setBackground(rounded(Color.WHITE,0xffd0d7de,11));
+  LinearLayout.LayoutParams sp=new LinearLayout.LayoutParams(-1,dp(52));sp.bottomMargin=dp(18);
+  page.addView(search,sp);
+  search.setOnEditorActionListener((v,id,event)->{String q=search.getText().toString().trim();openSection(false);if(!q.isEmpty())list(q);return true;});
+  LinearLayout card=new LinearLayout(this);card.setOrientation(1);
+  card.setBackground(rounded(Color.WHITE,0xffd0d7de,12));
+  LinearLayout.LayoutParams cp=new LinearLayout.LayoutParams(-1,-2);page.addView(card,cp);
+  TextView count=dashboardText("Nota dan Maktabah",16,true);
+  count.setBackgroundColor(0xfff6f8fa);card.addView(count);
+  View divider=new View(this);divider.setBackgroundColor(0xffd0d7de);
+  card.addView(divider,new LinearLayout.LayoutParams(-1,dp(1)));
+  LinearLayout tiles=new LinearLayout(this);tiles.setPadding(dp(10),dp(18),dp(10),dp(16));card.addView(tiles);
+  TextView note=dashboardText("▤  Nota",19,true);
+  TextView book=dashboardText("▤  Maktabah",19,true);
+  note.setGravity(Gravity.CENTER);book.setGravity(Gravity.CENTER);
+  note.setBackground(rounded(0xfff6f8fa,0xffd0d7de,10));
+  book.setBackground(rounded(0xfff6f8fa,0xffd0d7de,10));
+  LinearLayout.LayoutParams a=new LinearLayout.LayoutParams(0,dp(100),1);a.rightMargin=dp(6);
+  LinearLayout.LayoutParams b=new LinearLayout.LayoutParams(0,dp(100),1);b.leftMargin=dp(6);
+  tiles.addView(note,a);tiles.addView(book,b);
+  note.setOnClickListener(v->openSection(false));book.setOnClickListener(v->openSection(true));
+  LinearLayout recentNotes=new LinearLayout(this);recentNotes.setOrientation(1);
+  recentNotes.setPadding(dp(12),0,dp(12),dp(16));card.addView(recentNotes);
+  ArrayList<String> keys=new ArrayList<>();
+  for(String k:prefs.getAll().keySet())if(k.startsWith("n_"))keys.add(k);
+  Collections.sort(keys,Collections.reverseOrder());
+  if(keys.isEmpty()){
+   TextView emblem=dashboardText("☪\n▤",36,true);emblem.setTextColor(0xff176b47);
+   emblem.setGravity(Gravity.CENTER);recentNotes.addView(emblem);
+   TextView empty=dashboardText("Belum ada nota dilihat",18,true);
+   empty.setGravity(Gravity.CENTER);recentNotes.addView(empty);
+   TextView hint=dashboardText("Nota anda akan dipaparkan di sini.",14,false);
+   hint.setGravity(Gravity.CENTER);hint.setTextColor(0xff656d76);recentNotes.addView(hint);
+  }else{
+   for(int i=0;i<Math.min(5,keys.size());i++){
+    String k=keys.get(i);String t=prefs.getString("title_"+k,"");
+    if(t.trim().isEmpty())t="Tanpa tajuk";
+    TextView item=dashboardText("▤  "+t+"   ›",16,true);
+    recentNotes.addView(item);item.setOnClickListener(v->{maktabah=false;read(k);});
+   }
+  }
+  TextView add=dashboardText("＋  Nota baharu",15,true);add.setGravity(Gravity.CENTER);
+  add.setBackground(rounded(0xfff6f8fa,0xffd0d7de,10));
+  LinearLayout.LayoutParams ap=new LinearLayout.LayoutParams(-1,-2);
+  ap.topMargin=dp(16);page.addView(add,ap);
+  add.setOnClickListener(v->{maktabah=false;edit(null);});
+ }
+ android.graphics.drawable.GradientDrawable rounded(int fill,int stroke,int radius){
+  android.graphics.drawable.GradientDrawable d=new android.graphics.drawable.GradientDrawable();
+  d.setColor(fill);d.setCornerRadius(dp(radius));d.setStroke(dp(1),stroke);return d;
  }
 
  void showDashboardNotes(LinearLayout page,boolean important){View view=page.findViewWithTag("dashboard_notes");if(view instanceof LinearLayout)populateDashboardNotes((LinearLayout)view,important);}
