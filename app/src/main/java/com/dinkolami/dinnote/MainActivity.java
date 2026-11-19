@@ -139,7 +139,7 @@ public class MainActivity extends Activity {
  void home(){
   items=null;sectionOpen=false;editor=null;titleEditor=null;categoryPicker=null;selected=null;maktabah=false;
   base("DinNote");
-  ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);scroll.setVerticalScrollBarEnabled(false);
+  ScrollView scroll=new ScrollView(this);scroll.setFillViewport(false);scroll.setVerticalScrollBarEnabled(false);
   scroll.setOverScrollMode(View.OVER_SCROLL_NEVER);scroll.setSmoothScrollingEnabled(true);
   root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
   LinearLayout page=new LinearLayout(this);page.setOrientation(1);
@@ -162,6 +162,7 @@ public class MainActivity extends Activity {
   search.setBackground(rounded(Color.WHITE,0xffd0d7de,11));
   LinearLayout.LayoutParams sp=new LinearLayout.LayoutParams(0,dp(42),1);
   quickTools.addView(search,sp);
+  search.addTextChangedListener(new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){String q=s.toString().trim();if(!q.isEmpty())showHomeSearchResults(q);}public void afterTextChanged(Editable e){}});
   search.setOnEditorActionListener((v,id,event)->{String q=search.getText().toString().trim();if(q.isEmpty()){search.setError("Masukkan kata carian");return true;}openSection(false);list(q);return true;});
   LinearLayout card=new LinearLayout(this);card.setOrientation(1);card.setClipToPadding(false);
   card.setBackground(rounded(Color.WHITE,0xffd0d7de,8));
@@ -200,6 +201,7 @@ public class MainActivity extends Activity {
   for(String k:prefs.getAll().keySet())if((k.startsWith("n_")||k.startsWith("m_"))&&prefs.getLong("viewed_"+k,0L)>0L)keys.add(k);
   Collections.sort(keys,(firstKey,secondKey)->Long.compare(prefs.getLong("viewed_"+secondKey,0L),prefs.getLong("viewed_"+firstKey,0L)));
   if(keys.isEmpty()){
+   TextView create=dashboardText("＋  Cipta nota pertama",13,true);create.setGravity(Gravity.CENTER);create.setOnClickListener(v->{maktabah=false;edit(null);});recentNotes.addView(create);
    TextView emblem=dashboardText("☪\n▤",36,true);emblem.setTextColor(0xff176b47);
    emblem.setGravity(Gravity.CENTER);recentNotes.addView(emblem);
    TextView empty=dashboardText("Belum ada nota atau kitab dilihat",18,true);
@@ -218,7 +220,7 @@ public class MainActivity extends Activity {
     LinearLayout.LayoutParams itemParams=new LinearLayout.LayoutParams(-1,-2);
     itemParams.bottomMargin=dp(4);
     recentNotes.addView(item,itemParams);
-    item.setPadding(dp(10),dp(9),dp(10),dp(9));item.setMaxLines(1);item.setEllipsize(android.text.TextUtils.TruncateAt.END);
+    item.setPadding(dp(10),dp(7),dp(10),dp(7));applyTouchFeedback(item);item.setMaxLines(1);item.setEllipsize(android.text.TextUtils.TruncateAt.END);
     item.setContentDescription("Buka "+(k.startsWith("m_")?"kitab ":"nota ")+t);
     item.setOnClickListener(v->{maktabah=k.startsWith("m_");read(k);});
    }
@@ -230,6 +232,15 @@ public class MainActivity extends Activity {
   add.setContentDescription("Cipta nota baharu");add.setFocusable(true);
   add.setOnClickListener(v->{maktabah=false;edit(null);});
   applyTouchFeedback(add);applyTouchFeedback(recent);
+ }
+ void showHomeSearchResults(String query){
+  int hits=0;String first="";
+  for(String k:prefs.getAll().keySet())if(k.startsWith("n_")||k.startsWith("m_")){
+   String title=prefs.getString("title_"+k,""),body=prefs.getString(k,"");
+   if((title+" "+body).toLowerCase(java.util.Locale.ROOT).contains(query.toLowerCase(java.util.Locale.ROOT))){hits++;first=title;}
+  }
+  // Results count is announced without replacing the approved home screen.
+  if(hits==1)android.widget.Toast.makeText(this,"Ditemui: "+first,android.widget.Toast.LENGTH_SHORT).show();
  }
  ArrayList<String> dashboardKeys(String field,boolean includeBooks){
   ArrayList<String> out=new ArrayList<>();
@@ -248,15 +259,15 @@ public class MainActivity extends Activity {
    empty.setTextColor(0xff656d76);empty.setPadding(dp(10),dp(4),dp(10),dp(7));
    if(pin)target.addView(empty);return;
   }
-  for(int i=0;i<Math.min(5,keys.size());i++){
+  for(int i=0;i<Math.min(pin?5:3,keys.size());i++){
    String key=keys.get(i),label=prefs.getString("title_"+key,"").trim();
    TextView entry=dashboardText("▤  "+(label.isEmpty()?"Tanpa tajuk":label),13,false);
    entry.setTextColor(0xff26352e);
    entry.setSingleLine(true);entry.setEllipsize(android.text.TextUtils.TruncateAt.END);
-   entry.setPadding(dp(10),dp(8),dp(10),dp(8));
+   entry.setPadding(dp(10),dp(6),dp(10),dp(6));
    entry.setBackground(rounded(0xffffffff,0xffd0d7de,10));
    LinearLayout.LayoutParams ep=new LinearLayout.LayoutParams(-1,-2);
-   ep.bottomMargin=dp(4);target.addView(entry,ep);
+   ep.bottomMargin=dp(3);target.addView(entry,ep);applyTouchFeedback(entry);
    entry.setFocusable(true);
    entry.setContentDescription("Buka nota "+(label.isEmpty()?"Tanpa tajuk":label));
    entry.setOnClickListener(v->{maktabah=key.startsWith("m_");read(key);});
