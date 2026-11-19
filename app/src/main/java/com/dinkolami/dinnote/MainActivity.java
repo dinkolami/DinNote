@@ -55,7 +55,7 @@ public class MainActivity extends Activity {
     TextView displayTitle=text("PAPARAN",12);displayTitle.setTypeface(null,Typeface.BOLD);options.addView(displayTitle);
     Button appearance=button();appearance.setText("◐  Penampilan  ·  "+new String[]{"Ikut sistem","Cerah","Gelap"}[themeMode]);
     options.addView(appearance);appearance.setOnClickListener(v->appearanceSettings());
-    Button sort=button();sort.setText("↕  Susunan nota  ·  "+new String[]{"Terkini","Terlama","Tajuk A-Z"}[noteSort]);
+    Button sort=button();sort.setText("↕  Susunan nota  ·  "+new String[]{"Terkini","Terlama","Tajuk A-Z"}[Math.max(0,Math.min(noteSort,2))]);
     options.addView(sort);sort.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Susunan nota")
       .setSingleChoiceItems(new String[]{"Terkini","Terlama","Tajuk A-Z"},noteSort,(dialog,which)->{
         noteSort=which;getPreferences(MODE_PRIVATE).edit().putInt("noteSort",which).apply();
@@ -608,9 +608,10 @@ public class MainActivity extends Activity {
     homeContent.addView(recentHeading);
     Button sort=button();sort.setText("↕ Susun: "+new String[]{"Terkini","Terlama","Tajuk A-Z"}[noteSort]);homeContent.addView(sort);
     sort.setTextSize(13);sort.setTooltipText("Tukar susunan nota");sort.setFocusable(true);sort.setMinHeight(48);sort.setHapticFeedbackEnabled(true);sort.setSoundEffectsEnabled(true);sort.setContentDescription("Pilih susunan nota: "+new String[]{"Terkini","Terlama","Tajuk A-Z"}[noteSort]);sort.setOnClickListener(v->new AlertDialog.Builder(this).setItems(new String[]{"Terkini","Terlama","Tajuk A-Z"},(d,w)->{noteSort=w;getPreferences(MODE_PRIVATE).edit().putInt("noteSort",w).apply();sort.setText("↕ Susun: "+new String[]{"Terkini","Terlama","Tajuk A-Z"}[w]);refresh(noteFilter);}).show());
-    search=field();search.setContentDescription("Cari tajuk dan kandungan nota");search.setSingleLine(true);search.setMinHeight(52);search.setMaxLines(1);search.setHintTextColor(dark()?0xFF8B949E:0xFF656D76);search.setTextSize(15);search.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);search.setSelectAllOnFocus(false);search.setHint("⌕  Cari tajuk atau kandungan…");search.setText(noteFilter);search.setSelection(search.length());homeContent.addView(search);
+    search=field();search.setContentDescription("Cari tajuk dan kandungan nota");search.setSingleLine(true);search.setMinHeight(52);search.setMaxLines(1);search.setHintTextColor(dark()?0xFF8B949E:0xFF656D76);search.setTextSize(15);search.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);search.setSelectAllOnFocus(false);search.setHint("⌕  Cari tajuk atau kandungan…");search.setText(noteFilter);search.setSelection(search.length());search.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);homeContent.addView(search);
     Button add=button();add.setText("＋  Nota baharu");add.setBackground(rounded(cardSurface(),accent(),16));add.setTextColor(accent());add.setTypeface(null,Typeface.BOLD);add.setTooltipText("Cipta nota baharu");add.setMinHeight(52);add.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);add.setHapticFeedbackEnabled(true);add.setSoundEffectsEnabled(true);add.setContentDescription("Tulis nota peribadi baharu");homeContent.addView(add);add.setOnClickListener(v->edit(-1));
     list=new LinearLayout(this);list.setOrientation(1);list.setContentDescription("Senarai nota");homeContent.addView(list,new LinearLayout.LayoutParams(-1,-2));
+    search.setOnEditorActionListener((v,action,event)->{if(action==android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH){((android.view.inputmethod.InputMethodManager)getSystemService(INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(search.getWindowToken(),0);search.clearFocus();return true;}return false;});
     search.addTextChangedListener(new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){noteFilter=s.toString();refresh(noteFilter);}public void afterTextChanged(Editable e){}});
     try{refresh(noteFilter);}catch(Exception e){android.util.Log.e("DinNote","Failed loading notes",e);Toast.makeText(this,"Gagal memuatkan nota",Toast.LENGTH_LONG).show();}
     // In-app navigator sits ABOVE Android's own gesture/button navigation area.
@@ -626,8 +627,8 @@ public class MainActivity extends Activity {
     navigator.addView(noteNav,new LinearLayout.LayoutParams(0,-2,1));
     navigator.addView(bookNav,new LinearLayout.LayoutParams(0,-2,1));
     navigator.setMinimumHeight(56);navigator.setElevation(1f);navigator.setFocusable(false);navigator.setClipToPadding(false);root.addView(navigator,new LinearLayout.LayoutParams(-1,-2));
-    homeNav.setOnClickListener(v->showHome());
-    noteNav.setOnClickListener(v->{search.requestFocus();});
+    homeNav.setOnClickListener(v->homeScroll.smoothScrollTo(0,0));
+    noteNav.setOnClickListener(v->{homeScroll.post(()->homeScroll.smoothScrollTo(0,search.getTop()));search.requestFocus();});
     bookNav.setOnClickListener(v->showLibrary());
   }
   String noteCategoryName(int id){
@@ -693,6 +694,7 @@ public class MainActivity extends Activity {
   }
   void refresh(String query) {
     if(query==null)query="";
+    query=query.trim();
     final String currentQuery=query;
     if(list==null||db==null)return;
     list.removeAllViews();
@@ -700,10 +702,10 @@ public class MainActivity extends Activity {
     try(Cursor c=db.getReadableDatabase().rawQuery("SELECT id,title,body,color,pinned FROM notes WHERE (title LIKE ? OR body LIKE ?) AND (?=-1 OR category_id=?) ORDER BY pinned DESC,"+(noteSort==1?"updated ASC,id ASC":noteSort==2?"title COLLATE NOCASE ASC,id DESC":"updated DESC,id DESC"),new String[]{"%"+query+"%","%"+query+"%",""+selectedNoteCategory,""+selectedNoteCategory})) {
       while(c.moveToNext()){visibleCount++;final int id=c.getInt(0);String heading=c.getString(1);String body=c.getString(2);if(heading==null)heading="";if(body==null)body="";body=body.replace("\r"," ").replace("\n"," ").replace("\t"," ").trim();int noteColor=c.getInt(3);boolean pinned=c.getInt(4)==1;
         TextView item=text((heading.trim().isEmpty()?"Tanpa tajuk":heading)+"\n"+(body.length()>90?body.substring(0,90)+"…":body),15);
-        item.setBackground(rounded(noteColor==Color.WHITE?cardSurface():noteColor,borderColor(),16));item.setMaxLines(4);item.setEllipsize(android.text.TextUtils.TruncateAt.END);item.setMinHeight(56);item.setTextColor(noteColor==Color.WHITE?foreground():Color.BLACK);item.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2);p.setMargins(0,5,0,5);LinearLayout line=new LinearLayout(this);line.setOrientation(LinearLayout.HORIZONTAL);line.setGravity(Gravity.CENTER_VERTICAL);list.addView(line,p);line.addView(item,new LinearLayout.LayoutParams(0,-2,1));item.setContentDescription("Buka nota "+(heading.trim().isEmpty()?"Tanpa tajuk":heading)+(pinned?", dipin":""));item.setOnClickListener(v->edit(id));Button pin=button();pin.setText(pinned?"📌":"○");pin.setContentDescription((pinned?"Nyahpin nota ":"Pin nota ")+(heading.trim().isEmpty()?"Tanpa tajuk":heading));pin.setMinHeight(48);pin.setAllCaps(false);line.addView(pin,new LinearLayout.LayoutParams(56,-2));pin.setOnClickListener(v->{db.getWritableDatabase().execSQL("UPDATE notes SET pinned=? WHERE id=?",new Object[]{pinned?0:1,id});Toast.makeText(this,pinned?"Nota dinyahpin":"Nota dipin",Toast.LENGTH_SHORT).show();refresh(currentQuery);});
+        item.setBackground(rounded(noteColor==Color.WHITE?cardSurface():noteColor,borderColor(),16));item.setMaxLines(4);item.setEllipsize(android.text.TextUtils.TruncateAt.END);item.setMinHeight(56);item.setTextColor(noteColor==Color.WHITE?foreground():Color.BLACK);item.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2);p.setMargins(0,5,0,5);LinearLayout line=new LinearLayout(this);line.setOrientation(LinearLayout.HORIZONTAL);line.setGravity(Gravity.CENTER_VERTICAL);list.addView(line,p);line.addView(item,new LinearLayout.LayoutParams(0,-2,1));item.setContentDescription("Buka nota "+(heading.trim().isEmpty()?"Tanpa tajuk":heading)+(pinned?", dipin":""));item.setClickable(true);item.setFocusable(true);item.setOnClickListener(v->edit(id));Button pin=button();pin.setText(pinned?"📌":"○");pin.setContentDescription((pinned?"Nyahpin nota ":"Pin nota ")+(heading.trim().isEmpty()?"Tanpa tajuk":heading));pin.setMinHeight(48);pin.setAllCaps(false);pin.setTooltipText(pinned?"Nyahpin":"Pin nota");line.addView(pin,new LinearLayout.LayoutParams(56,-2));pin.setOnClickListener(v->{db.getWritableDatabase().execSQL("UPDATE notes SET pinned=? WHERE id=?",new Object[]{pinned?0:1,id});Toast.makeText(this,pinned?"Nota dinyahpin":"Nota dipin",Toast.LENGTH_SHORT).show();refresh(currentQuery);});
       }
     }
-    if(visibleCount==0)list.addView(text(query.trim().isEmpty()?"Belum ada nota dalam pilihan ini. Tambah nota untuk mula.":"Tiada nota ditemui.",16));
+    if(visibleCount==0){TextView empty=text(query.trim().isEmpty()?"Belum ada nota. Tekan Nota baharu untuk mula.":"Tiada nota sepadan. Cuba kata kunci lain.",15);empty.setGravity(Gravity.CENTER);empty.setPadding(20,32,20,32);empty.setTextColor(dark()?0xFF8B949E:0xFF656D76);list.addView(empty);}
   }
   void edit(int id) {
     flushPendingSave();editingNote=true;
