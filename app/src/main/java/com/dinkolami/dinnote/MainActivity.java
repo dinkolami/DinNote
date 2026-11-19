@@ -337,6 +337,7 @@ public class MainActivity extends Activity {
   LinearLayout bar=new LinearLayout(this);bar.setGravity(Gravity.CENTER_VERTICAL);root.addView(bar);
   Button readerBack=action("‹",bar,()->returnFromReader());readerBack.setContentDescription("Kembali ke senarai");
   TextView spacer=text("",12);bar.addView(spacer,new LinearLayout.LayoutParams(0,1,1));
+  Button readerFont=action("Aa",bar,()->{new AlertDialog.Builder(this).setTitle("Saiz tulisan bacaan").setSingleChoiceItems(new String[]{"Kecil","Biasa","Besar","Sangat besar"},prefs.getInt("reader_font_level",1),(dialog,which)->{prefs.edit().putInt("reader_font_level",which).apply();dialog.dismiss();read(key);}).setNegativeButton("Batal",null).show();});readerFont.setContentDescription("Ubah saiz tulisan bacaan");
   Button readerEdit=action("✎ Edit",bar,()->edit(key));readerEdit.setContentDescription("Edit nota ini");
   Button readerOptions=action("⋮",bar,()->new AlertDialog.Builder(this).setItems(new String[]{"Edit","Semat / Buka sematan","Padam"},(d,i)->{if(i==0)edit(key);else if(i==1){boolean pinned=prefs.getBoolean("pinned_"+key,false);prefs.edit().putBoolean("pinned_"+key,!pinned).apply();android.widget.Toast.makeText(this,pinned?"Sematan dibuang":"Nota disemat",android.widget.Toast.LENGTH_SHORT).show();}else confirmDelete(key);}).show());readerOptions.setContentDescription("Pilihan nota");
   String heading=prefs.getString("title_"+key,"");
@@ -344,7 +345,9 @@ public class MainActivity extends Activity {
   LinearLayout body=new LinearLayout(this);body.setOrientation(1);scroll.addView(body);
   TextView title=text(heading,22);title.setTextColor(0xff25282d);title.setTextIsSelectable(true);
   if(!heading.isEmpty())body.addView(title);
-  TextView content=text(prefs.getString(key,""),16);
+  int fontLevel=Math.max(0,Math.min(3,prefs.getInt("reader_font_level",1)));
+  int[] readingSizes={14,16,19,23};
+  TextView content=text(prefs.getString(key,""),readingSizes[fontLevel]);
   content.setTextColor(0xff30343b);content.setTextIsSelectable(true);content.setLineSpacing(dp(6),1.12f);
   body.addView(content,new LinearLayout.LayoutParams(-1,-2));
   root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
