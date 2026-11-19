@@ -186,7 +186,7 @@ public class MainActivity extends Activity {
     try(Cursor c=db.getReadableDatabase().rawQuery("SELECT id,name FROM note_categories WHERE name LIKE ? ORDER BY name COLLATE NOCASE",new String[]{"%"+filter+"%"})){
       while(c.moveToNext()){
         final int id=c.getInt(0);final String name=c.getString(1);
-        LinearLayout row=new LinearLayout(this);row.setOrientation(LinearLayout.HORIZONTAL);row.setGravity(Gravity.CENTER_VERTICAL);items.addView(row);
+        LinearLayout row=new LinearLayout(this);row.setOrientation(LinearLayout.HORIZONTAL);row.setGravity(Gravity.CENTER_VERTICAL);row.setMinimumHeight(48);items.addView(row);
         Button open=button();open.setText("▤  "+name);open.setContentDescription("Buka kategori Nota "+name);row.addView(open,new LinearLayout.LayoutParams(0,-2,1));
         open.setOnClickListener(v->{selectedNoteCategory=id;showHome();});
         Button options=button();options.setText("⋮");options.setContentDescription("Ubah nama atau padam kategori "+name);row.addView(options,new LinearLayout.LayoutParams(-2,-2));
