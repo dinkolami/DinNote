@@ -1,7 +1,7 @@
 package com.dinkolami.dinnote;
 import android.app.*;import android.os.*;import android.graphics.Color;import android.view.*;import android.widget.*;import android.text.*;import android.content.*;import java.util.*;
 public class MainActivity extends Activity {
- LinearLayout root,items; EditText editor,titleEditor; Spinner categoryPicker; String categoryFilter="Semua"; String selected=null; boolean maktabah=false, sectionOpen=false; android.content.SharedPreferences prefs;
+ LinearLayout root,items; android.view.GestureDetector readerDetector; EditText editor,titleEditor; Spinner categoryPicker; String categoryFilter="Semua"; String selected=null; boolean maktabah=false, sectionOpen=false; android.content.SharedPreferences prefs;
  int green=Color.rgb(24,39,35), gold=Color.rgb(185,143,53);
  public void onCreate(Bundle b){super.onCreate(b);prefs=getSharedPreferences("notes",0);seedDefaultCategories();home();}
  void applySystemBarInsets(LinearLayout view){
@@ -24,6 +24,7 @@ public class MainActivity extends Activity {
  TextView text(String s,int size){TextView t=new TextView(this);t.setText(s);t.setTextSize(size);t.setTextColor(green);t.setPadding(24,20,24,20);return t;}
 
  void base(String title){
+  readerDetector=null;
   root=new LinearLayout(this);root.setOrientation(1);root.setBackgroundColor(Color.WHITE);
   setContentView(root);applySystemBarInsets(root);
   LinearLayout header=new LinearLayout(this);header.setGravity(Gravity.CENTER_VERTICAL);
@@ -151,7 +152,7 @@ public class MainActivity extends Activity {
 
  void list(String filter){filter=filter.trim();items.removeAllViews();ArrayList<String> keys=new ArrayList<>();for(String k:prefs.getAll().keySet())if(k.startsWith(maktabah?"m_":"n_"))keys.add(k);Collections.sort(keys,Collections.reverseOrder());int matches=0;for(String k:keys){String v=prefs.getString(k,"");String heading=prefs.getString("title_"+k,"");if(!(heading+" "+v).toLowerCase(java.util.Locale.ROOT).contains(filter.toLowerCase(java.util.Locale.ROOT)))continue;if(!categoryFilter.equals("Semua")&&!categoryFilter.equals(prefs.getString("cat_"+k,"Tanpa kategori")))continue;matches++;}if(matches==0){TextView empty=text(keys.isEmpty()?(maktabah?"▤  Belum ada kitab\nTekan + Kitab baharu untuk bermula":"✎  Belum ada nota\nTekan + Nota baharu untuk mula mencatat"):"Tiada hasil carian yang sepadan",17);empty.setGravity(Gravity.CENTER);empty.setTextColor(0xff727985);empty.setPadding(28,80,28,80);items.addView(empty);}for(String k:keys){String v=prefs.getString(k,"");String heading=prefs.getString("title_"+k,"");String shown=(heading.isEmpty()?(v.isEmpty()?"Tanpa tajuk":v.split("\n",2)[0]):heading);if(shown.length()>90)shown=shown.substring(0,90)+"…";if(!(heading+" "+v).toLowerCase(java.util.Locale.ROOT).contains(filter.toLowerCase(java.util.Locale.ROOT)))continue;if(!categoryFilter.equals("Semua")&&!categoryFilter.equals(prefs.getString("cat_"+k,"Tanpa kategori")))continue;String preview=v.replace("\n"," ");TextView t=text("✦  "+shown+"\n"+(preview.length()>100?preview.substring(0,100)+"…":preview),17);t.setBackgroundColor(Color.WHITE);t.setPadding(30,28,30,28);items.addView(t);View line=new View(this);line.setBackgroundColor(0xffe5e9e5);items.addView(line,new LinearLayout.LayoutParams(-1,1));t.setOnClickListener(w->read(k));}}
 
- void cleanBase(){root=new LinearLayout(this);root.setOrientation(1);root.setBackgroundColor(Color.WHITE);setContentView(root);applySystemBarInsets(root);}
+ void cleanBase(){readerDetector=null;root=new LinearLayout(this);root.setOrientation(1);root.setBackgroundColor(Color.WHITE);setContentView(root);applySystemBarInsets(root);}
  Button action(String label,LinearLayout bar,Runnable callback){Button b=new Button(this);b.setText(label);b.setAllCaps(false);b.setTextSize(14);bar.addView(b);b.setOnClickListener(v->callback.run());return b;}
  void returnFromReader(){selected=null;if(sectionOpen)notesPage();else home();}
  void read(String key){
@@ -170,19 +171,19 @@ public class MainActivity extends Activity {
   content.setTextColor(0xff30343b);content.setTextIsSelectable(true);content.setLineSpacing(dp(6),1.12f);
   body.addView(content,new LinearLayout.LayoutParams(-1,-2));
   root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
-  android.view.GestureDetector detector=new android.view.GestureDetector(this,new android.view.GestureDetector.SimpleOnGestureListener(){
+  readerDetector=new android.view.GestureDetector(this,new android.view.GestureDetector.SimpleOnGestureListener(){
    @Override public boolean onDown(android.view.MotionEvent e){return true;}
    @Override public boolean onDoubleTap(android.view.MotionEvent e){bar.setVisibility(bar.getVisibility()==View.VISIBLE?View.GONE:View.VISIBLE);return true;}
   });
-  // Observe taps without consuming touch events: scrolling and text selection must still work.
-  scroll.setOnTouchListener((v,e)->{detector.onTouchEvent(e);return false;});
-  // Text views can receive touches directly, so observe gestures on them too.
-  title.setOnTouchListener((v,e)->{detector.onTouchEvent(e);return false;});
-  content.setOnTouchListener((v,e)->{detector.onTouchEvent(e);return false;});
+  // Touch events are observed once in dispatchTouchEvent, including selectable text.
   // Long press is a reliable alternative when double tap is intercepted by text selection.
   body.setOnLongClickListener(v->{edit(key);return true;});
   scroll.setOnLongClickListener(v->{edit(key);return true;});
   bar.setVisibility(View.GONE);
+ }
+ @Override public boolean dispatchTouchEvent(android.view.MotionEvent event){
+  if(readerDetector!=null)readerDetector.onTouchEvent(event);
+  return super.dispatchTouchEvent(event);
  }
  void confirmDelete(String key){new AlertDialog.Builder(this).setMessage("Padam nota ini?").setPositiveButton("Padam",(d,w)->{prefs.edit().remove(key).remove("title_"+key).remove("cat_"+key).apply();selected=null;if(sectionOpen)notesPage();else home();}).setNegativeButton("Batal",null).show();}
  void edit(String key){if(key!=null)maktabah=key.startsWith("m_");editor=null;selected=key;cleanBase();LinearLayout bar=new LinearLayout(this);bar.setGravity(Gravity.CENTER_VERTICAL);root.addView(bar);action("‹",bar,()->{save();if(selected!=null)read(selected);else if(sectionOpen)notesPage();else home();});TextView spacer=text("",12);bar.addView(spacer,new LinearLayout.LayoutParams(0,1,1));action("Selesai",bar,()->{save();if(selected!=null)read(selected);else if(sectionOpen)notesPage();else home();});action("⋮",bar,()->new AlertDialog.Builder(this).setItems(new String[]{"Padam"},(d,i)->{if(selected!=null)confirmDelete(selected);}).show());categoryPicker=new Spinner(this);categoryPicker.setContentDescription("Kategori nota");ArrayList<String> choices=new ArrayList<>();choices.add("Tanpa kategori");choices.addAll(categories());categoryPicker.setAdapter(new ArrayAdapter<>(this,android.R.layout.simple_spinner_dropdown_item,choices));String savedCat=key==null?"Tanpa kategori":prefs.getString("cat_"+key,"Tanpa kategori");int pos=choices.indexOf(savedCat);categoryPicker.setSelection(pos<0?0:pos);root.addView(categoryPicker);titleEditor=new EditText(this);titleEditor.setSingleLine(true);titleEditor.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_NEXT);titleEditor.setTextSize(21);titleEditor.setHint(maktabah?"Tajuk kitab":"Tajuk nota");titleEditor.setContentDescription(maktabah?"Tajuk kitab":"Tajuk nota");titleEditor.setPadding(24,12,24,12);titleEditor.setBackgroundColor(Color.WHITE);root.addView(titleEditor);if(key!=null)titleEditor.setText(prefs.getString("title_"+key,""));editor=new EditText(this);editor.setGravity(Gravity.TOP);editor.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);editor.setTextSize(16);editor.setTextColor(0xff30343b);editor.setPadding(24,16,24,16);editor.setLineSpacing(5,1.08f);editor.setHint("Tulis di sini…");editor.setContentDescription("Kandungan nota");editor.setBackgroundColor(Color.WHITE);editor.setInputType(android.text.InputType.TYPE_CLASS_TEXT|android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE|android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);root.addView(editor,new LinearLayout.LayoutParams(-1,0,1));if(key!=null)editor.setText(prefs.getString(key,""));TextWatcher watcher=new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){save();}public void afterTextChanged(Editable e){}};titleEditor.addTextChangedListener(watcher);editor.addTextChangedListener(watcher);categoryPicker.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener(){public void onNothingSelected(android.widget.AdapterView<?> p){}public void onItemSelected(android.widget.AdapterView<?> p,View v,int position,long id){save();}});}
