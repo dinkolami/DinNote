@@ -611,10 +611,10 @@ public class MainActivity extends Activity {
     title.setGravity(Gravity.CENTER_VERTICAL);title.setMinHeight(48);
     title.setPadding(8,0,4,0);title.setOnClickListener(v->showHomeDropdown(title));
     topBar.addView(title,new LinearLayout.LayoutParams(0,-2,1));
-    TextView search=text("⌕",26);search.setGravity(Gravity.CENTER);
-    search.setMinWidth(44);search.setMinHeight(48);
-    search.setContentDescription("Cari nota");search.setBackground(rounded(cardSurface(),borderColor(),12));
-    search.setOnClickListener(v->showNoteCategories());topBar.addView(search);
+    TextView headerSearch=text("⌕",26);headerSearch.setGravity(Gravity.CENTER);
+    headerSearch.setMinWidth(44);headerSearch.setMinHeight(48);
+    headerSearch.setContentDescription("Cari nota");headerSearch.setBackground(rounded(cardSurface(),borderColor(),12));
+    headerSearch.setOnClickListener(v->showNoteCategories());topBar.addView(headerSearch);
     TextView inbox=text("▱",24);inbox.setGravity(Gravity.CENTER);
     inbox.setMinWidth(44);inbox.setMinHeight(48);inbox.setContentDescription("Buka Maktabah");
     inbox.setBackground(rounded(cardSurface(),borderColor(),12));
