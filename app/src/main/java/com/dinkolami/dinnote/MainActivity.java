@@ -519,7 +519,7 @@ public class MainActivity extends Activity {
     body.setVerticalScrollBarEnabled(true);
     body.setOverScrollMode(View.OVER_SCROLL_IF_CONTENT_SCROLLS);
     body.setFadingEdgeLength(12);
-    body.setScrollBarFadeDuration(380);body.setSmoothScrollingEnabled(true);
+    body.setScrollBarFadeDuration(380);
     body.setScrollbarFadingEnabled(true);
     body.setVerticalFadingEdgeEnabled(false);
     body.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
