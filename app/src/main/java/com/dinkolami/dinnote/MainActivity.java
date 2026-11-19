@@ -51,7 +51,7 @@ public class MainActivity extends Activity {
     page.addView(back);back.setOnClickListener(v->showHome());
     TextView heading=text("⚙  Tetapan DinNote",21);heading.setTypeface(null,Typeface.BOLD);heading.setTextColor(foreground());heading.setBackground(rounded(cardSurface(),pearlPalette()?0xFFD5BD83:borderColor(),12));heading.setPadding(16,14,16,14);page.addView(heading);
     TextView subtitle=text("Penampilan • Editor • Nota • Data",13);page.addView(subtitle);
-    ScrollView scroll=new ScrollView(this);scroll;scroll.setFillViewport(false);scroll.setVerticalScrollBarEnabled(true);scroll.setClipToPadding(false);page.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
+    ScrollView scroll=new ScrollView(this);scroll.setFillViewport(false);scroll.setVerticalScrollBarEnabled(true);scroll.setClipToPadding(false);page.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
     LinearLayout options=new LinearLayout(this);options.setOrientation(1);scroll.addView(options);
     TextView displayTitle=text("PAPARAN",12);displayTitle.setTypeface(null,Typeface.BOLD);options.addView(displayTitle);
     Button appearance=button();appearance.setText("◐  Penampilan  ·  "+new String[]{"Ikut sistem","Cerah","Gelap"}[Math.max(0,Math.min(2,themeMode))]);
@@ -613,7 +613,7 @@ public class MainActivity extends Activity {
     profile.setContentDescription("Profil DinNote dan tetapan");
     profile.setBackground(rounded(cardSurface(),0xFFD5BD83,24));
     profile.setOnClickListener(v->showSettings());topBar.addView(profile);
-    HorizontalScrollView tabScroll=new HorizontalScrollView(this);tabScroll.setHorizontalScrollBarEnabled(false);tabScroll;tabScroll.setOverScrollMode(View.OVER_SCROLL_IF_CONTENT_SCROLLS);tabScroll.setFillViewport(true);header.addView(tabScroll);
+    HorizontalScrollView tabScroll=new HorizontalScrollView(this);tabScroll.setHorizontalScrollBarEnabled(false);tabScroll.setOverScrollMode(View.OVER_SCROLL_IF_CONTENT_SCROLLS);tabScroll.setFillViewport(true);header.addView(tabScroll);
     LinearLayout tabs=new LinearLayout(this);tabs.setGravity(Gravity.CENTER_VERTICAL);tabScroll.addView(tabs);
     TextView tabHome=text("Utama",14);tabHome.setTypeface(null,Typeface.BOLD);tabHome.setTextColor(pearlPalette()?0xFF0C9B9A:accent());tabHome.setPadding(12,9,12,9);tabHome.setContentDescription("Tab Utama aktif");tabHome.setSelected(true);tabs.addView(tabHome);
     TextView tabNotes=text("Nota",14);tabNotes.setPadding(12,9,12,9);tabNotes.setContentDescription("Buka Nota");tabNotes.setOnClickListener(v->showNoteCategories());tabs.addView(tabNotes);
@@ -622,7 +622,7 @@ public class MainActivity extends Activity {
     View activeRule=new View(this);activeRule.setBackgroundColor(pearlPalette()?0xFF0C9B9A:accent());LinearLayout.LayoutParams rp=new LinearLayout.LayoutParams(56,3);rp.setMargins(14,0,0,0);header.addView(activeRule,rp);
     View headerDivider=new View(this);headerDivider.setBackgroundColor(borderColor());root.addView(headerDivider,new LinearLayout.LayoutParams(-1,1));
     // Header remains visible while the home content scrolls beneath it.
-    ScrollView homeScroll=new ScrollView(this);homeScroll.setFillViewport(false);homeScroll.setScrollbarFadingEnabled(true);homeScroll.setVerticalFadingEdgeEnabled(false);homeScroll.setContentDescription("Kandungan halaman utama DinNote");homeScroll.setFocusable(false);homeScroll.setVerticalScrollBarEnabled(true);homeScroll.setFadingEdgeLength(0);homeScroll;homeScroll.setDescendantFocusability(android.view.ViewGroup.FOCUS_AFTER_DESCENDANTS);homeScroll.setOverScrollMode(View.OVER_SCROLL_IF_CONTENT_SCROLLS);homeScroll.setClipToPadding(false);homeScroll.setPadding(0,0,0,2);root.addView(homeScroll,new LinearLayout.LayoutParams(-1,0,1));
+    ScrollView homeScroll=new ScrollView(this);homeScroll.setFillViewport(false);homeScroll.setScrollbarFadingEnabled(true);homeScroll.setVerticalFadingEdgeEnabled(false);homeScroll.setContentDescription("Kandungan halaman utama DinNote");homeScroll.setFocusable(false);homeScroll.setVerticalScrollBarEnabled(true);homeScroll.setFadingEdgeLength(0);homeScroll.setDescendantFocusability(android.view.ViewGroup.FOCUS_AFTER_DESCENDANTS);homeScroll.setOverScrollMode(View.OVER_SCROLL_IF_CONTENT_SCROLLS);homeScroll.setClipToPadding(false);homeScroll.setPadding(0,0,0,2);root.addView(homeScroll,new LinearLayout.LayoutParams(-1,0,1));
     // Animate only the in-app header opacity, never Android system bars.
     final boolean smoothHeaderEnabled=getPreferences(MODE_PRIVATE).getBoolean("smoothHeader",true);
     homeScroll.setOnScrollChangeListener((View.OnScrollChangeListener)(v,scrollX,scrollY,oldX,oldY)->{
@@ -792,7 +792,7 @@ public class MainActivity extends Activity {
     EditText categorySearch=field();categorySearch.setSingleLine(true);categorySearch.setSelectAllOnFocus(false);categorySearch.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);categorySearch.setHint("⌕ Cari kategori Nota…");categorySearch.setContentDescription("Cari kategori Nota");categorySearch.setTextSize(15);categorySearch.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);categorySearch.setMinHeight(48);page.addView(categorySearch);
     Button all=button();all.setText("▤  Semua nota");all.setContentDescription("Lihat semua nota tanpa penapis kategori");all.setMinHeight(48);all.setAllCaps(false);page.addView(all);all.setOnClickListener(v->{selectedNoteCategory=-1;showHome();});
     Button add=button();add.setText("＋ Tambah kategori");add.setContentDescription("Cipta kategori Nota baharu");add.setTextColor(accent());add.setMinHeight(48);page.addView(add);add.setOnClickListener(v->promptNoteCategory(-1,""));
-    ScrollView scroll=new ScrollView(this);LinearLayout items=new LinearLayout(this);items.setOrientation(1);items.setPadding(0,4,0,12);scroll.setFillViewport(true);scroll;scroll.addView(items);scroll.setContentDescription("Senarai kategori Nota peribadi");page.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
+    ScrollView scroll=new ScrollView(this);LinearLayout items=new LinearLayout(this);items.setOrientation(1);items.setPadding(0,4,0,12);scroll.setFillViewport(true);scroll.addView(items);scroll.setContentDescription("Senarai kategori Nota peribadi");page.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
     categorySearch.addTextChangedListener(new TextWatcher(){
       public void beforeTextChanged(CharSequence text,int start,int count,int after){}
       public void onTextChanged(CharSequence text,int start,int before,int count){populateNoteCategories(items,text.toString());}
@@ -931,7 +931,7 @@ public class MainActivity extends Activity {
     EditText categorySearch=field();categorySearch.setSingleLine(true);categorySearch.setSelectAllOnFocus(false);categorySearch.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);categorySearch.setHint("⌕ Cari kategori Maktabah…");categorySearch.setContentDescription("Cari kategori Maktabah");categorySearch.setTextSize(15);categorySearch.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);page.addView(categorySearch);
     Button add=button();add.setText("＋ Tambah kategori Maktabah");add.setContentDescription("Tambah kategori baharu Maktabah");add.setTextColor(accent());add.setMinHeight(48);page.addView(add);
     add.setOnClickListener(v->promptCategory());
-    ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);scroll;LinearLayout items=new LinearLayout(this);items.setOrientation(1);items.setPadding(0,4,0,12);scroll.addView(items);page.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
+    ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);LinearLayout items=new LinearLayout(this);items.setOrientation(1);items.setPadding(0,4,0,12);scroll.addView(items);page.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
     categorySearch.addTextChangedListener(new TextWatcher(){
       public void beforeTextChanged(CharSequence text,int start,int count,int after){}
       public void onTextChanged(CharSequence text,int start,int before,int count){populateLibraryCategories(items,text.toString());}
@@ -988,7 +988,7 @@ public class MainActivity extends Activity {
     TextView categoryHeading=text(categoryName,20);categoryHeading.setTypeface(null,Typeface.BOLD);categoryHeading.setContentDescription("Kategori Maktabah "+categoryName);categoryHeading.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);categoryHeading.setMaxLines(2);categoryHeading.setPadding(4,8,4,8);categoryHeading.setEllipsize(android.text.TextUtils.TruncateAt.END);page.addView(categoryHeading);page.setFocusableInTouchMode(true);
     Button add=button();add.setText("+ Tambah kitab");add.setTextColor(accent());add.setMinHeight(48);add.setContentDescription("Cipta kitab dalam kategori "+categoryName);page.addView(add);add.setOnClickListener(v->editBook(-1,categoryId,categoryName));
     EditText bookSearch=field();bookSearch.setSingleLine(true);bookSearch.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);bookSearch.setSelectAllOnFocus(false);bookSearch.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);bookSearch.setHint("Cari kitab dalam kategori…");bookSearch.setContentDescription("Cari tajuk atau kandungan kitab");bookSearch.setTextSize(15);bookSearch.setMinHeight(48);page.addView(bookSearch);
-    ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);scroll;LinearLayout items=new LinearLayout(this);items.setOrientation(1);items.setPadding(0,4,0,12);scroll.addView(items);page.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
+    ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);LinearLayout items=new LinearLayout(this);items.setOrientation(1);items.setPadding(0,4,0,12);scroll.addView(items);page.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
     bookSearch.addTextChangedListener(new TextWatcher(){public void beforeTextChanged(CharSequence s,int a,int c,int f){}public void onTextChanged(CharSequence s,int a,int b,int c){populateBooks(items,categoryId,categoryName,s.toString());}public void afterTextChanged(Editable e){}});
     populateBooks(items,categoryId,categoryName,"");
   }
