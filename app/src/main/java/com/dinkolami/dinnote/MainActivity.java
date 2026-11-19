@@ -512,6 +512,7 @@ public class MainActivity extends Activity {
     // Keep the editor inside the resized application viewport when the IME opens.
     page.setFocusableInTouchMode(true);
     page.setClipToPadding(false);
+    page.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
   }
   LinearLayout column() { LinearLayout l=new LinearLayout(this);l.setOrientation(1);l.setPadding(18,16,18,16);l.setBackgroundColor(surface());return l; }
   void showHome() {
