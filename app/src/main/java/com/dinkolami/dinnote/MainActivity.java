@@ -597,15 +597,15 @@ public class MainActivity extends Activity {
     root=column();root.setFocusableInTouchMode(true);root.requestFocus();setContentView(root);
     // Two-tier GitHub-inspired header, entirely below Android system status bar.
     LinearLayout header=new LinearLayout(this);header.setOrientation(LinearLayout.VERTICAL);root.addView(header);
-    header.setBackground(rounded(cardSurface(),borderColor(),8));header.setPadding(8,5,8,2);header.setClipChildren(false);
-    header.setElevation(1f*getResources().getDisplayMetrics().density);header.setFocusable(false);
+    header.setBackground(rounded(dark()?0xFF064D3C:0xFF006B4F,0xFFD7B45B,12));header.setPadding(8,8,8,5);header.setClipChildren(false);
+    header.setElevation(3f*getResources().getDisplayMetrics().density);header.setFocusable(false);
     LinearLayout topBar=new LinearLayout(this);topBar.setGravity(Gravity.CENTER_VERTICAL);header.addView(topBar);
     TextView menu=text("☰",24);menu.setGravity(Gravity.CENTER);menu.setMinWidth(48);menu.setMinHeight(48);menu.setContentDescription("Buka dropdown navigasi dan tetapan DinNote");menu.setTooltipText("Menu DinNote");menu.setBackground(rounded(cardSurface(),borderColor(),12));menu.setOnClickListener(v->showHomeDropdown(menu));topBar.addView(menu);
     TextView title=text(" dinkolami / DinNote  ▾",16);
     android.graphics.drawable.Drawable logo=getDrawable(R.drawable.dinnote_launcher);
     int logoSize=(int)(30*getResources().getDisplayMetrics().density);
     if(logo!=null){logo.setBounds(0,0,logoSize,logoSize);title.setCompoundDrawables(logo,null,null,null);}
-    title.setCompoundDrawablePadding(7);title.setTypeface(null,Typeface.BOLD);
+    title.setCompoundDrawablePadding(7);title.setTypeface(null,Typeface.BOLD);title.setTextColor(Color.WHITE);
     title.setSingleLine(true);title.setEllipsize(android.text.TextUtils.TruncateAt.END);
     title.setContentDescription("dinkolami / DinNote, buka menu navigasi");
     title.setGravity(Gravity.CENTER_VERTICAL);title.setMinHeight(48);
@@ -909,8 +909,7 @@ public class MainActivity extends Activity {
       });
       View.OnTouchListener readingGestures=(v,event)->{
         gestures.onTouchEvent(event);
-        if(event.getActionMasked()==android.view.MotionEvent.ACTION_UP
-            && !v.canScrollVertically(-1) && !v.canScrollVertically(1))revealActions.run();
+        if(event.getActionMasked()==android.view.MotionEvent.ACTION_UP)revealActions.run();
         return false;
       };
       scroll.setOnTouchListener(readingGestures);
