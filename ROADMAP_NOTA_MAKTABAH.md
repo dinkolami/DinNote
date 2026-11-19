@@ -153,6 +153,7 @@ Dokumen ini menyimpan semua 100 cadangan supaya cadangan yang belum dipilih tida
 - Jika menambah cadangan baharu selepas nombor 100, sambung penomboran; kekalkan sejarah cadangan terdahulu.
 
 ## Audit saiz dan kelancaran APK
+- GitHub Actions mempunyai pemeriksaan sumber untuk menghalang rujukan ML Kit, Tesseract dan model `ara.traineddata` kembali tanpa sengaja (`8fbc71a`). Ini bukan bukti APK berjaya dibina atau diuji pada telefon.
 - Pemeriksaan APK debug kini mengesahkan package ID `com.dinkolami.dinnote.fresh`, min/target SDK, tandatangan debug dan SHA-256 sebelum muat naik artifak. Commit `1294a54`. Ini semakan fail APK, bukan bukti pemasangan pada Fold6; jangan nyahpasang versi release sebelum backup disahkan.
 - Workflow release kini memeriksa keempat-empat rahsia signing dan melangkau langkah release dengan amaran jika tidak lengkap; binaan debug dan artifaknya tidak digagalkan semata-mata kerana rahsia signing tiada. Label audit saiz tidak lagi menyebut OCR yang telah dibuang. Commit `1204a99`. Kejayaan run dan ujian pemasangan masih belum disahkan.
 - GitHub Actions kini memuat naik **APK debug** sebagai artifak 7 hari sebelum langkah tandatangan release (`e63b42c`), supaya APK ujian boleh dimuat turun jika signing release gagal. APK debug ditandatangani dengan kunci debug yang berbeza; ia mungkin tidak boleh dipasang sebagai kemas kini terus pada aplikasi release sedia ada. **Jangan nyahpasang aplikasi sedia ada tanpa membuat dan mengesahkan backup terlebih dahulu.** Binaan debug belum disahkan berjaya.
