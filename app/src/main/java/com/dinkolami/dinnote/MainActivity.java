@@ -114,7 +114,7 @@ public class MainActivity extends Activity {
   recentNotes.setPadding(dp(14),dp(14),dp(14),dp(28));card.addView(recentNotes);
   ArrayList<String> keys=new ArrayList<>();
   for(String k:prefs.getAll().keySet())if((k.startsWith("n_")||k.startsWith("m_"))&&prefs.getLong("viewed_"+k,0L)>0L)keys.add(k);
-  Collections.sort(keys,(a,b)->Long.compare(prefs.getLong("viewed_"+b,0L),prefs.getLong("viewed_"+a,0L)));
+  Collections.sort(keys,(firstKey,secondKey)->Long.compare(prefs.getLong("viewed_"+secondKey,0L),prefs.getLong("viewed_"+firstKey,0L)));
   if(keys.isEmpty()){
    TextView emblem=dashboardText("☪\n▤",36,true);emblem.setTextColor(0xff176b47);
    emblem.setGravity(Gravity.CENTER);recentNotes.addView(emblem);
