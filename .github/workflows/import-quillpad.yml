@@ -3,8 +3,6 @@ on:
   workflow_dispatch:
   push:
     branches: [quillpad-migration]
-    paths:
-      - '.github/workflows/import-quillpad.yml'
 
 permissions:
   contents: write
