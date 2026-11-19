@@ -507,6 +507,15 @@ public class MainActivity extends Activity {
    org.json.JSONObject backup=new org.json.JSONObject(new String(buffer.toByteArray(),java.nio.charset.StandardCharsets.UTF_8));
    if(!"DinNote-backup-v1".equals(backup.optString("format")))throw new java.io.IOException("Format sandaran tidak sah");
    org.json.JSONObject values=backup.getJSONObject("data");
+   if(values.length()==0)throw new java.io.IOException("Sandaran kosong; data sedia ada tidak diubah");
+   java.util.Iterator<String> validationKeys=values.keys();
+   while(validationKeys.hasNext()){
+    String key=validationKeys.next();
+    Object value=values.get(key);
+    if(key==null||key.trim().isEmpty()||value==null||value==org.json.JSONObject.NULL||
+      !(value instanceof String||value instanceof Boolean||value instanceof Number))
+     throw new java.io.IOException("Kandungan sandaran tidak disokong; data sedia ada tidak diubah");
+   }
    android.content.SharedPreferences.Editor tx=prefs.edit().clear();
    java.util.Iterator<String> keys=values.keys();
    while(keys.hasNext()){
