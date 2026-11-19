@@ -64,6 +64,14 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: quillpad-migration
+      - name: Verify migration app identity
+        run: |
+          set -euo pipefail
+          grep -Fq 'applicationId = "com.dinkolami.dinnote.quillpad"' app/build.gradle.kts
+          grep -Fq 'android:label="DinNote"' app/src/main/AndroidManifest.xml
+          grep -Fq '<string name="nav_notes">Nota</string>' app/src/main/res/values/strings.xml
+          grep -Fq '<string name="nav_notebooks">Maktabah</string>' app/src/main/res/values/strings.xml
+          echo 'DinNote migration identity and navigation labels verified.'
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
@@ -82,14 +90,6 @@ jobs:
           chmod +x ./gradlew
           set -o pipefail
           ./gradlew assembleDebug --stacktrace --no-daemon 2>&1 | tee gradle-build.log
-      - name: Verify migration app identity
-        run: |
-          set -euo pipefail
-          grep -Fq 'applicationId = "com.dinkolami.dinnote.quillpad"' app/build.gradle.kts
-          grep -Fq 'android:label="DinNote"' app/src/main/AndroidManifest.xml
-          grep -Fq '<string name="nav_notes">Nota</string>' app/src/main/res/values/strings.xml
-          grep -Fq '<string name="nav_notebooks">Maktabah</string>' app/src/main/res/values/strings.xml
-          echo 'DinNote migration identity and navigation labels verified.'
       - name: Verify generated APK
         run: |
           set -euo pipefail
