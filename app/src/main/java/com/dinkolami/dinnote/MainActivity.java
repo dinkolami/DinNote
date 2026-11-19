@@ -283,7 +283,7 @@ public class MainActivity extends Activity {
     flushPendingSave();editingBook=false;editingNote=false;saveIndicator=null;
     LinearLayout page=column();setContentView(page);
     Button back=button();back.setText("← DinNote");back.setContentDescription("Kembali ke halaman utama DinNote");back.setTextSize(14);page.addView(back);back.setOnClickListener(v->showHome());
-    TextView libraryTitle=text("Maktabah",21);libraryTitle.setContentDescription("Maktabah, koleksi kitab dan ilmu Islam");libraryTitle.setTypeface(null,Typeface.BOLD);page.addView(libraryTitle);
+    TextView libraryTitle=text("Maktabah",21);libraryTitle.setContentDescription("Maktabah, koleksi kitab dan ilmu Islam");libraryTitle.setTypeface(null,Typeface.BOLD);libraryTitle.setPadding(10,12,10,12);page.addView(libraryTitle);
     EditText categorySearch=field();categorySearch.setSingleLine(true);categorySearch.setSelectAllOnFocus(false);categorySearch.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);categorySearch.setHint("Cari kategori Maktabah…");categorySearch.setContentDescription("Cari kategori Maktabah");categorySearch.setTextSize(15);page.addView(categorySearch);
     Button add=button();add.setText("+ Tambah kategori Maktabah");add.setContentDescription("Tambah kategori baharu Maktabah");add.setTextColor(accent());page.addView(add);
     add.setOnClickListener(v->promptCategory());
