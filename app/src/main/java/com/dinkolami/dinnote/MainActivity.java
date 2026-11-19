@@ -169,7 +169,7 @@ public class MainActivity extends Activity {
     LinearLayout page=column();setContentView(page);
     Button back=button();back.setText("← DinNote");page.addView(back);back.setOnClickListener(v->showHome());
     TextView heading=text("Kategori Nota",21);heading.setTypeface(null,Typeface.BOLD);page.addView(heading);
-    EditText categorySearch=field();categorySearch.setSingleLine(true);categorySearch.setHint("Cari kategori Nota…");page.addView(categorySearch);
+    EditText categorySearch=field();categorySearch.setSingleLine(true);categorySearch.setHint("Cari kategori Nota…");categorySearch.setContentDescription("Cari kategori Nota");page.addView(categorySearch);
     Button all=button();all.setText("▤  Semua nota");page.addView(all);all.setOnClickListener(v->{selectedNoteCategory=-1;showHome();});
     Button add=button();add.setText("+ Tambah kategori");add.setTextColor(accent());page.addView(add);add.setOnClickListener(v->promptNoteCategory(-1,""));
     ScrollView scroll=new ScrollView(this);LinearLayout items=new LinearLayout(this);items.setOrientation(1);scroll.addView(items);page.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
