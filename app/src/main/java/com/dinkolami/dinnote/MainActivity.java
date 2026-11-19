@@ -441,7 +441,7 @@ public class MainActivity extends Activity {
   editor.getText().replace(Math.min(start,end),Math.max(start,end),value);
   save();
  }
- void save(){if(editor==null||selected==null&&(editor.getText().toString().trim().isEmpty()&&(titleEditor==null||titleEditor.getText().toString().trim().isEmpty())))return;String value=editor.getText().toString();if(selected==null)selected=(maktabah?"m_":"n_")+System.currentTimeMillis();prefs.edit().putString(selected,value).putString("title_"+selected,titleEditor==null?"":titleEditor.getText().toString()).putString("cat_"+selected,categoryPicker==null||categoryPicker.getSelectedItem()==null?"Tanpa kategori":categoryPicker.getSelectedItem().toString()).putLong("updated_"+selected,System.currentTimeMillis()).putString("last_edited_key",selected).apply();if(saveIndicator!=null)saveIndicator.setText("Disimpan");}
+ void save(){if(editor==null||selected==null&&(editor.getText().toString().trim().isEmpty()&&(titleEditor==null||titleEditor.getText().toString().trim().isEmpty())))return;String value=editor.getText().toString();if(selected==null)selected=(maktabah?"m_":"n_")+java.util.UUID.randomUUID().toString();prefs.edit().putString(selected,value).putString("title_"+selected,titleEditor==null?"":titleEditor.getText().toString()).putString("cat_"+selected,categoryPicker==null||categoryPicker.getSelectedItem()==null?"Tanpa kategori":categoryPicker.getSelectedItem().toString()).putLong("updated_"+selected,System.currentTimeMillis()).putString("last_edited_key",selected).apply();if(saveIndicator!=null)saveIndicator.setText("Disimpan");}
 
  void seedSampleArticles(){
   // Only seed once per category; never overwrite user-created notes.
