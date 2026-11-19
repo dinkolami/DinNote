@@ -78,10 +78,13 @@ public class MainActivity extends Activity {
   recent.setBackground(rounded(0xfff6f8fa,0xffd0d7de,12));
   LinearLayout.LayoutParams rp=new LinearLayout.LayoutParams(-2,-2);rp.bottomMargin=dp(20);
   page.addView(recent,rp);
+  recent.setContentDescription("Pilih paparan: baru dilihat, semua nota atau Maktabah");
   recent.setOnClickListener(v->new AlertDialog.Builder(this).setItems(new String[]{"Baru dilihat","Semua nota","Maktabah"},(d,i)->{if(i==2)openSection(true);else openSection(false);}).show());
   TextView heading=dashboardText("Baru dilihat",22,true);heading.setPadding(dp(2),dp(8),0,dp(16));page.addView(heading);
   EditText search=new EditText(this);search.setSingleLine(true);search.setTextSize(16);
   search.setHint("Cari nota atau kitab");search.setContentDescription("Carian nota dan kitab");
+  search.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);
+  search.setInputType(android.text.InputType.TYPE_CLASS_TEXT);
   search.setPadding(dp(14),dp(10),dp(14),dp(10));
   search.setBackground(rounded(Color.WHITE,0xffd0d7de,11));
   LinearLayout.LayoutParams sp=new LinearLayout.LayoutParams(-1,dp(52));sp.bottomMargin=dp(18);
