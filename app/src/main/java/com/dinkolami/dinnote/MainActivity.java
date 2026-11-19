@@ -468,12 +468,42 @@ public class MainActivity extends Activity {
   italicButton.setTypeface(null,android.graphics.Typeface.ITALIC);italicButton.setContentDescription("Condong: tandakan teks terpilih");
   Button bulletButton=action("☷",formatBar,()->insertEditorText("• "));
   bulletButton.setContentDescription("Masukkan senarai");
+  Button numberedButton=action("1.",formatBar,()->insertNumberedList());
+  numberedButton.setTextColor(0xff17814a);numberedButton.setContentDescription("Senarai bernombor automatik");
   Button checklistButton=action("☑",formatBar,()->insertEditorText("☐ "));
   checklistButton.setContentDescription("Masukkan kotak semak");
   Button fontButton=action("Aa",formatBar,()->new AlertDialog.Builder(this).setTitle("Saiz tulisan editor").setItems(new String[]{"Kecil","Biasa","Besar","Sangat besar"},(d,i)->{prefs.edit().putInt("editor_font_level",i).apply();if(editor!=null)editor.setTextSize(new int[]{14,16,19,23}[i]);}).show());
   fontButton.setContentDescription("Saiz tulisan editor");
-  root.addView(editor,new LinearLayout.LayoutParams(-1,0,1));if(key!=null)editor.setText(prefs.getString(key,""));TextWatcher titleWatcher=new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){save();}public void afterTextChanged(Editable e){}};titleEditor.addTextChangedListener(titleWatcher);TextWatcher bodyWatcher=new TextWatcher(){String before="";public void beforeTextChanged(CharSequence s,int st,int count,int after){before=s.toString();}public void onTextChanged(CharSequence s,int st,int beforeCount,int count){}public void afterTextChanged(Editable e){if(!restoring[0]&&!before.equals(e.toString())){undoHistory.addLast(before);if(undoHistory.size()>100)undoHistory.removeFirst();redoHistory.clear();historyButtons[0].setAlpha(1f);historyButtons[1].setAlpha(0.35f);}save();}};editor.addTextChangedListener(bodyWatcher);categoryPicker.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener(){public void onNothingSelected(android.widget.AdapterView<?> p){}public void onItemSelected(android.widget.AdapterView<?> p,View v,int position,long id){save();}});}
+  root.addView(editor,new LinearLayout.LayoutParams(-1,0,1));if(key!=null)editor.setText(prefs.getString(key,""));TextWatcher titleWatcher=new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){save();}public void afterTextChanged(Editable e){}};titleEditor.addTextChangedListener(titleWatcher);TextWatcher bodyWatcher=new TextWatcher(){String before="";public void beforeTextChanged(CharSequence s,int st,int count,int after){before=s.toString();}public void onTextChanged(CharSequence s,int st,int beforeCount,int count){}public void afterTextChanged(Editable e){if(!restoring[0]&&!before.equals(e.toString())){
+   int cursor=editor.getSelectionStart();
+   if(cursor>0&&cursor<=e.length()&&e.charAt(cursor-1)=='\n'){
+    String prior=e.subSequence(0,cursor-1).toString();
+    int start=prior.lastIndexOf('\n')+1;
+    String previousLine=prior.substring(start);
+    java.util.regex.Matcher numbered=java.util.regex.Pattern.compile("^\\s*(\\d+)\\.\\s*(.*)$").matcher(previousLine);
+    if(numbered.matches()){
+     int next=1;try{next=Integer.parseInt(numbered.group(1))+1;}catch(NumberFormatException ignored){}
+     restoring[0]=true;
+     if(numbered.group(2).trim().isEmpty()){e.delete(start,cursor);editor.setSelection(start);}
+     else{String prefix=next+". ";e.insert(cursor,prefix);editor.setSelection(cursor+prefix.length());}
+     restoring[0]=false;
+    }
+   }
+   undoHistory.addLast(before);if(undoHistory.size()>100)undoHistory.removeFirst();redoHistory.clear();historyButtons[0].setAlpha(1f);historyButtons[1].setAlpha(0.35f);}save();}};editor.addTextChangedListener(bodyWatcher);categoryPicker.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener(){public void onNothingSelected(android.widget.AdapterView<?> p){}public void onItemSelected(android.widget.AdapterView<?> p,View v,int position,long id){save();}});}
 
+ void insertNumberedList(){
+  if(editor==null)return;
+  int cursor=Math.max(0,editor.getSelectionStart());
+  String content=editor.getText().toString();
+  int lineStart=content.lastIndexOf('\n',Math.max(0,cursor-1))+1;
+  String line=content.substring(lineStart,cursor);
+  if(line.matches("\\s*\\d+\\.\\s*"))return;
+  int number=1;
+  java.util.regex.Matcher matcher=java.util.regex.Pattern.compile("(?m)^\\s*(\\d+)\\.\\s+").matcher(content.substring(0,lineStart));
+  while(matcher.find()){try{number=Integer.parseInt(matcher.group(1))+1;}catch(NumberFormatException ignored){}}
+  editor.getText().insert(lineStart,number+". ");
+  editor.setSelection(cursor+(number+". ").length());
+ }
  void insertEditorText(String value){
   if(editor==null)return;
   int start=Math.max(0,editor.getSelectionStart());
