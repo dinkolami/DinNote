@@ -1,0 +1,41 @@
+name: Import Quillpad upstream (migration branch)
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out isolated migration branch
+        uses: actions/checkout@v4
+        with:
+          ref: quillpad-migration
+          persist-credentials: true
+      - name: Fetch complete upstream Quillpad source
+        run: |
+          set -euo pipefail
+          git clone --depth 1 https://github.com/quillpad/quillpad.git /tmp/quillpad-upstream
+          test -f /tmp/quillpad-upstream/LICENSE || test -f /tmp/quillpad-upstream/LICENSE.md || test -f /tmp/quillpad-upstream/COPYING
+      - name: Import source while retaining this migration workflow
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/dinnote-workflow
+          cp .github/workflows/import-quillpad.yml /tmp/dinnote-workflow/import-quillpad.yml
+          rsync -a --delete --exclude='.git/' /tmp/quillpad-upstream/ ./
+          mkdir -p .github/workflows
+          cp /tmp/dinnote-workflow/import-quillpad.yml .github/workflows/import-quillpad.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m "Import Quillpad upstream source for DinNote migration"
+            git push origin HEAD:quillpad-migration
+          fi
+      - name: Verify imported Android project files
+        run: |
+          test -f settings.gradle || test -f settings.gradle.kts
+          test -f gradlew
+          echo "Upstream source imported. Rename and integration are separate steps."
