@@ -128,7 +128,7 @@ public class MainActivity extends Activity {
 
  int dp(int n){return (int)(n*getResources().getDisplayMetrics().density+0.5f);}
  int dp(float n){return (int)(n*getResources().getDisplayMetrics().density+0.5f);}
- android.graphics.drawable.GradientDrawable silverGradient(int radius){android.graphics.drawable.GradientDrawable d=new android.graphics.drawable.GradientDrawable(android.graphics.drawable.GradientDrawable.Orientation.TL_BR,new int[]{0xfff4f5f7,0xffffffff,0xffe3e5e9});d.setCornerRadius(dp(radius));d.setStroke(dp(1),0xffd7dbe0);return d;}
+ android.graphics.drawable.GradientDrawable silverGradient(int radius){android.graphics.drawable.GradientDrawable d=new android.graphics.drawable.GradientDrawable(android.graphics.drawable.GradientDrawable.Orientation.TL_BR,new int[]{0xffffffff,0xfffcfcfd,0xfff1f2f4});d.setCornerRadius(dp(radius));d.setStroke(dp(1),0xffe1e4e8);return d;}
  android.graphics.drawable.GradientDrawable subtleNoteBorder(int radius){android.graphics.drawable.GradientDrawable d=new android.graphics.drawable.GradientDrawable();d.setColor(Color.WHITE);d.setCornerRadius(dp(radius));d.setStroke(dp(0.5f),0xffe5e7eb);return d;}
  TextView dashboardText(String value,int size,boolean bold){TextView t=text(value,size);t.setPadding(dp(10),dp(8),dp(10),dp(8));if(bold)t.setTypeface(null,1);return t;}
  LinearLayout dashboardCard(){LinearLayout c=new LinearLayout(this);c.setOrientation(1);c.setPadding(dp(14),dp(12),dp(14),dp(12));android.graphics.drawable.GradientDrawable bg=new android.graphics.drawable.GradientDrawable();bg.setColor(Color.WHITE);bg.setCornerRadius(dp(17));bg.setStroke(dp(1),0xffe1e5e4);c.setBackground(bg);c.setElevation(dp(3));return c;}
@@ -175,13 +175,13 @@ public class MainActivity extends Activity {
   View divider=new View(this);divider.setBackgroundColor(0xffe5e7eb);
   card.addView(divider,new LinearLayout.LayoutParams(-1,dp(1)));
   LinearLayout tiles=new LinearLayout(this);tiles.setPadding(dp(8),dp(5),dp(8),dp(4));card.addView(tiles);
-  TextView note=dashboardText("▤\nNota",15,true);
-  TextView book=dashboardText("▱\nMaktabah",15,true);
+  TextView note=dashboardText("▤\nNota",14,true);
+  TextView book=dashboardText("▱\nMaktabah",14,true);
   note.setGravity(Gravity.CENTER);book.setGravity(Gravity.CENTER);note.setFocusable(true);book.setFocusable(true);
   note.setBackground(silverGradient(10));
   book.setBackground(silverGradient(10));
   LinearLayout.LayoutParams a=new LinearLayout.LayoutParams(0,dp(78),1);a.rightMargin=dp(4);
-  LinearLayout.LayoutParams b=new LinearLayout.LayoutParams(0,dp(64),1);b.leftMargin=dp(4);
+  LinearLayout.LayoutParams b=new LinearLayout.LayoutParams(0,dp(78),1);b.leftMargin=dp(4);
   tiles.addView(note,a);tiles.addView(book,b);
   note.setContentDescription("Buka senarai Nota");book.setContentDescription("Buka Maktabah");
   note.setOnClickListener(v->openSection(false));book.setOnClickListener(v->openSection(true));
