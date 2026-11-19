@@ -107,6 +107,47 @@ jobs:
             echo "Saiz pemasangan dan penggunaan RAM pada telefon memerlukan ujian peranti berasingan."
           } >> "$GITHUB_STEP_SUMMARY"
           echo "$STATUS: $MIB MiB"
+      - name: Analyze APK component sizes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os, zipfile
+          from collections import defaultdict
+          apk = "app/build/outputs/apk/release/app-release.apk"
+          categories = defaultdict(int)
+          with zipfile.ZipFile(apk) as archive:
+              entries = sorted(archive.infolist(), key=lambda e: e.compress_size, reverse=True)
+              for entry in entries:
+                  name = entry.filename
+                  if name.startswith("lib/"):
+                      group = "Pustaka native (termasuk kemungkinan OCR)"
+                  elif name.endswith(".dex"):
+                      group = "Kod DEX"
+                  elif name.startswith(("res/", "resources.arsc", "assets/")):
+                      group = "Sumber dan aset"
+                  elif name.startswith("META-INF/"):
+                      group = "Metadata dan tandatangan"
+                  else:
+                      group = "Lain-lain"
+                  categories[group] += entry.compress_size
+          def mib(n):
+              return f"{n / (1024 * 1024):.2f}"
+          lines = ["## Pecahan saiz APK (mampat)", "",
+                   "| Kategori | Saiz (MiB) |", "|---|---:|"]
+          for name, size in sorted(categories.items(), key=lambda x: -x[1]):
+              lines.append(f"| {name} | {mib(size)} |")
+          lines.extend(["", "### 10 fail terbesar dalam APK", "",
+                        "| Fail | Saiz mampat (MiB) |", "|---|---:|"])
+          for entry in entries[:10]:
+              safe_name = entry.filename.replace("|", "/")
+              lines.append(f"| `{safe_name}` | {mib(entry.compress_size)} |")
+          lines.extend(["", "Angka berdasarkan saiz mampat dalam APK; ini bukan ukuran RAM atau ruang selepas pemasangan.",
+                        "Kategori pustaka native boleh merangkumi komponen selain OCR."])
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as f:
+              f.write("\n".join(lines) + "\n")
+          print("\n".join(lines))
+          PY
       - name: Upload signed release APK
         if: env.HAS_SIGNING_KEY == 'true'
         uses: actions/upload-artifact@v4
