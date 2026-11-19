@@ -894,13 +894,13 @@ public class MainActivity extends Activity {
     body.setMinLines(5);body.setSelectAllOnFocus(false);body.setContentDescription("Kandungan kitab");body.setHorizontallyScrolling(false);body.setTextIsSelectable(true);body.setImeOptions(android.view.inputmethod.EditorInfo.IME_FLAG_NO_EXTRACT_UI);page.addView(body,new LinearLayout.LayoutParams(-1,0,1));
     styleEditorPage(page,title,body,saveIndicator,back);
     final Button[] deleteButton={null};
-    final int[] bookId={id};final boolean[] loading={true};
+    final int[] bookId={id};final boolean[] loading={true};final Runnable[] bookSaveHolder={null};
     if(id>=0)try(Cursor c=db.getReadableDatabase().rawQuery("SELECT title,body,body_html FROM books WHERE id=?",new String[]{""+id})){
       if(c.moveToFirst()){title.setText(c.getString(0));body.setText(c.getString(2)!=null&&!c.getString(2).isEmpty()?android.text.Html.fromHtml(c.getString(2),android.text.Html.FROM_HTML_MODE_COMPACT):c.getString(1));}
     }
     LinearLayout toolbar=new LinearLayout(this);toolbar.setOrientation(LinearLayout.HORIZONTAL);
     page.addView(toolbar,new LinearLayout.LayoutParams(-1,-2));
-    Button fontColor=button();fontColor.setText("A●");fontColor.setContentDescription("Warna tulisan kitab");toolbar.addView(fontColor,new LinearLayout.LayoutParams(0,-2,1));fontColor.setOnClickListener(v->chooseTextColor(body,()->body.getText().insert(Math.max(0,body.getSelectionStart()),"")));
+    Button fontColor=button();fontColor.setText("A●");fontColor.setContentDescription("Warna tulisan kitab");toolbar.addView(fontColor,new LinearLayout.LayoutParams(0,-2,1));fontColor.setOnClickListener(v->chooseTextColor(body,()->{if(bookSaveHolder[0]!=null)scheduleSave(bookSaveHolder[0]);}));
     Button check=button();check.setText("☐");toolbar.addView(check,new LinearLayout.LayoutParams(0,-2,1));
     Button bold=button();bold.setText("B");bold.setContentDescription("Tebalkan teks dipilih");bold.setTypeface(null,Typeface.BOLD);toolbar.addView(bold,new LinearLayout.LayoutParams(0,-2,1));
     Button italic=button();italic.setText("I");italic.setContentDescription("Condongkan teks dipilih");italic.setTypeface(null,Typeface.ITALIC);toolbar.addView(italic,new LinearLayout.LayoutParams(0,-2,1));
@@ -918,6 +918,7 @@ public class MainActivity extends Activity {
       try{if(bookId[0]<0){bookId[0]=(int)db.getWritableDatabase().insertOrThrow("books",null,cv);deleteButton[0].setEnabled(true);}
       else db.getWritableDatabase().update("books",cv,"id=?",new String[]{""+bookId[0]});setSaveStatus("✓ Disimpan");}catch(Exception e){android.util.Log.e("DinNote","Book save failed",e);setSaveStatus("Gagal disimpan");Toast.makeText(this,"Kitab gagal disimpan",Toast.LENGTH_LONG).show();}
     };
+    bookSaveHolder[0]=save;
     TextWatcher watcher=new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}
       public void onTextChanged(CharSequence s,int st,int before,int count){scheduleSave(save);}
       public void afterTextChanged(Editable e){}};
@@ -933,8 +934,8 @@ public class MainActivity extends Activity {
   }
   void saveColor(int id,int color){if(id<0)return;ContentValues v=new ContentValues();v.put("color",color);db.getWritableDatabase().update("notes",v,"id=?",new String[]{""+id});}
   void chooseTextColor(EditText editor,Runnable onChanged){
-    int[] colors={0xFF1F2328,0xFFD1242F,0xFFB45309,0xFF15803D,0xFF0969DA,0xFF7C3AED,0xFFBE185D,0xFF0F766E,0xFF475569,0xFFFFFFFF,0xFFEA580C,0xFF4338CA};
-    String[] names={"Hitam","Merah","Coklat","Hijau","Biru","Ungu","Merah jambu","Turquoise","Kelabu","Putih","Oren","Indigo"};
+    int[] colors={0xFF1F2328,0xFFD1242F,0xFFB45309,0xFF15803D,0xFF0969DA,0xFF7C3AED,0xFFBE185D,0xFF0F766E,0xFF475569,0xFFFFFFFF,0xFFEA580C,0xFF4338CA,0xFFB8860B,0xFF800020,0xFF556B2F,0xFF172554,0xFF0284C7,0xFF65A30D,0xFF9333EA,0xFFFB7185};
+    String[] names={"Hitam","Merah","Coklat","Hijau","Biru","Ungu","Merah jambu","Turquoise","Kelabu","Putih","Oren","Indigo","Emas","Marun","Zaitun","Navy","Biru langit","Lime","Lavender","Coral"};
     int start=editor.getSelectionStart(),end=editor.getSelectionEnd();
     if(start<0||end<=start){Toast.makeText(this,"Pilih teks yang hendak diwarnakan dahulu",Toast.LENGTH_SHORT).show();return;}
     new AlertDialog.Builder(this).setTitle("Warna tulisan")
