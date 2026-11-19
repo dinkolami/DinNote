@@ -153,6 +153,7 @@ Dokumen ini menyimpan semua 100 cadangan supaya cadangan yang belum dipilih tida
 - Jika menambah cadangan baharu selepas nombor 100, sambung penomboran; kekalkan sejarah cadangan terdahulu.
 
 ## Audit saiz dan kelancaran APK
+- Keselamatan restore diperkukuh: fail backup dengan objek data kosong atau jenis nilai tidak disokong ditolak sebelum `prefs.edit().clear()` dilaksanakan. Commit `3aa6449`. Fail backup sah masih perlu diuji pada APK sebenar; backup dan ujian pemulihan diperlukan sebelum kemas kini berisiko.
 - GitHub Actions mempunyai pemeriksaan sumber untuk menghalang rujukan ML Kit, Tesseract dan model `ara.traineddata` kembali tanpa sengaja (`8fbc71a`). Ini bukan bukti APK berjaya dibina atau diuji pada telefon.
 - Pemeriksaan APK debug kini mengesahkan package ID `com.dinkolami.dinnote.fresh`, min/target SDK, tandatangan debug dan SHA-256 sebelum muat naik artifak. Commit `1294a54`. Ini semakan fail APK, bukan bukti pemasangan pada Fold6; jangan nyahpasang versi release sebelum backup disahkan.
 - Workflow release kini memeriksa keempat-empat rahsia signing dan melangkau langkah release dengan amaran jika tidak lengkap; binaan debug dan artifaknya tidak digagalkan semata-mata kerana rahsia signing tiada. Label audit saiz tidak lagi menyebut OCR yang telah dibuang. Commit `1204a99`. Kejayaan run dan ujian pemasangan masih belum disahkan.
