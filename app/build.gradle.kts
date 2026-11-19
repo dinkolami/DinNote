@@ -6,8 +6,3 @@ android { namespace = "com.dinkolami.dinnote"; compileSdk = 35
  compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
 }
 
-
-dependencies {
- implementation("cz.adaptech.tesseract4android:tesseract4android:4.9.0")
- implementation("com.google.mlkit:text-recognition:16.0.1")
-}
