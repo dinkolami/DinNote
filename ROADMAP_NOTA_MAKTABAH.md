@@ -34,7 +34,7 @@ Dokumen ini menyimpan semua 100 cadangan supaya cadangan yang belum dipilih tida
 - [ ] 25. Pindah kategori — alih nota antara kategori.
 - [ ] 26. Susunan manual — susun nota mengikut pilihan.
 - [ ] 27. Warna kategori — bezakan kategori dengan warna lembut.
-- [ ] 28. Kiraan perkataan — paparkan jumlah perkataan.
+- [ ] 28. Kiraan perkataan — paparkan jumlah perkataan. **Status: Kod di-commit, belum diuji APK/pengguna** (`f4cc09b`); jumlah perkataan dipaparkan pada bacaan Nota dan Maktabah.
 - [ ] 29. Templat nota — kuliah, mesyuarat dan pengajian.
 - [ ] 30. Peringatan nota — tetapkan tarikh dan masa.
 
