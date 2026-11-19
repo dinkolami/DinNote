@@ -554,18 +554,23 @@ public class MainActivity extends Activity {
     flushPendingSave();
     editingBook=false;editingNote=false;saveIndicator=null;
     root=column();root.setFocusableInTouchMode(true);root.requestFocus();setContentView(root);
-    LinearLayout header=new LinearLayout(this);header.setOrientation(LinearLayout.HORIZONTAL);header.setGravity(Gravity.CENTER_VERTICAL);root.addView(header);
-    TextView title=text("DinNote",27);title.setLetterSpacing(-0.03f);title.setPadding(2,9,12,9);title.setTypeface(null,Typeface.BOLD);title.setTextColor(foreground());title.setContentDescription("DinNote halaman utama");title.setElegantTextHeight(true);title.setMaxLines(1);title.setTextDirection(View.TEXT_DIRECTION_LOCALE);title.setIncludeFontPadding(false);title.setEllipsize(android.text.TextUtils.TruncateAt.END);header.addView(title,new LinearLayout.LayoutParams(0,-2,1));
-    header.setBackground(rounded(cardSurface(),borderColor(),16));
-    header.setPadding(12,8,8,8);
+    // Two-tier GitHub-inspired header, entirely below Android system status bar.
+    LinearLayout header=new LinearLayout(this);header.setOrientation(LinearLayout.VERTICAL);root.addView(header);
+    header.setBackground(rounded(cardSurface(),borderColor(),14));header.setPadding(10,8,10,5);
     header.setElevation(3f*getResources().getDisplayMetrics().density);
-    header.setMinimumHeight((int)(56*getResources().getDisplayMetrics().density));
-    header.setContentDescription("Header DinNote di bawah status bar Android, kekal ketika skrol");
-    header.setAlpha(1f);
-    header.setClipToPadding(false);
-    header.setClickable(false);
-    TextView appearance=text("⚙",21);appearance.setTextColor(accent());appearance.setBackground(rounded(cardSurface(),borderColor(),14));appearance.setGravity(Gravity.CENTER);appearance.setTextSize(20);appearance.setContentDescription("Buka tetapan DinNote");appearance.setAccessibilityHeading(false);appearance.setTooltipText("Tetapan");appearance.setSoundEffectsEnabled(true);appearance.setFocusable(true);appearance.setClickable(true);appearance.setMinWidth(48);appearance.setMinHeight(48);appearance.setHapticFeedbackEnabled(true);appearance.setPadding(8,8,8,8);appearance.setElevation(1f);appearance.setStateListAnimator(null);appearance.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);appearance.setOnClickListener(v->showSettings());header.addView(appearance);
-    View headerDivider=new View(this);headerDivider.setBackgroundColor(borderColor());headerDivider.setContentDescription("Pemisah tajuk");LinearLayout.LayoutParams hd=new LinearLayout.LayoutParams(-1,1);hd.setMargins(0,12,0,18);root.addView(headerDivider,hd);
+    LinearLayout topBar=new LinearLayout(this);topBar.setGravity(Gravity.CENTER_VERTICAL);header.addView(topBar);
+    TextView menu=text("☰",24);menu.setGravity(Gravity.CENTER);menu.setMinWidth(48);menu.setMinHeight(48);menu.setContentDescription("Menu dan tetapan");menu.setBackground(rounded(cardSurface(),borderColor(),12));menu.setOnClickListener(v->showSettings());topBar.addView(menu);
+    TextView title=text("  ◈  DinNote  ▾",21);title.setTypeface(null,Typeface.BOLD);title.setSingleLine(true);title.setEllipsize(android.text.TextUtils.TruncateAt.END);topBar.addView(title,new LinearLayout.LayoutParams(0,-2,1));
+    TextView search=text("⌕",27);search.setGravity(Gravity.CENTER);search.setMinWidth(48);search.setMinHeight(48);search.setContentDescription("Cari nota");search.setBackground(rounded(cardSurface(),borderColor(),12));search.setOnClickListener(v->showNoteCategories());topBar.addView(search);
+    TextView settings=text("⚙",22);settings.setGravity(Gravity.CENTER);settings.setMinWidth(48);settings.setMinHeight(48);settings.setTextColor(accent());settings.setContentDescription("Tetapan penampilan");settings.setOnClickListener(v->showSettings());topBar.addView(settings);
+    HorizontalScrollView tabScroll=new HorizontalScrollView(this);tabScroll.setHorizontalScrollBarEnabled(false);tabScroll.setFillViewport(true);header.addView(tabScroll);
+    LinearLayout tabs=new LinearLayout(this);tabs.setGravity(Gravity.CENTER_VERTICAL);tabScroll.addView(tabs);
+    TextView tabHome=text("Utama",15);tabHome.setTypeface(null,Typeface.BOLD);tabHome.setTextColor(accent());tabHome.setPadding(14,12,14,12);tabs.addView(tabHome);
+    TextView tabNotes=text("Nota",15);tabNotes.setPadding(14,12,14,12);tabNotes.setOnClickListener(v->showNoteCategories());tabs.addView(tabNotes);
+    TextView tabBooks=text("Maktabah",15);tabBooks.setPadding(14,12,14,12);tabBooks.setOnClickListener(v->showLibrary());tabs.addView(tabBooks);
+    TextView tabMore=text("Lagi  ▾",15);tabMore.setPadding(14,12,14,12);tabMore.setOnClickListener(v->showSettings());tabs.addView(tabMore);
+    View activeRule=new View(this);activeRule.setBackgroundColor(accent());LinearLayout.LayoutParams rp=new LinearLayout.LayoutParams(56,3);rp.setMargins(14,0,0,0);header.addView(activeRule,rp);
+    View headerDivider=new View(this);headerDivider.setBackgroundColor(borderColor());root.addView(headerDivider,new LinearLayout.LayoutParams(-1,1));
     // Header remains visible while the home content scrolls beneath it.
     ScrollView homeScroll=new ScrollView(this);homeScroll.setFillViewport(false);homeScroll.setScrollbarFadingEnabled(true);homeScroll.setVerticalFadingEdgeEnabled(false);homeScroll.setContentDescription("Kandungan halaman utama DinNote");homeScroll.setFocusable(false);homeScroll.setVerticalScrollBarEnabled(true);homeScroll.setFadingEdgeLength(0);homeScroll.setSmoothScrollingEnabled(true);homeScroll.setDescendantFocusability(android.view.ViewGroup.FOCUS_AFTER_DESCENDANTS);homeScroll.setOverScrollMode(View.OVER_SCROLL_IF_CONTENT_SCROLLS);homeScroll.setClipToPadding(false);homeScroll.setPadding(0,0,0,2);root.addView(homeScroll,new LinearLayout.LayoutParams(-1,0,1));
     // Animate only the in-app header opacity, never Android system bars.
