@@ -530,7 +530,22 @@ public class MainActivity extends Activity {
   dividerButton.setTextColor(0xffb49a43);dividerButton.setContentDescription("Masukkan divider emas");
   Button fontButton=action("Aa",formatBar,()->new AlertDialog.Builder(this).setTitle("Saiz tulisan editor").setItems(new String[]{"Kecil","Biasa","Besar","Sangat besar"},(d,i)->{prefs.edit().putInt("editor_font_level",i).apply();if(editor!=null)editor.setTextSize(new int[]{14,16,19,23}[i]);}).show());
   fontButton.setContentDescription("Saiz tulisan editor");
-  root.addView(editor,new LinearLayout.LayoutParams(-1,0,1));if(key!=null)editor.setText(prefs.getString(key,""));TextWatcher titleWatcher=new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){save();}public void afterTextChanged(Editable e){}};titleEditor.addTextChangedListener(titleWatcher);TextWatcher bodyWatcher=new TextWatcher(){String before="";public void beforeTextChanged(CharSequence s,int st,int count,int after){before=s.toString();}public void onTextChanged(CharSequence s,int st,int beforeCount,int count){}public void afterTextChanged(Editable e){if(!restoring[0]&&!before.equals(e.toString())){
+  root.addView(editor,new LinearLayout.LayoutParams(-1,0,1));
+  // Double-tap the writing area to save and return to the reading screen.
+  android.view.GestureDetector editorDoubleTap=new android.view.GestureDetector(this,new android.view.GestureDetector.SimpleOnGestureListener(){
+   @Override public boolean onDoubleTap(android.view.MotionEvent event){
+    save();
+    if(selected!=null)read(selected);
+    else if(sectionOpen)notesPage();
+    else home();
+    return true;
+   }
+  });
+  editor.setOnTouchListener((view,event)->{
+   editorDoubleTap.onTouchEvent(event);
+   return false;
+  });
+  if(key!=null)editor.setText(prefs.getString(key,""));TextWatcher titleWatcher=new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){save();}public void afterTextChanged(Editable e){}};titleEditor.addTextChangedListener(titleWatcher);TextWatcher bodyWatcher=new TextWatcher(){String before="";public void beforeTextChanged(CharSequence s,int st,int count,int after){before=s.toString();}public void onTextChanged(CharSequence s,int st,int beforeCount,int count){}public void afterTextChanged(Editable e){if(!restoring[0]&&!before.equals(e.toString())){
    int cursor=editor.getSelectionStart();
    if(cursor>0&&cursor<=e.length()&&e.charAt(cursor-1)=='\n'){
     String prior=e.subSequence(0,cursor-1).toString();
