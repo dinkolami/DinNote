@@ -50,17 +50,18 @@ public class MainActivity extends Activity {
   root.addView(border,new LinearLayout.LayoutParams(-1,dp(1)));
  }
  ImageView headerIcon(String symbol,int color,String description){
-  int px=dp(38);android.graphics.Bitmap bitmap=android.graphics.Bitmap.createBitmap(px,px,android.graphics.Bitmap.Config.ARGB_8888);
+  int px=dp(34);android.graphics.Bitmap bitmap=android.graphics.Bitmap.createBitmap(px,px,android.graphics.Bitmap.Config.ARGB_8888);
   android.graphics.Canvas canvas=new android.graphics.Canvas(bitmap);
   android.graphics.Paint paint=new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
-  paint.setColor(color);paint.setTextSize(dp(24));paint.setTypeface(android.graphics.Typeface.DEFAULT);
+  paint.setColor(color);paint.setTextSize(dp(21));paint.setTypeface(android.graphics.Typeface.DEFAULT);
   paint.setTextAlign(android.graphics.Paint.Align.CENTER);
   android.graphics.Paint.FontMetrics fm=paint.getFontMetrics();
   canvas.drawText(symbol,px/2f,px/2f-(fm.ascent+fm.descent)/2f,paint);
   ImageView view=new ImageView(this);view.setImageBitmap(bitmap);view.setContentDescription(description);
   view.setClickable(true);view.setFocusable(true);view.setScaleType(ImageView.ScaleType.FIT_CENTER);
   android.graphics.drawable.GradientDrawable frame=new android.graphics.drawable.GradientDrawable();frame.setColor(0xffffffff);frame.setCornerRadius(dp(10));frame.setStroke(dp(1),0xffaeb9bb);view.setBackground(frame);
-  view.setPadding(dp(4),dp(4),dp(4),dp(4));
+  view.setPadding(dp(5),dp(5),dp(5),dp(5));
+  LinearLayout.LayoutParams iconParams=new LinearLayout.LayoutParams(dp(34),dp(34));iconParams.leftMargin=dp(3);iconParams.rightMargin=dp(3);view.setLayoutParams(iconParams);
   return view;
  }
  void searchNotesDialog(){
