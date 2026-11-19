@@ -549,6 +549,7 @@ public class MainActivity extends Activity {
     // Informational metadata for future SQLite migration; v1 backups stay compatible.
     obj.put("storage","SharedPreferences");
     obj.put("exported_at",System.currentTimeMillis());
+    obj.put("app_package",getPackageName());
     org.json.JSONObject values=new org.json.JSONObject();
     for(java.util.Map.Entry<String,?> entry:prefs.getAll().entrySet()){
      Object value=entry.getValue();
