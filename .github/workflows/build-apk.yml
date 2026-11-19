@@ -54,6 +54,13 @@ jobs:
             echo "Debug APK biasanya lebih besar daripada release; jangan banding terus dengan sasaran release 30 MiB."
           } >> "$GITHUB_STEP_SUMMARY"
           echo "Debug APK: $MIB MiB"
+      - name: Upload debug APK for testing
+        uses: actions/upload-artifact@v4
+        with:
+          name: DinNote-debug-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 7
       - name: Require release signing secrets
         env:
           DINNOTE_KEYSTORE_BASE64: ${{ secrets.DINNOTE_KEYSTORE_BASE64 }}
