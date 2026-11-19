@@ -80,6 +80,33 @@ jobs:
           echo "=== APK entries ==="
           unzip -l "$APK" | tail -n 25
           echo "Note: GitHub cannot detect installed-app signature conflicts on a user's phone."
+      - name: Report APK size and 30 MB advisory target
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK=app/build/outputs/apk/release/app-release.apk
+          test -s "$APK"
+          BYTES=$(stat -c '%s' "$APK")
+          MIB=$(awk -v bytes="$BYTES" 'BEGIN { printf "%.2f", bytes/1048576 }')
+          LIMIT=$((30 * 1024 * 1024))
+          if [ "$BYTES" -gt "$LIMIT" ]; then
+            STATUS="Melebihi sasaran 30 MiB — semak pustaka OCR dan sumber besar"
+          else
+            STATUS="Dalam sasaran 30 MiB"
+          fi
+          {
+            echo "## DinNote APK size"
+            echo ""
+            echo "| Metrik | Nilai |"
+            echo "|---|---|"
+            echo "| Fail | app-release.apk |"
+            echo "| Saiz | ${MIB} MiB (${BYTES} bait) |"
+            echo "| Sasaran awal | 30 MiB (bukan had wajib) |"
+            echo "| Penilaian | ${STATUS} |"
+            echo ""
+            echo "Saiz pemasangan dan penggunaan RAM pada telefon memerlukan ujian peranti berasingan."
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "$STATUS: $MIB MiB"
       - name: Upload signed release APK
         if: env.HAS_SIGNING_KEY == 'true'
         uses: actions/upload-artifact@v4
