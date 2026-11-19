@@ -78,7 +78,7 @@ public class MainActivity extends Activity {
   }
   Button button(){
     Button b=new Button(this);b.setAllCaps(false);b.setTextSize(14);b.setLetterSpacing(0);
-    b.setMinHeight(44);b.setTextColor(foreground());b.setBackground(rounded(cardSurface(),borderColor(),12));
+    b.setMinHeight(44);b.setTextColor(foreground());b.setBackground(rounded(cardSurface(),borderColor(),16));
     b.setPadding(14,12,14,12);
     LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2);p.setMargins(0,5,0,5);b.setLayoutParams(p);
     return b;
