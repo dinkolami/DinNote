@@ -67,6 +67,8 @@ public class MainActivity extends Activity {
     editorSpacing.setOnClickListener(v->{boolean current=getPreferences(MODE_PRIVATE).getBoolean("editorComfortSpacing",true);getPreferences(MODE_PRIVATE).edit().putBoolean("editorComfortSpacing",!current).apply();showSettings();});
     Button palette=button();palette.setText("✦  Palet Pearl • Gold • Turquoise  ·  "+(pearlPalette()?"Aktif":"Asal"));
     options.addView(palette);palette.setOnClickListener(v->{getPreferences(MODE_PRIVATE).edit().putBoolean("pearlTurquoiseGold",!pearlPalette()).apply();applyAppearance();showSettings();});
+    Button smoothHeader=button();smoothHeader.setText("◈  Header lembut ketika skrol  ·  "+(getPreferences(MODE_PRIVATE).getBoolean("smoothHeader",true)?"Aktif":"Mati"));
+    options.addView(smoothHeader);smoothHeader.setOnClickListener(v->{boolean enabled=getPreferences(MODE_PRIVATE).getBoolean("smoothHeader",true);getPreferences(MODE_PRIVATE).edit().putBoolean("smoothHeader",!enabled).apply();showSettings();});
     Button sort=button();sort.setText("↕  Susunan nota  ·  "+new String[]{"Terkini","Terlama","Tajuk A-Z"}[Math.max(0,Math.min(noteSort,2))]);
     options.addView(sort);sort.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Susunan nota")
       .setSingleChoiceItems(new String[]{"Terkini","Terlama","Tajuk A-Z"},Math.max(0,Math.min(2,noteSort)),(dialog,which)->{
@@ -504,7 +506,7 @@ public class MainActivity extends Activity {
     title.setMinHeight(56);
     title.setPadding(18,12,18,12);
     title.setBackground(rounded(cardSurface(),borderColor(),10));
-    body.setPadding(20,20,20,24);
+    body.setPadding(20,22,20,28);
     body.setIncludeFontPadding(true);
     body.setTextSize(getPreferences(MODE_PRIVATE).getInt("editorFontSize",16));
     body.setLineSpacing(getPreferences(MODE_PRIVATE).getBoolean("editorComfortSpacing",true)?8f:3f,getPreferences(MODE_PRIVATE).getBoolean("editorComfortSpacing",true)?1.16f:1.04f);
@@ -514,6 +516,7 @@ public class MainActivity extends Activity {
     body.setScrollBarStyle(View.SCROLLBARS_INSIDE_INSET);
     body.setVerticalScrollBarEnabled(true);
     body.setOverScrollMode(View.OVER_SCROLL_IF_CONTENT_SCROLLS);
+    body.setFadingEdgeLength(12);
     status.setTextColor(dark()?0xFF8B949E:0xFF57606A);
     status.setTextSize(12);
     status.setGravity(Gravity.END);
@@ -550,14 +553,23 @@ public class MainActivity extends Activity {
     LinearLayout header=new LinearLayout(this);header.setOrientation(LinearLayout.HORIZONTAL);header.setGravity(Gravity.CENTER_VERTICAL);root.addView(header);
     TextView title=text("DinNote",27);title.setLetterSpacing(-0.03f);title.setPadding(2,9,12,9);title.setTypeface(null,Typeface.BOLD);title.setTextColor(foreground());title.setContentDescription("DinNote halaman utama");title.setElegantTextHeight(true);title.setMaxLines(1);title.setTextDirection(View.TEXT_DIRECTION_LOCALE);title.setIncludeFontPadding(false);title.setEllipsize(android.text.TextUtils.TruncateAt.END);header.addView(title,new LinearLayout.LayoutParams(0,-2,1));
     header.setBackground(rounded(cardSurface(),borderColor(),16));
-    header.setPadding(12,6,8,6);
+    header.setPadding(12,8,8,8);
     header.setElevation(2f*getResources().getDisplayMetrics().density);
-    header.setContentDescription("Header DinNote, kekal di atas semasa skrol");
+    header.setContentDescription("Header DinNote di bawah status bar Android, kekal ketika skrol");
+    header.setAlpha(1f);
     header.setClipToPadding(false);
     TextView appearance=text("⚙",21);appearance.setTextColor(accent());appearance.setBackground(rounded(cardSurface(),borderColor(),14));appearance.setGravity(Gravity.CENTER);appearance.setTextSize(20);appearance.setContentDescription("Buka tetapan DinNote");appearance.setAccessibilityHeading(false);appearance.setTooltipText("Tetapan");appearance.setSoundEffectsEnabled(true);appearance.setFocusable(true);appearance.setClickable(true);appearance.setMinWidth(48);appearance.setMinHeight(48);appearance.setHapticFeedbackEnabled(true);appearance.setPadding(8,8,8,8);appearance.setElevation(1f);appearance.setStateListAnimator(null);appearance.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);appearance.setOnClickListener(v->showSettings());header.addView(appearance);
     View headerDivider=new View(this);headerDivider.setBackgroundColor(borderColor());headerDivider.setContentDescription("Pemisah tajuk");LinearLayout.LayoutParams hd=new LinearLayout.LayoutParams(-1,1);hd.setMargins(0,12,0,18);root.addView(headerDivider,hd);
     // Header remains visible while the home content scrolls beneath it.
     ScrollView homeScroll=new ScrollView(this);homeScroll.setFillViewport(false);homeScroll.setScrollbarFadingEnabled(true);homeScroll.setVerticalFadingEdgeEnabled(false);homeScroll.setContentDescription("Kandungan halaman utama DinNote");homeScroll.setFocusable(false);homeScroll.setVerticalScrollBarEnabled(true);homeScroll.setFadingEdgeLength(0);homeScroll.setSmoothScrollingEnabled(true);homeScroll.setDescendantFocusability(android.view.ViewGroup.FOCUS_AFTER_DESCENDANTS);homeScroll.setOverScrollMode(View.OVER_SCROLL_IF_CONTENT_SCROLLS);homeScroll.setClipToPadding(false);homeScroll.setPadding(0,0,0,2);root.addView(homeScroll,new LinearLayout.LayoutParams(-1,0,1));
+    // Animate only the in-app header opacity, never Android system bars.
+    final boolean smoothHeaderEnabled=getPreferences(MODE_PRIVATE).getBoolean("smoothHeader",true);
+    homeScroll.setOnScrollChangeListener((View.OnScrollChangeListener)(v,scrollX,scrollY,oldX,oldY)->{
+      if(smoothHeaderEnabled){
+        float target=1f-Math.min(0.12f,Math.max(0,scrollY)/500f);
+        header.animate().alpha(target).setDuration(160).start();
+      } else if(header.getAlpha()!=1f){header.animate().cancel();header.setAlpha(1f);}
+    });
     LinearLayout homeContent=new LinearLayout(this);homeContent.setOrientation(1);homeContent.setPadding(0,0,0,32);homeContent.setFocusableInTouchMode(false);homeContent.setClipToPadding(false);homeScroll.addView(homeContent);
     // Emerald-and-gold DinNote identity, contained entirely within the app window.
     LinearLayout hero=new LinearLayout(this);
