@@ -228,10 +228,10 @@ public class MainActivity extends Activity {
     if(list==null||db==null)return;
     list.removeAllViews();
     int visibleCount=0;
-    try(Cursor c=db.getReadableDatabase().rawQuery("SELECT id,title,body,color FROM notes WHERE (title LIKE ? OR body LIKE ?) AND (?=-1 OR category_id=?) ORDER BY "+(noteSort==1?"updated ASC,id ASC":noteSort==2?"title COLLATE NOCASE ASC,id DESC":"updated DESC,id DESC"),new String[]{"%"+query+"%","%"+query+"%",""+selectedNoteCategory,""+selectedNoteCategory})) {
-      while(c.moveToNext()){visibleCount++;final int id=c.getInt(0);String heading=c.getString(1);String body=c.getString(2);if(heading==null)heading="";if(body==null)body="";body=body.replace("\r"," ").replace("\n"," ").trim();int noteColor=c.getInt(3);
+    try(Cursor c=db.getReadableDatabase().rawQuery("SELECT id,title,body,color,pinned FROM notes WHERE (title LIKE ? OR body LIKE ?) AND (?=-1 OR category_id=?) ORDER BY pinned DESC,"+(noteSort==1?"updated ASC,id ASC":noteSort==2?"title COLLATE NOCASE ASC,id DESC":"updated DESC,id DESC"),new String[]{"%"+query+"%","%"+query+"%",""+selectedNoteCategory,""+selectedNoteCategory})) {
+      while(c.moveToNext()){visibleCount++;final int id=c.getInt(0);String heading=c.getString(1);String body=c.getString(2);if(heading==null)heading="";if(body==null)body="";body=body.replace("\r"," ").replace("\n"," ").trim();int noteColor=c.getInt(3);boolean pinned=c.getInt(4)==1;
         TextView item=text((heading.trim().isEmpty()?"Tanpa tajuk":heading)+"\n"+(body.length()>90?body.substring(0,90)+"…":body),15);
-        item.setBackground(rounded(noteColor==Color.WHITE?cardSurface():noteColor,borderColor(),16));item.setTextColor(noteColor==Color.WHITE?foreground():Color.BLACK);LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2);p.setMargins(0,5,0,5);list.addView(item,p);item.setOnClickListener(v->edit(id));
+        item.setBackground(rounded(noteColor==Color.WHITE?cardSurface():noteColor,borderColor(),16));item.setTextColor(noteColor==Color.WHITE?foreground():Color.BLACK);LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2);p.setMargins(0,5,0,5);LinearLayout line=new LinearLayout(this);line.setOrientation(LinearLayout.HORIZONTAL);line.setGravity(Gravity.CENTER_VERTICAL);list.addView(line,p);line.addView(item,new LinearLayout.LayoutParams(0,-2,1));item.setOnClickListener(v->edit(id));Button pin=button();pin.setText(pinned?"📌":"♧");pin.setContentDescription(pinned?"Nyahpin nota":"Pin nota");line.addView(pin,new LinearLayout.LayoutParams(64,-2));pin.setOnClickListener(v->{db.getWritableDatabase().execSQL("UPDATE notes SET pinned=? WHERE id=?",new Object[]{pinned?0:1,id});refresh(search==null?"":search.getText().toString());});
       }
     }
     if(visibleCount==0)list.addView(text(query.trim().isEmpty()?"Belum ada nota. Tekan + Nota baharu untuk menulis.":"Tiada nota ditemui.",16));
@@ -349,13 +349,13 @@ public class MainActivity extends Activity {
     populateBooks(items,categoryId,categoryName,"");
   }
   void populateBooks(LinearLayout items,int categoryId,String categoryName,String query){
-    if(query==null)query="";items.removeAllViews();
+    if(query==null)query="";final String[] queryText={query};items.removeAllViews();
     int visibleCount=0;
-    try(Cursor c=db.getReadableDatabase().rawQuery("SELECT id,title FROM books WHERE category_id=? AND (title LIKE ? OR body LIKE ?) ORDER BY updated DESC,id DESC",
+    try(Cursor c=db.getReadableDatabase().rawQuery("SELECT id,title,pinned FROM books WHERE category_id=? AND (title LIKE ? OR body LIKE ?) ORDER BY pinned DESC,updated DESC,id DESC",
       new String[]{""+categoryId,"%"+query+"%","%"+query+"%"})){
       while(c.moveToNext()){visibleCount++;int bookId=c.getInt(0);String heading=c.getString(1);
         Button item=button();item.setText((heading==null||heading.trim().isEmpty()?"Tanpa tajuk":heading));
-        item.setContentDescription("Buka kitab "+(heading==null?"Tanpa tajuk":heading));items.addView(item);item.setOnClickListener(v->editBook(bookId,categoryId,categoryName));
+        item.setContentDescription("Buka kitab "+(heading==null?"Tanpa tajuk":heading));LinearLayout line=new LinearLayout(this);line.setOrientation(LinearLayout.HORIZONTAL);line.setGravity(Gravity.CENTER_VERTICAL);items.addView(line);line.addView(item,new LinearLayout.LayoutParams(0,-2,1));item.setOnClickListener(v->editBook(bookId,categoryId,categoryName));boolean pinned=c.getInt(2)==1;Button pin=button();pin.setText(pinned?"📌":"♧");pin.setContentDescription(pinned?"Nyahpin kitab":"Pin kitab");line.addView(pin,new LinearLayout.LayoutParams(64,-2));pin.setOnClickListener(v->{db.getWritableDatabase().execSQL("UPDATE books SET pinned=? WHERE id=?",new Object[]{pinned?0:1,bookId});populateBooks(items,categoryId,categoryName,queryText[0]);});
       }
     }
     if(visibleCount==0)items.addView(text(query.trim().isEmpty()?"Belum ada kitab. Tekan + Tambah kitab untuk mula.":"Tiada kitab ditemui.",16));
@@ -411,9 +411,9 @@ public class MainActivity extends Activity {
   void styleSelection(EditText edit,int style){int a=edit.getSelectionStart(),b=edit.getSelectionEnd();if(a<0||b<=a){Toast.makeText(this,"Pilih teks dahulu",Toast.LENGTH_SHORT).show();return;}SpannableStringBuilder t=new SpannableStringBuilder(edit.getText());t.setSpan(new StyleSpan(style),a,b,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);edit.setText(t);edit.setSelection(b);}
   @Override public void onBackPressed(){flushPendingSave();if(editingBook)showBooks(activeCategoryId,activeCategoryName);else showHome();}
   static class DB extends SQLiteOpenHelper {
-    DB(Context c){super(c,"dinnote.db",null,5);}
-    public void onCreate(SQLiteDatabase db){db.execSQL("CREATE TABLE notes (id INTEGER PRIMARY KEY AUTOINCREMENT,title TEXT NOT NULL DEFAULT '',body TEXT NOT NULL DEFAULT '',updated INTEGER NOT NULL,color INTEGER NOT NULL DEFAULT -1,category_id INTEGER NOT NULL DEFAULT -1)");createLibrary(db);createNoteCategories(db);seedDefaultCategories(db);}
-    static void createLibrary(SQLiteDatabase db){db.execSQL("CREATE TABLE IF NOT EXISTS categories (id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT NOT NULL)");db.execSQL("CREATE TABLE IF NOT EXISTS books (id INTEGER PRIMARY KEY AUTOINCREMENT,category_id INTEGER NOT NULL,title TEXT NOT NULL DEFAULT '',body TEXT NOT NULL DEFAULT '',updated INTEGER NOT NULL)");}
+    DB(Context c){super(c,"dinnote.db",null,6);}
+    public void onCreate(SQLiteDatabase db){db.execSQL("CREATE TABLE notes (id INTEGER PRIMARY KEY AUTOINCREMENT,title TEXT NOT NULL DEFAULT '',body TEXT NOT NULL DEFAULT '',updated INTEGER NOT NULL,color INTEGER NOT NULL DEFAULT -1,category_id INTEGER NOT NULL DEFAULT -1,pinned INTEGER NOT NULL DEFAULT 0)");createLibrary(db);createNoteCategories(db);seedDefaultCategories(db);}
+    static void createLibrary(SQLiteDatabase db){db.execSQL("CREATE TABLE IF NOT EXISTS categories (id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT NOT NULL)");db.execSQL("CREATE TABLE IF NOT EXISTS books (id INTEGER PRIMARY KEY AUTOINCREMENT,category_id INTEGER NOT NULL,title TEXT NOT NULL DEFAULT '',body TEXT NOT NULL DEFAULT '',updated INTEGER NOT NULL,pinned INTEGER NOT NULL DEFAULT 0)");}
     static void createNoteCategories(SQLiteDatabase db){db.execSQL("CREATE TABLE IF NOT EXISTS note_categories (id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT NOT NULL)");}
     static void seedDefaultCategories(SQLiteDatabase db){
       // Only seed during database creation or version migration; user changes remain editable.
@@ -423,6 +423,6 @@ public class MainActivity extends Activity {
       db.execSQL("INSERT INTO note_categories(name) SELECT ? WHERE NOT EXISTS (SELECT 1 FROM note_categories WHERE name=?)",new Object[]{"Peribadi","Peribadi"});
     }
     @Override public void onOpen(SQLiteDatabase database){super.onOpen(database);createLibrary(database);createNoteCategories(database);}
-    public void onUpgrade(SQLiteDatabase db,int oldVersion,int newVersion){if(oldVersion<2) { try { db.execSQL("ALTER TABLE notes ADD COLUMN color INTEGER NOT NULL DEFAULT -1"); } catch (android.database.sqlite.SQLiteException ignored) { /* Column may already exist in older builds. */ } } if(oldVersion<3)createLibrary(db);if(oldVersion<4){createNoteCategories(db);try{db.execSQL("ALTER TABLE notes ADD COLUMN category_id INTEGER NOT NULL DEFAULT -1");}catch(android.database.sqlite.SQLiteException ignored){}} if(oldVersion<5){createLibrary(db);createNoteCategories(db);seedDefaultCategories(db);} }
+    public void onUpgrade(SQLiteDatabase db,int oldVersion,int newVersion){if(oldVersion<2) { try { db.execSQL("ALTER TABLE notes ADD COLUMN color INTEGER NOT NULL DEFAULT -1"); } catch (android.database.sqlite.SQLiteException ignored) { /* Column may already exist in older builds. */ } } if(oldVersion<3)createLibrary(db);if(oldVersion<4){createNoteCategories(db);try{db.execSQL("ALTER TABLE notes ADD COLUMN category_id INTEGER NOT NULL DEFAULT -1");}catch(android.database.sqlite.SQLiteException ignored){}} if(oldVersion<5){createLibrary(db);createNoteCategories(db);seedDefaultCategories(db);} if(oldVersion<6){try{db.execSQL("ALTER TABLE notes ADD COLUMN pinned INTEGER NOT NULL DEFAULT 0");}catch(android.database.sqlite.SQLiteException ignored){}try{db.execSQL("ALTER TABLE books ADD COLUMN pinned INTEGER NOT NULL DEFAULT 0");}catch(android.database.sqlite.SQLiteException ignored){}} }
   }
 }
