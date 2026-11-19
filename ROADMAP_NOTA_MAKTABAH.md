@@ -58,7 +58,7 @@ Dokumen ini menyimpan semua 100 cadangan supaya cadangan yang belum dipilih tida
 - [ ] 45. Simpan luar talian — baca tanpa internet.
 - [ ] 46. Mod Fold6 adaptif — susunan responsif apabila dilipat.
 - [ ] 47. Kedudukan skrol — kekalkan tempat terakhir dibaca.
-- [ ] 48. Saiz font bacaan — kawal saiz tulisan Arab dan Rumi.
+- [ ] 48. Saiz font bacaan — kawal saiz tulisan Arab dan Rumi. **Status: Dalam proses** — kawalan Aa empat saiz telah di-commit (`339defa`); menunggu pengesahan binaan APK dan ujian pada telefon.
 - [ ] 49. Pengendalian ralat — kurangkan crash dan lindungi data.
 - [ ] 50. Ujian APK automatik — semak binaan sebelum pemasangan.
 
