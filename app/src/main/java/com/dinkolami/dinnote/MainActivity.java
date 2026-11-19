@@ -257,10 +257,27 @@ public class MainActivity extends Activity {
     ScrollView scroll=new ScrollView(this);LinearLayout items=new LinearLayout(this);items.setOrientation(1);scroll.addView(items);page.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
     try(Cursor c=db.getReadableDatabase().rawQuery("SELECT id,name FROM categories ORDER BY name COLLATE NOCASE",null)){
       while(c.moveToNext()){int categoryId=c.getInt(0);String name=c.getString(1);
-        Button item=button();item.setText(name);item.setContentDescription("Buka kategori "+name);items.addView(item);item.setOnClickListener(v->showBooks(categoryId,name));
-        item.setOnLongClickListener(v->{new AlertDialog.Builder(this).setItems(new String[]{"Ubah nama","Padam kategori"},(d,which)->{
-          if(which==0)promptRenameCategory(categoryId,name);else new AlertDialog.Builder(this).setMessage("Padam kategori dan semua kitab di dalamnya?").setNegativeButton("Batal",null).setPositiveButton("Padam",(dd,w)->{db.getWritableDatabase().delete("books","category_id=?",new String[]{""+categoryId});db.getWritableDatabase().delete("categories","id=?",new String[]{""+categoryId});showLibrary();}).show();
-        }).show();return true;});
+        LinearLayout categoryRow=new LinearLayout(this);categoryRow.setOrientation(LinearLayout.HORIZONTAL);categoryRow.setGravity(Gravity.CENTER_VERTICAL);items.addView(categoryRow);
+        Button item=button();item.setText("▥  "+name);item.setContentDescription("Buka kategori "+name);
+        categoryRow.addView(item,new LinearLayout.LayoutParams(0,-2,1));item.setOnClickListener(v->showBooks(categoryId,name));
+        Button options=button();options.setText("⋮");options.setContentDescription("Urus kategori "+name);
+        categoryRow.addView(options,new LinearLayout.LayoutParams(-2,-2));
+        options.setOnClickListener(v->new AlertDialog.Builder(this).setTitle(name)
+          .setItems(new String[]{"Ubah nama","Padam kategori"},(d,which)->{
+            if(which==0){promptRenameCategory(categoryId,name);return;}
+            new AlertDialog.Builder(this).setTitle("Padam kategori?")
+              .setMessage("Kategori dan semua kitab di dalamnya akan dipadam. Tindakan ini tidak boleh dibatalkan. Buat backup terlebih dahulu jika perlu.")
+              .setNegativeButton("Batal",null)
+              .setPositiveButton("Padam", (dd,w)->{
+                SQLiteDatabase writable=db.getWritableDatabase();writable.beginTransaction();
+                try{
+                  writable.delete("books","category_id=?",new String[]{String.valueOf(categoryId)});
+                  writable.delete("categories","id=?",new String[]{String.valueOf(categoryId)});
+                  writable.setTransactionSuccessful();
+                }finally{writable.endTransaction();}
+                showLibrary();
+              }).show();
+          }).show());
       }
     }
     if(items.getChildCount()==0)items.addView(text("Belum ada kategori. Tekan + Kategori baharu untuk mula.",15));
