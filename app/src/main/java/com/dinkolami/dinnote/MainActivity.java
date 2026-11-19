@@ -32,8 +32,10 @@ public class MainActivity extends Activity {
   TextView menu=text("☰",23);menu.setContentDescription("Buka menu DinNote");menu.setGravity(Gravity.CENTER);
   menu.setPadding(dp(10),dp(8),dp(10),dp(8));header.addView(menu);
   menu.setOnClickListener(v->new AlertDialog.Builder(this).setItems(new String[]{"Halaman utama","Nota","Maktabah","Kategori"},(d,i)->{if(i==0)home();else if(i==3)manageCategories();else openSection(i==2);}).show());
-  TextView logo=text("▤",27);logo.setTextColor(0xff126b43);logo.setPadding(dp(8),0,dp(6),0);header.addView(logo);
-  TextView name=text("DinNote",21);name.setTypeface(null,1);name.setTextColor(0xff123e2b);
+  ImageView logo=new ImageView(this);logo.setImageResource(R.drawable.dinnote_header_logo);logo.setScaleType(ImageView.ScaleType.FIT_CENTER);logo.setContentDescription("Logo DinNote");
+  LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(dp(40),dp(40));lp.leftMargin=dp(7);lp.rightMargin=dp(5);header.addView(logo,lp);
+  logo.setOnClickListener(v->home());
+  TextView name=text("DinNote",18);name.setTypeface(android.graphics.Typeface.DEFAULT,android.graphics.Typeface.NORMAL);name.setTextColor(0xff123e2b);
   name.setPadding(dp(3),0,0,0);header.addView(name,new LinearLayout.LayoutParams(0,-2,1));
   name.setOnClickListener(v->home());
   TextView searchIcon=text("⌕",27);searchIcon.setContentDescription("Cari nota");
