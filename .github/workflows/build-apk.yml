@@ -25,6 +25,16 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.12'
+      - name: Require release signing secrets
+        env:
+          DINNOTE_KEYSTORE_BASE64: ${{ secrets.DINNOTE_KEYSTORE_BASE64 }}
+          DINNOTE_STORE_PASSWORD: ${{ secrets.DINNOTE_STORE_PASSWORD }}
+          DINNOTE_KEY_ALIAS: ${{ secrets.DINNOTE_KEY_ALIAS }}
+          DINNOTE_KEY_PASSWORD: ${{ secrets.DINNOTE_KEY_PASSWORD }}
+        run: |
+          for key in DINNOTE_KEYSTORE_BASE64 DINNOTE_STORE_PASSWORD DINNOTE_KEY_ALIAS DINNOTE_KEY_PASSWORD; do
+            if [ -z "${!key}" ]; then echo "Missing signing secret: $key"; exit 1; fi
+          done
       - name: Build clean debug APK
         run: |
           set -o pipefail
@@ -39,24 +49,23 @@ jobs:
           if-no-files-found: warn
       - name: Verify APK exists
         run: test -s app/build/outputs/apk/debug/app-debug.apk
-      - name: Upload fresh APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: DinNote-fresh-apk
-          path: app/build/outputs/apk/debug/app-debug.apk
-          if-no-files-found: error
-
       - name: Build signed release APK
-        if: env.HAS_SIGNING_KEY == 'true'
         env:
           DINNOTE_KEYSTORE_BASE64: ${{ secrets.DINNOTE_KEYSTORE_BASE64 }}
           DINNOTE_STORE_PASSWORD: ${{ secrets.DINNOTE_STORE_PASSWORD }}
           DINNOTE_KEY_ALIAS: ${{ secrets.DINNOTE_KEY_ALIAS }}
           DINNOTE_KEY_PASSWORD: ${{ secrets.DINNOTE_KEY_PASSWORD }}
         run: |
-          echo "$DINNOTE_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/dinnote-release.jks"
+          printf '%s' "$DINNOTE_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/dinnote-release.jks"
           export DINNOTE_KEYSTORE_PATH="$RUNNER_TEMP/dinnote-release.jks"
           gradle :app:assembleRelease --no-daemon --console=plain
+      - name: Verify release APK signature and version
+        run: |
+          set -euo pipefail
+          APK=app/build/outputs/apk/release/app-release.apk
+          test -s "$APK"
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$APK"
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" | grep '^package:'
       - name: Upload signed release APK
         if: env.HAS_SIGNING_KEY == 'true'
         uses: actions/upload-artifact@v4
