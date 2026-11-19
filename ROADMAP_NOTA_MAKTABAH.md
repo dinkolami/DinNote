@@ -1,6 +1,6 @@
 # Pelan Induk DinNote — Nota dan Maktabah
 
-Dokumen ini menyimpan semua 50 cadangan supaya cadangan yang belum dipilih tidak hilang. Status awal **Menunggu** bermaksud belum disahkan siap; jangan anggap ciri tiada atau belum wujud tanpa audit kod.
+Dokumen ini menyimpan semua 100 cadangan supaya cadangan yang belum dipilih tidak hilang. Status awal **Menunggu** bermaksud belum disahkan siap; jangan anggap ciri tiada atau belum wujud tanpa audit kod.
 
 ## Nota
 - [ ] 1. Kategori fleksibel — tambah, ubah nama, susun dan padam kategori.
@@ -61,6 +61,66 @@ Dokumen ini menyimpan semua 50 cadangan supaya cadangan yang belum dipilih tidak
 - [ ] 48. Saiz font bacaan — kawal saiz tulisan Arab dan Rumi.
 - [ ] 49. Pengendalian ralat — kurangkan crash dan lindungi data.
 - [ ] 50. Ujian APK automatik — semak binaan sebelum pemasangan.
+
+## Cadangan tambahan: Editor Nota lanjutan (51–60)
+- [ ] 51. Mod fokus menulis — sembunyikan elemen tidak perlu semasa menaip.
+- [ ] 52. Senarai bernombor dan berbulet — format senarai tersusun.
+- [ ] 53. Indentasi perenggan — laraskan aras senarai dan petikan.
+- [ ] 54. Petikan blok — bezakan nukilan daripada teks biasa.
+- [ ] 55. Masukkan tarikh dan masa — cap masa pada nota.
+- [ ] 56. Pautan boleh diklik — buka URL dalam nota.
+- [ ] 57. Lampiran imej — masukkan gambar dalam nota.
+- [ ] 58. Lampiran audio — sertakan rakaman suara dalam nota.
+- [ ] 59. Pratonton nota — lihat rupa akhir sebelum dikongsi.
+- [ ] 60. Navigasi tajuk — lompat antara tajuk kecil dalam nota.
+
+## Cadangan tambahan: Pengurusan Maktabah (61–70)
+- [ ] 61. Rak kitab maya — susun kitab mengikut koleksi pilihan.
+- [ ] 62. Label pelbagai — satu kitab boleh mempunyai beberapa label.
+- [ ] 63. Status bacaan kitab — belum mula, sedang baca, selesai.
+- [ ] 64. Senarai bacaan — rancang kitab yang mahu ditelaah.
+- [ ] 65. Penapis pengarang — cari kitab mengikut penulis.
+- [ ] 66. Penapis bidang ilmu — tapis fiqh, tafsir, hadis dan lain-lain.
+- [ ] 67. Susunan jilid — hubungkan beberapa jilid satu kitab.
+- [ ] 68. Metadata sumber teks — rekod asal dan rujukan kandungan.
+- [ ] 69. Semakan kitab pendua — amaran apabila kitab sama ditambah.
+- [ ] 70. Arkib kitab — sembunyikan kitab tanpa memadamkannya.
+
+## Cadangan tambahan: Pengajian Arab dan Melayu (71–80)
+- [ ] 71. Pilihan fon Arab — pilih fon yang sesuai untuk teks Arab.
+- [ ] 72. Jarak baris Arab — laras ruang untuk teks berbaris.
+- [ ] 73. Paparan harakat jelas — optimasi tanda baris Arab.
+- [ ] 74. Pilihan arah perenggan — tetapkan RTL atau LTR perenggan.
+- [ ] 75. Nota kaki — masukkan syarah atau rujukan bernombor.
+- [ ] 76. Rujukan ayat al-Quran — simpan surah dan nombor ayat.
+- [ ] 77. Rujukan hadis — simpan sumber, kitab dan nombor hadis.
+- [ ] 78. Glosari istilah — senarai makna istilah Arab.
+- [ ] 79. Kad ulang kaji — jadikan petikan sebagai kad hafalan.
+- [ ] 80. Penanda kemajuan pengajian — catat bab yang sudah dipelajari.
+
+## Cadangan tambahan: Data dan keselamatan (81–90)
+- [ ] 81. Eksport nota terpilih — pilih beberapa nota untuk eksport.
+- [ ] 82. Import berkelompok — masukkan banyak fail sekali gus.
+- [ ] 83. Pratonton sebelum import — semak kandungan sebelum disimpan.
+- [ ] 84. Gabung data semasa restore — pilihan tanpa menimpa data lama.
+- [ ] 85. Sandaran dengan cap tarikh — bezakan versi backup.
+- [ ] 86. Penggera ruang storan — maklumkan apabila ruang hampir penuh.
+- [ ] 87. Semakan integriti pangkalan data — kesan rekod rosak.
+- [ ] 88. Pemulihan selepas aplikasi terhenti — pulihkan draf belum selesai.
+- [ ] 89. Kunci automatik selepas tidak aktif — lindungi kandungan peribadi.
+- [ ] 90. Eksport sandaran terlindung kata laluan — pilihan penyulitan fail.
+
+## Cadangan tambahan: Pengalaman pengguna dan kualiti (91–100)
+- [ ] 91. Widget nota ringkas — akses nota pilihan dari skrin utama.
+- [ ] 92. Pintasan tambah nota — cipta nota dengan cepat.
+- [ ] 93. Menu tindakan tekan lama — pin, salin, pindah dan padam.
+- [ ] 94. Pilihan padat atau selesa — kepadatan senarai nota.
+- [ ] 95. Sokongan papan kekunci fizikal — pintasan ketika Fold6 dibuka.
+- [ ] 96. Sokongan putaran skrin — susun atur potret dan landskap.
+- [ ] 97. Petunjuk status simpan — paparkan sedang menyimpan atau tersimpan.
+- [ ] 98. Mod kontras tinggi — tingkatkan kebolehbacaan.
+- [ ] 99. Ujian migrasi data antara versi — pastikan kemas kini tidak hilangkan nota.
+- [ ] 100. Senarai semak keluaran APK — sahkan navigasi, editor, backup dan paparan Fold6.
 
 ## Proses pelaksanaan
 1. Pengguna pilih beberapa nombor dahulu; selebihnya kekal dalam senarai.
