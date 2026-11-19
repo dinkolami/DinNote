@@ -19,6 +19,7 @@ public class MainActivity extends Activity {
   DB db;
   Runnable pendingSave;
   boolean editingBook=false;
+  boolean editingNote=false;
   int activeCategoryId=-1;
   String activeCategoryName="";
   void flushPendingSave(){if(pendingSave!=null){Runnable action=pendingSave;pendingSave=null;saveHandler.removeCallbacks(action);action.run();}}
@@ -82,7 +83,7 @@ public class MainActivity extends Activity {
   LinearLayout column() { LinearLayout l=new LinearLayout(this);l.setOrientation(1);l.setPadding(16,16,16,16);l.setBackgroundColor(surface());return l; }
   void showHome() {
     flushPendingSave();
-    editingBook=false;
+    editingBook=false;editingNote=false;
     root=column();root.setFocusableInTouchMode(true);setContentView(root);
     TextView title=text("▤  DinNote",23);title.setTypeface(null,2);root.addView(title);
     TextView appearance=text("⚙",22);appearance.setContentDescription("Tetapan penampilan");appearance.setOnClickListener(v->appearanceSettings());root.addView(appearance);
@@ -104,21 +105,21 @@ public class MainActivity extends Activity {
     list.removeAllViews();
     int visibleCount=0;
     try(Cursor c=db.getReadableDatabase().rawQuery("SELECT id,title,body,color FROM notes WHERE title LIKE ? OR body LIKE ? ORDER BY "+(noteSort==1?"updated ASC,id ASC":noteSort==2?"title COLLATE NOCASE ASC,id DESC":"updated DESC,id DESC"),new String[]{"%"+query+"%","%"+query+"%"})) {
-      while(c.moveToNext()){visibleCount++;final int id=c.getInt(0);String heading=c.getString(1);String body=c.getString(2);if(heading==null)heading="";if(body==null)body="";body=body.replace("\r"," ").replace("\n"," ");int noteColor=c.getInt(3);
-        TextView item=text((heading.isEmpty()?"Tanpa tajuk":heading)+"\n"+(body.length()>90?body.substring(0,90)+"…":body),15);
+      while(c.moveToNext()){visibleCount++;final int id=c.getInt(0);String heading=c.getString(1);String body=c.getString(2);if(heading==null)heading="";if(body==null)body="";body=body.replace("\r"," ").replace("\n"," ").trim();int noteColor=c.getInt(3);
+        TextView item=text((heading.trim().isEmpty()?"Tanpa tajuk":heading)+"\n"+(body.length()>90?body.substring(0,90)+"…":body),15);
         item.setBackground(rounded(noteColor==Color.WHITE?cardSurface():noteColor,borderColor(),16));item.setTextColor(noteColor==Color.WHITE?foreground():Color.BLACK);LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2);p.setMargins(0,5,0,5);list.addView(item,p);item.setOnClickListener(v->edit(id));
       }
     }
     if(visibleCount==0)list.addView(text(query.trim().isEmpty()?"Belum ada nota. Tekan + Nota baharu untuk menulis.":"Tiada nota ditemui.",16));
   }
   void edit(int id) {
-    flushPendingSave();
+    flushPendingSave();editingNote=true;
     LinearLayout page=column();setContentView(page);
     Button back=button();back.setText("← Kembali");page.addView(back);
     EditText title=field();title.setHint("Tajuk nota");title.setSingleLine(true);title.setFilters(new InputFilter[]{new InputFilter.LengthFilter(200)});title.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_NEXT);title.setTextSize(18);page.addView(title);
     EditText body=field();body.setHint("Tulis nota di sini…");body.setTextSize(16);body.setGravity(Gravity.TOP|Gravity.START);body.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);body.setTextColor(foreground());
-    page.addView(body,new LinearLayout.LayoutParams(-1,0,1));
-    final int[] noteId={id};final boolean[] loading={true};final int[] noteColor={Color.WHITE};
+    body.setMinLines(5);page.addView(body,new LinearLayout.LayoutParams(-1,0,1));
+    final int[] noteId={id};final boolean[] loading={true};final int[] noteColor={Color.WHITE};final Runnable[] saveAction={null};
     int[] colors={Color.WHITE,0xFFFFF4B8,0xFFDDF4DF,0xFFDCEEFF,0xFFFFE1E9,0xFFECE2FF};
     LinearLayout toolbar=new LinearLayout(this);toolbar.setOrientation(LinearLayout.HORIZONTAL);page.addView(toolbar,new LinearLayout.LayoutParams(-1,-2));
     Button colorButton=button();colorButton.setText("Warna");toolbar.addView(colorButton,new LinearLayout.LayoutParams(0,-2,1));
@@ -127,7 +128,7 @@ public class MainActivity extends Activity {
     Button italicButton=button();italicButton.setText("I");italicButton.setContentDescription("Condongkan teks dipilih");italicButton.setTypeface(null,Typeface.ITALIC);toolbar.addView(italicButton,new LinearLayout.LayoutParams(0,-2,1));
     Button underlineButton=button();underlineButton.setText("U");underlineButton.setContentDescription("Gariskan teks dipilih");toolbar.addView(underlineButton,new LinearLayout.LayoutParams(0,-2,1));
     underlineButton.setOnClickListener(v->underlineSelection(body));
-    colorButton.setOnClickListener(v->{int index=0;for(int i=0;i<colors.length;i++)if(colors[i]==noteColor[0])index=i;noteColor[0]=colors[(index+1)%colors.length];body.setBackground(rounded(noteColor[0]==Color.WHITE?cardSurface():noteColor[0],borderColor(),16));body.setTextColor(noteColor[0]==Color.WHITE?foreground():Color.BLACK);saveColor(noteId[0],noteColor[0]);});
+    colorButton.setOnClickListener(v->{int index=0;for(int i=0;i<colors.length;i++)if(colors[i]==noteColor[0])index=i;noteColor[0]=colors[(index+1)%colors.length];body.setBackground(rounded(noteColor[0]==Color.WHITE?cardSurface():noteColor[0],borderColor(),16));body.setTextColor(noteColor[0]==Color.WHITE?foreground():Color.BLACK);scheduleSave(saveAction[0]);});
     checkButton.setOnClickListener(v->{int start=Math.max(0,body.getSelectionStart());body.getText().insert(start,"☐ ");});
     boldButton.setOnClickListener(v->styleSelection(body,Typeface.BOLD));
     italicButton.setOnClickListener(v->styleSelection(body,Typeface.ITALIC));
@@ -137,16 +138,17 @@ public class MainActivity extends Activity {
       ContentValues values=new ContentValues();values.put("title",t);values.put("body",b);values.put("updated",System.currentTimeMillis());values.put("color",noteColor[0]);
       try{if(noteId[0]<0)noteId[0]=(int)db.getWritableDatabase().insertOrThrow("notes",null,values);else db.getWritableDatabase().update("notes",values,"id=?",new String[]{""+noteId[0]});}catch(Exception e){android.util.Log.e("DinNote","Note save failed",e);Toast.makeText(this,"Nota gagal disimpan",Toast.LENGTH_LONG).show();}
     };
+    saveAction[0]=save;
     TextWatcher watcher=new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){scheduleSave(save);}public void afterTextChanged(Editable e){}};
     title.addTextChangedListener(watcher);body.addTextChangedListener(watcher);
-    pendingSave=save;
+    pendingSave=null;
     back.setOnClickListener(v->{flushPendingSave();showHome();});
-    title.setContentDescription("Tajuk nota");body.setContentDescription("Kandungan nota Arab dan Rumi");body.setTextColor(foreground());
+    title.setContentDescription("Tajuk nota");body.setContentDescription("Kandungan nota Arab dan Rumi");body.setTextColor(noteColor[0]==Color.WHITE?foreground():Color.BLACK);
     Button delete=button();delete.setText("Padam nota");delete.setEnabled(id>=0);delete.setContentDescription(id>=0?"Padam nota":"Simpan nota dahulu sebelum memadam");page.addView(delete);
     delete.setOnClickListener(v->new AlertDialog.Builder(this).setMessage("Padam nota ini?").setNegativeButton("Batal",null).setPositiveButton("Padam",(d,w)->{pendingSave=null;if(noteId[0]>=0)db.getWritableDatabase().delete("notes","id=?",new String[]{""+noteId[0]});showHome();}).show());
   }
   void showLibrary() {
-    flushPendingSave();editingBook=false;
+    flushPendingSave();editingBook=false;editingNote=false;
     LinearLayout page=column();setContentView(page);
     Button back=button();back.setText("← DinNote");page.addView(back);back.setOnClickListener(v->showHome());
     page.addView(text("📚  Maktabah",23));
@@ -176,7 +178,7 @@ public class MainActivity extends Activity {
     }).show();
   }
   void showBooks(int categoryId,String categoryName){
-    flushPendingSave();editingBook=false;activeCategoryId=categoryId;activeCategoryName=categoryName;
+    flushPendingSave();editingBook=false;editingNote=false;activeCategoryId=categoryId;activeCategoryName=categoryName;
     LinearLayout page=column();setContentView(page);
     Button back=button();back.setText("← Maktabah");page.addView(back);back.setOnClickListener(v->showLibrary());
     page.addView(text("📁  "+categoryName,21));page.setFocusableInTouchMode(true);
@@ -192,7 +194,7 @@ public class MainActivity extends Activity {
     try(Cursor c=db.getReadableDatabase().rawQuery("SELECT id,title FROM books WHERE category_id=? AND (title LIKE ? OR body LIKE ?) ORDER BY updated DESC,id DESC",
       new String[]{""+categoryId,"%"+query+"%","%"+query+"%"})){
       while(c.moveToNext()){visibleCount++;int bookId=c.getInt(0);String heading=c.getString(1);
-        Button item=button();item.setText("📖  "+(heading==null||heading.isEmpty()?"Tanpa tajuk":heading));
+        Button item=button();item.setText("📖  "+(heading==null||heading.trim().isEmpty()?"Tanpa tajuk":heading));
         item.setContentDescription("Buka kitab "+(heading==null?"Tanpa tajuk":heading));items.addView(item);item.setOnClickListener(v->editBook(bookId,categoryId,categoryName));
       }
     }
@@ -206,7 +208,7 @@ public class MainActivity extends Activity {
     EditText title=field();title.setHint("Tajuk kitab");title.setSingleLine(true);title.setFilters(new InputFilter[]{new InputFilter.LengthFilter(200)});title.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_NEXT);title.setTextSize(18);page.addView(title);
     EditText body=field();body.setHint("Tulis kandungan kitab (Arab / Rumi)…");body.setTextSize(16);
     body.setGravity(Gravity.TOP|Gravity.START);body.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
-    page.addView(body,new LinearLayout.LayoutParams(-1,0,1));
+    body.setMinLines(5);page.addView(body,new LinearLayout.LayoutParams(-1,0,1));
     final int[] bookId={id};final boolean[] loading={true};
     if(id>=0)try(Cursor c=db.getReadableDatabase().rawQuery("SELECT title,body FROM books WHERE id=?",new String[]{""+id})){
       if(c.moveToFirst()){title.setText(c.getString(0));body.setText(c.getString(1));}
@@ -233,7 +235,7 @@ public class MainActivity extends Activity {
       public void onTextChanged(CharSequence s,int st,int before,int count){scheduleSave(save);}
       public void afterTextChanged(Editable e){}};
     title.addTextChangedListener(watcher);body.addTextChangedListener(watcher);
-    pendingSave=save;
+    pendingSave=null;
     back.setOnClickListener(v->{flushPendingSave();showBooks(categoryId,categoryName);});
     Button delete=button();delete.setText("Padam kitab");delete.setEnabled(id>=0);delete.setContentDescription(id>=0?"Padam kitab":"Simpan kitab dahulu sebelum memadam");page.addView(delete);
     delete.setOnClickListener(v->new AlertDialog.Builder(this).setMessage("Padam kitab ini?")
@@ -245,7 +247,7 @@ public class MainActivity extends Activity {
   void saveColor(int id,int color){if(id<0)return;ContentValues v=new ContentValues();v.put("color",color);db.getWritableDatabase().update("notes",v,"id=?",new String[]{""+id});}
   void underlineSelection(EditText edit){int a=edit.getSelectionStart(),b=edit.getSelectionEnd();if(a<0||b<=a){Toast.makeText(this,"Pilih teks dahulu",Toast.LENGTH_SHORT).show();return;}edit.getText().setSpan(new android.text.style.UnderlineSpan(),a,b,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);}
   void styleSelection(EditText edit,int style){int a=edit.getSelectionStart(),b=edit.getSelectionEnd();if(a<0||b<=a){Toast.makeText(this,"Pilih teks dahulu",Toast.LENGTH_SHORT).show();return;}SpannableStringBuilder t=new SpannableStringBuilder(edit.getText());t.setSpan(new StyleSpan(style),a,b,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);edit.setText(t);edit.setSelection(b);}
-  @Override public void onBackPressed(){if(editingBook)showBooks(activeCategoryId,activeCategoryName);else showHome();}
+  @Override public void onBackPressed(){flushPendingSave();if(editingBook)showBooks(activeCategoryId,activeCategoryName);else showHome();}
   static class DB extends SQLiteOpenHelper {
     DB(Context c){super(c,"dinnote.db",null,3);}
     public void onCreate(SQLiteDatabase db){db.execSQL("CREATE TABLE notes (id INTEGER PRIMARY KEY AUTOINCREMENT,title TEXT NOT NULL DEFAULT '',body TEXT NOT NULL DEFAULT '',updated INTEGER NOT NULL,color INTEGER NOT NULL DEFAULT -1)");createLibrary(db);}
