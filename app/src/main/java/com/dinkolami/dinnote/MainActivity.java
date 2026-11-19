@@ -610,6 +610,12 @@ public class MainActivity extends Activity {
     if(key==null||key.trim().isEmpty()||value==null||value==org.json.JSONObject.NULL||
       !(value instanceof String||value instanceof Boolean||value instanceof Number))
      throw new java.io.IOException("Kandungan sandaran tidak disokong; data sedia ada tidak diubah");
+    // Validate all numeric values before creating the destructive restore transaction.
+    if(value instanceof Number&&!(value instanceof Integer)&&!(value instanceof Long)){
+     double number=((Number)value).doubleValue();
+     if(Double.isNaN(number)||Double.isInfinite(number)||number>Float.MAX_VALUE||number< -Float.MAX_VALUE)
+      throw new java.io.IOException("Nombor sandaran di luar julat; data sedia ada tidak diubah");
+    }
    }
    android.content.SharedPreferences.Editor tx=prefs.edit().clear();
    java.util.Iterator<String> keys=values.keys();
@@ -621,9 +627,6 @@ public class MainActivity extends Activity {
     else if(value instanceof Long)tx.putLong(key,(Long)value);
     else if(value instanceof Number){
      // JSON decimals represent SharedPreferences float values; never truncate them to long.
-     double number=((Number)value).doubleValue();
-     if(Double.isNaN(number)||Double.isInfinite(number)||number>Float.MAX_VALUE||number< -Float.MAX_VALUE)
-      throw new java.io.IOException("Nombor sandaran di luar julat; data sedia ada tidak diubah");
      tx.putFloat(key,((Number)value).floatValue());
     }
    }
