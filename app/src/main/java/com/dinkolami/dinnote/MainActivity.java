@@ -110,9 +110,23 @@ public class MainActivity extends Activity {
     LinearLayout.LayoutParams libraryCardParams=new LinearLayout.LayoutParams(0,-2,1);libraryCardParams.setMargins(6,4,0,8);
     homeCards.addView(notesMenu,noteCardParams);homeCards.addView(libraryMenu,libraryCardParams);
     libraryMenu.setContentDescription("Buka Maktabah");libraryMenu.setOnClickListener(v->showLibrary());
-    notesMenu.setContentDescription("Buka Nota");notesMenu.setOnClickListener(v->{if(search!=null)search.requestFocus();});
+    notesMenu.setContentDescription("Buka Nota");notesMenu.setOnClickListener(v->showNoteCategories());
     Button categoriesButton=button();categoriesButton.setText("Kategori Nota");root.addView(categoriesButton);
     categoriesButton.setOnClickListener(v->showNoteCategories());
+    // Home category shortcuts, matching the original DinNote two-section layout.
+    TextView noteHeading=text("Kategori Nota",16);noteHeading.setTypeface(null,Typeface.BOLD);root.addView(noteHeading);
+    LinearLayout noteShortcuts=new LinearLayout(this);noteShortcuts.setOrientation(1);root.addView(noteShortcuts);
+    Button personal=button();personal.setText("▤  Semua Nota");noteShortcuts.addView(personal);
+    personal.setOnClickListener(v->{selectedNoteCategory=-1;showHome();});
+    try(Cursor cats=db.getReadableDatabase().rawQuery("SELECT id,name FROM note_categories ORDER BY name COLLATE NOCASE LIMIT 6",null)){
+      while(cats.moveToNext()){
+        final int catId=cats.getInt(0);String catName=cats.getString(1);
+        Button item=button();item.setText("▤  "+catName);noteShortcuts.addView(item);
+        item.setOnClickListener(v->{selectedNoteCategory=catId;showHome();});
+      }
+    }catch(Exception e){android.util.Log.w("DinNote","Category shortcuts unavailable",e);}
+    Button manageCategories=button();manageCategories.setText("+ Tambah / Ubah / Padam kategori");noteShortcuts.addView(manageCategories);
+    manageCategories.setOnClickListener(v->showNoteCategories());
     Button sort=button();sort.setText("Susun: "+new String[]{"Terkini","Terlama","Tajuk A-Z"}[noteSort]);root.addView(sort);
     sort.setContentDescription("Pilih susunan nota");sort.setOnClickListener(v->new AlertDialog.Builder(this).setItems(new String[]{"Terkini","Terlama","Tajuk A-Z"},(d,w)->{noteSort=w;getPreferences(MODE_PRIVATE).edit().putInt("noteSort",w).apply();sort.setText("Susun: "+new String[]{"Terkini","Terlama","Tajuk A-Z"}[w]);refresh(noteFilter);}).show());
     search=field();search.setContentDescription("Cari nota");search.setSingleLine(true);search.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);search.setSelectAllOnFocus(false);search.setHint("Cari nota…");search.setText(noteFilter);search.setSelection(search.length());root.addView(search);
