@@ -13,16 +13,16 @@
     <!-- Preferences -->
     <!-- Preferences / General -->
     <string name="preferences_header_general">Umum</string>
-    <string name="preferences_theme_mode">Theme mode</string>
-    <string name="preferences_theme_mode_dark">Dark</string>
-    <string name="preferences_theme_mode_light">Light</string>
-    <string name="preferences_theme_mode_system">Follow system</string>
+    <string name="preferences_theme_mode">Mod paparan</string>
+    <string name="preferences_theme_mode_dark">Gelap</string>
+    <string name="preferences_theme_mode_light">Cerah</string>
+    <string name="preferences_theme_mode_system">Ikut tetapan telefon</string>
 
-    <string name="preferences_dark_theme_mode">Dark theme mode</string>
+    <string name="preferences_dark_theme_mode">Mod tema gelap</string>
     <string name="preferences_theme_dark_mode_standard">Standard</string>
     <string name="preferences_theme_dark_mode_black">Black</string>
 
-    <string name="preferences_color_scheme">Color scheme</string>
+    <string name="preferences_color_scheme">Warna tema</string>
     <string name="preferences_color_scheme_blue">Blue</string>
     <string name="preferences_color_scheme_pink">Pink</string>
     <string name="preferences_color_scheme_green">Green</string>
@@ -34,28 +34,28 @@
     <string name="preferences_color_scheme_cyan">Cyan</string>
     <string name="preferences_color_scheme_brown">Brown</string>
     <string name="preferences_color_scheme_gray">Gray</string>
-    <string name="preferences_color_scheme_system">Follow system</string>
+    <string name="preferences_color_scheme_system">Ikut tetapan telefon</string>
 
     <!-- Preferences / View -->
     <string name="preferences_header_view">Paparan</string>
 
     <!-- Preferences / View / Notebook -->
-    <string name="preferences_header_view_notebook">Notebook</string>
+    <string name="preferences_header_view_notebook">Buku nota</string>
 
-    <string name="preferences_layout_mode">Layout mode</string>
+    <string name="preferences_layout_mode">Susun atur</string>
     <string name="preferences_layout_mode_grid">Grid</string>
-    <string name="preferences_layout_mode_list">List</string>
+    <string name="preferences_layout_mode_list">Senarai</string>
 
-    <string name="preferences_sort_method">Sort by</string>
-    <string name="preferences_sort_method_title_asc">Title (ascending)</string>
-    <string name="preferences_sort_method_title_desc">Title (descending)</string>
-    <string name="preferences_sort_method_created_asc">Date created (ascending)</string>
-    <string name="preferences_sort_method_created_desc">Date created (descending)</string>
-    <string name="preferences_sort_method_modified_asc">Date modified (ascending)</string>
-    <string name="preferences_sort_method_modified_desc">Date modified (descending)</string>
+    <string name="preferences_sort_method">Susun mengikut</string>
+    <string name="preferences_sort_method_title_asc">Tajuk (A–Z)</string>
+    <string name="preferences_sort_method_title_desc">Tajuk (Z–A)</string>
+    <string name="preferences_sort_method_created_asc">Tarikh dicipta (lama dahulu)</string>
+    <string name="preferences_sort_method_created_desc">Tarikh dicipta (baharu dahulu)</string>
+    <string name="preferences_sort_method_modified_asc">Tarikh diubah (lama dahulu)</string>
+    <string name="preferences_sort_method_modified_desc">Tarikh diubah (baharu dahulu)</string>
 
     <!-- Preferences / View / Note content -->
-    <string name="preferences_header_view_note_content">Note content</string>
+    <string name="preferences_header_view_note_content">Kandungan nota</string>
 
     <string name="preferences_font_size">Saiz tulisan editor dan paparan</string>
     <string name="preferences_font_size_default">Default</string>
