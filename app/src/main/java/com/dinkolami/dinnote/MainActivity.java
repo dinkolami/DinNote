@@ -498,6 +498,19 @@ public class MainActivity extends Activity {
     TextView intro=text("Catat dengan tenang. Simpan ilmu dengan rapi.",15);
     intro.setTextColor(dark()?0xFFADB9C8:0xFF576574);
     intro.setPadding(3,0,3,14);homeContent.addView(intro);
+    // Compact collection overview; no additional home-screen menu.
+    try(Cursor overview=db.getReadableDatabase().rawQuery(
+      "SELECT (SELECT COUNT(*) FROM notes), (SELECT COUNT(*) FROM books)",null)){
+      if(overview.moveToFirst()){
+        TextView summary=text("✎  "+overview.getLong(0)+" nota    ·    ▤  "+overview.getLong(1)+" kitab",13);
+        summary.setTextColor(dark()?0xFF8B949E:0xFF656D76);
+        summary.setPadding(3,0,3,13);
+        summary.setContentDescription(overview.getLong(0)+" nota dan "+overview.getLong(1)+" kitab disimpan");
+        homeContent.addView(summary);
+      }
+    }catch(Exception overviewError){
+      android.util.Log.w("DinNote","Home overview unavailable",overviewError);
+    }
     // Two equal-width, minimal home cards; keep Android system bars untouched.
     LinearLayout homeCards=new LinearLayout(this);homeCards.setOrientation(LinearLayout.HORIZONTAL);
     homeCards.setGravity(Gravity.CENTER_VERTICAL);homeCards.setBaselineAligned(false);homeCards.setMinimumHeight(142);homeCards.setContentDescription("Menu utama Nota dan Maktabah");homeContent.addView(homeCards);
@@ -589,13 +602,13 @@ public class MainActivity extends Activity {
       }
     }catch(Exception e){android.util.Log.w("DinNote","Pinned notes preview unavailable",e);}
     // Category management belongs inside Nota and Maktabah, not on the home page.
-    TextView recentHeading=text("CATATAN TERKINI",11);
+    TextView recentHeading=text("NOTA ANDA",11);
     recentHeading.setLetterSpacing(0.15f);recentHeading.setTypeface(null,Typeface.BOLD);
     recentHeading.setTextColor(accent());recentHeading.setPadding(3,12,3,5);
     homeContent.addView(recentHeading);
     Button sort=button();sort.setText("↕ Susun: "+new String[]{"Terkini","Terlama","Tajuk A-Z"}[noteSort]);homeContent.addView(sort);
     sort.setContentDescription("Pilih susunan nota: "+new String[]{"Terkini","Terlama","Tajuk A-Z"}[noteSort]);sort.setOnClickListener(v->new AlertDialog.Builder(this).setItems(new String[]{"Terkini","Terlama","Tajuk A-Z"},(d,w)->{noteSort=w;getPreferences(MODE_PRIVATE).edit().putInt("noteSort",w).apply();sort.setText("↕ Susun: "+new String[]{"Terkini","Terlama","Tajuk A-Z"}[w]);refresh(noteFilter);}).show());
-    search=field();search.setContentDescription("Cari tajuk dan kandungan nota");search.setSingleLine(true);search.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);search.setSelectAllOnFocus(false);search.setHint("⌕  Cari dalam nota…");search.setText(noteFilter);search.setSelection(search.length());homeContent.addView(search);
+    search=field();search.setContentDescription("Cari tajuk dan kandungan nota");search.setSingleLine(true);search.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);search.setSelectAllOnFocus(false);search.setHint("⌕  Cari tajuk atau kandungan…");search.setText(noteFilter);search.setSelection(search.length());homeContent.addView(search);
     Button add=button();add.setText("＋  Nota baharu");add.setBackground(rounded(cardSurface(),accent(),16));add.setTextColor(accent());add.setContentDescription("Tulis nota peribadi baharu");homeContent.addView(add);add.setOnClickListener(v->edit(-1));
     list=new LinearLayout(this);list.setOrientation(1);list.setContentDescription("Senarai nota");homeContent.addView(list,new LinearLayout.LayoutParams(-1,-2));
     search.addTextChangedListener(new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){noteFilter=s.toString();refresh(noteFilter);}public void afterTextChanged(Editable e){}});
