@@ -119,6 +119,12 @@ public class MainActivity extends Activity {
   });
   // Observe taps without consuming touch events: scrolling and text selection must still work.
   scroll.setOnTouchListener((v,e)->{detector.onTouchEvent(e);return false;});
+  // Text views can receive touches directly, so observe gestures on them too.
+  title.setOnTouchListener((v,e)->{detector.onTouchEvent(e);return false;});
+  content.setOnTouchListener((v,e)->{detector.onTouchEvent(e);return false;});
+  // Long press is a reliable alternative when double tap is intercepted by text selection.
+  body.setOnLongClickListener(v->{edit(key);return true;});
+  scroll.setOnLongClickListener(v->{edit(key);return true;});
   bar.setVisibility(View.GONE);
  }
  void confirmDelete(String key){new AlertDialog.Builder(this).setMessage("Padam nota ini?").setPositiveButton("Padam",(d,w)->{prefs.edit().remove(key).remove("title_"+key).remove("cat_"+key).apply();selected=null;if(sectionOpen)notesPage();else home();}).setNegativeButton("Batal",null).show();}
