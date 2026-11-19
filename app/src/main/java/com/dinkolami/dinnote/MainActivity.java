@@ -514,6 +514,7 @@ public class MainActivity extends Activity {
     page.setClipToPadding(false);
     page.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
     page.setFocusable(false);
+    page.setFitsSystemWindows(false);
   }
   LinearLayout column() { LinearLayout l=new LinearLayout(this);l.setOrientation(1);l.setPadding(18,16,18,16);l.setBackgroundColor(surface());return l; }
   void showHome() {
