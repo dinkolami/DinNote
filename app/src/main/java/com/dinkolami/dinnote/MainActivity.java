@@ -619,7 +619,13 @@ public class MainActivity extends Activity {
     else if(value instanceof Boolean)tx.putBoolean(key,(Boolean)value);
     else if(value instanceof Integer)tx.putInt(key,(Integer)value);
     else if(value instanceof Long)tx.putLong(key,(Long)value);
-    else if(value instanceof Number)tx.putLong(key,((Number)value).longValue());
+    else if(value instanceof Number){
+     // JSON decimals represent SharedPreferences float values; never truncate them to long.
+     double number=((Number)value).doubleValue();
+     if(Double.isNaN(number)||Double.isInfinite(number)||number>Float.MAX_VALUE||number< -Float.MAX_VALUE)
+      throw new java.io.IOException("Nombor sandaran di luar julat; data sedia ada tidak diubah");
+     tx.putFloat(key,((Number)value).floatValue());
+    }
    }
    if(!tx.commit())throw new java.io.IOException("Gagal menyimpan data");
    editor=null;selected=null;items=null;sectionOpen=false;
