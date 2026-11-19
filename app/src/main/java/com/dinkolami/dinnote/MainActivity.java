@@ -482,6 +482,27 @@ public class MainActivity extends Activity {
   }
   TextView text(String value,int size) { TextView t=new TextView(this);t.setText(value);t.setTextSize(size);t.setTextColor(foreground());t.setPadding(10,9,10,9);return t; }
   // Keep editor actions visible above Samsung Keyboard without altering system bars.
+  // Restrained, consistent editor styling shared by Nota and Maktabah.
+  void styleEditorPage(LinearLayout page,EditText title,EditText body,TextView status,Button back){
+    page.setPadding(18,14,18,12);
+    title.setTextSize(19);
+    title.setTypeface(Typeface.DEFAULT,Typeface.BOLD);
+    title.setMinHeight(54);
+    title.setBackground(rounded(cardSurface(),borderColor(),16));
+    body.setPadding(18,18,18,18);
+    body.setTextSize(16);
+    body.setLineSpacing(5f,1.08f);
+    body.setBackground(rounded(cardSurface(),borderColor(),18));
+    status.setTextColor(dark()?0xFF8B949E:0xFF57606A);
+    status.setTextSize(12);
+    back.setTextColor(dark()?0xFF79C0FF:0xFF0969DA);
+  }
+  void styleEditorTool(Button control){
+    control.setMinHeight(44);
+    control.setTextSize(13);
+    control.setPadding(4,8,4,8);
+    control.setBackground(rounded(cardSurface(),borderColor(),12));
+  }
   void enableKeyboardAwareEditor(LinearLayout page) {
     getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
     final int left=page.getPaddingLeft(), top=page.getPaddingTop(), right=page.getPaddingRight(), base=page.getPaddingBottom();
@@ -739,6 +760,7 @@ public class MainActivity extends Activity {
     EditText title=field();title.setContentDescription("Tajuk nota");title.setHint("Tajuk nota");title.setSingleLine(true);title.setFilters(new InputFilter[]{new InputFilter.LengthFilter(200)});title.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_NEXT);title.setTextSize(17);title.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);title.setSelectAllOnFocus(false);page.addView(title);
     EditText body=field();body.setHint("Tulis nota di sini…");body.setTextSize(15);body.setGravity(Gravity.TOP|Gravity.START);body.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);body.setTextColor(foreground());
     body.setMinLines(5);body.setSelectAllOnFocus(false);body.setContentDescription("Kandungan nota");body.setHorizontallyScrolling(false);body.setTextIsSelectable(true);body.setImeOptions(android.view.inputmethod.EditorInfo.IME_FLAG_NO_EXTRACT_UI);page.addView(body,new LinearLayout.LayoutParams(-1,0,1));
+    styleEditorPage(page,title,body,saveIndicator,back);
     final Button[] deleteButton={null};
     final int[] noteId={id};final boolean[] loading={true};final int[] noteColor={Color.WHITE};final boolean[] notePinned={false};final Runnable[] saveAction={null};
     int[] colors={Color.WHITE,0xFFFFF4B8,0xFFDDF4DF,0xFFDCEEFF,0xFFFFE1E9,0xFFECE2FF,0xFFFFE7CC,0xFFD9F5F0,0xFFE7EAFB,0xFFF3E7D3};
@@ -750,6 +772,7 @@ public class MainActivity extends Activity {
     Button boldButton=button();boldButton.setText("B");boldButton.setContentDescription("Tebalkan teks dipilih");boldButton.setTypeface(null,Typeface.BOLD);toolbar.addView(boldButton,new LinearLayout.LayoutParams(0,-2,1));
     Button italicButton=button();italicButton.setText("I");italicButton.setContentDescription("Condongkan teks dipilih");italicButton.setTypeface(null,Typeface.ITALIC);toolbar.addView(italicButton,new LinearLayout.LayoutParams(0,-2,1));
     Button underlineButton=button();underlineButton.setText("U");underlineButton.setContentDescription("Gariskan teks dipilih");toolbar.addView(underlineButton,new LinearLayout.LayoutParams(0,-2,1));
+    for(int i=0;i<toolbar.getChildCount();i++)styleEditorTool((Button)toolbar.getChildAt(i));
     underlineButton.setOnClickListener(v->underlineSelection(body));
     colorButton.setOnClickListener(v->{
       String[] names={"Putih","Kuning lembut","Hijau lembut","Biru lembut","Merah jambu","Ungu lembut","Oren lembut","Turquoise","Indigo lembut","Krim"};
@@ -893,6 +916,7 @@ public class MainActivity extends Activity {
     Button bold=button();bold.setText("B");bold.setContentDescription("Tebalkan teks dipilih");bold.setTypeface(null,Typeface.BOLD);toolbar.addView(bold,new LinearLayout.LayoutParams(0,-2,1));
     Button italic=button();italic.setText("I");italic.setContentDescription("Condongkan teks dipilih");italic.setTypeface(null,Typeface.ITALIC);toolbar.addView(italic,new LinearLayout.LayoutParams(0,-2,1));
     Button underline=button();underline.setText("U");underline.setContentDescription("Gariskan teks dipilih");toolbar.addView(underline,new LinearLayout.LayoutParams(0,-2,1));
+    for(int i=0;i<toolbar.getChildCount();i++)styleEditorTool((Button)toolbar.getChildAt(i));
     underline.setOnClickListener(v->underlineSelection(body));
     check.setOnClickListener(v->body.getText().insert(Math.max(0,body.getSelectionStart()),"☐ "));
     bold.setOnClickListener(v->styleSelection(body,Typeface.BOLD));
