@@ -615,6 +615,12 @@ public class MainActivity extends Activity {
     if(key==null||key.trim().isEmpty()||value==null||value==org.json.JSONObject.NULL||
       !(value instanceof String||value instanceof Boolean||value instanceof Number))
      throw new java.io.IOException("Kandungan sandaran tidak disokong; data sedia ada tidak diubah");
+    // Notes, titles, and category labels must remain text to avoid crashes after restore.
+    if((key.startsWith("n_")||key.startsWith("m_")||
+        key.startsWith("title_n_")||key.startsWith("title_m_")||
+        key.startsWith("cat_n_")||key.startsWith("cat_m_")||
+        key.equals("categories_n")||key.equals("categories_m"))&&!(value instanceof String))
+     throw new java.io.IOException("Jenis data nota atau kategori tidak sah; data sedia ada tidak diubah");
     // Validate all numeric values before creating the destructive restore transaction.
     if(value instanceof Number&&!(value instanceof Integer)&&!(value instanceof Long)){
      double number=((Number)value).doubleValue();
