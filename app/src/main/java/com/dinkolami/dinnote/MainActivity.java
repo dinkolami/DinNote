@@ -120,7 +120,7 @@ public class MainActivity extends Activity {
         shortcut.setOnClickListener(v->showBooks(categoryId,categoryName));
       }
     }catch(Exception e){android.util.Log.w("DinNote","Library shortcuts unavailable",e);}
-    Button allLibrary=button();allLibrary.setText("Lihat / Urus semua kategori Maktabah");libraryShortcuts.addView(allLibrary);
+    Button allLibrary=button();allLibrary.setText("Lihat & urus semua kategori Maktabah");libraryShortcuts.addView(allLibrary);
     allLibrary.setOnClickListener(v->showLibrary());
     Button categoriesButton=button();categoriesButton.setText("Kategori Nota");root.addView(categoriesButton);
     categoriesButton.setOnClickListener(v->showNoteCategories());
