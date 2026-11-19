@@ -106,8 +106,8 @@ public class MainActivity extends Activity {
    @Override public boolean onDown(android.view.MotionEvent e){return true;}
    @Override public boolean onDoubleTap(android.view.MotionEvent e){bar.setVisibility(bar.getVisibility()==View.VISIBLE?View.GONE:View.VISIBLE);return true;}
   });
-  View.OnTouchListener touch=(v,e)->{detector.onTouchEvent(e);return true;};
-  scroll.setOnTouchListener(touch);body.setOnTouchListener(touch);content.setOnTouchListener(touch);title.setOnTouchListener(touch);
+  // Observe taps without consuming touch events: scrolling and text selection must still work.
+  scroll.setOnTouchListener((v,e)->{detector.onTouchEvent(e);return false;});
   bar.setVisibility(View.GONE);
  }
  void confirmDelete(String key){new AlertDialog.Builder(this).setMessage("Padam nota ini?").setPositiveButton("Padam",(d,w)->{prefs.edit().remove(key).remove("title_"+key).remove("cat_"+key).apply();selected=null;home();}).setNegativeButton("Batal",null).show();}
