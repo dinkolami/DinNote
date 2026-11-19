@@ -110,7 +110,7 @@ public class MainActivity extends Activity {
     LinearLayout.LayoutParams libraryCardParams=new LinearLayout.LayoutParams(0,-2,1);libraryCardParams.setMargins(7,6,0,10);
     homeCards.addView(notesMenu,noteCardParams);homeCards.addView(libraryMenu,libraryCardParams);
     libraryMenu.setContentDescription("Buka Maktabah");libraryMenu.setOnClickListener(v->showLibrary());
-    notesMenu.setContentDescription("Buka Nota");notesMenu.setOnClickListener(v->showNoteCategories());
+    notesMenu.setContentDescription("Buka kategori Nota peribadi");notesMenu.setOnClickListener(v->showNoteCategories());
     TextView libraryHeading=text("Kategori Maktabah",17);libraryHeading.setContentDescription("Senarai kategori Maktabah");libraryHeading.setTypeface(null,Typeface.BOLD);root.addView(libraryHeading);
     LinearLayout libraryShortcuts=new LinearLayout(this);libraryShortcuts.setOrientation(1);libraryShortcuts.setContentDescription("Pintasan kategori Maktabah");root.addView(libraryShortcuts);
     try(Cursor cats=db.getReadableDatabase().rawQuery("SELECT id,name FROM categories ORDER BY name COLLATE NOCASE LIMIT 8",null)){
