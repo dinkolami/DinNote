@@ -654,7 +654,7 @@ public class MainActivity extends Activity {
           pinnedCard.setClickable(true);pinnedCard.setFocusable(true);pinnedCard.setMinimumHeight(64);pinnedCard.setFocusableInTouchMode(false);pinnedCard.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);
           pinnedCard.setOnClickListener(v->edit(pinnedId));pinnedCard.setTooltipText("Buka nota penting");
           Button unpin=button();unpin.setText("⌁");
-          unpin.setContentDescription("Nyahpin "+pinnedTitle+" daripada halaman utama");unpin.setTextSize(17);unpin.setMinHeight(48);pin.setMinWidth(48);unpin.setHapticFeedbackEnabled(true);pin.setSoundEffectsEnabled(true);pin.setFocusable(true);unpin.setSoundEffectsEnabled(true);unpin.setGravity(Gravity.CENTER);unpin.setTooltipText("Buang pin");unpin.setAllCaps(false);
+          unpin.setContentDescription("Nyahpin "+pinnedTitle+" daripada halaman utama");unpin.setTextSize(17);unpin.setMinHeight(48);unpin.setMinWidth(48);unpin.setHapticFeedbackEnabled(true);unpin.setSoundEffectsEnabled(true);unpin.setFocusable(true);ununpin.setSoundEffectsEnabled(true);unpin.setGravity(Gravity.CENTER);unpin.setTooltipText("Buang pin");unpin.setAllCaps(false);
           pinnedRow.addView(unpin,new LinearLayout.LayoutParams(56,-2));
           unpin.setOnClickListener(v->{
             db.getWritableDatabase().execSQL("UPDATE notes SET pinned=0 WHERE id=?",new Object[]{pinnedId});
