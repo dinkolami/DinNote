@@ -891,12 +891,12 @@ public class MainActivity extends Activity {
       TextView bodyView=text("",getPreferences(MODE_PRIVATE).getInt("editorFontSize",16));
       bodyView.setText(html!=null&&!html.isEmpty()?android.text.Html.fromHtml(html,android.text.Html.FROM_HTML_MODE_COMPACT):(plain==null?"":plain));
       bodyView.setTextColor(ink);bodyView.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
-      bodyView.setTextIsSelectable(true);bodyView.setPadding(0,16,0,20);
+      bodyView.setTextIsSelectable(false);bodyView.setPadding(0,16,0,20);
       bodyView.setLineSpacing(5,1.1f);content.addView(bodyView);
       android.view.GestureDetector gestures=new android.view.GestureDetector(this,new android.view.GestureDetector.SimpleOnGestureListener(){
         @Override public boolean onDown(android.view.MotionEvent e){return true;}
         @Override public boolean onDoubleTap(android.view.MotionEvent e){
-          actions.setVisibility(actions.getVisibility()==View.VISIBLE?View.GONE:View.VISIBLE);
+          actions.setVisibility(View.VISIBLE);
           return true;
         }
       });
