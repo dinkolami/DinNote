@@ -176,6 +176,26 @@ public class MainActivity extends Activity {
   tiles.addView(note,a);tiles.addView(book,b);
   note.setContentDescription("Buka senarai Nota");book.setContentDescription("Buka Maktabah");
   note.setOnClickListener(v->openSection(false));book.setOnClickListener(v->openSection(true));
+  // Compact GitHub-style shortcuts, without changing the approved header.
+  LinearLayout shortcuts=new LinearLayout(this);shortcuts.setOrientation(1);
+  shortcuts.setPadding(dp(4),dp(12),dp(4),dp(10));page.addView(shortcuts);
+  dashboardSection(shortcuts,"📌  Nota disemat",dashboardKeys("pinned_",false),true);
+  dashboardSection(shortcuts,"◷  Terakhir dikemaskini",dashboardKeys("updated_",false),false);
+  TextView categoriesLink=dashboardText("▤  Kategori pantas  ›",15,true);
+  categoriesLink.setBackground(rounded(0xfff6f8fa,0xffd0d7de,10));
+  shortcuts.addView(categoriesLink);
+  categoriesLink.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Kategori pantas")
+   .setItems(new String[]{"Kategori Nota","Kategori Maktabah"},(d,i)->{maktabah=i==1;manageCategories();}).show());
+  String resume=prefs.getString("last_edited_key","");
+  if(!resume.isEmpty()&&prefs.contains(resume)){
+   TextView resumeButton=dashboardText("✎  Sambung menulis  ›",15,true);
+   resumeButton.setBackground(rounded(0xfff6f8fa,0xffd0d7de,10));
+   shortcuts.addView(resumeButton);
+   resumeButton.setOnClickListener(v->edit(resume));
+  }
+  TextView layout=dashboardText("▦  Paparan: "+(prefs.getBoolean("home_grid",false)?"Grid":"Senarai")+"  ▾",15,true);
+  layout.setBackground(rounded(0xfff6f8fa,0xffd0d7de,10));shortcuts.addView(layout);
+  layout.setOnClickListener(v->new AlertDialog.Builder(this).setItems(new String[]{"Senarai","Grid"},(d,i)->{prefs.edit().putBoolean("home_grid",i==1).apply();home();}).show());
   LinearLayout recentNotes=new LinearLayout(this);recentNotes.setOrientation(1);
   recentNotes.setPadding(dp(14),dp(14),dp(14),dp(28));card.addView(recentNotes);
   ArrayList<String> keys=new ArrayList<>();
@@ -189,7 +209,19 @@ public class MainActivity extends Activity {
    TextView hint=dashboardText("Nota atau kitab yang dibuka akan muncul di sini.",14,false);
    hint.setGravity(Gravity.CENTER);hint.setTextColor(0xff656d76);hint.setTextSize(13);recentNotes.addView(hint);
   }else{
-   for(int i=0;i<Math.min(5,keys.size());i++){
+   if(prefs.getBoolean("home_grid",false)){
+    for(int i=0;i<Math.min(5,keys.size());i+=2){
+     LinearLayout gridRow=new LinearLayout(this);recentNotes.addView(gridRow);
+     for(int j=i;j<Math.min(i+2,Math.min(5,keys.size()));j++){
+      String k=keys.get(j);String label=prefs.getString("title_"+k,"").trim();
+      if(label.isEmpty())label="Tanpa tajuk";
+      TextView tile=dashboardText("▤  "+label,14,true);tile.setMinHeight(dp(80));
+      tile.setBackground(rounded(0xfff6f8fa,0xffd0d7de,10));
+      LinearLayout.LayoutParams tileParams=new LinearLayout.LayoutParams(0,-2,1);tileParams.setMargins(dp(3),dp(3),dp(3),dp(3));
+      gridRow.addView(tile,tileParams);tile.setOnClickListener(v->{maktabah=k.startsWith("m_");read(k);});
+     }
+    }
+   }else for(int i=0;i<Math.min(5,keys.size());i++){
     String k=keys.get(i);String t=prefs.getString("title_"+k,"");
     if(t.trim().isEmpty())t="Tanpa tajuk";
     TextView item=dashboardText((k.startsWith("m_")?"▤  ":"✎  ")+t+"   ›",16,true);
@@ -204,6 +236,26 @@ public class MainActivity extends Activity {
   ap.topMargin=dp(16);page.addView(add,ap);
   add.setContentDescription("Cipta nota baharu");add.setFocusable(true);
   add.setOnClickListener(v->{maktabah=false;edit(null);});
+ }
+ ArrayList<String> dashboardKeys(String field,boolean includeBooks){
+  ArrayList<String> out=new ArrayList<>();
+  for(String k:prefs.getAll().keySet())if((k.startsWith("n_")||(includeBooks&&k.startsWith("m_")))&&
+    (field.equals("pinned_")?prefs.getBoolean(field+k,false):prefs.getLong(field+k,0L)>0))out.add(k);
+  Collections.sort(out,(a,b)->field.equals("pinned_")?a.compareTo(b):
+   Long.compare(prefs.getLong(field+b,0),prefs.getLong(field+a,0)));
+  return out;
+ }
+ void dashboardSection(LinearLayout target,String heading,ArrayList<String> keys,boolean pin){
+  TextView title=dashboardText(heading,15,true);target.addView(title);
+  if(keys.isEmpty()){
+   TextView empty=dashboardText(pin?"Belum ada nota disemat":"Belum ada nota dikemaskini",13,false);
+   empty.setTextColor(0xff656d76);target.addView(empty);return;
+  }
+  for(int i=0;i<Math.min(5,keys.size());i++){
+   String key=keys.get(i),label=prefs.getString("title_"+key,"").trim();
+   TextView entry=dashboardText("  "+(label.isEmpty()?"Tanpa tajuk":label)+"  ›",14,false);
+   target.addView(entry);entry.setOnClickListener(v->{maktabah=key.startsWith("m_");read(key);});
+  }
  }
  android.graphics.drawable.GradientDrawable rounded(int fill,int stroke,int radius){
   android.graphics.drawable.GradientDrawable d=new android.graphics.drawable.GradientDrawable();
@@ -236,7 +288,7 @@ public class MainActivity extends Activity {
   Button readerBack=action("‹",bar,()->returnFromReader());readerBack.setContentDescription("Kembali ke senarai");
   TextView spacer=text("",12);bar.addView(spacer,new LinearLayout.LayoutParams(0,1,1));
   Button readerEdit=action("✎ Edit",bar,()->edit(key));readerEdit.setContentDescription("Edit nota ini");
-  Button readerOptions=action("⋮",bar,()->new AlertDialog.Builder(this).setItems(new String[]{"Edit","Padam"},(d,i)->{if(i==0)edit(key);else confirmDelete(key);}).show());readerOptions.setContentDescription("Pilihan nota");
+  Button readerOptions=action("⋮",bar,()->new AlertDialog.Builder(this).setItems(new String[]{"Edit","Semat / Buka sematan","Padam"},(d,i)->{if(i==0)edit(key);else if(i==1){boolean pinned=prefs.getBoolean("pinned_"+key,false);prefs.edit().putBoolean("pinned_"+key,!pinned).apply();android.widget.Toast.makeText(this,pinned?"Sematan dibuang":"Nota disemat",android.widget.Toast.LENGTH_SHORT).show();}else confirmDelete(key);}).show());readerOptions.setContentDescription("Pilihan nota");
   String heading=prefs.getString("title_"+key,"");
   ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);scroll.setOverScrollMode(View.OVER_SCROLL_NEVER);
   LinearLayout body=new LinearLayout(this);body.setOrientation(1);scroll.addView(body);
@@ -260,10 +312,10 @@ public class MainActivity extends Activity {
   if(readerDetector!=null)readerDetector.onTouchEvent(event);
   return super.dispatchTouchEvent(event);
  }
- void confirmDelete(String key){new AlertDialog.Builder(this).setMessage("Padam nota ini?").setPositiveButton("Padam",(d,w)->{prefs.edit().remove(key).remove("title_"+key).remove("cat_"+key).remove("viewed_"+key).apply();selected=null;if(sectionOpen)notesPage();else home();}).setNegativeButton("Batal",null).show();}
- void edit(String key){if(key!=null)maktabah=key.startsWith("m_");editor=null;selected=key;cleanBase();LinearLayout bar=new LinearLayout(this);bar.setGravity(Gravity.CENTER_VERTICAL);root.addView(bar);action("‹",bar,()->{save();if(selected!=null)read(selected);else if(sectionOpen)notesPage();else home();});TextView spacer=text("",12);bar.addView(spacer,new LinearLayout.LayoutParams(0,1,1));action("Selesai",bar,()->{save();if(selected!=null)read(selected);else if(sectionOpen)notesPage();else home();});action("⋮",bar,()->new AlertDialog.Builder(this).setItems(new String[]{"Padam"},(d,i)->{if(selected!=null)confirmDelete(selected);}).show());categoryPicker=new Spinner(this);categoryPicker.setContentDescription("Kategori nota");ArrayList<String> choices=new ArrayList<>();choices.add("Tanpa kategori");choices.addAll(categories());categoryPicker.setAdapter(new ArrayAdapter<>(this,android.R.layout.simple_spinner_dropdown_item,choices));String savedCat=key==null?"Tanpa kategori":prefs.getString("cat_"+key,"Tanpa kategori");int pos=choices.indexOf(savedCat);categoryPicker.setSelection(pos<0?0:pos);root.addView(categoryPicker);titleEditor=new EditText(this);titleEditor.setSingleLine(true);titleEditor.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_NEXT);titleEditor.setTextSize(21);titleEditor.setHint(maktabah?"Tajuk kitab":"Tajuk nota");titleEditor.setContentDescription(maktabah?"Tajuk kitab":"Tajuk nota");titleEditor.setPadding(24,12,24,12);titleEditor.setBackgroundColor(Color.WHITE);root.addView(titleEditor);if(key!=null)titleEditor.setText(prefs.getString("title_"+key,""));editor=new EditText(this);editor.setGravity(Gravity.TOP);editor.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);editor.setTextSize(16);editor.setTextColor(0xff30343b);editor.setPadding(24,16,24,16);editor.setLineSpacing(5,1.08f);editor.setHint("Tulis di sini…");editor.setContentDescription("Kandungan nota");editor.setBackgroundColor(Color.WHITE);editor.setInputType(android.text.InputType.TYPE_CLASS_TEXT|android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE|android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);root.addView(editor,new LinearLayout.LayoutParams(-1,0,1));if(key!=null)editor.setText(prefs.getString(key,""));TextWatcher watcher=new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){save();}public void afterTextChanged(Editable e){}};titleEditor.addTextChangedListener(watcher);editor.addTextChangedListener(watcher);categoryPicker.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener(){public void onNothingSelected(android.widget.AdapterView<?> p){}public void onItemSelected(android.widget.AdapterView<?> p,View v,int position,long id){save();}});}
+ void confirmDelete(String key){new AlertDialog.Builder(this).setMessage("Padam nota ini?").setPositiveButton("Padam",(d,w)->{prefs.edit().remove(key).remove("title_"+key).remove("cat_"+key).remove("viewed_"+key).remove("updated_"+key).remove("pinned_"+key).apply();selected=null;if(sectionOpen)notesPage();else home();}).setNegativeButton("Batal",null).show();}
+ void edit(String key){if(key!=null){maktabah=key.startsWith("m_");prefs.edit().putString("last_edited_key",key).apply();}editor=null;selected=key;cleanBase();LinearLayout bar=new LinearLayout(this);bar.setGravity(Gravity.CENTER_VERTICAL);root.addView(bar);action("‹",bar,()->{save();if(selected!=null)read(selected);else if(sectionOpen)notesPage();else home();});TextView spacer=text("",12);bar.addView(spacer,new LinearLayout.LayoutParams(0,1,1));action("Selesai",bar,()->{save();if(selected!=null)read(selected);else if(sectionOpen)notesPage();else home();});action("⋮",bar,()->new AlertDialog.Builder(this).setItems(new String[]{"Padam"},(d,i)->{if(selected!=null)confirmDelete(selected);}).show());categoryPicker=new Spinner(this);categoryPicker.setContentDescription("Kategori nota");ArrayList<String> choices=new ArrayList<>();choices.add("Tanpa kategori");choices.addAll(categories());categoryPicker.setAdapter(new ArrayAdapter<>(this,android.R.layout.simple_spinner_dropdown_item,choices));String savedCat=key==null?"Tanpa kategori":prefs.getString("cat_"+key,"Tanpa kategori");int pos=choices.indexOf(savedCat);categoryPicker.setSelection(pos<0?0:pos);root.addView(categoryPicker);titleEditor=new EditText(this);titleEditor.setSingleLine(true);titleEditor.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_NEXT);titleEditor.setTextSize(21);titleEditor.setHint(maktabah?"Tajuk kitab":"Tajuk nota");titleEditor.setContentDescription(maktabah?"Tajuk kitab":"Tajuk nota");titleEditor.setPadding(24,12,24,12);titleEditor.setBackgroundColor(Color.WHITE);root.addView(titleEditor);if(key!=null)titleEditor.setText(prefs.getString("title_"+key,""));editor=new EditText(this);editor.setGravity(Gravity.TOP);editor.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);editor.setTextSize(16);editor.setTextColor(0xff30343b);editor.setPadding(24,16,24,16);editor.setLineSpacing(5,1.08f);editor.setHint("Tulis di sini…");editor.setContentDescription("Kandungan nota");editor.setBackgroundColor(Color.WHITE);editor.setInputType(android.text.InputType.TYPE_CLASS_TEXT|android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE|android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);root.addView(editor,new LinearLayout.LayoutParams(-1,0,1));if(key!=null)editor.setText(prefs.getString(key,""));TextWatcher watcher=new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){save();}public void afterTextChanged(Editable e){}};titleEditor.addTextChangedListener(watcher);editor.addTextChangedListener(watcher);categoryPicker.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener(){public void onNothingSelected(android.widget.AdapterView<?> p){}public void onItemSelected(android.widget.AdapterView<?> p,View v,int position,long id){save();}});}
 
- void save(){if(editor==null||selected==null&&(editor.getText().toString().trim().isEmpty()&&(titleEditor==null||titleEditor.getText().toString().trim().isEmpty())))return;String value=editor.getText().toString();if(selected==null)selected=(maktabah?"m_":"n_")+System.currentTimeMillis();prefs.edit().putString(selected,value).putString("title_"+selected,titleEditor==null?"":titleEditor.getText().toString()).putString("cat_"+selected,categoryPicker==null||categoryPicker.getSelectedItem()==null?"Tanpa kategori":categoryPicker.getSelectedItem().toString()).apply();}
+ void save(){if(editor==null||selected==null&&(editor.getText().toString().trim().isEmpty()&&(titleEditor==null||titleEditor.getText().toString().trim().isEmpty())))return;String value=editor.getText().toString();if(selected==null)selected=(maktabah?"m_":"n_")+System.currentTimeMillis();prefs.edit().putString(selected,value).putString("title_"+selected,titleEditor==null?"":titleEditor.getText().toString()).putString("cat_"+selected,categoryPicker==null||categoryPicker.getSelectedItem()==null?"Tanpa kategori":categoryPicker.getSelectedItem().toString()).putLong("updated_"+selected,System.currentTimeMillis()).putString("last_edited_key",selected).apply();}
  void seedDefaultCategories(){seedOne("categories_n",new String[]{"Nota Umum","Kuliah","Tazkirah","Catatan Peribadi","Senarai Semak"});seedOne("categories_m",new String[]{"Kalimah Tayyibah","Kalimah Tayyibah › Zikir","Kalimah Tayyibah › Doa","Kalimah Tayyibah › Istighfar","Kalimah Tayyibah › Selawat","Kalam Hikmah","Kalam Hikmah › Hikmah Ulama","Kalam Hikmah › Nasihat","Kalam Hikmah › Tazkiyah","Kalam Hikmah › Tasawuf","Kitab-Kitab","Kitab-Kitab › Tafsir","Kitab-Kitab › Hadis","Kitab-Kitab › Tauhid","Kitab-Kitab › Fiqh","Kitab-Kitab › Tasawuf","Kitab-Kitab › Akhlak","Kitab-Kitab › Tajwid","Kitab-Kitab › Bahasa Arab"});}
  void seedOne(String key,String[] defaults){if(prefs.contains(key))return;prefs.edit().putString(key,android.text.TextUtils.join("|",defaults)).apply();}
  ArrayList<String> categories(){String raw=prefs.getString(maktabah?"categories_m":"categories_n","");ArrayList<String> out=new ArrayList<>();for(String x:raw.split("\\|"))if(!x.trim().isEmpty())out.add(x.trim());return out;}
