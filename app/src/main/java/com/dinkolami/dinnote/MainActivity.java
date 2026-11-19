@@ -43,7 +43,37 @@ public class MainActivity extends Activity {
     // Theme only the app content. Android owns the top status bar and bottom navigation bar.
     background=surface();
   }
-  void showSettings(){new AlertDialog.Builder(this).setTitle("Tetapan DinNote").setItems(new String[]{"Penampilan","Backup ke DinPhone","Restore dari fail"},(d,w)->{if(w==0)appearanceSettings();else if(w==1)exportBackup();else importBackup();}).setNegativeButton("Tutup",null).show();}
+  void showSettings(){
+    flushPendingSave();
+    LinearLayout page=column();setContentView(page);
+    Button back=button();back.setText("← DinNote");back.setContentDescription("Kembali ke halaman utama");
+    page.addView(back);back.setOnClickListener(v->showHome());
+    TextView heading=text("⚙ Tetapan DinNote",21);heading.setTypeface(null,Typeface.BOLD);page.addView(heading);
+    TextView subtitle=text("Penampilan, nota dan keselamatan data",13);page.addView(subtitle);
+    ScrollView scroll=new ScrollView(this);page.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
+    LinearLayout options=new LinearLayout(this);options.setOrientation(1);scroll.addView(options);
+    TextView displayTitle=text("PAPARAN",12);displayTitle.setTypeface(null,Typeface.BOLD);options.addView(displayTitle);
+    Button appearance=button();appearance.setText("◐  Penampilan  ·  "+new String[]{"Ikut sistem","Cerah","Gelap"}[themeMode]);
+    options.addView(appearance);appearance.setOnClickListener(v->appearanceSettings());
+    Button sort=button();sort.setText("↕  Susunan nota  ·  "+new String[]{"Terkini","Terlama","Tajuk A-Z"}[noteSort]);
+    options.addView(sort);sort.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Susunan nota")
+      .setSingleChoiceItems(new String[]{"Terkini","Terlama","Tajuk A-Z"},noteSort,(dialog,which)->{
+        noteSort=which;getPreferences(MODE_PRIVATE).edit().putInt("noteSort",which).apply();
+        dialog.dismiss();showSettings();
+      }).setNegativeButton("Batal",null).show());
+    TextView dataTitle=text("DATA & BACKUP",12);dataTitle.setTypeface(null,Typeface.BOLD);options.addView(dataTitle);
+    Button backup=button();backup.setText("⇧  Backup ke DinPhone");options.addView(backup);
+    backup.setOnClickListener(v->exportBackup());
+    Button restore=button();restore.setText("⇩  Restore daripada fail");options.addView(restore);
+    restore.setOnClickListener(v->importBackup());
+    TextView warning=text("Simpan fail backup di tempat selamat. Restore menggantikan data semasa.",12);
+    options.addView(warning);
+    TextView aboutTitle=text("TENTANG",12);aboutTitle.setTypeface(null,Typeface.BOLD);options.addView(aboutTitle);
+    Button about=button();about.setText("ⓘ  Mengenai DinNote");options.addView(about);
+    about.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("DinNote")
+      .setMessage("Aplikasi nota dan maktabah luar talian. Kategori Nota dan Maktabah diurus berasingan. Data disimpan pada telefon; gunakan Backup untuk memindahkannya.")
+      .setPositiveButton("OK",null).show());
+  }
   static final int REQUEST_EXPORT=7301,REQUEST_IMPORT=7302;
   void exportBackup(){try{flushPendingSave();Intent i=new Intent(Intent.ACTION_CREATE_DOCUMENT);i.addCategory(Intent.CATEGORY_OPENABLE);i.setType("application/octet-stream");i.putExtra(Intent.EXTRA_TITLE,"DinPhone-DinNote-"+new java.text.SimpleDateFormat("yyyyMMdd-HHmm",java.util.Locale.US).format(new java.util.Date())+".db");startActivityForResult(i,REQUEST_EXPORT);}catch(Exception e){Toast.makeText(this,"Tidak dapat membuka pilihan backup",Toast.LENGTH_LONG).show();}}
   void importBackup(){new AlertDialog.Builder(this).setTitle("Restore DinNote").setMessage("Restore akan menggantikan semua nota, kategori dan kitab dalam aplikasi. Pastikan backup terkini telah dibuat. Teruskan?").setNegativeButton("Batal",null).setPositiveButton("Pilih fail",(d,w)->{try{Intent i=new Intent(Intent.ACTION_OPEN_DOCUMENT);i.addCategory(Intent.CATEGORY_OPENABLE);i.setType("*/*");startActivityForResult(i,REQUEST_IMPORT);}catch(Exception e){Toast.makeText(this,"Tidak dapat membuka fail",Toast.LENGTH_LONG).show();}}).show();}
