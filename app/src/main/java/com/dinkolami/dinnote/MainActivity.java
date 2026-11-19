@@ -878,7 +878,7 @@ public class MainActivity extends Activity {
       LinearLayout actions=new LinearLayout(this);actions.setOrientation(LinearLayout.HORIZONTAL);
       actions.setPadding(8,4,8,4);actions.setBackgroundColor(cardSurface());
       Button back=button();back.setText("← Kembali");actions.addView(back,new LinearLayout.LayoutParams(0,-2,1));back.setOnClickListener(v->showHome());
-      Button editButton=button();editButton.setText("✎ Edit");actions.addView(editButton,new LinearLayout.LayoutParams(0,-2,1));editButton.setOnClickListener(v->edit(id));
+      Button editButton=button();editButton.setText("✎ Edit · v2.0.1");actions.addView(editButton,new LinearLayout.LayoutParams(0,-2,1));editButton.setOnClickListener(v->edit(id));
       // Safety fallback: Edit and Back must never disappear when gesture detection fails.
       page.addView(actions,new LinearLayout.LayoutParams(-1,-2));
       actions.setVisibility(View.VISIBLE);
@@ -889,7 +889,16 @@ public class MainActivity extends Activity {
       editButton.setBackground(rounded(0xFF006B4F,0xFFD6B45B,18));
       editButton.setPadding(16,8,16,8);
       actions.setBackgroundColor(dark()?0xFF0C3D32:0xFFF9F7EF);
-      editButton.setOnClickListener(v->{try{edit(id);}catch(Exception error){android.util.Log.e("DinNote","Edit failed",error);Toast.makeText(this,"Editor gagal dibuka",Toast.LENGTH_LONG).show();}});
+      editButton.setOnClickListener(v->{
+        android.util.Log.i("DinNote","Reader Edit clicked for note "+id);
+        Toast.makeText(this,"Membuka editor…",Toast.LENGTH_SHORT).show();
+        try{edit(id);}catch(Exception error){
+          android.util.Log.e("DinNote","Edit failed",error);
+          new AlertDialog.Builder(this).setTitle("Editor gagal dibuka")
+            .setMessage(error.getClass().getSimpleName()+": "+error.getMessage())
+            .setPositiveButton("OK",null).show();
+        }
+      });
 
       // Dispatch gestures at the ScrollView level before child TextViews consume events.
       // Double tap reaffirms the toolbar, but Edit remains permanently visible as a fallback.
