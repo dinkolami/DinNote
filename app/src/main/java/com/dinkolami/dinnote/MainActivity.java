@@ -178,6 +178,77 @@ public class MainActivity extends Activity {
     clearSearch.setOnClickListener(v->{noteFilter="";showSettings();});
     Button allCategories=button();allCategories.setText("▤  Pilih semua kategori Nota");options.addView(allCategories);
     allCategories.setOnClickListener(v->{selectedNoteCategory=-1;showSettings();});
+    TextView statisticsTitle=text("STATISTIK DATA",12);statisticsTitle.setTypeface(null,Typeface.BOLD);options.addView(statisticsTitle);
+    try(Cursor stat0=db.getReadableDatabase().rawQuery("SELECT COUNT(*) FROM notes",null)){
+      if(stat0.moveToFirst()){
+        TextView statLabel0=text("Jumlah Nota: "+stat0.getLong(0),14);
+        statLabel0.setContentDescription("Jumlah Nota, "+stat0.getLong(0));
+        options.addView(statLabel0);
+      }
+    }catch(Exception statError0){android.util.Log.w("DinNote","Unable to read statistic 1",statError0);}
+    try(Cursor stat1=db.getReadableDatabase().rawQuery("SELECT COUNT(*) FROM notes WHERE pinned=1",null)){
+      if(stat1.moveToFirst()){
+        TextView statLabel1=text("Nota dipin: "+stat1.getLong(0),14);
+        statLabel1.setContentDescription("Nota dipin, "+stat1.getLong(0));
+        options.addView(statLabel1);
+      }
+    }catch(Exception statError1){android.util.Log.w("DinNote","Unable to read statistic 2",statError1);}
+    try(Cursor stat2=db.getReadableDatabase().rawQuery("SELECT COUNT(*) FROM notes WHERE category_id IS NULL OR category_id=0",null)){
+      if(stat2.moveToFirst()){
+        TextView statLabel2=text("Nota tanpa kategori: "+stat2.getLong(0),14);
+        statLabel2.setContentDescription("Nota tanpa kategori, "+stat2.getLong(0));
+        options.addView(statLabel2);
+      }
+    }catch(Exception statError2){android.util.Log.w("DinNote","Unable to read statistic 3",statError2);}
+    try(Cursor stat3=db.getReadableDatabase().rawQuery("SELECT COUNT(*) FROM note_categories",null)){
+      if(stat3.moveToFirst()){
+        TextView statLabel3=text("Jumlah kategori Nota: "+stat3.getLong(0),14);
+        statLabel3.setContentDescription("Jumlah kategori Nota, "+stat3.getLong(0));
+        options.addView(statLabel3);
+      }
+    }catch(Exception statError3){android.util.Log.w("DinNote","Unable to read statistic 4",statError3);}
+    try(Cursor stat4=db.getReadableDatabase().rawQuery("SELECT COUNT(*) FROM categories",null)){
+      if(stat4.moveToFirst()){
+        TextView statLabel4=text("Jumlah kategori Maktabah: "+stat4.getLong(0),14);
+        statLabel4.setContentDescription("Jumlah kategori Maktabah, "+stat4.getLong(0));
+        options.addView(statLabel4);
+      }
+    }catch(Exception statError4){android.util.Log.w("DinNote","Unable to read statistic 5",statError4);}
+    try(Cursor stat5=db.getReadableDatabase().rawQuery("SELECT COUNT(*) FROM books",null)){
+      if(stat5.moveToFirst()){
+        TextView statLabel5=text("Jumlah kitab: "+stat5.getLong(0),14);
+        statLabel5.setContentDescription("Jumlah kitab, "+stat5.getLong(0));
+        options.addView(statLabel5);
+      }
+    }catch(Exception statError5){android.util.Log.w("DinNote","Unable to read statistic 6",statError5);}
+    try(Cursor stat6=db.getReadableDatabase().rawQuery("SELECT COUNT(*) FROM notes WHERE TRIM(title)<>''",null)){
+      if(stat6.moveToFirst()){
+        TextView statLabel6=text("Nota dengan tajuk: "+stat6.getLong(0),14);
+        statLabel6.setContentDescription("Nota dengan tajuk, "+stat6.getLong(0));
+        options.addView(statLabel6);
+      }
+    }catch(Exception statError6){android.util.Log.w("DinNote","Unable to read statistic 7",statError6);}
+    try(Cursor stat7=db.getReadableDatabase().rawQuery("SELECT COUNT(*) FROM notes WHERE TRIM(body)<>''",null)){
+      if(stat7.moveToFirst()){
+        TextView statLabel7=text("Nota dengan kandungan: "+stat7.getLong(0),14);
+        statLabel7.setContentDescription("Nota dengan kandungan, "+stat7.getLong(0));
+        options.addView(statLabel7);
+      }
+    }catch(Exception statError7){android.util.Log.w("DinNote","Unable to read statistic 8",statError7);}
+    try(Cursor stat8=db.getReadableDatabase().rawQuery("SELECT COUNT(*) FROM notes WHERE pinned=0 OR pinned IS NULL",null)){
+      if(stat8.moveToFirst()){
+        TextView statLabel8=text("Nota belum dipin: "+stat8.getLong(0),14);
+        statLabel8.setContentDescription("Nota belum dipin, "+stat8.getLong(0));
+        options.addView(statLabel8);
+      }
+    }catch(Exception statError8){android.util.Log.w("DinNote","Unable to read statistic 9",statError8);}
+    try(Cursor stat9=db.getReadableDatabase().rawQuery("SELECT (SELECT COUNT(*) FROM notes)+(SELECT COUNT(*) FROM books)",null)){
+      if(stat9.moveToFirst()){
+        TextView statLabel9=text("Jumlah kandungan tersimpan: "+stat9.getLong(0),14);
+        statLabel9.setContentDescription("Jumlah kandungan tersimpan, "+stat9.getLong(0));
+        options.addView(statLabel9);
+      }
+    }catch(Exception statError9){android.util.Log.w("DinNote","Unable to read statistic 10",statError9);}
     TextView dataTitle=text("DATA & BACKUP",12);dataTitle.setTypeface(null,Typeface.BOLD);options.addView(dataTitle);
     Button backup=button();backup.setText("⇧  Backup ke DinPhone");options.addView(backup);
     backup.setOnClickListener(v->exportBackup());
