@@ -113,6 +113,29 @@ public class MainActivity extends Activity {
     homeCards.addView(notesMenu,noteCardParams);homeCards.addView(libraryMenu,libraryCardParams);
     libraryMenu.setContentDescription("Buka kategori kitab Maktabah");libraryMenu.setOnClickListener(v->showLibrary());
     notesMenu.setContentDescription("Buka kategori Nota peribadi");notesMenu.setOnClickListener(v->showNoteCategories());
+    // Pinned notes preview on the front page, above the category sections.
+    LinearLayout pinnedSection=new LinearLayout(this);pinnedSection.setOrientation(1);
+    homeContent.addView(pinnedSection);
+    try(Cursor pinnedNotes=db.getReadableDatabase().rawQuery(
+      "SELECT id,title,body FROM notes WHERE pinned=1 ORDER BY updated DESC,id DESC",null)){
+      if(pinnedNotes.moveToFirst()){
+        TextView pinnedHeading=text("📌 Nota Dipin",17);
+        pinnedHeading.setTypeface(null,Typeface.BOLD);pinnedSection.addView(pinnedHeading);
+        do{
+          final int pinnedId=pinnedNotes.getInt(0);
+          String pinnedTitle=pinnedNotes.getString(1);
+          String pinnedBody=pinnedNotes.getString(2);
+          if(pinnedTitle==null||pinnedTitle.trim().isEmpty())pinnedTitle="Tanpa tajuk";
+          if(pinnedBody==null)pinnedBody="";
+          pinnedBody=pinnedBody.replace("\r"," ").replace("\n"," ").trim();
+          Button pinnedItem=button();
+          pinnedItem.setText("📌  "+pinnedTitle+"\\n"+(pinnedBody.length()>110?pinnedBody.substring(0,110)+"…":pinnedBody));
+          pinnedItem.setContentDescription("Buka nota dipin "+pinnedTitle);
+          pinnedSection.addView(pinnedItem);
+          pinnedItem.setOnClickListener(v->edit(pinnedId));
+        }while(pinnedNotes.moveToNext());
+      }
+    }catch(Exception e){android.util.Log.w("DinNote","Pinned notes preview unavailable",e);}
     TextView libraryHeading=text("Kategori Maktabah",17);libraryHeading.setContentDescription("Senarai kategori Maktabah");libraryHeading.setTypeface(null,Typeface.BOLD);libraryHeading.setPadding(10,14,10,9);homeContent.addView(libraryHeading);
     LinearLayout libraryShortcuts=new LinearLayout(this);libraryShortcuts.setOrientation(1);libraryShortcuts.setContentDescription("Senarai pintasan kategori Maktabah");libraryShortcuts.setPadding(0,0,0,8);homeContent.addView(libraryShortcuts);
     try(Cursor cats=db.getReadableDatabase().rawQuery("SELECT id,name FROM categories ORDER BY name COLLATE NOCASE LIMIT 8",null)){
