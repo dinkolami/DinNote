@@ -99,7 +99,7 @@ public class MainActivity extends Activity {
     TextView title=text("DinNote",22);title.setTypeface(null,Typeface.BOLD);title.setContentDescription("DinNote halaman utama");header.addView(title,new LinearLayout.LayoutParams(0,-2,1));
     TextView appearance=text("⚙",22);appearance.setGravity(Gravity.CENTER);appearance.setContentDescription("Buka tetapan DinNote");appearance.setFocusable(true);appearance.setClickable(true);appearance.setMinWidth(48);appearance.setMinHeight(48);appearance.setOnClickListener(v->showSettings());header.addView(appearance);
     View headerDivider=new View(this);headerDivider.setBackgroundColor(borderColor());LinearLayout.LayoutParams hd=new LinearLayout.LayoutParams(-1,1);hd.setMargins(0,6,0,14);root.addView(headerDivider,hd);
-    ScrollView homeScroll=new ScrollView(this);homeScroll.setFillViewport(false);homeScroll.setContentDescription("Kandungan halaman utama DinNote");homeScroll.setFocusable(false);root.addView(homeScroll,new LinearLayout.LayoutParams(-1,0,1));
+    ScrollView homeScroll=new ScrollView(this);homeScroll.setFillViewport(false);homeScroll.setVerticalFadingEdgeEnabled(false);homeScroll.setContentDescription("Kandungan halaman utama DinNote");homeScroll.setFocusable(false);root.addView(homeScroll,new LinearLayout.LayoutParams(-1,0,1));
     LinearLayout homeContent=new LinearLayout(this);homeContent.setOrientation(1);homeContent.setPadding(0,0,0,12);homeContent.setFocusableInTouchMode(false);homeScroll.addView(homeContent);
     // Two equal-width, minimal home cards; keep Android system bars untouched.
     LinearLayout homeCards=new LinearLayout(this);homeCards.setOrientation(LinearLayout.HORIZONTAL);
