@@ -224,10 +224,14 @@ public class MainActivity extends Activity {
    }else for(int i=0;i<Math.min(5,keys.size());i++){
     String k=keys.get(i);String t=prefs.getString("title_"+k,"");
     if(t.trim().isEmpty())t="Tanpa tajuk";
-    TextView item=dashboardText((k.startsWith("m_")?"▤  ":"✎  ")+t+"   ›",16,true);
+    TextView item=dashboardText((k.startsWith("m_")?"▤  ":"✎  ")+t+"   ›",14,false);
+    item.setBackground(rounded(0xffffffff,0xffd0d7de,10));
+    LinearLayout.LayoutParams itemParams=new LinearLayout.LayoutParams(-1,-2);
+    itemParams.bottomMargin=dp(8);
+    recentNotes.addView(item,itemParams);
     item.setMaxLines(2);item.setEllipsize(android.text.TextUtils.TruncateAt.END);
     item.setContentDescription("Buka "+(k.startsWith("m_")?"kitab ":"nota ")+t);
-    recentNotes.addView(item);item.setOnClickListener(v->{maktabah=k.startsWith("m_");read(k);});
+    item.setOnClickListener(v->{maktabah=k.startsWith("m_");read(k);});
    }
   }
   TextView add=dashboardText("＋  Nota baharu",15,true);add.setGravity(Gravity.CENTER);
