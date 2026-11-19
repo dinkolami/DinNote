@@ -136,6 +136,27 @@ public class MainActivity extends Activity {
     systemBarInfo.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Bar sistem Android")
       .setMessage("DinNote tidak mengubah status bar jam di atas atau navigation bar Android di bawah.")
       .setPositiveButton("OK",null).show());
+    TextView quickTitle=text("PINTASAN & BANTUAN",12);quickTitle.setTypeface(null,Typeface.BOLD);options.addView(quickTitle);
+    Button quick1=button();quick1.setText("1. Pintasan Nota");quick1.setContentDescription("Buka semua kategori nota peribadi");options.addView(quick1);
+    quick1.setOnClickListener(v->showNoteCategories());
+    Button quick2=button();quick2.setText("2. Pintasan Maktabah");quick2.setContentDescription("Buka koleksi kitab dan kategori ilmu Islam");options.addView(quick2);
+    quick2.setOnClickListener(v->showLibrary());
+    Button quick3=button();quick3.setText("3. Carian Nota");quick3.setContentDescription("Kosongkan carian untuk melihat nota tanpa kata kunci");options.addView(quick3);
+    quick3.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Carian Nota").setMessage("Kosongkan carian untuk melihat nota tanpa kata kunci").setPositiveButton("OK",null).show());
+    Button quick4=button();quick4.setText("4. Susunan nota");quick4.setContentDescription("Pilih nota terkini, terlama atau tajuk A-Z");options.addView(quick4);
+    quick4.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Susunan nota").setMessage("Pilih nota terkini, terlama atau tajuk A-Z").setPositiveButton("OK",null).show());
+    Button quick5=button();quick5.setText("5. Nota dipin");quick5.setContentDescription("Paparkan nota penting pada halaman utama");options.addView(quick5);
+    quick5.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Nota dipin").setMessage("Paparkan nota penting pada halaman utama").setPositiveButton("OK",null).show());
+    Button quick6=button();quick6.setText("6. Tema aplikasi");quick6.setContentDescription("Gunakan mod sistem, cerah atau gelap");options.addView(quick6);
+    quick6.setOnClickListener(v->appearanceSettings());
+    Button quick7=button();quick7.setText("7. Backup berkala");quick7.setContentDescription("Simpan salinan fail pangkalan data secara berkala");options.addView(quick7);
+    quick7.setOnClickListener(v->exportBackup());
+    Button quick8=button();quick8.setText("8. Pemulihan data");quick8.setContentDescription("Pilih fail backup untuk memulihkan nota dan kitab");options.addView(quick8);
+    quick8.setOnClickListener(v->importBackup());
+    Button quick9=button();quick9.setText("9. Penyimpanan setempat");quick9.setContentDescription("Data pengguna kekal dalam ruang storan aplikasi pada telefon");options.addView(quick9);
+    quick9.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Penyimpanan setempat").setMessage("Data pengguna kekal dalam ruang storan aplikasi pada telefon").setPositiveButton("OK",null).show());
+    Button quick10=button();quick10.setText("10. Navigasi aplikasi");quick10.setContentDescription("Gunakan butang kembali dalam DinNote tanpa mengubah bar Android");options.addView(quick10);
+    quick10.setOnClickListener(v->showHome());
     TextView dataTitle=text("DATA & BACKUP",12);dataTitle.setTypeface(null,Typeface.BOLD);options.addView(dataTitle);
     Button backup=button();backup.setText("⇧  Backup ke DinPhone");options.addView(backup);
     backup.setOnClickListener(v->exportBackup());
