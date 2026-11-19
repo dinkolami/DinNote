@@ -5,7 +5,19 @@ public class MainActivity extends Activity {
  int green=Color.rgb(24,39,35), gold=Color.rgb(185,143,53);
  public void onCreate(Bundle b){super.onCreate(b);prefs=getSharedPreferences("notes",0);seedDefaultCategories();home();}
  void applySystemBarInsets(LinearLayout view){
-  getWindow().setStatusBarColor(0xff125b42);
+  // Keep Android's real clock, battery and network status bar visible.
+  getWindow().clearFlags(android.view.WindowManager.LayoutParams.FLAG_FULLSCREEN);
+  getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+  getWindow().setStatusBarColor(0xfff6f8fa);
+  if(android.os.Build.VERSION.SDK_INT>=30){
+   android.view.WindowInsetsController controller=getWindow().getInsetsController();
+   if(controller!=null){
+    controller.show(android.view.WindowInsets.Type.statusBars()|android.view.WindowInsets.Type.navigationBars());
+    controller.setSystemBarsAppearance(android.view.WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS,android.view.WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS);
+   }
+  }else{
+   getWindow().getDecorView().setSystemUiVisibility(android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+  }
   getWindow().setNavigationBarColor(0xfffafaf7);
   if(android.os.Build.VERSION.SDK_INT>=30){
    getWindow().setDecorFitsSystemWindows(false);
