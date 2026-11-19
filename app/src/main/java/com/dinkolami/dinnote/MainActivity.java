@@ -384,7 +384,7 @@ public class MainActivity extends Activity {
   else android.widget.Toast.makeText(this,"Gagal membuat salinan",android.widget.Toast.LENGTH_LONG).show();
  }
  void confirmDelete(String key){new AlertDialog.Builder(this).setMessage("Padam nota ini?").setPositiveButton("Padam",(d,w)->{prefs.edit().remove(key).remove("title_"+key).remove("cat_"+key).remove("viewed_"+key).remove("updated_"+key).remove("pinned_"+key).apply();selected=null;if(sectionOpen)notesPage();else home();}).setNegativeButton("Batal",null).show();}
- void edit(String key){if(key!=null){maktabah=key.startsWith("m_");prefs.edit().putString("last_edited_key",key).apply();}editor=null;saveIndicator=null;selected=key;cleanBase();LinearLayout bar=new LinearLayout(this);bar.setGravity(Gravity.CENTER_VERTICAL);root.addView(bar);action("‹",bar,()->{save();if(selected!=null)read(selected);else if(sectionOpen)notesPage();else home();});TextView spacer=text("",12);bar.addView(spacer,new LinearLayout.LayoutParams(0,1,1));action("Selesai",bar,()->{save();if(selected!=null)read(selected);else if(sectionOpen)notesPage();else home();});action("⋮",bar,()->{String[] options=maktabah?new String[]{"Masukkan tarikh","Masukkan masa","Masukkan tarikh dan masa","Pilih foto kitab (pratonton)","Padam"}:new String[]{"Masukkan tarikh","Masukkan masa","Masukkan tarikh dan masa","Padam"};new AlertDialog.Builder(this).setItems(options,(d,i)->{if(i<3)insertCurrentDateTime(i);else if(maktabah&&i==3)chooseKitabPhoto();else if(selected!=null)confirmDelete(selected);}).show();});categoryPicker=new Spinner(this);categoryPicker.setContentDescription("Kategori nota");ArrayList<String> choices=new ArrayList<>();choices.add("Tanpa kategori");choices.addAll(categories());categoryPicker.setAdapter(new ArrayAdapter<>(this,android.R.layout.simple_spinner_dropdown_item,choices));String savedCat=key==null?"Tanpa kategori":prefs.getString("cat_"+key,"Tanpa kategori");int pos=choices.indexOf(savedCat);categoryPicker.setSelection(pos<0?0:pos);root.addView(categoryPicker);saveIndicator=text("Autosimpan aktif",12);saveIndicator.setTextColor(0xff687078);saveIndicator.setPadding(dp(24),dp(2),dp(24),dp(2));root.addView(saveIndicator);titleEditor=new EditText(this);titleEditor.setSingleLine(true);titleEditor.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_NEXT);titleEditor.setTextSize(21);titleEditor.setHint(maktabah?"Tajuk kitab":"Tajuk nota");titleEditor.setContentDescription(maktabah?"Tajuk kitab":"Tajuk nota");titleEditor.setPadding(24,12,24,12);titleEditor.setBackgroundColor(Color.WHITE);root.addView(titleEditor);if(key!=null)titleEditor.setText(prefs.getString("title_"+key,""));editor=new EditText(this);editor.setGravity(Gravity.TOP);editor.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);editor.setTextSize(16);editor.setTextColor(0xff30343b);editor.setPadding(24,16,24,16);editor.setLineSpacing(5,1.08f);editor.setHint("Tulis di sini…");editor.setContentDescription("Kandungan nota");editor.setBackgroundColor(Color.WHITE);editor.setInputType(android.text.InputType.TYPE_CLASS_TEXT|android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE|android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);root.addView(editor,new LinearLayout.LayoutParams(-1,0,1));if(key!=null)editor.setText(prefs.getString(key,""));TextWatcher watcher=new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){save();}public void afterTextChanged(Editable e){}};titleEditor.addTextChangedListener(watcher);editor.addTextChangedListener(watcher);categoryPicker.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener(){public void onNothingSelected(android.widget.AdapterView<?> p){}public void onItemSelected(android.widget.AdapterView<?> p,View v,int position,long id){save();}});}
+ void edit(String key){if(key!=null){maktabah=key.startsWith("m_");prefs.edit().putString("last_edited_key",key).apply();}editor=null;saveIndicator=null;selected=key;cleanBase();LinearLayout bar=new LinearLayout(this);bar.setGravity(Gravity.CENTER_VERTICAL);root.addView(bar);action("‹",bar,()->{save();if(selected!=null)read(selected);else if(sectionOpen)notesPage();else home();});TextView spacer=text("",12);bar.addView(spacer,new LinearLayout.LayoutParams(0,1,1));action("Selesai",bar,()->{save();if(selected!=null)read(selected);else if(sectionOpen)notesPage();else home();});action("⋮",bar,()->{String[] options=maktabah?new String[]{"Masukkan tarikh","Masukkan masa","Masukkan tarikh dan masa","Pilih foto kitab (pratonton)","Tampal teks OCR Arab","Padam"}:new String[]{"Masukkan tarikh","Masukkan masa","Masukkan tarikh dan masa","Padam"};new AlertDialog.Builder(this).setItems(options,(d,i)->{if(i<3)insertCurrentDateTime(i);else if(maktabah&&i==3)chooseKitabPhoto();else if(maktabah&&i==4)pasteArabicOcrText();else if(selected!=null)confirmDelete(selected);}).show();});categoryPicker=new Spinner(this);categoryPicker.setContentDescription("Kategori nota");ArrayList<String> choices=new ArrayList<>();choices.add("Tanpa kategori");choices.addAll(categories());categoryPicker.setAdapter(new ArrayAdapter<>(this,android.R.layout.simple_spinner_dropdown_item,choices));String savedCat=key==null?"Tanpa kategori":prefs.getString("cat_"+key,"Tanpa kategori");int pos=choices.indexOf(savedCat);categoryPicker.setSelection(pos<0?0:pos);root.addView(categoryPicker);saveIndicator=text("Autosimpan aktif",12);saveIndicator.setTextColor(0xff687078);saveIndicator.setPadding(dp(24),dp(2),dp(24),dp(2));root.addView(saveIndicator);titleEditor=new EditText(this);titleEditor.setSingleLine(true);titleEditor.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_NEXT);titleEditor.setTextSize(21);titleEditor.setHint(maktabah?"Tajuk kitab":"Tajuk nota");titleEditor.setContentDescription(maktabah?"Tajuk kitab":"Tajuk nota");titleEditor.setPadding(24,12,24,12);titleEditor.setBackgroundColor(Color.WHITE);root.addView(titleEditor);if(key!=null)titleEditor.setText(prefs.getString("title_"+key,""));editor=new EditText(this);editor.setGravity(Gravity.TOP);editor.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);editor.setTextSize(16);editor.setTextColor(0xff30343b);editor.setPadding(24,16,24,16);editor.setLineSpacing(5,1.08f);editor.setHint("Tulis di sini…");editor.setContentDescription("Kandungan nota");editor.setBackgroundColor(Color.WHITE);editor.setInputType(android.text.InputType.TYPE_CLASS_TEXT|android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE|android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);root.addView(editor,new LinearLayout.LayoutParams(-1,0,1));if(key!=null)editor.setText(prefs.getString(key,""));TextWatcher watcher=new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){save();}public void afterTextChanged(Editable e){}};titleEditor.addTextChangedListener(watcher);editor.addTextChangedListener(watcher);categoryPicker.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener(){public void onNothingSelected(android.widget.AdapterView<?> p){}public void onItemSelected(android.widget.AdapterView<?> p,View v,int position,long id){save();}});}
 
  void chooseKitabPhoto(){
   Intent intent=new Intent(Intent.ACTION_OPEN_DOCUMENT);
@@ -417,10 +417,56 @@ public class MainActivity extends Activity {
    ScrollView scroll=new ScrollView(this);
    scroll.addView(image,new ScrollView.LayoutParams(-1,-2));
    new AlertDialog.Builder(this).setTitle("Pratonton foto kitab")
-    .setMessage("OCR Rumi tersedia untuk dicuba. Tulisan Arab belum disokong. Semak hasil OCR sebelum memasukkannya ke Maktabah; foto asal tidak disimpan.")
+    .setMessage("Imbas Rumi dalam DinNote, atau hantar foto ke aplikasi OCR Arab pilihan anda. Aplikasi luar mungkin memproses foto melalui internet. Foto asal tidak disimpan dalam DinNote.")
     .setView(scroll).setNegativeButton("Tutup",null)
+    .setNeutralButton("OCR Arab (aplikasi luar)",(dialog,which)->shareKitabPhotoForArabicOcr(uri))
     .setPositiveButton("Imbas tulisan Rumi",(dialog,which)->recognizeLatinKitab(bitmap)).show();
   }catch(Exception e){new AlertDialog.Builder(this).setTitle("Foto tidak dapat dibuka").setMessage(e.getMessage()).setPositiveButton("OK",null).show();}
+ }
+ void shareKitabPhotoForArabicOcr(android.net.Uri uri){
+  try{
+   Intent send=new Intent(Intent.ACTION_SEND);
+   send.setType("image/*");
+   send.putExtra(Intent.EXTRA_STREAM,uri);
+   send.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+   startActivity(Intent.createChooser(send,"Pilih aplikasi OCR Arab"));
+   Toast.makeText(this,"Selepas OCR, salin teks Arab dan pilih Tampal teks OCR Arab dalam editor Maktabah.",Toast.LENGTH_LONG).show();
+  }catch(Exception e){
+   new AlertDialog.Builder(this).setTitle("Aplikasi luar tidak tersedia")
+    .setMessage("Tiada aplikasi yang boleh menerima foto ini.")
+    .setPositiveButton("OK",null).show();
+  }
+ }
+ void pasteArabicOcrText(){
+  if(editor==null||!maktabah)return;
+  android.content.ClipboardManager clipboard=(android.content.ClipboardManager)getSystemService(Context.CLIPBOARD_SERVICE);
+  if(clipboard==null||!clipboard.hasPrimaryClip()){
+   Toast.makeText(this,"Tiada teks disalin. Salin hasil OCR Arab dahulu.",Toast.LENGTH_LONG).show();
+   return;
+  }
+  android.content.ClipData clip=clipboard.getPrimaryClip();
+  if(clip==null||clip.getItemCount()==0)return;
+  CharSequence copied=clip.getItemAt(0).coerceToText(this);
+  if(copied==null||copied.toString().trim().isEmpty()){
+   Toast.makeText(this,"Papan klip tidak mengandungi teks.",Toast.LENGTH_LONG).show();
+   return;
+  }
+  EditText review=new EditText(this);
+  review.setText(copied.toString());
+  review.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
+  review.setGravity(Gravity.TOP);
+  review.setMinLines(5);
+  review.setMaxLines(12);
+  review.setInputType(android.text.InputType.TYPE_CLASS_TEXT|android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE);
+  new AlertDialog.Builder(this).setTitle("Semak teks OCR Arab")
+   .setMessage("Semak ejaan dan harakat sebelum menyimpan. Teks ini datang daripada papan klip, bukan OCR dalaman DinNote.")
+   .setView(review).setNegativeButton("Batal",null)
+   .setPositiveButton("Masukkan ke Maktabah",(dialog,which)->{
+    if(editor==null||!maktabah)return;
+    int start=Math.max(0,editor.getSelectionStart()),end=Math.max(0,editor.getSelectionEnd());
+    editor.getText().replace(Math.min(start,end),Math.max(start,end),review.getText().toString());
+    save();
+   }).show();
  }
  void recognizeLatinKitab(android.graphics.Bitmap bitmap){
   com.google.mlkit.vision.text.TextRecognizer recognizer=
