@@ -57,6 +57,7 @@ public class MainActivity extends Activity {
       }).setNegativeButton("Batal",null).show();
   }
   String noteFilter="";
+  int selectedNoteCategory=-1; // -1 means all categories
   int noteSort=0;
   final Handler saveHandler=new Handler(Looper.getMainLooper());
   @Override public void onCreate(Bundle b) { super.onCreate(b); try { themeMode=getPreferences(MODE_PRIVATE).getInt("appearance",0);if(themeMode<0||themeMode>2)themeMode=0;noteSort=getPreferences(MODE_PRIVATE).getInt("noteSort",0);if(noteSort<0||noteSort>2)noteSort=0;applyAppearance();db=new DB(this); db.getWritableDatabase(); showHome(); } catch (Exception e) { showStartupError(e); } }
@@ -102,6 +103,8 @@ public class MainActivity extends Activity {
     Button libraryMenu=button();libraryMenu.setText("📚  Maktabah");libraryMenu.setTypeface(null,Typeface.BOLD);root.addView(libraryMenu);
     libraryMenu.setContentDescription("Buka Maktabah");libraryMenu.setOnClickListener(v->showLibrary());
     notesMenu.setContentDescription("Buka Nota");notesMenu.setOnClickListener(v->showHome());
+    Button categoriesButton=button();categoriesButton.setText("Kategori Nota  •  Tambah / Ubah / Padam");root.addView(categoriesButton);
+    categoriesButton.setOnClickListener(v->showNoteCategories());
     Button sort=button();sort.setText("Susun: "+new String[]{"Terkini","Terlama","Tajuk A-Z"}[noteSort]);root.addView(sort);
     sort.setContentDescription("Pilih susunan nota");sort.setOnClickListener(v->new AlertDialog.Builder(this).setItems(new String[]{"Terkini","Terlama","Tajuk A-Z"},(d,w)->{noteSort=w;getPreferences(MODE_PRIVATE).edit().putInt("noteSort",w).apply();sort.setText("Susun: "+new String[]{"Terkini","Terlama","Tajuk A-Z"}[w]);refresh(noteFilter);}).show());
     search=field();search.setContentDescription("Cari nota");search.setSingleLine(true);search.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);search.setSelectAllOnFocus(false);search.setHint("Cari nota…");search.setText(noteFilter);search.setSelection(search.length());root.addView(search);
@@ -125,12 +128,53 @@ public class MainActivity extends Activity {
     noteNav.setOnClickListener(v->{search.requestFocus();});
     bookNav.setOnClickListener(v->showLibrary());
   }
+  String noteCategoryName(int id){
+    if(id<0)return "Tanpa kategori";
+    try(Cursor c=db.getReadableDatabase().rawQuery("SELECT name FROM note_categories WHERE id=?",new String[]{""+id})){if(c.moveToFirst())return c.getString(0);}
+    return "Tanpa kategori";
+  }
+  void showNoteCategories(){
+    flushPendingSave();
+    LinearLayout page=column();setContentView(page);
+    Button back=button();back.setText("← Nota");page.addView(back);back.setOnClickListener(v->showHome());
+    page.addView(text("Kategori Nota",22));
+    Button all=button();all.setText("Semua nota");page.addView(all);all.setOnClickListener(v->{selectedNoteCategory=-1;showHome();});
+    Button add=button();add.setText("+ Tambah kategori");page.addView(add);add.setOnClickListener(v->promptNoteCategory(-1,""));
+    ScrollView scroll=new ScrollView(this);LinearLayout items=new LinearLayout(this);items.setOrientation(1);scroll.addView(items);page.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
+    try(Cursor c=db.getReadableDatabase().rawQuery("SELECT id,name FROM note_categories ORDER BY name COLLATE NOCASE",null)){
+      while(c.moveToNext()){
+        final int id=c.getInt(0);final String name=c.getString(1);
+        LinearLayout row=new LinearLayout(this);row.setOrientation(LinearLayout.HORIZONTAL);items.addView(row);
+        Button open=button();open.setText("📁 "+name);row.addView(open,new LinearLayout.LayoutParams(0,-2,1));
+        open.setOnClickListener(v->{selectedNoteCategory=id;showHome();});
+        Button rename=button();rename.setText("Edit");row.addView(rename,new LinearLayout.LayoutParams(-2,-2));
+        rename.setOnClickListener(v->promptNoteCategory(id,name));
+        Button delete=button();delete.setText("Del");row.addView(delete,new LinearLayout.LayoutParams(-2,-2));
+        delete.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Padam kategori?")
+          .setMessage("Nota dalam kategori ini tidak dipadam. Nota akan dipindahkan ke Tanpa kategori.")
+          .setNegativeButton("Batal",null).setPositiveButton("Padam",(d,w)->{
+            SQLiteDatabase writable=db.getWritableDatabase();writable.beginTransaction();
+            try{ContentValues cv=new ContentValues();cv.put("category_id",-1);writable.update("notes",cv,"category_id=?",new String[]{""+id});writable.delete("note_categories","id=?",new String[]{""+id});writable.setTransactionSuccessful();}finally{writable.endTransaction();}
+            if(selectedNoteCategory==id)selectedNoteCategory=-1;showNoteCategories();
+          }).show());
+      }
+    }
+  }
+  void promptNoteCategory(int id,String existing){
+    EditText input=field();input.setSingleLine(true);input.setText(existing);input.setFilters(new InputFilter[]{new InputFilter.LengthFilter(100)});
+    new AlertDialog.Builder(this).setTitle(id<0?"Tambah kategori":"Ubah kategori").setView(input).setNegativeButton("Batal",null).setPositiveButton("Simpan",(d,w)->{
+      String name=input.getText().toString().trim();if(name.isEmpty()){Toast.makeText(this,"Nama kategori diperlukan",Toast.LENGTH_SHORT).show();return;}
+      ContentValues cv=new ContentValues();cv.put("name",name);
+      if(id<0)db.getWritableDatabase().insert("note_categories",null,cv);else db.getWritableDatabase().update("note_categories",cv,"id=?",new String[]{""+id});
+      showNoteCategories();
+    }).show();
+  }
   void refresh(String query) {
     if(query==null)query="";
     if(list==null||db==null)return;
     list.removeAllViews();
     int visibleCount=0;
-    try(Cursor c=db.getReadableDatabase().rawQuery("SELECT id,title,body,color FROM notes WHERE title LIKE ? OR body LIKE ? ORDER BY "+(noteSort==1?"updated ASC,id ASC":noteSort==2?"title COLLATE NOCASE ASC,id DESC":"updated DESC,id DESC"),new String[]{"%"+query+"%","%"+query+"%"})) {
+    try(Cursor c=db.getReadableDatabase().rawQuery("SELECT id,title,body,color FROM notes WHERE (title LIKE ? OR body LIKE ?) AND (?=-1 OR category_id=?) ORDER BY "+(noteSort==1?"updated ASC,id ASC":noteSort==2?"title COLLATE NOCASE ASC,id DESC":"updated DESC,id DESC"),new String[]{"%"+query+"%","%"+query+"%",""+selectedNoteCategory,""+selectedNoteCategory})) {
       while(c.moveToNext()){visibleCount++;final int id=c.getInt(0);String heading=c.getString(1);String body=c.getString(2);if(heading==null)heading="";if(body==null)body="";body=body.replace("\r"," ").replace("\n"," ").trim();int noteColor=c.getInt(3);
         TextView item=text((heading.trim().isEmpty()?"Tanpa tajuk":heading)+"\n"+(body.length()>90?body.substring(0,90)+"…":body),15);
         item.setBackground(rounded(noteColor==Color.WHITE?cardSurface():noteColor,borderColor(),16));item.setTextColor(noteColor==Color.WHITE?foreground():Color.BLACK);LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2);p.setMargins(0,5,0,5);list.addView(item,p);item.setOnClickListener(v->edit(id));
@@ -143,6 +187,12 @@ public class MainActivity extends Activity {
     LinearLayout page=column();setContentView(page);
     Button back=button();back.setText("← Nota");back.setTextSize(14);page.addView(back);
     saveIndicator=text("Disimpan secara automatik",12);page.addView(saveIndicator);
+    final int[] chosenCategory={-1};
+    if(id>=0){try(Cursor cat=db.getReadableDatabase().rawQuery("SELECT category_id FROM notes WHERE id=?",new String[]{""+id})){if(cat.moveToFirst())chosenCategory[0]=cat.getInt(0);}}
+    else if(selectedNoteCategory>=0)chosenCategory[0]=selectedNoteCategory;
+    Button categoryPicker=button();categoryPicker.setText("Kategori: "+noteCategoryName(chosenCategory[0]));page.addView(categoryPicker);
+    categoryPicker.setOnClickListener(v->{ArrayList<Integer> ids=new ArrayList<>();ArrayList<String> names=new ArrayList<>();ids.add(-1);names.add("Tanpa kategori");try(Cursor cats=db.getReadableDatabase().rawQuery("SELECT id,name FROM note_categories ORDER BY name COLLATE NOCASE",null)){while(cats.moveToNext()){ids.add(cats.getInt(0));names.add(cats.getString(1));}}new AlertDialog.Builder(this).setTitle("Pilih kategori").setItems(names.toArray(new String[0]),(dialog,which)->{chosenCategory[0]=ids.get(which);categoryPicker.setText("Kategori: "+noteCategoryName(chosenCategory[0]));if(saveActionHolder[0]!=null)scheduleSave(saveActionHolder[0]);}).show();});
+    final Runnable[] saveActionHolder={null};
     EditText title=field();title.setContentDescription("Tajuk nota");title.setHint("Tajuk nota");title.setSingleLine(true);title.setFilters(new InputFilter[]{new InputFilter.LengthFilter(200)});title.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_NEXT);title.setTextSize(17);page.addView(title);
     EditText body=field();body.setHint("Tulis nota di sini…");body.setTextSize(15);body.setGravity(Gravity.TOP|Gravity.START);body.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);body.setTextColor(foreground());
     body.setMinLines(5);body.setSelectAllOnFocus(false);body.setContentDescription("Kandungan nota");page.addView(body,new LinearLayout.LayoutParams(-1,0,1));
@@ -163,10 +213,10 @@ public class MainActivity extends Activity {
     if(id>=0){try(Cursor c=db.getReadableDatabase().rawQuery("SELECT title,body,color FROM notes WHERE id=?",new String[]{""+id})){if(c.moveToFirst()){title.setText(c.getString(0));body.setText(c.getString(1));noteColor[0]=c.getInt(2);body.setBackground(rounded(noteColor[0]==Color.WHITE?cardSurface():noteColor[0],borderColor(),16));body.setTextColor(noteColor[0]==Color.WHITE?foreground():Color.BLACK);}}}
     loading[0]=false;
     Runnable save=()->{if(loading[0])return;String t=title.getText().toString(),b=body.getText().toString();if(noteId[0]<0&&t.trim().isEmpty()&&b.trim().isEmpty()){setSaveStatus("Nota kosong");return;}
-      ContentValues values=new ContentValues();values.put("title",t);values.put("body",b);values.put("updated",System.currentTimeMillis());values.put("color",noteColor[0]);
+      ContentValues values=new ContentValues();values.put("title",t);values.put("body",b);values.put("updated",System.currentTimeMillis());values.put("color",noteColor[0]);values.put("category_id",chosenCategory[0]);
       try{if(noteId[0]<0){noteId[0]=(int)db.getWritableDatabase().insertOrThrow("notes",null,values);deleteButton[0].setEnabled(true);}else db.getWritableDatabase().update("notes",values,"id=?",new String[]{""+noteId[0]});setSaveStatus("✓ Disimpan");}catch(Exception e){android.util.Log.e("DinNote","Note save failed",e);setSaveStatus("Gagal disimpan");Toast.makeText(this,"Nota gagal disimpan",Toast.LENGTH_LONG).show();}
     };
-    saveAction[0]=save;
+    saveAction[0]=save;saveActionHolder[0]=save;
     TextWatcher watcher=new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){scheduleSave(save);}public void afterTextChanged(Editable e){}};
     title.addTextChangedListener(watcher);body.addTextChangedListener(watcher);
     pendingSave=null;
@@ -279,10 +329,11 @@ public class MainActivity extends Activity {
   void styleSelection(EditText edit,int style){int a=edit.getSelectionStart(),b=edit.getSelectionEnd();if(a<0||b<=a){Toast.makeText(this,"Pilih teks dahulu",Toast.LENGTH_SHORT).show();return;}SpannableStringBuilder t=new SpannableStringBuilder(edit.getText());t.setSpan(new StyleSpan(style),a,b,Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);edit.setText(t);edit.setSelection(b);}
   @Override public void onBackPressed(){flushPendingSave();if(editingBook)showBooks(activeCategoryId,activeCategoryName);else showHome();}
   static class DB extends SQLiteOpenHelper {
-    DB(Context c){super(c,"dinnote.db",null,3);}
-    public void onCreate(SQLiteDatabase db){db.execSQL("CREATE TABLE notes (id INTEGER PRIMARY KEY AUTOINCREMENT,title TEXT NOT NULL DEFAULT '',body TEXT NOT NULL DEFAULT '',updated INTEGER NOT NULL,color INTEGER NOT NULL DEFAULT -1)");createLibrary(db);}
+    DB(Context c){super(c,"dinnote.db",null,4);}
+    public void onCreate(SQLiteDatabase db){db.execSQL("CREATE TABLE notes (id INTEGER PRIMARY KEY AUTOINCREMENT,title TEXT NOT NULL DEFAULT '',body TEXT NOT NULL DEFAULT '',updated INTEGER NOT NULL,color INTEGER NOT NULL DEFAULT -1,category_id INTEGER NOT NULL DEFAULT -1)");createLibrary(db);createNoteCategories(db);}
     static void createLibrary(SQLiteDatabase db){db.execSQL("CREATE TABLE IF NOT EXISTS categories (id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT NOT NULL)");db.execSQL("CREATE TABLE IF NOT EXISTS books (id INTEGER PRIMARY KEY AUTOINCREMENT,category_id INTEGER NOT NULL,title TEXT NOT NULL DEFAULT '',body TEXT NOT NULL DEFAULT '',updated INTEGER NOT NULL)");}
-    @Override public void onOpen(SQLiteDatabase database){super.onOpen(database);createLibrary(database);}
-    public void onUpgrade(SQLiteDatabase db,int oldVersion,int newVersion){if(oldVersion<2) { try { db.execSQL("ALTER TABLE notes ADD COLUMN color INTEGER NOT NULL DEFAULT -1"); } catch (android.database.sqlite.SQLiteException ignored) { /* Column may already exist in older builds. */ } } if(oldVersion<3)createLibrary(db); }
+    static void createNoteCategories(SQLiteDatabase db){db.execSQL("CREATE TABLE IF NOT EXISTS note_categories (id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT NOT NULL)");}
+    @Override public void onOpen(SQLiteDatabase database){super.onOpen(database);createLibrary(database);createNoteCategories(database);}
+    public void onUpgrade(SQLiteDatabase db,int oldVersion,int newVersion){if(oldVersion<2) { try { db.execSQL("ALTER TABLE notes ADD COLUMN color INTEGER NOT NULL DEFAULT -1"); } catch (android.database.sqlite.SQLiteException ignored) { /* Column may already exist in older builds. */ } } if(oldVersion<3)createLibrary(db);if(oldVersion<4){createNoteCategories(db);try{db.execSQL("ALTER TABLE notes ADD COLUMN category_id INTEGER NOT NULL DEFAULT -1");}catch(android.database.sqlite.SQLiteException ignored){}} }
   }
 }
