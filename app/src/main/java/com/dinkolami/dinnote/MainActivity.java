@@ -171,7 +171,7 @@ public class MainActivity extends Activity {
     flushPendingSave();
     LinearLayout page=column();setContentView(page);
     Button back=button();back.setText("← DinNote");back.setContentDescription("Kembali ke halaman utama daripada kategori Nota");page.addView(back);back.setOnClickListener(v->showHome());
-    TextView heading=text("Kategori Nota",21);heading.setTypeface(null,Typeface.BOLD);page.addView(heading);
+    TextView heading=text("Kategori Nota",21);heading.setContentDescription("Urus kategori nota peribadi");heading.setTypeface(null,Typeface.BOLD);page.addView(heading);
     EditText categorySearch=field();categorySearch.setSingleLine(true);categorySearch.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);categorySearch.setHint("Cari kategori Nota…");categorySearch.setContentDescription("Cari kategori Nota");page.addView(categorySearch);
     Button all=button();all.setText("▤  Semua nota");all.setContentDescription("Lihat semua nota tanpa penapis kategori");page.addView(all);all.setOnClickListener(v->{selectedNoteCategory=-1;showHome();});
     Button add=button();add.setText("+ Tambah kategori");add.setContentDescription("Cipta kategori Nota baharu");add.setTextColor(accent());page.addView(add);add.setOnClickListener(v->promptNoteCategory(-1,""));
