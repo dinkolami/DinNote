@@ -317,17 +317,17 @@ public class MainActivity extends Activity {
   void edit(int id) {
     flushPendingSave();editingNote=true;
     LinearLayout page=column();setContentView(page);
-    Button back=button();back.setText("← Nota");back.setTextSize(14);page.addView(back);
-    saveIndicator=text("Disimpan secara automatik",12);page.addView(saveIndicator);
+    Button back=button();back.setText("← Nota");back.setTextSize(14);back.setContentDescription("Kembali ke halaman Nota");back.setMinHeight(48);page.addView(back);
+    saveIndicator=text("Disimpan secara automatik",12);saveIndicator.setContentDescription("Status simpanan automatik");page.addView(saveIndicator);
     final int[] chosenCategory={-1};
     if(id>=0){try(Cursor cat=db.getReadableDatabase().rawQuery("SELECT category_id FROM notes WHERE id=?",new String[]{""+id})){if(cat.moveToFirst())chosenCategory[0]=cat.getInt(0);}}
     else if(selectedNoteCategory>=0)chosenCategory[0]=selectedNoteCategory;
     final Runnable[] saveActionHolder={null};
     Button categoryPicker=button();categoryPicker.setText("Kategori: "+noteCategoryName(chosenCategory[0]));page.addView(categoryPicker);
     categoryPicker.setOnClickListener(v->{ArrayList<Integer> ids=new ArrayList<>();ArrayList<String> names=new ArrayList<>();ids.add(-1);names.add("Tanpa kategori");try(Cursor cats=db.getReadableDatabase().rawQuery("SELECT id,name FROM note_categories ORDER BY name COLLATE NOCASE",null)){while(cats.moveToNext()){ids.add(cats.getInt(0));names.add(cats.getString(1));}}new AlertDialog.Builder(this).setTitle("Pilih kategori").setItems(names.toArray(new String[0]),(dialog,which)->{chosenCategory[0]=ids.get(which);categoryPicker.setText("Kategori: "+noteCategoryName(chosenCategory[0]));if(saveActionHolder[0]!=null)scheduleSave(saveActionHolder[0]);}).show();});
-    EditText title=field();title.setContentDescription("Tajuk nota");title.setHint("Tajuk nota");title.setSingleLine(true);title.setFilters(new InputFilter[]{new InputFilter.LengthFilter(200)});title.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_NEXT);title.setTextSize(17);title.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);page.addView(title);
+    EditText title=field();title.setContentDescription("Tajuk nota");title.setHint("Tajuk nota");title.setSingleLine(true);title.setFilters(new InputFilter[]{new InputFilter.LengthFilter(200)});title.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_NEXT);title.setTextSize(17);title.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);title.setSelectAllOnFocus(false);page.addView(title);
     EditText body=field();body.setHint("Tulis nota di sini…");body.setTextSize(15);body.setGravity(Gravity.TOP|Gravity.START);body.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);body.setTextColor(foreground());
-    body.setMinLines(5);body.setSelectAllOnFocus(false);body.setContentDescription("Kandungan nota");body.setHorizontallyScrolling(false);page.addView(body,new LinearLayout.LayoutParams(-1,0,1));
+    body.setMinLines(5);body.setSelectAllOnFocus(false);body.setContentDescription("Kandungan nota");body.setHorizontallyScrolling(false);body.setImeOptions(android.view.inputmethod.EditorInfo.IME_FLAG_NO_EXTRACT_UI);page.addView(body,new LinearLayout.LayoutParams(-1,0,1));
     final Button[] deleteButton={null};
     final int[] noteId={id};final boolean[] loading={true};final int[] noteColor={Color.WHITE};final boolean[] notePinned={false};final Runnable[] saveAction={null};
     int[] colors={Color.WHITE,0xFFFFF4B8,0xFFDDF4DF,0xFFDCEEFF,0xFFFFE1E9,0xFFECE2FF};
@@ -363,8 +363,8 @@ public class MainActivity extends Activity {
     LinearLayout page=column();setContentView(page);
     Button back=button();back.setText("← DinNote");back.setContentDescription("Kembali ke halaman utama DinNote");back.setTextSize(14);page.addView(back);back.setOnClickListener(v->showHome());
     TextView libraryTitle=text("Maktabah",21);libraryTitle.setContentDescription("Maktabah, koleksi kitab dan ilmu Islam");libraryTitle.setTypeface(null,Typeface.BOLD);libraryTitle.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);libraryTitle.setPadding(10,12,10,12);page.addView(libraryTitle);
-    EditText categorySearch=field();categorySearch.setSingleLine(true);categorySearch.setSelectAllOnFocus(false);categorySearch.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);categorySearch.setHint("Cari kategori Maktabah…");categorySearch.setContentDescription("Cari kategori Maktabah");categorySearch.setTextSize(15);page.addView(categorySearch);
-    Button add=button();add.setText("+ Tambah kategori Maktabah");add.setContentDescription("Tambah kategori baharu Maktabah");add.setTextColor(accent());page.addView(add);
+    EditText categorySearch=field();categorySearch.setSingleLine(true);categorySearch.setSelectAllOnFocus(false);categorySearch.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);categorySearch.setHint("Cari kategori Maktabah…");categorySearch.setContentDescription("Cari kategori Maktabah");categorySearch.setTextSize(15);categorySearch.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);page.addView(categorySearch);
+    Button add=button();add.setText("+ Tambah kategori Maktabah");add.setContentDescription("Tambah kategori baharu Maktabah");add.setTextColor(accent());add.setMinHeight(48);page.addView(add);
     add.setOnClickListener(v->promptCategory());
     ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);scroll.setSmoothScrollingEnabled(true);LinearLayout items=new LinearLayout(this);items.setOrientation(1);items.setPadding(0,4,0,12);scroll.addView(items);page.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
     categorySearch.addTextChangedListener(new TextWatcher(){
@@ -443,12 +443,12 @@ public class MainActivity extends Activity {
   void editBook(int id,int categoryId,String categoryName){
     flushPendingSave();editingBook=true;activeCategoryId=categoryId;activeCategoryName=categoryName;
     LinearLayout page=column();setContentView(page);
-    Button back=button();back.setText("← Maktabah");page.addView(back);
-    saveIndicator=text("Disimpan secara automatik",12);page.addView(saveIndicator);
-    EditText title=field();title.setContentDescription("Tajuk kitab");title.setHint("Tajuk kitab");title.setSingleLine(true);title.setFilters(new InputFilter[]{new InputFilter.LengthFilter(200)});title.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_NEXT);title.setTextSize(17);title.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);page.addView(title);
+    Button back=button();back.setText("← Maktabah");back.setContentDescription("Kembali ke senarai kitab");back.setMinHeight(48);page.addView(back);
+    saveIndicator=text("Disimpan secara automatik",12);saveIndicator.setContentDescription("Status simpanan automatik kitab");page.addView(saveIndicator);
+    EditText title=field();title.setContentDescription("Tajuk kitab");title.setHint("Tajuk kitab");title.setSingleLine(true);title.setFilters(new InputFilter[]{new InputFilter.LengthFilter(200)});title.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_NEXT);title.setTextSize(17);title.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);title.setSelectAllOnFocus(false);page.addView(title);
     EditText body=field();body.setHint("Tulis kandungan kitab (Arab / Rumi)…");body.setTextSize(15);
     body.setGravity(Gravity.TOP|Gravity.START);body.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
-    body.setMinLines(5);body.setSelectAllOnFocus(false);body.setContentDescription("Kandungan kitab");body.setHorizontallyScrolling(false);page.addView(body,new LinearLayout.LayoutParams(-1,0,1));
+    body.setMinLines(5);body.setSelectAllOnFocus(false);body.setContentDescription("Kandungan kitab");body.setHorizontallyScrolling(false);body.setImeOptions(android.view.inputmethod.EditorInfo.IME_FLAG_NO_EXTRACT_UI);page.addView(body,new LinearLayout.LayoutParams(-1,0,1));
     final Button[] deleteButton={null};
     final int[] bookId={id};final boolean[] loading={true};
     if(id>=0)try(Cursor c=db.getReadableDatabase().rawQuery("SELECT title,body FROM books WHERE id=?",new String[]{""+id})){
