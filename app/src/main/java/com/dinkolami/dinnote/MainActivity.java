@@ -409,7 +409,43 @@ public class MainActivity extends Activity {
   int[] readingSizes=key.startsWith("m_")?new int[]{16,19,22,26}:new int[]{14,16,19,23};
   TextView content=text(prefs.getString(key,""),readingSizes[fontLevel]);boolean containsArabic=java.util.regex.Pattern.compile("[\\u0600-\\u06FF]").matcher(fullReadingText).find();if(containsArabic)content.setLineSpacing(dp(7),1.2f);
   content.setTextColor(0xff26372e);content.setGravity(Gravity.TOP);content.setBreakStrategy(android.text.Layout.BREAK_STRATEGY_HIGH_QUALITY);content.setTextIsSelectable(true);content.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);int readingSide=getResources().getConfiguration().screenWidthDp>=500?dp(32):dp(20);content.setPadding(readingSide,dp(10),readingSide,dp(12));if(prefs.getBoolean("reader_wide_spacing",false))content.setLineSpacing(dp(9),1.3f);else if(!containsArabic)content.setLineSpacing(dp(3),1.12f);content.setIncludeFontPadding(true);
-  body.addView(content,new LinearLayout.LayoutParams(-1,-2));
+  // Display list rows with subtle mint dividers; preserve the original stored text.
+  String[] displayLines=fullReadingText.split("\\n",-1);
+  boolean hasLists=false;
+  for(String line:displayLines)if(line.matches("^\\s*(?:\\d+\\.\\s+|[•☐☑✓]\\s+).*")){hasLists=true;break;}
+  if(!hasLists)body.addView(content,new LinearLayout.LayoutParams(-1,-2));
+  else{
+   LinearLayout readingRows=new LinearLayout(this);readingRows.setOrientation(1);
+   readingRows.setPadding(readingSide,dp(8),readingSide,dp(12));
+   body.addView(readingRows);
+   for(String line:displayLines){
+    java.util.regex.Matcher numbered=java.util.regex.Pattern.compile("^\\s*(\\d+)\\.\\s+(.*)$").matcher(line);
+    java.util.regex.Matcher marked=java.util.regex.Pattern.compile("^\\s*([•☐☑✓])\\s+(.*)$").matcher(line);
+    boolean isNumber=numbered.matches(),isMarked=!isNumber&&marked.matches();
+    if(isNumber||isMarked){
+     LinearLayout itemRow=new LinearLayout(this);itemRow.setOrientation(LinearLayout.HORIZONTAL);
+     itemRow.setGravity(Gravity.TOP|Gravity.CENTER_VERTICAL);itemRow.setPadding(dp(6),dp(8),dp(6),dp(8));
+     String marker=isNumber?numbered.group(1):marked.group(1);
+     String value=isNumber?numbered.group(2):marked.group(2);
+     TextView markerView=text(marker,14);markerView.setGravity(Gravity.CENTER);
+     markerView.setTextColor(0xff167c42);
+     markerView.setBackground(rounded(0xffe4f7e8,0xffc8e9d0,16));
+     itemRow.addView(markerView,new LinearLayout.LayoutParams(dp(30),dp(30)));
+     TextView valueView=text(value,readingSizes[fontLevel]);valueView.setTextColor(0xff26372e);
+     valueView.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);valueView.setTextIsSelectable(true);
+     valueView.setPadding(dp(10),0,dp(4),0);valueView.setLineSpacing(dp(4),1.12f);
+     itemRow.addView(valueView,new LinearLayout.LayoutParams(0,-2,1));
+     readingRows.addView(itemRow);
+     View fineDivider=new View(this);fineDivider.setBackgroundColor(0xffc5e7cb);
+     readingRows.addView(fineDivider,new LinearLayout.LayoutParams(-1,dp(1)));
+    }else{
+     TextView paragraph=text(line.isEmpty()?" ":line,readingSizes[fontLevel]);
+     paragraph.setTextColor(0xff26372e);paragraph.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
+     paragraph.setTextIsSelectable(true);paragraph.setPadding(dp(4),dp(4),dp(4),dp(4));
+     paragraph.setLineSpacing(dp(5),1.12f);readingRows.addView(paragraph);
+    }
+   }
+  }
   String readingText=prefs.getString(key,"").trim();
   int wordCount=readingText.isEmpty()?0:readingText.split("\\s+").length;
   long readingUpdated=prefs.getLong("updated_"+key,0L);String updatedLabel=readingUpdated>0?new java.text.SimpleDateFormat("dd/MM/yyyy",java.util.Locale.getDefault()).format(new java.util.Date(readingUpdated)):"—";TextView wordCounter=text(wordCount+" perkataan  ·  Dikemas kini "+updatedLabel,12);
