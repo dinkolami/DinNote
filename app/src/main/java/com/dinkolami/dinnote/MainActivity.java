@@ -124,7 +124,7 @@ public class MainActivity extends Activity {
     allLibrary.setOnClickListener(v->showLibrary());
     // Home category shortcuts, matching the original DinNote two-section layout.
     TextView noteHeading=text("Kategori Nota",17);noteHeading.setContentDescription("Senarai kategori Nota");noteHeading.setTypeface(null,Typeface.BOLD);root.addView(noteHeading);
-    LinearLayout noteShortcuts=new LinearLayout(this);noteShortcuts.setOrientation(1);root.addView(noteShortcuts);
+    LinearLayout noteShortcuts=new LinearLayout(this);noteShortcuts.setOrientation(1);noteShortcuts.setContentDescription("Pintasan kategori Nota");root.addView(noteShortcuts);
     Button personal=button();personal.setText("▤  Semua nota peribadi");noteShortcuts.addView(personal);
     personal.setOnClickListener(v->{selectedNoteCategory=-1;showHome();});
     try(Cursor cats=db.getReadableDatabase().rawQuery("SELECT id,name FROM note_categories ORDER BY name COLLATE NOCASE LIMIT 6",null)){
