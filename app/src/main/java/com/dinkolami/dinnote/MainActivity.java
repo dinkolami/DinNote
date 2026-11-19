@@ -256,6 +256,8 @@ public class MainActivity extends Activity {
     contentInsights.setOnClickListener(v->showContentInsights());
     Button dataQuality=button();dataQuality.setText("▦  23 semakan kualiti data");options.addView(dataQuality);
     dataQuality.setOnClickListener(v->showDataQualityInsights());
+    Button writingInsights=button();writingInsights.setText("▦  23 analisis penulisan");options.addView(writingInsights);
+    writingInsights.setOnClickListener(v->showWritingInsights());
     TextView dataTitle=text("DATA & BACKUP",12);dataTitle.setTypeface(null,Typeface.BOLD);options.addView(dataTitle);
     Button backup=button();backup.setText("⇧  Backup ke DinPhone");options.addView(backup);
     backup.setOnClickListener(v->exportBackup());
@@ -414,6 +416,23 @@ public class MainActivity extends Activity {
       }
     }
     new AlertDialog.Builder(this).setTitle("23 Semakan Data")
+      .setMessage(report.toString()).setPositiveButton("Tutup",null).show();
+  }
+  void showWritingInsights(){
+    flushPendingSave();
+    String[] labels=new String[]{"Nota mengandungi angka","Kitab mengandungi angka","Nota mempunyai tanda soal","Kitab mempunyai tanda soal","Nota mempunyai titik bertindih","Kitab mempunyai titik bertindih","Nota mempunyai senarai berbulet","Kitab mempunyai senarai berbulet","Nota mempunyai kurungan","Kitab mempunyai kurungan","Nota mempunyai pautan web","Kitab mempunyai pautan web","Nota mempunyai e-mel","Kitab mempunyai e-mel","Nota mempunyai petikan","Kitab mempunyai petikan","Nota mempunyai tanda seru","Kitab mempunyai tanda seru","Nota mempunyai pemisah garis","Kitab mempunyai pemisah garis","Nota mempunyai tab","Kitab mempunyai tab","Jumlah nota dan kitab dipin"};
+    String[] queries=new String[]{"SELECT COUNT(*) FROM notes WHERE body GLOB '*[0-9]*'","SELECT COUNT(*) FROM books WHERE body GLOB '*[0-9]*'","SELECT COUNT(*) FROM notes WHERE INSTR(body,'?')>0","SELECT COUNT(*) FROM books WHERE INSTR(body,'?')>0","SELECT COUNT(*) FROM notes WHERE INSTR(body,':')>0","SELECT COUNT(*) FROM books WHERE INSTR(body,':')>0","SELECT COUNT(*) FROM notes WHERE INSTR(body,'•')>0","SELECT COUNT(*) FROM books WHERE INSTR(body,'•')>0","SELECT COUNT(*) FROM notes WHERE INSTR(body,'(')>0","SELECT COUNT(*) FROM books WHERE INSTR(body,'(')>0","SELECT COUNT(*) FROM notes WHERE INSTR(body,'http://')>0 OR INSTR(body,'https://')>0","SELECT COUNT(*) FROM books WHERE INSTR(body,'http://')>0 OR INSTR(body,'https://')>0","SELECT COUNT(*) FROM notes WHERE INSTR(body,'@')>0","SELECT COUNT(*) FROM books WHERE INSTR(body,'@')>0","SELECT COUNT(*) FROM notes WHERE INSTR(body,'\"')>0","SELECT COUNT(*) FROM books WHERE INSTR(body,'\"')>0","SELECT COUNT(*) FROM notes WHERE INSTR(body,'!')>0","SELECT COUNT(*) FROM books WHERE INSTR(body,'!')>0","SELECT COUNT(*) FROM notes WHERE INSTR(body,'---')>0","SELECT COUNT(*) FROM books WHERE INSTR(body,'---')>0","SELECT COUNT(*) FROM notes WHERE INSTR(body,CHAR(9))>0","SELECT COUNT(*) FROM books WHERE INSTR(body,CHAR(9))>0","SELECT (SELECT COUNT(*) FROM notes WHERE pinned=1)+(SELECT COUNT(*) FROM books WHERE pinned=1)"};
+    StringBuilder report=new StringBuilder();
+    for(int i=0;i<labels.length;i++){
+      try(Cursor cursor=db.getReadableDatabase().rawQuery(queries[i],null)){
+        report.append(i+1).append(". ").append(labels[i]).append(": ");
+        report.append(cursor.moveToFirst()?cursor.getLong(0):0).append("\n");
+      }catch(Exception e){
+        android.util.Log.w("DinNote","Writing insight "+(i+1)+" unavailable",e);
+        report.append(i+1).append(". ").append(labels[i]).append(": Tidak tersedia\n");
+      }
+    }
+    new AlertDialog.Builder(this).setTitle("23 Analisis Penulisan")
       .setMessage(report.toString()).setPositiveButton("Tutup",null).show();
   }
   static final int REQUEST_EXPORT=7301,REQUEST_IMPORT=7302;
