@@ -225,6 +225,8 @@ public class MainActivity extends Activity {
     String k=keys.get(i);String t=prefs.getString("title_"+k,"");
     if(t.trim().isEmpty())t="Tanpa tajuk";
     TextView item=dashboardText((k.startsWith("m_")?"▤  ":"✎  ")+t+"   ›",14,false);
+    item.setTextColor(0xff26352e);
+    item.setCompoundDrawablePadding(dp(8));
     item.setBackground(rounded(0xffffffff,0xffd0d7de,10));
     LinearLayout.LayoutParams itemParams=new LinearLayout.LayoutParams(-1,-2);
     itemParams.bottomMargin=dp(8);
