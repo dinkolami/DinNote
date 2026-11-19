@@ -54,6 +54,32 @@ jobs:
             echo "Debug APK biasanya lebih besar daripada release; jangan banding terus dengan sasaran release 30 MiB."
           } >> "$GITHUB_STEP_SUMMARY"
           echo "Debug APK: $MIB MiB"
+      - name: Verify debug APK identity and integrity
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK=app/build/outputs/apk/debug/app-debug.apk
+          AAPT="$ANDROID_HOME/build-tools/35.0.0/aapt"
+          APKSIGNER="$ANDROID_HOME/build-tools/35.0.0/apksigner"
+          test -s "$APK"
+          BADGING=$("$AAPT" dump badging "$APK")
+          PACKAGE_LINE=$(printf '%s\n' "$BADGING" | grep '^package:' | head -n 1)
+          SDK_LINE=$(printf '%s\n' "$BADGING" | grep '^sdkVersion:' | head -n 1)
+          TARGET_LINE=$(printf '%s\n' "$BADGING" | grep '^targetSdkVersion:' | head -n 1)
+          printf '%s\n' "$PACKAGE_LINE" | grep -q "name='com.dinkolami.dinnote.fresh'"
+          "$APKSIGNER" verify --verbose "$APK"
+          HASH=$(sha256sum "$APK" | cut -d' ' -f1)
+          {
+            echo "### Identiti APK debug"
+            echo ""
+            echo "- $PACKAGE_LINE"
+            echo "- $SDK_LINE"
+            echo "- $TARGET_LINE"
+            echo "- SHA-256: \`$HASH\`"
+            echo "- Tandatangan debug: disahkan dengan apksigner (bukan kunci release)"
+            echo ""
+            echo "APK debug mungkin tidak boleh dipasang sebagai kemas kini terus ke atas APK release sedia ada. Pastikan backup data disahkan dahulu."
+          } >> "$GITHUB_STEP_SUMMARY"
       - name: Upload debug APK for testing
         uses: actions/upload-artifact@v4
         with:
