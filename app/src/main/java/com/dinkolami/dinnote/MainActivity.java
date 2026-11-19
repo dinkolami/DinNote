@@ -49,7 +49,7 @@ public class MainActivity extends Activity {
     Button back=button();back.setText("← DinNote");back.setContentDescription("Kembali ke halaman utama");
     page.addView(back);back.setOnClickListener(v->showHome());
     TextView heading=text("⚙ Tetapan DinNote",21);heading.setTypeface(null,Typeface.BOLD);page.addView(heading);
-    TextView subtitle=text("Penampilan, nota dan keselamatan data",13);page.addView(subtitle);
+    TextView subtitle=text("Penampilan • Editor • Nota • Data",13);page.addView(subtitle);
     ScrollView scroll=new ScrollView(this);scroll.setFillViewport(false);scroll.setVerticalScrollBarEnabled(true);scroll.setClipToPadding(false);page.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
     LinearLayout options=new LinearLayout(this);options.setOrientation(1);scroll.addView(options);
     TextView displayTitle=text("PAPARAN",12);displayTitle.setTypeface(null,Typeface.BOLD);options.addView(displayTitle);
@@ -471,7 +471,7 @@ public class MainActivity extends Activity {
     retry.setOnClickListener(v->{try {db=new DB(this);db.getWritableDatabase();showHome();}catch(Exception error){showStartupError(error);}});
   }
   int cardSurface(){return dark()?0xFF161B22:0xFFFFFFFF;}
-  int accent(){return dark()?0xFF58A6FF:0xFF0969DA;}
+  int accent(){return dark()?0xFF68C7A1:0xFF087C59;}
   android.graphics.drawable.GradientDrawable rounded(int color,int stroke,int radius){
     android.graphics.drawable.GradientDrawable d=new android.graphics.drawable.GradientDrawable();
     d.setColor(color);d.setCornerRadius(radius);d.setStroke(1,stroke);return d;
@@ -480,6 +480,7 @@ public class MainActivity extends Activity {
     Button b=new Button(this);b.setAllCaps(false);b.setTextSize(14);b.setLetterSpacing(0);
     b.setMinHeight(48);b.setTextColor(foreground());b.setBackground(rounded(cardSurface(),borderColor(),16));
     b.setPadding(16,12,16,12);
+    b.setStateListAnimator(null);
     LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2);p.setMargins(0,5,0,5);b.setLayoutParams(p);
     return b;
   }
@@ -499,14 +500,14 @@ public class MainActivity extends Activity {
     title.setTypeface(Typeface.DEFAULT,Typeface.BOLD);
     title.setMinHeight(56);
     title.setPadding(18,12,18,12);
-    title.setBackground(rounded(cardSurface(),borderColor(),16));
+    title.setBackground(rounded(cardSurface(),borderColor(),10));
     body.setPadding(20,20,20,24);
     body.setIncludeFontPadding(true);
     body.setTextSize(getPreferences(MODE_PRIVATE).getInt("editorFontSize",16));
     body.setLineSpacing(getPreferences(MODE_PRIVATE).getBoolean("editorComfortSpacing",true)?8f:3f,getPreferences(MODE_PRIVATE).getBoolean("editorComfortSpacing",true)?1.16f:1.04f);
     body.setTextColor(foreground());
     body.setHintTextColor(dark()?0xFF9AB6A7:0xFF72877B);
-    body.setBackground(rounded(cardSurface(),borderColor(),18));
+    body.setBackground(rounded(cardSurface(),borderColor(),10));
     body.setScrollBarStyle(View.SCROLLBARS_INSIDE_INSET);
     body.setVerticalScrollBarEnabled(true);
     body.setOverScrollMode(View.OVER_SCROLL_IF_CONTENT_SCROLLS);
@@ -516,7 +517,7 @@ public class MainActivity extends Activity {
     status.setPadding(0,4,2,8);
     status.setLetterSpacing(0.02f);
     back.setTextColor(foreground());
-    back.setBackground(rounded(cardSurface(),borderColor(),14));
+    back.setBackground(rounded(cardSurface(),borderColor(),10));
     back.setElevation(2f*getResources().getDisplayMetrics().density);
   }
   void styleEditorTool(Button control){
@@ -525,7 +526,7 @@ public class MainActivity extends Activity {
     control.setTypeface(Typeface.DEFAULT,Typeface.BOLD);
     control.setPadding(6,10,6,10);
     control.setTextColor(foreground());
-    control.setBackground(rounded(cardSurface(),borderColor(),14));
+    control.setBackground(rounded(cardSurface(),borderColor(),10));
   }
   // Android resizes the editor when Samsung Keyboard appears; system bars stay native.
   void enableKeyboardAwareEditor(LinearLayout page) {
@@ -547,7 +548,8 @@ public class MainActivity extends Activity {
     TextView title=text("DinNote",27);title.setLetterSpacing(-0.03f);title.setPadding(2,9,12,9);title.setTypeface(null,Typeface.BOLD);title.setTextColor(foreground());title.setContentDescription("DinNote halaman utama");title.setElegantTextHeight(true);title.setMaxLines(1);title.setTextDirection(View.TEXT_DIRECTION_LOCALE);title.setIncludeFontPadding(false);title.setEllipsize(android.text.TextUtils.TruncateAt.END);header.addView(title,new LinearLayout.LayoutParams(0,-2,1));
     header.setBackground(rounded(cardSurface(),borderColor(),16));
     header.setPadding(12,6,8,6);
-    header.setElevation(3f*getResources().getDisplayMetrics().density);
+    header.setElevation(2f*getResources().getDisplayMetrics().density);
+    header.setClipToPadding(false);
     TextView appearance=text("⚙",21);appearance.setTextColor(accent());appearance.setBackground(rounded(cardSurface(),borderColor(),14));appearance.setGravity(Gravity.CENTER);appearance.setTextSize(20);appearance.setContentDescription("Buka tetapan DinNote");appearance.setAccessibilityHeading(false);appearance.setTooltipText("Tetapan");appearance.setSoundEffectsEnabled(true);appearance.setFocusable(true);appearance.setClickable(true);appearance.setMinWidth(48);appearance.setMinHeight(48);appearance.setHapticFeedbackEnabled(true);appearance.setPadding(8,8,8,8);appearance.setElevation(1f);appearance.setStateListAnimator(null);appearance.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);appearance.setOnClickListener(v->showSettings());header.addView(appearance);
     View headerDivider=new View(this);headerDivider.setBackgroundColor(borderColor());headerDivider.setContentDescription("Pemisah tajuk");LinearLayout.LayoutParams hd=new LinearLayout.LayoutParams(-1,1);hd.setMargins(0,12,0,18);root.addView(headerDivider,hd);
     // Header remains visible while the home content scrolls beneath it.
@@ -557,14 +559,14 @@ public class MainActivity extends Activity {
     LinearLayout hero=new LinearLayout(this);
     hero.setOrientation(LinearLayout.VERTICAL);
     hero.setGravity(Gravity.CENTER);
-    hero.setPadding(20,24,20,24);
+    hero.setPadding(20,18,20,18);
     android.graphics.drawable.GradientDrawable heroBackground=new android.graphics.drawable.GradientDrawable(
       android.graphics.drawable.GradientDrawable.Orientation.TL_BR,
       new int[]{0xFF064B3B,0xFF08765B,0xFF0C614B});
-    heroBackground.setCornerRadius(28f*getResources().getDisplayMetrics().density);
+    heroBackground.setCornerRadius(18f*getResources().getDisplayMetrics().density);
     heroBackground.setStroke((int)(1*getResources().getDisplayMetrics().density),0xFFC9A65A);
     hero.setBackground(heroBackground);
-    hero.setElevation(4f*getResources().getDisplayMetrics().density);
+    hero.setElevation(1f*getResources().getDisplayMetrics().density);
     LinearLayout.LayoutParams heroParams=new LinearLayout.LayoutParams(-1,-2);
     heroParams.setMargins(0,4,0,18);
     homeContent.addView(hero,heroParams);
