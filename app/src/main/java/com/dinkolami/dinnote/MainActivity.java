@@ -99,15 +99,15 @@ public class MainActivity extends Activity {
     TextView title=text("DinNote",22);title.setTypeface(null,Typeface.BOLD);title.setContentDescription("DinNote halaman utama");header.addView(title,new LinearLayout.LayoutParams(0,-2,1));
     TextView appearance=text("⚙",22);appearance.setGravity(Gravity.CENTER);appearance.setContentDescription("Buka tetapan DinNote");appearance.setFocusable(true);appearance.setClickable(true);appearance.setMinWidth(48);appearance.setMinHeight(48);appearance.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);appearance.setOnClickListener(v->showSettings());header.addView(appearance);
     View headerDivider=new View(this);headerDivider.setBackgroundColor(borderColor());headerDivider.setContentDescription("Pemisah tajuk");LinearLayout.LayoutParams hd=new LinearLayout.LayoutParams(-1,1);hd.setMargins(0,6,0,14);root.addView(headerDivider,hd);
-    ScrollView homeScroll=new ScrollView(this);homeScroll.setFillViewport(false);homeScroll.setVerticalFadingEdgeEnabled(false);homeScroll.setContentDescription("Kandungan halaman utama DinNote");homeScroll.setFocusable(false);homeScroll.setVerticalScrollBarEnabled(true);homeScroll.setSmoothScrollingEnabled(true);root.addView(homeScroll,new LinearLayout.LayoutParams(-1,0,1));
+    ScrollView homeScroll=new ScrollView(this);homeScroll.setFillViewport(false);homeScroll.setVerticalFadingEdgeEnabled(false);homeScroll.setContentDescription("Kandungan halaman utama DinNote");homeScroll.setFocusable(false);homeScroll.setVerticalScrollBarEnabled(true);homeScroll.setSmoothScrollingEnabled(true);homeScroll.setClipToPadding(false);root.addView(homeScroll,new LinearLayout.LayoutParams(-1,0,1));
     LinearLayout homeContent=new LinearLayout(this);homeContent.setOrientation(1);homeContent.setPadding(0,0,0,12);homeContent.setFocusableInTouchMode(false);homeScroll.addView(homeContent);
     // Two equal-width, minimal home cards; keep Android system bars untouched.
     LinearLayout homeCards=new LinearLayout(this);homeCards.setOrientation(LinearLayout.HORIZONTAL);
-    homeCards.setGravity(Gravity.CENTER_VERTICAL);homeCards.setContentDescription("Menu utama Nota dan Maktabah");homeContent.addView(homeCards);
+    homeCards.setGravity(Gravity.CENTER_VERTICAL);homeCards.setBaselineAligned(false);homeCards.setContentDescription("Menu utama Nota dan Maktabah");homeContent.addView(homeCards);
     Button notesMenu=button();notesMenu.setText("▤\nNota\nNota peribadi");notesMenu.setTextColor(accent());notesMenu.setTypeface(null,Typeface.BOLD);notesMenu.setTextSize(15);
-    notesMenu.setGravity(Gravity.CENTER);notesMenu.setLineSpacing(3,1f);notesMenu.setMinHeight(124);
+    notesMenu.setGravity(Gravity.CENTER);notesMenu.setLineSpacing(3,1f);notesMenu.setMinWidth(0);notesMenu.setMinHeight(124);
     Button libraryMenu=button();libraryMenu.setText("▥\nMaktabah\nKitab & ilmu Islam");libraryMenu.setTextColor(accent());libraryMenu.setTypeface(null,Typeface.BOLD);
-    libraryMenu.setGravity(Gravity.CENTER);libraryMenu.setLineSpacing(3,1f);libraryMenu.setMinHeight(124);
+    libraryMenu.setGravity(Gravity.CENTER);libraryMenu.setLineSpacing(3,1f);libraryMenu.setMinWidth(0);libraryMenu.setMinHeight(124);
     LinearLayout.LayoutParams noteCardParams=new LinearLayout.LayoutParams(0,-2,1);noteCardParams.setMargins(0,6,7,10);
     LinearLayout.LayoutParams libraryCardParams=new LinearLayout.LayoutParams(0,-2,1);libraryCardParams.setMargins(7,6,0,10);
     homeCards.addView(notesMenu,noteCardParams);homeCards.addView(libraryMenu,libraryCardParams);
@@ -379,10 +379,10 @@ public class MainActivity extends Activity {
     String filter=query==null?"":query.trim();
     try(Cursor c=db.getReadableDatabase().rawQuery("SELECT id,name FROM categories WHERE name LIKE ? ORDER BY name COLLATE NOCASE",new String[]{"%"+filter+"%"})){
       while(c.moveToNext()){int categoryId=c.getInt(0);String name=c.getString(1);
-        LinearLayout categoryRow=new LinearLayout(this);categoryRow.setOrientation(LinearLayout.HORIZONTAL);categoryRow.setGravity(Gravity.CENTER_VERTICAL);categoryRow.setMinimumHeight(48);items.addView(categoryRow);
-        Button item=button();item.setText("▥  "+name);item.setContentDescription("Buka kategori "+name);
-        categoryRow.addView(item,new LinearLayout.LayoutParams(0,-2,1));item.setOnClickListener(v->showBooks(categoryId,name));
-        Button options=button();options.setText("⋮");options.setMinWidth(48);options.setContentDescription("Urus kategori "+name);
+        LinearLayout categoryRow=new LinearLayout(this);categoryRow.setOrientation(LinearLayout.HORIZONTAL);categoryRow.setGravity(Gravity.CENTER_VERTICAL);categoryRow.setMinimumHeight(48);categoryRow.setPadding(0,3,0,3);items.addView(categoryRow);
+        Button item=button();item.setText("▥  "+name);item.setContentDescription("Buka kategori "+name);item.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
+        item.setMaxLines(2);item.setEllipsize(android.text.TextUtils.TruncateAt.END);categoryRow.addView(item,new LinearLayout.LayoutParams(0,-2,1));item.setOnClickListener(v->showBooks(categoryId,name));
+        Button options=button();options.setText("⋮");options.setMinWidth(48);options.setMinHeight(48);options.setContentDescription("Urus kategori "+name);
         categoryRow.addView(options,new LinearLayout.LayoutParams(-2,-2));
         options.setOnClickListener(v->new AlertDialog.Builder(this).setTitle(name)
           .setItems(new String[]{"Ubah nama","Padam kategori"},(d,which)->{
@@ -405,13 +405,13 @@ public class MainActivity extends Activity {
     if(items.getChildCount()==0)items.addView(text(filter.isEmpty()?"Belum ada kategori. Tekan Tambah kategori Maktabah untuk mula.":"Tiada kategori sepadan dengan carian.",16));
   }
   void promptCategory(){
-    EditText input=field();input.setHint("Nama kategori");input.setFilters(new InputFilter[]{new InputFilter.LengthFilter(100)});
+    EditText input=field();input.setHint("Nama kategori");input.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);input.setSingleLine(true);input.setFilters(new InputFilter[]{new InputFilter.LengthFilter(100)});
     new AlertDialog.Builder(this).setTitle("Kategori baharu").setView(input).setNegativeButton("Batal",null).setPositiveButton("Simpan",(d,w)->{
       String name=input.getText().toString().trim();if(!name.isEmpty()){ContentValues cv=new ContentValues();cv.put("name",name);db.getWritableDatabase().insert("categories",null,cv);}else Toast.makeText(this,"Masukkan nama kategori",Toast.LENGTH_SHORT).show();showLibrary();
     }).show();
   }
   void promptRenameCategory(int id,String old){
-    EditText input=field();input.setText(old);input.setFilters(new InputFilter[]{new InputFilter.LengthFilter(100)});
+    EditText input=field();input.setText(old);input.setSelectAllOnFocus(true);input.setSingleLine(true);input.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);input.setFilters(new InputFilter[]{new InputFilter.LengthFilter(100)});
     new AlertDialog.Builder(this).setTitle("Ubah nama kategori").setView(input).setNegativeButton("Batal",null).setPositiveButton("Simpan",(d,w)->{
       String name=input.getText().toString().trim();if(!name.isEmpty()){ContentValues cv=new ContentValues();cv.put("name",name);db.getWritableDatabase().update("categories",cv,"id=?",new String[]{""+id});}else Toast.makeText(this,"Nama kategori tidak boleh kosong",Toast.LENGTH_SHORT).show();showLibrary();
     }).show();
