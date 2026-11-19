@@ -254,6 +254,8 @@ public class MainActivity extends Activity {
     options.addView(advancedStats);advancedStats.setOnClickListener(v->showAdvancedStatistics());
     Button contentInsights=button();contentInsights.setText("▦  27 analisis kandungan");options.addView(contentInsights);
     contentInsights.setOnClickListener(v->showContentInsights());
+    Button dataQuality=button();dataQuality.setText("▦  23 semakan kualiti data");options.addView(dataQuality);
+    dataQuality.setOnClickListener(v->showDataQualityInsights());
     TextView dataTitle=text("DATA & BACKUP",12);dataTitle.setTypeface(null,Typeface.BOLD);options.addView(dataTitle);
     Button backup=button();backup.setText("⇧  Backup ke DinPhone");options.addView(backup);
     backup.setOnClickListener(v->exportBackup());
@@ -395,6 +397,23 @@ public class MainActivity extends Activity {
       }
     }
     new AlertDialog.Builder(this).setTitle("27 Analisis Kandungan")
+      .setMessage(report.toString()).setPositiveButton("Tutup",null).show();
+  }
+  void showDataQualityInsights(){
+    flushPendingSave();
+    String[] labels=new String[]{"Nota dengan warna lalai","Nota dengan warna khusus","Nota terkini mempunyai isi","Kitab terkini mempunyai isi","Nota dengan ruang di awal tajuk","Kitab dengan ruang di awal tajuk","Nota dengan ruang di hujung tajuk","Kitab dengan ruang di hujung tajuk","Nota tanpa perubahan masa","Kitab tanpa perubahan masa","Nota tajuk 1-20 aksara","Kitab tajuk 1-20 aksara","Nota tajuk 21-49 aksara","Kitab tajuk 21-49 aksara","Nota tajuk 50-99 aksara","Kitab tajuk 50-99 aksara","Nota tajuk 100+ aksara","Kitab tajuk 100+ aksara","Kategori Nota nama kosong","Kategori Maktabah nama kosong","Kategori Nota nama panjang","Kategori Maktabah nama panjang","Jumlah aksara nama kategori"};
+    String[] queries=new String[]{"SELECT COUNT(*) FROM notes WHERE color=-1","SELECT COUNT(*) FROM notes WHERE color<>-1","SELECT COUNT(*) FROM notes WHERE updated>0 AND LENGTH(TRIM(body))>0","SELECT COUNT(*) FROM books WHERE updated>0 AND LENGTH(TRIM(body))>0","SELECT COUNT(*) FROM notes WHERE LENGTH(title)>LENGTH(LTRIM(title))","SELECT COUNT(*) FROM books WHERE LENGTH(title)>LENGTH(LTRIM(title))","SELECT COUNT(*) FROM notes WHERE LENGTH(title)>LENGTH(RTRIM(title))","SELECT COUNT(*) FROM books WHERE LENGTH(title)>LENGTH(RTRIM(title))","SELECT COUNT(*) FROM notes WHERE updated<=0","SELECT COUNT(*) FROM books WHERE updated<=0","SELECT COUNT(*) FROM notes WHERE LENGTH(title) BETWEEN 1 AND 20","SELECT COUNT(*) FROM books WHERE LENGTH(title) BETWEEN 1 AND 20","SELECT COUNT(*) FROM notes WHERE LENGTH(title) BETWEEN 21 AND 49","SELECT COUNT(*) FROM books WHERE LENGTH(title) BETWEEN 21 AND 49","SELECT COUNT(*) FROM notes WHERE LENGTH(title) BETWEEN 50 AND 99","SELECT COUNT(*) FROM books WHERE LENGTH(title) BETWEEN 50 AND 99","SELECT COUNT(*) FROM notes WHERE LENGTH(title)>=100","SELECT COUNT(*) FROM books WHERE LENGTH(title)>=100","SELECT COUNT(*) FROM note_categories WHERE LENGTH(TRIM(name))=0","SELECT COUNT(*) FROM categories WHERE LENGTH(TRIM(name))=0","SELECT COUNT(*) FROM note_categories WHERE LENGTH(name)>=40","SELECT COUNT(*) FROM categories WHERE LENGTH(name)>=40","SELECT (SELECT COALESCE(SUM(LENGTH(name)),0) FROM note_categories)+(SELECT COALESCE(SUM(LENGTH(name)),0) FROM categories)"};
+    StringBuilder report=new StringBuilder();
+    for(int i=0;i<labels.length;i++){
+      try(Cursor cursor=db.getReadableDatabase().rawQuery(queries[i],null)){
+        report.append(i+1).append(". ").append(labels[i]).append(": ");
+        report.append(cursor.moveToFirst()?cursor.getLong(0):0).append("\\n");
+      }catch(Exception e){
+        android.util.Log.w("DinNote","Data quality insight "+(i+1)+" unavailable",e);
+        report.append(i+1).append(". ").append(labels[i]).append(": Tidak tersedia\\n");
+      }
+    }
+    new AlertDialog.Builder(this).setTitle("23 Semakan Data")
       .setMessage(report.toString()).setPositiveButton("Tutup",null).show();
   }
   static final int REQUEST_EXPORT=7301,REQUEST_IMPORT=7302;
