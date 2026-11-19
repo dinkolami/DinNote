@@ -23,7 +23,31 @@ public class MainActivity extends Activity {
  }
  TextView text(String s,int size){TextView t=new TextView(this);t.setText(s);t.setTextSize(size);t.setTextColor(green);t.setPadding(24,20,24,20);return t;}
 
- void base(String title){root=new LinearLayout(this);root.setOrientation(1);root.setBackgroundColor(0xfffafaf7);setContentView(root);applySystemBarInsets(root);LinearLayout header=new LinearLayout(this);header.setGravity(Gravity.CENTER_VERTICAL);header.setPadding(8,0,8,0);header.setMinimumHeight((int)(56*getResources().getDisplayMetrics().density));header.setBackgroundColor(0xff075b43);TextView menu=text("☰",23);menu.setContentDescription("Buka menu DinNote");menu.setTextColor(Color.WHITE);menu.setPadding(14,10,14,10);header.addView(menu);menu.setOnClickListener(v->new AlertDialog.Builder(this).setItems(new String[]{"Nota","Maktabah","Kategori"},(d,i)->{if(i==2)manageCategories();else openSection(i==1);}).show());TextView name=text("📖 DinNote",20);name.setContentDescription("DinNote");name.setTextColor(Color.WHITE);name.setPadding(8,10,8,10);header.addView(name,new LinearLayout.LayoutParams(0,-2,1));TextView searchIcon=text("⌕",26);searchIcon.setContentDescription("Cari nota");searchIcon.setTextColor(Color.WHITE);searchIcon.setPadding(10,10,10,10);header.addView(searchIcon);TextView bell=text("♧",21);bell.setTextColor(Color.WHITE);bell.setPadding(8,10,8,10);bell.setContentDescription("Pemberitahuan");header.addView(bell);searchIcon.setOnClickListener(v->searchNotesDialog());TextView options=text("⋮",23);options.setContentDescription("Urus kategori");options.setTextColor(Color.WHITE);options.setPadding(12,10,12,10);header.addView(options);options.setOnClickListener(v->manageCategories());root.addView(header,new LinearLayout.LayoutParams(-1,(int)(56*getResources().getDisplayMetrics().density)));View border=new View(this);border.setBackgroundColor(0xffd0d7de);root.addView(border,new LinearLayout.LayoutParams(-1,1));}
+ void base(String title){
+  root=new LinearLayout(this);root.setOrientation(1);root.setBackgroundColor(Color.WHITE);
+  setContentView(root);applySystemBarInsets(root);
+  LinearLayout header=new LinearLayout(this);header.setGravity(Gravity.CENTER_VERTICAL);
+  header.setPadding(dp(12),0,dp(12),0);header.setBackgroundColor(0xfff6f8fa);
+  TextView menu=text("☰",23);menu.setContentDescription("Buka menu DinNote");menu.setGravity(Gravity.CENTER);
+  menu.setPadding(dp(10),dp(8),dp(10),dp(8));header.addView(menu);
+  menu.setOnClickListener(v->new AlertDialog.Builder(this).setItems(new String[]{"Halaman utama","Nota","Maktabah","Kategori"},(d,i)->{if(i==0)home();else if(i==3)manageCategories();else openSection(i==2);}).show());
+  TextView logo=text("▤",27);logo.setTextColor(0xff126b43);logo.setPadding(dp(8),0,dp(6),0);header.addView(logo);
+  TextView name=text("DinNote",21);name.setTypeface(null,1);name.setTextColor(0xff123e2b);
+  name.setPadding(dp(3),0,0,0);header.addView(name,new LinearLayout.LayoutParams(0,-2,1));
+  name.setOnClickListener(v->home());
+  TextView searchIcon=text("⌕",27);searchIcon.setContentDescription("Cari nota");
+  searchIcon.setPadding(dp(10),dp(8),dp(10),dp(8));header.addView(searchIcon);
+  searchIcon.setOnClickListener(v->searchNotesDialog());
+  TextView inbox=text("▱",24);inbox.setContentDescription("Buka nota");
+  inbox.setPadding(dp(9),dp(8),dp(9),dp(8));header.addView(inbox);
+  inbox.setOnClickListener(v->openSection(false));
+  TextView avatar=text("◉",23);avatar.setTextColor(0xff126b43);
+  avatar.setContentDescription("Urus kategori");avatar.setPadding(dp(9),dp(8),dp(9),dp(8));header.addView(avatar);
+  avatar.setOnClickListener(v->manageCategories());
+  root.addView(header,new LinearLayout.LayoutParams(-1,dp(62)));
+  View border=new View(this);border.setBackgroundColor(0xffd0d7de);
+  root.addView(border,new LinearLayout.LayoutParams(-1,dp(1)));
+ }
  void searchNotesDialog(){
   final EditText field=new EditText(this);field.setSingleLine(true);field.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);field.setHint("Cari tajuk atau kandungan nota");field.setContentDescription("Carian tajuk dan kandungan");
   LinearLayout wrapper=new LinearLayout(this);wrapper.setPadding(dp(20),dp(6),dp(20),0);wrapper.addView(field,new LinearLayout.LayoutParams(-1,-2));
