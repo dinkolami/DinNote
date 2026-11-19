@@ -180,7 +180,7 @@ public class MainActivity extends Activity {
           pinnedCard.setContentDescription("Buka nota dipin "+pinnedTitle);
           pinnedCard.setClickable(true);
           pinnedCard.setOnClickListener(v->edit(pinnedId));
-          Button unpin=button();unpin.setText("✕");
+          Button unpin=button();unpin.setText("📌");
           unpin.setContentDescription("Nyahpin "+pinnedTitle);
           pinnedRow.addView(unpin,new LinearLayout.LayoutParams(56,-2));
           unpin.setOnClickListener(v->{
@@ -308,7 +308,7 @@ public class MainActivity extends Activity {
     try(Cursor c=db.getReadableDatabase().rawQuery("SELECT id,title,body,color,pinned FROM notes WHERE (title LIKE ? OR body LIKE ?) AND (?=-1 OR category_id=?) ORDER BY pinned DESC,"+(noteSort==1?"updated ASC,id ASC":noteSort==2?"title COLLATE NOCASE ASC,id DESC":"updated DESC,id DESC"),new String[]{"%"+query+"%","%"+query+"%",""+selectedNoteCategory,""+selectedNoteCategory})) {
       while(c.moveToNext()){visibleCount++;final int id=c.getInt(0);String heading=c.getString(1);String body=c.getString(2);if(heading==null)heading="";if(body==null)body="";body=body.replace("\r"," ").replace("\n"," ").trim();int noteColor=c.getInt(3);boolean pinned=c.getInt(4)==1;
         TextView item=text((heading.trim().isEmpty()?"Tanpa tajuk":heading)+"\n"+(body.length()>90?body.substring(0,90)+"…":body),15);
-        item.setBackground(rounded(noteColor==Color.WHITE?cardSurface():noteColor,borderColor(),16));item.setTextColor(noteColor==Color.WHITE?foreground():Color.BLACK);LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2);p.setMargins(0,5,0,5);LinearLayout line=new LinearLayout(this);line.setOrientation(LinearLayout.HORIZONTAL);line.setGravity(Gravity.CENTER_VERTICAL);list.addView(line,p);line.addView(item,new LinearLayout.LayoutParams(0,-2,1));item.setOnClickListener(v->edit(id));Button pin=button();pin.setText(pinned?"📌":"♧");pin.setContentDescription(pinned?"Nyahpin nota":"Pin nota");line.addView(pin,new LinearLayout.LayoutParams(64,-2));pin.setOnClickListener(v->{db.getWritableDatabase().execSQL("UPDATE notes SET pinned=? WHERE id=?",new Object[]{pinned?0:1,id});refresh(search==null?"":search.getText().toString());});
+        item.setBackground(rounded(noteColor==Color.WHITE?cardSurface():noteColor,borderColor(),16));item.setTextColor(noteColor==Color.WHITE?foreground():Color.BLACK);LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2);p.setMargins(0,5,0,5);LinearLayout line=new LinearLayout(this);line.setOrientation(LinearLayout.HORIZONTAL);line.setGravity(Gravity.CENTER_VERTICAL);list.addView(line,p);line.addView(item,new LinearLayout.LayoutParams(0,-2,1));item.setOnClickListener(v->edit(id));Button pin=button();pin.setText(pinned?"📌":"○");pin.setContentDescription((pinned?"Nyahpin nota ":"Pin nota ")+(heading.trim().isEmpty()?"Tanpa tajuk":heading));line.addView(pin,new LinearLayout.LayoutParams(64,-2));pin.setOnClickListener(v->{db.getWritableDatabase().execSQL("UPDATE notes SET pinned=? WHERE id=?",new Object[]{pinned?0:1,id});showHome();});
       }
     }
     if(visibleCount==0)list.addView(text(query.trim().isEmpty()?"Belum ada nota. Tekan + Nota baharu untuk menulis.":"Tiada nota ditemui.",16));
