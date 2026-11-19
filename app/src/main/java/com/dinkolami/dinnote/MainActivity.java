@@ -884,10 +884,15 @@ public class MainActivity extends Activity {
       actions.setVisibility(View.VISIBLE);
       editButton.setContentDescription("Edit nota ini");
       editButton.setMinHeight(56);
+      editButton.setTextColor(Color.WHITE);
+      editButton.setTypeface(null,Typeface.BOLD);
+      editButton.setBackground(rounded(0xFF006B4F,0xFFD6B45B,18));
+      editButton.setPadding(16,8,16,8);
+      actions.setBackgroundColor(dark()?0xFF0C3D32:0xFFF9F7EF);
       editButton.setOnClickListener(v->{try{edit(id);}catch(Exception error){android.util.Log.e("DinNote","Edit failed",error);Toast.makeText(this,"Editor gagal dibuka",Toast.LENGTH_LONG).show();}});
 
       // Dispatch gestures at the ScrollView level before child TextViews consume events.
-      // Only a confirmed double tap reveals the reader toolbar.
+      // Double tap reaffirms the toolbar, but Edit remains permanently visible as a fallback.
       final android.view.GestureDetector readerGestures=new android.view.GestureDetector(this,
         new android.view.GestureDetector.SimpleOnGestureListener(){
           @Override public boolean onDown(android.view.MotionEvent e){return true;}
