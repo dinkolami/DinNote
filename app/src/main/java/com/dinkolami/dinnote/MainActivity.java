@@ -148,7 +148,6 @@ public class MainActivity extends Activity {
   quickTools.addView(recent,rp);
   recent.setContentDescription("Pilih paparan: baru dilihat, semua nota atau Maktabah");recent.setFocusable(true);
   recent.setOnClickListener(v->new AlertDialog.Builder(this).setItems(new String[]{"Baru dilihat","Semua nota","Maktabah"},(d,i)->{if(i==2)openSection(true);else openSection(false);}).show());
-  TextView heading=dashboardText("Baru dilihat",22,true);heading.setPadding(dp(2),dp(8),0,dp(18));page.addView(heading);
   EditText search=new EditText(this);search.setSingleLine(true);search.setTextSize(15);
   search.setHint("Cari nota atau kitab");search.setContentDescription("Carian nota dan kitab");
   search.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);
@@ -181,11 +180,6 @@ public class MainActivity extends Activity {
   shortcuts.setPadding(dp(4),dp(12),dp(4),dp(10));page.addView(shortcuts);
   dashboardSection(shortcuts,"📌  Nota disemat",dashboardKeys("pinned_",false),true);
   dashboardSection(shortcuts,"◷  Terakhir dikemaskini",dashboardKeys("updated_",false),false);
-  TextView categoriesLink=dashboardText("▤  Kategori pantas  ›",15,true);
-  categoriesLink.setBackground(rounded(0xfff6f8fa,0xffd0d7de,10));
-  shortcuts.addView(categoriesLink);
-  categoriesLink.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Kategori pantas")
-   .setItems(new String[]{"Kategori Nota","Kategori Maktabah"},(d,i)->{maktabah=i==1;manageCategories();}).show());
   String resume=prefs.getString("last_edited_key","");
   if(!resume.isEmpty()&&prefs.contains(resume)){
    TextView resumeButton=dashboardText("✎  Sambung menulis  ›",15,true);
@@ -193,9 +187,6 @@ public class MainActivity extends Activity {
    shortcuts.addView(resumeButton);
    resumeButton.setOnClickListener(v->edit(resume));
   }
-  TextView layout=dashboardText("▦  Paparan: "+(prefs.getBoolean("home_grid",false)?"Grid":"Senarai")+"  ▾",15,true);
-  layout.setBackground(rounded(0xfff6f8fa,0xffd0d7de,10));shortcuts.addView(layout);
-  layout.setOnClickListener(v->new AlertDialog.Builder(this).setItems(new String[]{"Senarai","Grid"},(d,i)->{prefs.edit().putBoolean("home_grid",i==1).apply();home();}).show());
   LinearLayout recentNotes=new LinearLayout(this);recentNotes.setOrientation(1);
   recentNotes.setPadding(dp(14),dp(14),dp(14),dp(28));card.addView(recentNotes);
   ArrayList<String> keys=new ArrayList<>();
@@ -208,20 +199,7 @@ public class MainActivity extends Activity {
    empty.setGravity(Gravity.CENTER);recentNotes.addView(empty);
    TextView hint=dashboardText("Nota atau kitab yang dibuka akan muncul di sini.",14,false);
    hint.setGravity(Gravity.CENTER);hint.setTextColor(0xff656d76);hint.setTextSize(13);recentNotes.addView(hint);
-  }else{
-   if(prefs.getBoolean("home_grid",false)){
-    for(int i=0;i<Math.min(5,keys.size());i+=2){
-     LinearLayout gridRow=new LinearLayout(this);recentNotes.addView(gridRow);
-     for(int j=i;j<Math.min(i+2,Math.min(5,keys.size()));j++){
-      String k=keys.get(j);String label=prefs.getString("title_"+k,"").trim();
-      if(label.isEmpty())label="Tanpa tajuk";
-      TextView tile=dashboardText("▤  "+label,14,true);tile.setMinHeight(dp(80));
-      tile.setBackground(rounded(0xfff6f8fa,0xffd0d7de,10));
-      LinearLayout.LayoutParams tileParams=new LinearLayout.LayoutParams(0,-2,1);tileParams.setMargins(dp(3),dp(3),dp(3),dp(3));
-      gridRow.addView(tile,tileParams);tile.setOnClickListener(v->{maktabah=k.startsWith("m_");read(k);});
-     }
-    }
-   }else for(int i=0;i<Math.min(5,keys.size());i++){
+  }else for(int i=0;i<Math.min(5,keys.size());i++){
     String k=keys.get(i);String t=prefs.getString("title_"+k,"");
     if(t.trim().isEmpty())t="Tanpa tajuk";
     TextView item=dashboardText((k.startsWith("m_")?"▤  ":"✎  ")+t+"   ›",14,false);
