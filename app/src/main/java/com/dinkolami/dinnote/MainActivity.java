@@ -748,7 +748,7 @@ public class MainActivity extends Activity {
           pinnedCard.addView(meta);
           pinnedCard.setContentDescription("Buka nota dipin "+pinnedTitle+" dalam kategori "+category);
           pinnedCard.setClickable(true);pinnedCard.setFocusable(true);pinnedCard.setMinimumHeight(64);pinnedCard.setFocusableInTouchMode(false);pinnedCard.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);
-          pinnedCard.setOnClickListener(v->edit(pinnedId));pinnedCard.setTooltipText("Buka nota penting");
+          pinnedCard.setOnClickListener(v->readNote(pinnedId));pinnedCard.setTooltipText("Buka nota penting");
           Button unpin=button();unpin.setText("⌁");
           unpin.setContentDescription("Nyahpin "+pinnedTitle+" daripada halaman utama");unpin.setTextSize(17);unpin.setMinHeight(48);unpin.setMinWidth(48);unpin.setHapticFeedbackEnabled(true);unpin.setSoundEffectsEnabled(true);unpin.setFocusable(true);unpin.setSoundEffectsEnabled(true);unpin.setGravity(Gravity.CENTER);unpin.setTooltipText("Buang pin");unpin.setAllCaps(false);
           pinnedRow.addView(unpin,new LinearLayout.LayoutParams(56,-2));
@@ -862,10 +862,47 @@ public class MainActivity extends Activity {
     try(Cursor c=db.getReadableDatabase().rawQuery("SELECT id,title,body,color,pinned FROM notes WHERE (title LIKE ? OR body LIKE ?) AND (?=-1 OR category_id=?) ORDER BY pinned DESC,"+(safeSort==1?"updated ASC,id ASC":safeSort==2?"title COLLATE NOCASE ASC,id DESC":"updated DESC,id DESC"),new String[]{"%"+query+"%","%"+query+"%",""+selectedNoteCategory,""+selectedNoteCategory})) {
       while(c.moveToNext()){visibleCount++;final int id=c.getInt(0);String heading=c.getString(1);String body=c.getString(2);if(heading==null)heading="";if(body==null)body="";body=body.replace("\r"," ").replace("\n"," ").replace("\t"," ").trim();int noteColor=c.getInt(3);boolean pinned=c.getInt(4)==1;
         TextView item=text((heading.trim().isEmpty()?"Tanpa tajuk":heading)+"\n"+(body.length()>90?body.substring(0,90)+"…":body),15);
-        item.setBackground(rounded(noteColor==Color.WHITE?cardSurface():noteColor,borderColor(),16));item.setMaxLines(4);item.setEllipsize(android.text.TextUtils.TruncateAt.END);item.setMinHeight(56);item.setTextColor(noteColor==Color.WHITE?foreground():Color.BLACK);item.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2);p.setMargins(0,5,0,5);LinearLayout line=new LinearLayout(this);line.setOrientation(LinearLayout.HORIZONTAL);line.setGravity(Gravity.CENTER_VERTICAL);line.setBaselineAligned(false);list.addView(line,p);line.addView(item,new LinearLayout.LayoutParams(0,-2,1));item.setContentDescription("Buka nota "+(heading.trim().isEmpty()?"Tanpa tajuk":heading)+(pinned?", dipin":""));item.setClickable(true);item.setFocusable(true);item.setPadding(14,12,14,12);item.setBreakStrategy(android.text.Layout.BREAK_STRATEGY_HIGH_QUALITY);item.setGravity(Gravity.CENTER_VERTICAL);item.setOnClickListener(v->edit(id));Button pin=button();pin.setText(pinned?"📌":"○");pin.setContentDescription((pinned?"Nyahpin nota ":"Pin nota ")+(heading.trim().isEmpty()?"Tanpa tajuk":heading));pin.setMinHeight(48);pin.setAllCaps(false);pin.setTooltipText(pinned?"Nyahpin":"Pin nota");pin.setHapticFeedbackEnabled(true);line.addView(pin,new LinearLayout.LayoutParams(56,-2));pin.setOnClickListener(v->{db.getWritableDatabase().execSQL("UPDATE notes SET pinned=? WHERE id=?",new Object[]{pinned?0:1,id});Toast.makeText(this,pinned?"Nota dinyahpin":"Nota dipin",Toast.LENGTH_SHORT).show();if(search!=null&&search.getParent()!=null)showHome();else refresh(currentQuery);});
+        item.setBackground(rounded(noteColor==Color.WHITE?cardSurface():noteColor,borderColor(),16));item.setMaxLines(4);item.setEllipsize(android.text.TextUtils.TruncateAt.END);item.setMinHeight(56);item.setTextColor(noteColor==Color.WHITE?foreground():Color.BLACK);item.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2);p.setMargins(0,5,0,5);LinearLayout line=new LinearLayout(this);line.setOrientation(LinearLayout.HORIZONTAL);line.setGravity(Gravity.CENTER_VERTICAL);line.setBaselineAligned(false);list.addView(line,p);line.addView(item,new LinearLayout.LayoutParams(0,-2,1));item.setContentDescription("Buka nota "+(heading.trim().isEmpty()?"Tanpa tajuk":heading)+(pinned?", dipin":""));item.setClickable(true);item.setFocusable(true);item.setPadding(14,12,14,12);item.setBreakStrategy(android.text.Layout.BREAK_STRATEGY_HIGH_QUALITY);item.setGravity(Gravity.CENTER_VERTICAL);item.setOnClickListener(v->readNote(id));Button pin=button();pin.setText(pinned?"📌":"○");pin.setContentDescription((pinned?"Nyahpin nota ":"Pin nota ")+(heading.trim().isEmpty()?"Tanpa tajuk":heading));pin.setMinHeight(48);pin.setAllCaps(false);pin.setTooltipText(pinned?"Nyahpin":"Pin nota");pin.setHapticFeedbackEnabled(true);line.addView(pin,new LinearLayout.LayoutParams(56,-2));pin.setOnClickListener(v->{db.getWritableDatabase().execSQL("UPDATE notes SET pinned=? WHERE id=?",new Object[]{pinned?0:1,id});Toast.makeText(this,pinned?"Nota dinyahpin":"Nota dipin",Toast.LENGTH_SHORT).show();if(search!=null&&search.getParent()!=null)showHome();else refresh(currentQuery);});
       }
     }
     if(visibleCount==0){TextView empty=text(query.trim().isEmpty()?"Belum ada nota. Tekan Nota baharu untuk mula.":"Tiada nota sepadan. Cuba kata kunci lain.",15);empty.setGravity(Gravity.CENTER);empty.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);empty.setPadding(20,32,20,32);empty.setMinHeight(112);empty.setContentDescription("Tiada nota untuk dipaparkan");empty.setTextColor(dark()?0xFF8B949E:0xFF656D76);list.addView(empty);}
+  }
+  // Existing notes open in distraction-free reading mode; double tap reveals actions.
+  void readNote(int id) {
+    flushPendingSave();editingNote=false;editingBook=false;saveIndicator=null;
+    try(Cursor c=db.getReadableDatabase().rawQuery("SELECT title,body,color,body_html FROM notes WHERE id=?",new String[]{String.valueOf(id)})){
+      if(!c.moveToFirst()){Toast.makeText(this,"Nota tidak ditemui",Toast.LENGTH_SHORT).show();showHome();return;}
+      String heading=c.getString(0),plain=c.getString(1),html=c.getString(3);
+      int noteColor=c.getInt(2);
+      LinearLayout page=column();page.setPadding(0,0,0,0);setContentView(page);
+      LinearLayout actions=new LinearLayout(this);actions.setOrientation(LinearLayout.HORIZONTAL);
+      actions.setPadding(8,4,8,4);actions.setBackgroundColor(cardSurface());
+      Button back=button();back.setText("← Kembali");actions.addView(back,new LinearLayout.LayoutParams(0,-2,1));back.setOnClickListener(v->showHome());
+      Button editButton=button();editButton.setText("✎ Edit");actions.addView(editButton,new LinearLayout.LayoutParams(0,-2,1));editButton.setOnClickListener(v->edit(id));
+      page.addView(actions,new LinearLayout.LayoutParams(-1,-2));actions.setVisibility(View.GONE);
+      ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);scroll.setVerticalScrollBarEnabled(true);
+      page.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
+      LinearLayout content=new LinearLayout(this);content.setOrientation(LinearLayout.VERTICAL);content.setPadding(20,24,20,28);
+      content.setBackgroundColor(noteColor==Color.WHITE?surface():noteColor);scroll.addView(content);
+      int ink=noteColor==Color.WHITE?foreground():Color.BLACK;
+      TextView titleView=text(heading==null||heading.trim().isEmpty()?"Tanpa tajuk":heading,22);
+      titleView.setTypeface(null,Typeface.BOLD);titleView.setTextColor(ink);titleView.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
+      content.addView(titleView);
+      TextView bodyView=text("",getPreferences(MODE_PRIVATE).getInt("editorFontSize",16));
+      bodyView.setText(html!=null&&!html.isEmpty()?android.text.Html.fromHtml(html,android.text.Html.FROM_HTML_MODE_COMPACT):(plain==null?"":plain));
+      bodyView.setTextColor(ink);bodyView.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
+      bodyView.setTextIsSelectable(true);bodyView.setPadding(0,16,0,20);
+      bodyView.setLineSpacing(5,1.1f);content.addView(bodyView);
+      android.view.GestureDetector gestures=new android.view.GestureDetector(this,new android.view.GestureDetector.SimpleOnGestureListener(){
+        @Override public boolean onDown(android.view.MotionEvent e){return true;}
+        @Override public boolean onDoubleTap(android.view.MotionEvent e){
+          actions.setVisibility(actions.getVisibility()==View.VISIBLE?View.GONE:View.VISIBLE);
+          return true;
+        }
+      });
+      scroll.setOnTouchListener((v,event)->{gestures.onTouchEvent(event);return false;});
+      content.setContentDescription("Paparan baca nota. Ketik dua kali untuk tunjuk atau sembunyikan butang.");
+    }catch(Exception e){android.util.Log.e("DinNote","Cannot open note reader",e);Toast.makeText(this,"Gagal membuka nota",Toast.LENGTH_LONG).show();showHome();}
   }
   void edit(int id) {
     flushPendingSave();editingNote=true;
