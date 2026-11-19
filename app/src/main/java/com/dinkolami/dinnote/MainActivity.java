@@ -103,6 +103,7 @@ public class MainActivity extends Activity {
   LinearLayout.LayoutParams a=new LinearLayout.LayoutParams(0,dp(100),1);a.rightMargin=dp(6);
   LinearLayout.LayoutParams b=new LinearLayout.LayoutParams(0,dp(100),1);b.leftMargin=dp(6);
   tiles.addView(note,a);tiles.addView(book,b);
+  note.setContentDescription("Buka senarai Nota");book.setContentDescription("Buka Maktabah");
   note.setOnClickListener(v->openSection(false));book.setOnClickListener(v->openSection(true));
   LinearLayout recentNotes=new LinearLayout(this);recentNotes.setOrientation(1);
   recentNotes.setPadding(dp(12),dp(12),dp(12),dp(28));card.addView(recentNotes);
@@ -128,6 +129,7 @@ public class MainActivity extends Activity {
   add.setBackground(rounded(0xfff6f8fa,0xffd0d7de,10));
   LinearLayout.LayoutParams ap=new LinearLayout.LayoutParams(-1,-2);
   ap.topMargin=dp(16);page.addView(add,ap);
+  add.setContentDescription("Cipta nota baharu");
   add.setOnClickListener(v->{maktabah=false;edit(null);});
  }
  android.graphics.drawable.GradientDrawable rounded(int fill,int stroke,int radius){
