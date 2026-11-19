@@ -99,6 +99,17 @@ jobs:
           grep -Fq "package: name='com.dinkolami.dinnote.quillpad'" /tmp/dinnote-apk-badging.txt
           grep -Eq "application-label(-[a-zA-Z0-9_-]+)?:'DinNote'" /tmp/dinnote-apk-badging.txt
           echo 'Verified APK package and launcher label.'
+      - name: Record build diagnostics
+        if: always()
+        run: |
+          {
+            echo "## DinNote Quillpad migration build"
+            echo "- Commit: \`${{ github.sha }}\`"
+            echo "- Branch: \`${{ github.ref_name }}\`"
+            echo "- APK files:"
+            find app/build/outputs/apk -name '*.apk' -type f -printf '  - %p (%s bytes)\\n' 2>/dev/null || true
+            echo "- Check the Build debug APK step for Gradle errors if no APK exists."
+          } >> "$GITHUB_STEP_SUMMARY"
       - name: Upload debug APK
         if: success()
         uses: actions/upload-artifact@v4
