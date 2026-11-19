@@ -35,10 +35,10 @@ public class MainActivity extends Activity {
     if(themeMode==2)return true;
     return (getResources().getConfiguration().uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK)==android.content.res.Configuration.UI_MODE_NIGHT_YES;
   }
-  int surface(){return dark()?0xFF0D1117:0xFFF6F8FA;}
-  int foreground(){return dark()?0xFFE6EDF3:0xFF1F2328;}
-  int borderColor(){return dark()?0xFF30363D:0xFFD0D7DE;}
-  int background = Color.rgb(246,248,250);
+  int surface(){return dark()?0xFF0B1D19:0xFFF7FAF6;}
+  int foreground(){return dark()?0xFFE7F4EB:0xFF123C31;}
+  int borderColor(){return dark()?0xFF285044:0xFFD6E7DB;}
+  int background = Color.rgb(247,250,246);
   void applyAppearance(){
     // Theme only the app content. Android owns the top status bar and bottom navigation bar.
     background=surface();
@@ -521,18 +521,18 @@ public class MainActivity extends Activity {
     View headerDivider=new View(this);headerDivider.setBackgroundColor(borderColor());headerDivider.setContentDescription("Pemisah tajuk");LinearLayout.LayoutParams hd=new LinearLayout.LayoutParams(-1,1);hd.setMargins(0,12,0,18);root.addView(headerDivider,hd);
     ScrollView homeScroll=new ScrollView(this);homeScroll.setFillViewport(false);homeScroll.setScrollbarFadingEnabled(true);homeScroll.setVerticalFadingEdgeEnabled(false);homeScroll.setContentDescription("Kandungan halaman utama DinNote");homeScroll.setFocusable(false);homeScroll.setVerticalScrollBarEnabled(false);homeScroll.setFadingEdgeLength(0);homeScroll.setSmoothScrollingEnabled(true);homeScroll.setDescendantFocusability(android.view.ViewGroup.FOCUS_AFTER_DESCENDANTS);homeScroll.setOverScrollMode(View.OVER_SCROLL_IF_CONTENT_SCROLLS);homeScroll.setClipToPadding(false);homeScroll.setPadding(0,0,0,2);root.addView(homeScroll,new LinearLayout.LayoutParams(-1,0,1));
     LinearLayout homeContent=new LinearLayout(this);homeContent.setOrientation(1);homeContent.setPadding(0,0,0,32);homeContent.setFocusableInTouchMode(false);homeContent.setClipToPadding(false);homeScroll.addView(homeContent);
-    TextView welcome=text("DINNOTE  /  RUANG PERIBADI",11);
+    TextView welcome=text("DINNOTE  /  NOTA & MAKTABAH",11);
     welcome.setLetterSpacing(0.12f);welcome.setTypeface(null,Typeface.BOLD);
     welcome.setTextColor(accent());welcome.setIncludeFontPadding(false);welcome.setMaxLines(1);welcome.setEllipsize(android.text.TextUtils.TruncateAt.END);welcome.setPadding(4,8,4,2);welcome.setAccessibilityHeading(true);homeContent.addView(welcome);
-    TextView intro=text("Nota harian dan khazanah ilmu, tersusun di satu tempat.",15);
-    intro.setTextColor(dark()?0xFFADB9C8:0xFF576574);
+    TextView intro=text("Catatan dan khazanah ilmu, dalam satu ruang yang tenang.",15);
+    intro.setTextColor(dark()?0xFFB8D3C5:0xFF557468);
     intro.setPadding(4,2,4,16);intro.setLineSpacing(3,1f);intro.setIncludeFontPadding(false);intro.setMaxLines(2);intro.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);intro.setContentDescription("Nota harian dan khazanah ilmu, tersusun di satu tempat.");intro.setAccessibilityHeading(false);intro.setEllipsize(android.text.TextUtils.TruncateAt.END);homeContent.addView(intro);
     // Compact collection overview; no additional home-screen menu.
     try(Cursor overview=db.getReadableDatabase().rawQuery(
       "SELECT (SELECT COUNT(*) FROM notes), (SELECT COUNT(*) FROM books)",null)){
       if(overview.moveToFirst()){
         TextView summary=text("✎  "+overview.getLong(0)+" nota    ·    ▤  "+overview.getLong(1)+" kitab",13);
-        summary.setTextColor(dark()?0xFF8B949E:0xFF656D76);
+        summary.setTextColor(dark()?0xFFA4C6B4:0xFF58776A);
         summary.setPadding(4,2,4,18);summary.setLetterSpacing(0.03f);summary.setMaxLines(2);summary.setTextDirection(View.TEXT_DIRECTION_LOCALE);summary.setFocusable(false);summary.setEllipsize(android.text.TextUtils.TruncateAt.END);
         summary.setContentDescription(overview.getLong(0)+" nota dan "+overview.getLong(1)+" kitab disimpan");
         homeContent.addView(summary);
@@ -543,10 +543,10 @@ public class MainActivity extends Activity {
     // Two equal-width, minimal home cards; keep Android system bars untouched.
     LinearLayout homeCards=new LinearLayout(this);homeCards.setOrientation(LinearLayout.HORIZONTAL);
     homeCards.setGravity(Gravity.CENTER_VERTICAL);homeCards.setPadding(0,6,0,10);homeCards.setBaselineAligned(false);homeCards.setMinimumHeight(158);homeCards.setClipChildren(false);homeCards.setClipToPadding(false);homeCards.setContentDescription("Menu utama Nota dan Maktabah");homeCards.setFocusable(false);homeContent.addView(homeCards);
-    Button notesMenu=button();notesMenu.setText("✎\nNota\nCatatan peribadi");notesMenu.setTextColor(accent());notesMenu.setTypeface(null,Typeface.BOLD);notesMenu.setTextSize(16);notesMenu.setIncludeFontPadding(false);notesMenu.setLetterSpacing(0.015f);notesMenu.setBackground(rounded(cardSurface(),borderColor(),24));
+    Button notesMenu=button();notesMenu.setText("✎\nNota\nTulis & susun");notesMenu.setTextColor(accent());notesMenu.setTypeface(null,Typeface.BOLD);notesMenu.setTextSize(16);notesMenu.setIncludeFontPadding(false);notesMenu.setLetterSpacing(0.015f);notesMenu.setBackground(rounded(dark()?0xFF15372D:0xFFFFFFFF,borderColor(),24));
     notesMenu.setGravity(Gravity.CENTER);notesMenu.setElevation(1.5f);notesMenu.setStateListAnimator(null);notesMenu.setLineSpacing(6,1f);notesMenu.setMinWidth(0);notesMenu.setMinHeight(152);notesMenu.setHapticFeedbackEnabled(true);notesMenu.setSoundEffectsEnabled(true);notesMenu.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);notesMenu.setMaxLines(4);notesMenu.setEllipsize(android.text.TextUtils.TruncateAt.END);notesMenu.setPadding(12,20,12,20);notesMenu.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
-    Button libraryMenu=button();libraryMenu.setText("▤\nMaktabah\nPerpustakaan ilmu");libraryMenu.setTextColor(accent());libraryMenu.setTypeface(null,Typeface.BOLD);
-    libraryMenu.setTextSize(16);libraryMenu.setIncludeFontPadding(false);libraryMenu.setLetterSpacing(0.015f);libraryMenu.setBackground(rounded(cardSurface(),borderColor(),24));libraryMenu.setElevation(1.5f);libraryMenu.setStateListAnimator(null);libraryMenu.setGravity(Gravity.CENTER);libraryMenu.setLineSpacing(6,1f);libraryMenu.setMinWidth(0);libraryMenu.setMinHeight(152);libraryMenu.setHapticFeedbackEnabled(true);libraryMenu.setSoundEffectsEnabled(true);libraryMenu.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);libraryMenu.setMaxLines(4);libraryMenu.setEllipsize(android.text.TextUtils.TruncateAt.END);libraryMenu.setPadding(12,20,12,20);libraryMenu.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
+    Button libraryMenu=button();libraryMenu.setText("▤\nMaktabah\nKoleksi kitab");libraryMenu.setTextColor(accent());libraryMenu.setTypeface(null,Typeface.BOLD);
+    libraryMenu.setTextSize(16);libraryMenu.setIncludeFontPadding(false);libraryMenu.setLetterSpacing(0.015f);libraryMenu.setBackground(rounded(dark()?0xFF173C30:0xFFEAF6E9,borderColor(),24));libraryMenu.setElevation(1.5f);libraryMenu.setStateListAnimator(null);libraryMenu.setGravity(Gravity.CENTER);libraryMenu.setLineSpacing(6,1f);libraryMenu.setMinWidth(0);libraryMenu.setMinHeight(152);libraryMenu.setHapticFeedbackEnabled(true);libraryMenu.setSoundEffectsEnabled(true);libraryMenu.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);libraryMenu.setMaxLines(4);libraryMenu.setEllipsize(android.text.TextUtils.TruncateAt.END);libraryMenu.setPadding(12,20,12,20);libraryMenu.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
     LinearLayout.LayoutParams noteCardParams=new LinearLayout.LayoutParams(0,-2,1);noteCardParams.setMargins(0,8,7,18);
     LinearLayout.LayoutParams libraryCardParams=new LinearLayout.LayoutParams(0,-2,1);libraryCardParams.setMargins(7,8,0,18);
     homeCards.addView(notesMenu,noteCardParams);homeCards.addView(libraryMenu,libraryCardParams);
