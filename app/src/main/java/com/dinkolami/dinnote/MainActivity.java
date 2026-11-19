@@ -86,7 +86,7 @@ public class MainActivity extends Activity {
   EditText field(){
     EditText e=new EditText(this);e.setTextColor(foreground());
     e.setHintTextColor(dark()?0xFF8B949E:0xFF656D76);
-    e.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);e.setTextSize(15);e.setPadding(14,12,14,12);
+    e.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);e.setTextSize(15);e.setPadding(16,12,16,12);
     e.setBackground(rounded(cardSurface(),borderColor(),12));return e;
   }
   TextView text(String value,int size) { TextView t=new TextView(this);t.setText(value);t.setTextSize(size);t.setTextColor(foreground());t.setPadding(10,9,10,9);return t; }
