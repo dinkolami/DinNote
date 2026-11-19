@@ -61,17 +61,29 @@ jobs:
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 7
-      - name: Require release signing secrets
+      - name: Check release signing configuration
+        id: signing
         env:
           DINNOTE_KEYSTORE_BASE64: ${{ secrets.DINNOTE_KEYSTORE_BASE64 }}
           DINNOTE_STORE_PASSWORD: ${{ secrets.DINNOTE_STORE_PASSWORD }}
           DINNOTE_KEY_ALIAS: ${{ secrets.DINNOTE_KEY_ALIAS }}
           DINNOTE_KEY_PASSWORD: ${{ secrets.DINNOTE_KEY_PASSWORD }}
+        shell: bash
         run: |
+          set -euo pipefail
+          READY=true
           for key in DINNOTE_KEYSTORE_BASE64 DINNOTE_STORE_PASSWORD DINNOTE_KEY_ALIAS DINNOTE_KEY_PASSWORD; do
-            if [ -z "${!key}" ]; then echo "Missing signing secret: $key"; exit 1; fi
+            if [ -z "${!key}" ]; then
+              echo "::warning::Missing release signing secret: $key"
+              READY=false
+            fi
           done
+          echo "ready=$READY" >> "$GITHUB_OUTPUT"
+          if [ "$READY" = false ]; then
+            echo "Release APK skipped: signing configuration incomplete. Debug APK remains available as an artifact." >> "$GITHUB_STEP_SUMMARY"
+          fi
       - name: Build signed release APK
+        if: steps.signing.outputs.ready == 'true'
         env:
           DINNOTE_KEYSTORE_BASE64: ${{ secrets.DINNOTE_KEYSTORE_BASE64 }}
           DINNOTE_STORE_PASSWORD: ${{ secrets.DINNOTE_STORE_PASSWORD }}
@@ -82,6 +94,7 @@ jobs:
           export DINNOTE_KEYSTORE_PATH="$RUNNER_TEMP/dinnote-release.jks"
           gradle :app:assembleRelease --no-daemon --console=plain
       - name: Verify release APK signature and version
+        if: steps.signing.outputs.ready == 'true'
         run: |
           set -euo pipefail
           APK=app/build/outputs/apk/release/app-release.apk
@@ -89,6 +102,7 @@ jobs:
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$APK"
           "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" | grep '^package:'
       - name: Diagnose APK install compatibility
+        if: steps.signing.outputs.ready == 'true'
         run: |
           set -euo pipefail
           APK=app/build/outputs/apk/release/app-release.apk
@@ -103,6 +117,7 @@ jobs:
           unzip -l "$APK" | tail -n 25
           echo "Note: GitHub cannot detect installed-app signature conflicts on a user's phone."
       - name: Report APK size and 30 MB advisory target
+        if: steps.signing.outputs.ready == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -112,7 +127,7 @@ jobs:
           MIB=$(awk -v bytes="$BYTES" 'BEGIN { printf "%.2f", bytes/1048576 }')
           LIMIT=$((30 * 1024 * 1024))
           if [ "$BYTES" -gt "$LIMIT" ]; then
-            STATUS="Melebihi sasaran 30 MiB — semak pustaka OCR dan sumber besar"
+            STATUS="Melebihi sasaran 30 MiB — semak pustaka dan sumber besar"
           else
             STATUS="Dalam sasaran 30 MiB"
           fi
@@ -130,6 +145,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
           echo "$STATUS: $MIB MiB"
       - name: Analyze APK component sizes
+        if: steps.signing.outputs.ready == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -143,7 +159,7 @@ jobs:
               for entry in entries:
                   name = entry.filename
                   if name.startswith("lib/"):
-                      group = "Pustaka native (termasuk kemungkinan OCR)"
+                      group = "Pustaka native"
                   elif name.endswith(".dex"):
                       group = "Kod DEX"
                   elif name.startswith(("res/", "resources.arsc", "assets/")):
@@ -171,7 +187,7 @@ jobs:
           print("\n".join(lines))
           PY
       - name: Upload signed release APK
-        if: env.HAS_SIGNING_KEY == 'true'
+        if: steps.signing.outputs.ready == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: DinNote-signed-release-apk
