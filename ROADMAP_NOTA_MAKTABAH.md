@@ -29,7 +29,7 @@ Dokumen ini menyimpan semua 100 cadangan supaya cadangan yang belum dipilih tida
 ## Cadangan tambahan: Nota dan produktiviti (21–30)
 - [ ] 21. Sejarah suntingan — pulihkan versi nota terdahulu.
 - [ ] 22. Undo dan Redo — batalkan atau ulang perubahan.
-- [ ] 23. Duplikasi nota — salin nota dengan satu klik.
+- [ ] 23. Duplikasi nota — salin nota dengan satu klik. **Status: Kod di-commit, menunggu ujian APK/pengguna** (`c4edc15`); tersedia pada menu bacaan Nota dan Maktabah.
 - [ ] 24. Gabungkan nota — cantum beberapa nota.
 - [ ] 25. Pindah kategori — alih nota antara kategori.
 - [ ] 26. Susunan manual — susun nota mengikut pilihan.
