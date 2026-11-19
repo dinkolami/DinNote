@@ -84,6 +84,58 @@ public class MainActivity extends Activity {
     options.addView(openNotes);openNotes.setOnClickListener(v->showNoteCategories());
     Button openLibrary=button();openLibrary.setText("📚  Urus kategori Maktabah");
     options.addView(openLibrary);openLibrary.setOnClickListener(v->showLibrary());
+    TextView accessibilityTitle=text("KEBOLEHCAPAIAN & MAKLUMAT",12);
+    accessibilityTitle.setTypeface(null,Typeface.BOLD);options.addView(accessibilityTitle);
+    Button fontGuide=button();fontGuide.setText("Aa  Saiz teks  ·  Sederhana");
+    fontGuide.setContentDescription("Maklumat saiz teks lalai DinNote");options.addView(fontGuide);
+    fontGuide.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Saiz teks")
+      .setMessage("DinNote menggunakan saiz teks sederhana untuk pembacaan yang selesa. Tetapan saiz teks telefon boleh membantu mengubah skala paparan.")
+      .setPositiveButton("OK",null).show());
+    Button languageGuide=button();languageGuide.setText("ع  Bahasa  ·  Arab & Rumi");
+    languageGuide.setContentDescription("Maklumat sokongan tulisan Arab dan Rumi");options.addView(languageGuide);
+    languageGuide.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Bahasa tulisan")
+      .setMessage("Nota dan Maktabah menyokong teks Arab dan Rumi dalam kandungan yang sama.")
+      .setPositiveButton("OK",null).show());
+    Button storageInfo=button();storageInfo.setText("▣  Lokasi data  ·  Dalam telefon");
+    storageInfo.setContentDescription("Maklumat lokasi penyimpanan data");options.addView(storageInfo);
+    storageInfo.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Penyimpanan DinNote")
+      .setMessage("Nota dan kitab disimpan dalam pangkalan data aplikasi pada telefon ini. Memasang APK pada telefon lain tidak memindahkan data secara automatik; gunakan Backup dan Restore.")
+      .setPositiveButton("OK",null).show());
+    Button offlineInfo=button();offlineInfo.setText("◌  Mod luar talian");
+    offlineInfo.setContentDescription("Maklumat penggunaan tanpa internet");options.addView(offlineInfo);
+    offlineInfo.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Mod luar talian")
+      .setMessage("Nota dan kandungan Maktabah yang sudah disimpan boleh digunakan tanpa sambungan internet.")
+      .setPositiveButton("OK",null).show());
+    Button privacyInfo=button();privacyInfo.setText("♙  Privasi nota");
+    privacyInfo.setContentDescription("Maklumat privasi data nota");options.addView(privacyInfo);
+    privacyInfo.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Privasi")
+      .setMessage("Data disimpan secara setempat dalam ruang aplikasi. Simpan salinan backup di lokasi yang anda percayai.")
+      .setPositiveButton("OK",null).show());
+    Button backupGuide=button();backupGuide.setText("?  Panduan backup");
+    backupGuide.setContentDescription("Panduan membuat salinan data");options.addView(backupGuide);
+    backupGuide.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Panduan Backup")
+      .setMessage("1. Tekan Backup ke DinPhone.\\n2. Pilih lokasi penyimpanan fail.\\n3. Simpan fail .db dengan selamat.\\n4. Gunakan Restore daripada fail untuk memulihkan data.")
+      .setPositiveButton("OK",null).show());
+    Button restoreGuide=button();restoreGuide.setText("?  Panduan restore");
+    restoreGuide.setContentDescription("Panduan memulihkan data");options.addView(restoreGuide);
+    restoreGuide.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Panduan Restore")
+      .setMessage("Restore menggantikan semua nota, kategori dan kitab semasa. Buat backup terkini dahulu, kemudian pilih fail backup DinNote.")
+      .setPositiveButton("OK",null).show());
+    Button categoryGuide=button();categoryGuide.setText("▤  Panduan kategori");
+    categoryGuide.setContentDescription("Panduan kategori Nota dan Maktabah");options.addView(categoryGuide);
+    categoryGuide.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Kategori")
+      .setMessage("Kategori Nota diurus dalam menu Nota. Kategori kitab diurus dalam menu Maktabah. Kedua-duanya berasingan.")
+      .setPositiveButton("OK",null).show());
+    Button pinnedGuide=button();pinnedGuide.setText("📌  Panduan nota dipin");
+    pinnedGuide.setContentDescription("Panduan memaparkan nota dipin");options.addView(pinnedGuide);
+    pinnedGuide.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Nota dipin")
+      .setMessage("Pin nota penting untuk memaparkannya di halaman utama. Gunakan pilihan Nota dipin dalam Tetapan untuk menyembunyikan atau memaparkan senarai.")
+      .setPositiveButton("OK",null).show());
+    Button systemBarInfo=button();systemBarInfo.setText("▣  Bar sistem Android");
+    systemBarInfo.setContentDescription("Maklumat bar status dan navigasi sistem");options.addView(systemBarInfo);
+    systemBarInfo.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Bar sistem Android")
+      .setMessage("DinNote tidak mengubah status bar jam di atas atau navigation bar Android di bawah.")
+      .setPositiveButton("OK",null).show());
     TextView dataTitle=text("DATA & BACKUP",12);dataTitle.setTypeface(null,Typeface.BOLD);options.addView(dataTitle);
     Button backup=button();backup.setText("⇧  Backup ke DinPhone");options.addView(backup);
     backup.setOnClickListener(v->exportBackup());
