@@ -120,7 +120,7 @@ public class MainActivity extends Activity {
         shortcut.setOnClickListener(v->showBooks(categoryId,categoryName));
       }
     }catch(Exception e){android.util.Log.w("DinNote","Library shortcuts unavailable",e);}
-    Button allLibrary=button();allLibrary.setText("Lihat & urus semua kategori Maktabah");libraryShortcuts.addView(allLibrary);
+    Button allLibrary=button();allLibrary.setText("Lihat & urus semua kategori Maktabah");allLibrary.setContentDescription("Buka pengurusan kategori Maktabah");libraryShortcuts.addView(allLibrary);
     allLibrary.setOnClickListener(v->showLibrary());
     // Home category shortcuts, matching the original DinNote two-section layout.
     TextView noteHeading=text("Kategori Nota",17);noteHeading.setContentDescription("Senarai kategori Nota");noteHeading.setTypeface(null,Typeface.BOLD);root.addView(noteHeading);
