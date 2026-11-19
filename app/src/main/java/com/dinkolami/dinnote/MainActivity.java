@@ -130,7 +130,7 @@ public class MainActivity extends Activity {
     try(Cursor cats=db.getReadableDatabase().rawQuery("SELECT id,name FROM note_categories ORDER BY name COLLATE NOCASE LIMIT 6",null)){
       while(cats.moveToNext()){
         final int catId=cats.getInt(0);String catName=cats.getString(1);
-        Button item=button();item.setText("▤  "+catName);noteShortcuts.addView(item);
+        Button item=button();item.setText("▤  "+catName);item.setContentDescription("Lihat nota kategori "+catName);noteShortcuts.addView(item);
         item.setOnClickListener(v->{selectedNoteCategory=catId;showHome();});
       }
     }catch(Exception e){android.util.Log.w("DinNote","Category shortcuts unavailable",e);}
