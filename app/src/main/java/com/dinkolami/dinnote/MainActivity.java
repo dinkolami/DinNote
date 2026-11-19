@@ -249,6 +249,9 @@ public class MainActivity extends Activity {
         options.addView(statLabel9);
       }
     }catch(Exception statError9){android.util.Log.w("DinNote","Unable to read statistic 10",statError9);}
+    Button advancedStats=button();advancedStats.setText("▦  25 statistik lanjutan");
+    advancedStats.setContentDescription("Lihat dua puluh lima statistik Nota dan Maktabah");
+    options.addView(advancedStats);advancedStats.setOnClickListener(v->showAdvancedStatistics());
     TextView dataTitle=text("DATA & BACKUP",12);dataTitle.setTypeface(null,Typeface.BOLD);options.addView(dataTitle);
     Button backup=button();backup.setText("⇧  Backup ke DinPhone");options.addView(backup);
     backup.setOnClickListener(v->exportBackup());
@@ -261,6 +264,112 @@ public class MainActivity extends Activity {
     about.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("DinNote")
       .setMessage("Aplikasi nota dan maktabah luar talian. Kategori Nota dan Maktabah diurus berasingan. Data disimpan pada telefon; gunakan Backup untuk memindahkannya.")
       .setPositiveButton("OK",null).show());
+  }
+  void showAdvancedStatistics(){
+    flushPendingSave();
+    String[] labels=new String[]{
+      "Nota hari ini",
+      "Nota 7 hari",
+      "Nota 30 hari",
+      "Kitab hari ini",
+      "Kitab 7 hari",
+      "Kitab 30 hari",
+      "Kitab dipin",
+      "Kitab belum dipin",
+      "Kitab tanpa tajuk",
+      "Kitab tanpa isi",
+      "Kitab bertajuk",
+      "Kitab berisi",
+      "Nota tanpa tajuk",
+      "Nota tanpa isi",
+      "Nota kategori peribadi",
+      "Nota kategori tidak ditemui",
+      "Kitab kategori tidak ditemui",
+      "Kategori Nota kosong",
+      "Kategori Maktabah kosong",
+      "Kategori Nota digunakan",
+      "Kategori Maktabah digunakan",
+      "Jumlah aksara nota",
+      "Jumlah aksara kitab",
+      "Nota panjang (1000+ aksara)",
+      "Kitab panjang (1000+ aksara)"
+    };
+    String[] queries=new String[]{
+      "SELECT COUNT(*) FROM notes WHERE updated>=?",
+      "SELECT COUNT(*) FROM notes WHERE updated>=?",
+      "SELECT COUNT(*) FROM notes WHERE updated>=?",
+      "SELECT COUNT(*) FROM books WHERE updated>=?",
+      "SELECT COUNT(*) FROM books WHERE updated>=?",
+      "SELECT COUNT(*) FROM books WHERE updated>=?",
+      "SELECT COUNT(*) FROM books WHERE pinned=1",
+      "SELECT COUNT(*) FROM books WHERE pinned=0",
+      "SELECT COUNT(*) FROM books WHERE TRIM(title)=''",
+      "SELECT COUNT(*) FROM books WHERE TRIM(body)=''",
+      "SELECT COUNT(*) FROM books WHERE TRIM(title)<>''",
+      "SELECT COUNT(*) FROM books WHERE TRIM(body)<>''",
+      "SELECT COUNT(*) FROM notes WHERE TRIM(title)=''",
+      "SELECT COUNT(*) FROM notes WHERE TRIM(body)=''",
+      "SELECT COUNT(*) FROM notes WHERE category_id IN (SELECT id FROM note_categories)",
+      "SELECT COUNT(*) FROM notes WHERE category_id>0 AND category_id NOT IN (SELECT id FROM note_categories)",
+      "SELECT COUNT(*) FROM books WHERE category_id NOT IN (SELECT id FROM categories)",
+      "SELECT COUNT(*) FROM note_categories c WHERE NOT EXISTS (SELECT 1 FROM notes n WHERE n.category_id=c.id)",
+      "SELECT COUNT(*) FROM categories c WHERE NOT EXISTS (SELECT 1 FROM books b WHERE b.category_id=c.id)",
+      "SELECT COUNT(*) FROM note_categories c WHERE EXISTS (SELECT 1 FROM notes n WHERE n.category_id=c.id)",
+      "SELECT COUNT(*) FROM categories c WHERE EXISTS (SELECT 1 FROM books b WHERE b.category_id=c.id)",
+      "SELECT COALESCE(SUM(LENGTH(title)+LENGTH(body)),0) FROM notes",
+      "SELECT COALESCE(SUM(LENGTH(title)+LENGTH(body)),0) FROM books",
+      "SELECT COUNT(*) FROM notes WHERE LENGTH(body)>=1000",
+      "SELECT COUNT(*) FROM books WHERE LENGTH(body)>=1000"
+    };
+    String[] periods=new String[]{"day",
+      "week",
+      "month",
+      "day",
+      "week",
+      "month",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""};
+    long now=System.currentTimeMillis();
+    java.util.Calendar midnight=java.util.Calendar.getInstance();
+    midnight.set(java.util.Calendar.HOUR_OF_DAY,0);
+    midnight.set(java.util.Calendar.MINUTE,0);
+    midnight.set(java.util.Calendar.SECOND,0);
+    midnight.set(java.util.Calendar.MILLISECOND,0);
+    StringBuilder report=new StringBuilder();
+    for(int i=0;i<labels.length;i++){
+      String[] args=null;
+      if(!periods[i].isEmpty()){
+        long since=periods[i].equals("day")?midnight.getTimeInMillis():
+          now-(periods[i].equals("week")?7L:30L)*24L*60L*60L*1000L;
+        args=new String[]{Long.toString(since)};
+      }
+      try(Cursor result=db.getReadableDatabase().rawQuery(queries[i],args)){
+        report.append(i+1).append(". ").append(labels[i]).append(": ");
+        report.append(result.moveToFirst()?result.getLong(0):0).append("\\n");
+      }catch(Exception e){
+        android.util.Log.w("DinNote","Advanced statistic "+(i+1)+" unavailable",e);
+        report.append(i+1).append(". ").append(labels[i]).append(": Tidak tersedia\\n");
+      }
+    }
+    new AlertDialog.Builder(this).setTitle("25 Statistik Lanjutan")
+      .setMessage(report.toString()).setPositiveButton("Tutup",null).show();
   }
   static final int REQUEST_EXPORT=7301,REQUEST_IMPORT=7302;
   void exportBackup(){try{flushPendingSave();Intent i=new Intent(Intent.ACTION_CREATE_DOCUMENT);i.addCategory(Intent.CATEGORY_OPENABLE);i.setType("application/octet-stream");i.putExtra(Intent.EXTRA_TITLE,"DinPhone-DinNote-"+new java.text.SimpleDateFormat("yyyyMMdd-HHmm",java.util.Locale.US).format(new java.util.Date())+".db");startActivityForResult(i,REQUEST_EXPORT);}catch(Exception e){Toast.makeText(this,"Tidak dapat membuka pilihan backup",Toast.LENGTH_LONG).show();}}
