@@ -213,7 +213,7 @@ public class MainActivity extends Activity {
    hint.setGravity(Gravity.CENTER);hint.setTextColor(0xff656d76);hint.setTextSize(13);recentNotes.addView(hint);
   }else {
    // Two balanced columns of five on an unfolded Fold6; one column on narrow screens.
-   boolean wide=getResources().getConfiguration().screenWidthDp>=600;
+   boolean wide=getResources().getConfiguration().screenWidthDp>=500;
    LinearLayout columns=null,left=null,right=null;
    if(wide){
     columns=new LinearLayout(this);columns.setOrientation(LinearLayout.HORIZONTAL);
@@ -224,7 +224,16 @@ public class MainActivity extends Activity {
     columns.addView(left,leftParams);columns.addView(right,rightParams);
     recentNotes.addView(columns,new LinearLayout.LayoutParams(-1,-2));
    }
-   for(int i=0;i<Math.min(wide?10:5,keys.size());i++){
+   for(int i=0;i<(wide?10:Math.min(5,keys.size()));i++){
+    if(i>=keys.size()){
+     TextView placeholder=dashboardText("＋  Ruang nota "+(i+1),13,false);
+     placeholder.setTextColor(0xff8a9290);placeholder.setGravity(Gravity.CENTER_VERTICAL);
+     placeholder.setBackground(subtleNoteBorder(8));
+     LinearLayout.LayoutParams emptyParams=new LinearLayout.LayoutParams(-1,dp(38));emptyParams.bottomMargin=dp(3);
+     (i<5?left:right).addView(placeholder,emptyParams);
+     placeholder.setOnClickListener(v->{maktabah=false;edit(null);});
+     continue;
+    }
     String k=keys.get(i);String t=prefs.getString("title_"+k,"");
     if(t.trim().isEmpty())t="Tanpa tajuk";
     TextView item=dashboardText((k.startsWith("m_")?"▱  ":"▤  ")+t,13,false);
