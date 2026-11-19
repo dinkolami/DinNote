@@ -42,9 +42,10 @@ jobs:
       - name: Install Android API 37
         run: sdkmanager --install 'platforms;android-37' 'build-tools;36.0.0'
       - name: Build debug APK
+        shell: bash
         run: |
           chmod +x ./gradlew
-          set -o pipefail
+          set -euo pipefail
           ./gradlew assembleDebug --stacktrace --no-daemon 2>&1 | tee gradle-build.log
       - name: Verify generated APK
         run: |
