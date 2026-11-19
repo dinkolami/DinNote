@@ -900,7 +900,11 @@ public class MainActivity extends Activity {
           return true;
         }
       });
-      scroll.setOnTouchListener((v,event)->{gestures.onTouchEvent(event);return false;});
+      // TextView children can consume taps; listen on them as well as the scroll container.
+      View.OnTouchListener readingGestures=(v,event)->{gestures.onTouchEvent(event);return false;};
+      scroll.setOnTouchListener(readingGestures);
+      titleView.setOnTouchListener(readingGestures);
+      bodyView.setOnTouchListener(readingGestures);
       content.setContentDescription("Paparan baca nota. Ketik dua kali untuk tunjuk atau sembunyikan butang.");
     }catch(Exception e){android.util.Log.e("DinNote","Cannot open note reader",e);Toast.makeText(this,"Gagal membuka nota",Toast.LENGTH_LONG).show();showHome();}
   }
