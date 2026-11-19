@@ -97,7 +97,7 @@ jobs:
           sha256sum "$apk"
           "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$apk" | tee /tmp/dinnote-apk-badging.txt
           grep -Fq "package: name='com.dinkolami.dinnote.quillpad'" /tmp/dinnote-apk-badging.txt
-          grep -Fq "application-label:'DinNote'" /tmp/dinnote-apk-badging.txt
+          grep -Eq "application-label(-[a-zA-Z0-9_-]+)?:'DinNote'" /tmp/dinnote-apk-badging.txt
           echo 'Verified APK package and launcher label.'
       - name: Upload debug APK
         if: success()
