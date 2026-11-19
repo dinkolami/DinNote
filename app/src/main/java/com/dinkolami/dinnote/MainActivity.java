@@ -251,11 +251,22 @@ public class MainActivity extends Activity {
     flushPendingSave();editingBook=false;editingNote=false;saveIndicator=null;
     LinearLayout page=column();setContentView(page);
     Button back=button();back.setText("← DinNote");back.setTextSize(14);page.addView(back);back.setOnClickListener(v->showHome());
-    page.addView(text("Maktabah",21));
+    TextView libraryTitle=text("Maktabah",21);libraryTitle.setTypeface(null,Typeface.BOLD);page.addView(libraryTitle);
+    EditText categorySearch=field();categorySearch.setSingleLine(true);categorySearch.setHint("Cari kategori Maktabah…");categorySearch.setContentDescription("Cari kategori Maktabah");page.addView(categorySearch);
     Button add=button();add.setText("+ Kategori baharu");add.setTextColor(accent());page.addView(add);
     add.setOnClickListener(v->promptCategory());
     ScrollView scroll=new ScrollView(this);LinearLayout items=new LinearLayout(this);items.setOrientation(1);scroll.addView(items);page.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
-    try(Cursor c=db.getReadableDatabase().rawQuery("SELECT id,name FROM categories ORDER BY name COLLATE NOCASE",null)){
+    categorySearch.addTextChangedListener(new TextWatcher(){
+      public void beforeTextChanged(CharSequence text,int start,int count,int after){}
+      public void onTextChanged(CharSequence text,int start,int before,int count){populateLibraryCategories(items,text.toString());}
+      public void afterTextChanged(Editable text){}
+    });
+    populateLibraryCategories(items,"");
+  }
+  void populateLibraryCategories(LinearLayout items,String query){
+    items.removeAllViews();
+    String filter=query==null?"":query.trim();
+    try(Cursor c=db.getReadableDatabase().rawQuery("SELECT id,name FROM categories WHERE name LIKE ? ORDER BY name COLLATE NOCASE",new String[]{"%"+filter+"%"})){
       while(c.moveToNext()){int categoryId=c.getInt(0);String name=c.getString(1);
         LinearLayout categoryRow=new LinearLayout(this);categoryRow.setOrientation(LinearLayout.HORIZONTAL);categoryRow.setGravity(Gravity.CENTER_VERTICAL);items.addView(categoryRow);
         Button item=button();item.setText("▥  "+name);item.setContentDescription("Buka kategori "+name);
@@ -280,7 +291,7 @@ public class MainActivity extends Activity {
           }).show());
       }
     }
-    if(items.getChildCount()==0)items.addView(text("Belum ada kategori. Tekan + Kategori baharu untuk mula.",15));
+    if(items.getChildCount()==0)items.addView(text(filter.isEmpty()?"Belum ada kategori. Tekan + Kategori baharu untuk mula.":"Tiada kategori ditemui.",15));
   }
   void promptCategory(){
     EditText input=field();input.setHint("Nama kategori");input.setFilters(new InputFilter[]{new InputFilter.LengthFilter(100)});
