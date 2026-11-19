@@ -485,21 +485,24 @@ public class MainActivity extends Activity {
   // Restrained, consistent editor styling shared by Nota and Maktabah.
   void styleEditorPage(LinearLayout page,EditText title,EditText body,TextView status,Button back){
     page.setPadding(18,14,18,12);
-    title.setTextSize(19);
+    title.setTextSize(20);
+    title.setLetterSpacing(0.012f);
     title.setTypeface(Typeface.DEFAULT,Typeface.BOLD);
     title.setMinHeight(54);
     title.setBackground(rounded(cardSurface(),borderColor(),16));
-    body.setPadding(18,18,18,18);
+    body.setPadding(20,20,20,20);
     body.setTextSize(16);
-    body.setLineSpacing(5f,1.08f);
+    body.setLineSpacing(7f,1.12f);
     body.setBackground(rounded(cardSurface(),borderColor(),18));
     status.setTextColor(dark()?0xFF8B949E:0xFF57606A);
     status.setTextSize(12);
+    status.setLetterSpacing(0.02f);
     back.setTextColor(dark()?0xFF79C0FF:0xFF0969DA);
   }
   void styleEditorTool(Button control){
     control.setMinHeight(44);
     control.setTextSize(13);
+    control.setTypeface(Typeface.DEFAULT,Typeface.BOLD);
     control.setPadding(4,8,4,8);
     control.setBackground(rounded(cardSurface(),borderColor(),12));
   }
@@ -507,13 +510,13 @@ public class MainActivity extends Activity {
   void enableKeyboardAwareEditor(LinearLayout page) {
     getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
   }
-  LinearLayout column() { LinearLayout l=new LinearLayout(this);l.setOrientation(1);l.setPadding(16,14,16,14);l.setBackgroundColor(surface());return l; }
+  LinearLayout column() { LinearLayout l=new LinearLayout(this);l.setOrientation(1);l.setPadding(18,16,18,16);l.setBackgroundColor(surface());return l; }
   void showHome() {
     flushPendingSave();
     editingBook=false;editingNote=false;saveIndicator=null;
     root=column();root.setFocusableInTouchMode(true);root.requestFocus();setContentView(root);
     LinearLayout header=new LinearLayout(this);header.setOrientation(LinearLayout.HORIZONTAL);header.setGravity(Gravity.CENTER_VERTICAL);root.addView(header);
-    TextView title=text("DinNote",25);title.setLetterSpacing(-0.025f);title.setPadding(2,9,12,9);title.setTypeface(null,Typeface.BOLD);title.setTextColor(foreground());title.setContentDescription("DinNote halaman utama");title.setElegantTextHeight(true);title.setMaxLines(1);title.setTextDirection(View.TEXT_DIRECTION_LOCALE);title.setIncludeFontPadding(false);title.setEllipsize(android.text.TextUtils.TruncateAt.END);header.addView(title,new LinearLayout.LayoutParams(0,-2,1));
+    TextView title=text("DinNote",27);title.setLetterSpacing(-0.03f);title.setPadding(2,9,12,9);title.setTypeface(null,Typeface.BOLD);title.setTextColor(foreground());title.setContentDescription("DinNote halaman utama");title.setElegantTextHeight(true);title.setMaxLines(1);title.setTextDirection(View.TEXT_DIRECTION_LOCALE);title.setIncludeFontPadding(false);title.setEllipsize(android.text.TextUtils.TruncateAt.END);header.addView(title,new LinearLayout.LayoutParams(0,-2,1));
     TextView appearance=text("⚙",21);appearance.setTextColor(accent());appearance.setBackground(rounded(cardSurface(),borderColor(),14));appearance.setGravity(Gravity.CENTER);appearance.setTextSize(20);appearance.setContentDescription("Buka tetapan DinNote");appearance.setAccessibilityHeading(false);appearance.setTooltipText("Tetapan");appearance.setSoundEffectsEnabled(true);appearance.setFocusable(true);appearance.setClickable(true);appearance.setMinWidth(48);appearance.setMinHeight(48);appearance.setHapticFeedbackEnabled(true);appearance.setPadding(8,8,8,8);appearance.setElevation(1f);appearance.setStateListAnimator(null);appearance.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);appearance.setOnClickListener(v->showSettings());header.addView(appearance);
     View headerDivider=new View(this);headerDivider.setBackgroundColor(borderColor());headerDivider.setContentDescription("Pemisah tajuk");LinearLayout.LayoutParams hd=new LinearLayout.LayoutParams(-1,1);hd.setMargins(0,12,0,18);root.addView(headerDivider,hd);
     ScrollView homeScroll=new ScrollView(this);homeScroll.setFillViewport(false);homeScroll.setScrollbarFadingEnabled(true);homeScroll.setVerticalFadingEdgeEnabled(false);homeScroll.setContentDescription("Kandungan halaman utama DinNote");homeScroll.setFocusable(false);homeScroll.setVerticalScrollBarEnabled(false);homeScroll.setFadingEdgeLength(0);homeScroll.setSmoothScrollingEnabled(true);homeScroll.setDescendantFocusability(android.view.ViewGroup.FOCUS_AFTER_DESCENDANTS);homeScroll.setOverScrollMode(View.OVER_SCROLL_IF_CONTENT_SCROLLS);homeScroll.setClipToPadding(false);homeScroll.setPadding(0,0,0,2);root.addView(homeScroll,new LinearLayout.LayoutParams(-1,0,1));
