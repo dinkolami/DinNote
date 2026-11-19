@@ -85,7 +85,30 @@ public class MainActivity extends Activity {
 
  void cleanBase(){root=new LinearLayout(this);root.setOrientation(1);root.setBackgroundColor(Color.WHITE);setContentView(root);applySystemBarInsets(root);}
  Button action(String label,LinearLayout bar,Runnable callback){Button b=new Button(this);b.setText(label);b.setAllCaps(false);b.setTextSize(14);bar.addView(b);b.setOnClickListener(v->callback.run());return b;}
- void read(String key){editor=null;titleEditor=null;selected=key;cleanBase();LinearLayout bar=new LinearLayout(this);bar.setGravity(Gravity.CENTER_VERTICAL);root.addView(bar);action("‹",bar,()->home());TextView spacer=text("",12);bar.addView(spacer,new LinearLayout.LayoutParams(0,1,1));Button editButton=action("✎ Edit",bar,()->edit(key));Button more=action("⋮",bar,()->new AlertDialog.Builder(this).setItems(new String[]{"Edit","Padam"},(d,i)->{if(i==0)edit(key);else confirmDelete(key);}).show());String heading=prefs.getString("title_"+key,"");TextView title=text(heading,22);title.setTextColor(0xff25282d);title.setVisibility(heading.isEmpty()?View.GONE:View.VISIBLE);root.addView(title);ScrollView scroll=new ScrollView(this);TextView content=text(prefs.getString(key,""),16);content.setTextColor(0xff30343b);content.setLineSpacing(6,1.12f);content.setTextIsSelectable(true);scroll.addView(content);root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));android.view.GestureDetector detector=new android.view.GestureDetector(this,new android.view.GestureDetector.SimpleOnGestureListener(){public boolean onDoubleTap(android.view.MotionEvent e){bar.setVisibility(bar.getVisibility()==View.VISIBLE?View.GONE:View.VISIBLE);return true;}public boolean onDown(android.view.MotionEvent e){return true;}});content.setOnTouchListener((v,e)->{detector.onTouchEvent(e);return false;});scroll.setOnTouchListener((v,e)->{detector.onTouchEvent(e);return false;});title.setOnTouchListener((v,e)->{detector.onTouchEvent(e);return false;});bar.setVisibility(View.GONE);}
+ void read(String key){
+  editor=null;titleEditor=null;selected=key;cleanBase();
+  LinearLayout bar=new LinearLayout(this);bar.setGravity(Gravity.CENTER_VERTICAL);root.addView(bar);
+  action("‹",bar,()->home());
+  TextView spacer=text("",12);bar.addView(spacer,new LinearLayout.LayoutParams(0,1,1));
+  action("✎ Edit",bar,()->edit(key));
+  action("⋮",bar,()->new AlertDialog.Builder(this).setItems(new String[]{"Edit","Padam"},(d,i)->{if(i==0)edit(key);else confirmDelete(key);}).show());
+  String heading=prefs.getString("title_"+key,"");
+  ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);
+  LinearLayout body=new LinearLayout(this);body.setOrientation(1);scroll.addView(body);
+  TextView title=text(heading,22);title.setTextColor(0xff25282d);
+  if(!heading.isEmpty())body.addView(title);
+  TextView content=text(prefs.getString(key,""),16);
+  content.setTextColor(0xff30343b);content.setLineSpacing(dp(6),1.12f);
+  body.addView(content,new LinearLayout.LayoutParams(-1,-2));
+  root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
+  android.view.GestureDetector detector=new android.view.GestureDetector(this,new android.view.GestureDetector.SimpleOnGestureListener(){
+   @Override public boolean onDown(android.view.MotionEvent e){return true;}
+   @Override public boolean onDoubleTap(android.view.MotionEvent e){bar.setVisibility(bar.getVisibility()==View.VISIBLE?View.GONE:View.VISIBLE);return true;}
+  });
+  View.OnTouchListener touch=(v,e)->{detector.onTouchEvent(e);return true;};
+  scroll.setOnTouchListener(touch);body.setOnTouchListener(touch);content.setOnTouchListener(touch);title.setOnTouchListener(touch);
+  bar.setVisibility(View.GONE);
+ }
  void confirmDelete(String key){new AlertDialog.Builder(this).setMessage("Padam nota ini?").setPositiveButton("Padam",(d,w)->{prefs.edit().remove(key).remove("title_"+key).remove("cat_"+key).apply();selected=null;home();}).setNegativeButton("Batal",null).show();}
  void edit(String key){editor=null;selected=key;cleanBase();LinearLayout bar=new LinearLayout(this);bar.setGravity(Gravity.CENTER_VERTICAL);root.addView(bar);action("‹",bar,()->{save();if(selected!=null)read(selected);else home();});TextView spacer=text("",12);bar.addView(spacer,new LinearLayout.LayoutParams(0,1,1));action("Selesai",bar,()->{save();if(selected!=null)read(selected);else home();});action("⋮",bar,()->new AlertDialog.Builder(this).setItems(new String[]{"Padam"},(d,i)->{if(selected!=null)confirmDelete(selected);}).show());categoryPicker=new Spinner(this);ArrayList<String> choices=new ArrayList<>();choices.add("Tanpa kategori");choices.addAll(categories());categoryPicker.setAdapter(new ArrayAdapter<>(this,android.R.layout.simple_spinner_dropdown_item,choices));String savedCat=key==null?"Tanpa kategori":prefs.getString("cat_"+key,"Tanpa kategori");int pos=choices.indexOf(savedCat);categoryPicker.setSelection(pos<0?0:pos);root.addView(categoryPicker);titleEditor=new EditText(this);titleEditor.setSingleLine(true);titleEditor.setTextSize(21);titleEditor.setHint(maktabah?"Tajuk kitab":"Tajuk nota");titleEditor.setPadding(24,12,24,12);titleEditor.setBackgroundColor(Color.WHITE);root.addView(titleEditor);if(key!=null)titleEditor.setText(prefs.getString("title_"+key,""));editor=new EditText(this);editor.setGravity(Gravity.TOP);editor.setTextSize(16);editor.setTextColor(0xff30343b);editor.setPadding(24,16,24,16);editor.setLineSpacing(5,1.08f);editor.setHint("Tulis di sini…");editor.setBackgroundColor(Color.WHITE);editor.setInputType(android.text.InputType.TYPE_CLASS_TEXT|android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE|android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);root.addView(editor,new LinearLayout.LayoutParams(-1,0,1));if(key!=null)editor.setText(prefs.getString(key,""));TextWatcher watcher=new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){save();}public void afterTextChanged(Editable e){}};titleEditor.addTextChangedListener(watcher);editor.addTextChangedListener(watcher);categoryPicker.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener(){public void onNothingSelected(android.widget.AdapterView<?> p){}public void onItemSelected(android.widget.AdapterView<?> p,View v,int position,long id){save();}});}
 
