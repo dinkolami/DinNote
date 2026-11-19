@@ -55,6 +55,12 @@ public class MainActivity extends Activity {
     TextView displayTitle=text("PAPARAN",12);displayTitle.setTypeface(null,Typeface.BOLD);options.addView(displayTitle);
     Button appearance=button();appearance.setText("◐  Penampilan  ·  "+new String[]{"Ikut sistem","Cerah","Gelap"}[Math.max(0,Math.min(2,themeMode))]);
     options.addView(appearance);appearance.setOnClickListener(v->appearanceSettings());
+    Button editorSize=button();editorSize.setText("Aa  Saiz tulisan editor  ·  "+getPreferences(MODE_PRIVATE).getInt("editorFontSize",16)+" sp");
+    options.addView(editorSize);
+    editorSize.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Saiz tulisan editor")
+      .setSingleChoiceItems(new String[]{"Kecil (14)","Sederhana (16)","Besar (18)","Sangat besar (20)"},Math.max(0,Math.min(3,(getPreferences(MODE_PRIVATE).getInt("editorFontSize",16)-14)/2)),(dialog,which)->{
+        getPreferences(MODE_PRIVATE).edit().putInt("editorFontSize",14+which*2).apply();dialog.dismiss();showSettings();
+      }).setNegativeButton("Batal",null).show());
     Button sort=button();sort.setText("↕  Susunan nota  ·  "+new String[]{"Terkini","Terlama","Tajuk A-Z"}[Math.max(0,Math.min(noteSort,2))]);
     options.addView(sort);sort.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Susunan nota")
       .setSingleChoiceItems(new String[]{"Terkini","Terlama","Tajuk A-Z"},Math.max(0,Math.min(2,noteSort)),(dialog,which)->{
@@ -491,16 +497,22 @@ public class MainActivity extends Activity {
     title.setMinHeight(54);
     title.setBackground(rounded(cardSurface(),borderColor(),16));
     body.setPadding(20,20,20,20);
-    body.setTextSize(16);
+    body.setTextSize(getPreferences(MODE_PRIVATE).getInt("editorFontSize",16));
     body.setLineSpacing(8f,1.16f);
     body.setTextColor(foreground());
     body.setHintTextColor(dark()?0xFF9AB6A7:0xFF72877B);
     body.setBackground(rounded(cardSurface(),borderColor(),18));
     body.setScrollBarStyle(View.SCROLLBARS_INSIDE_INSET);
+    body.setVerticalScrollBarEnabled(true);
+    body.setOverScrollMode(View.OVER_SCROLL_IF_CONTENT_SCROLLS);
     status.setTextColor(dark()?0xFF8B949E:0xFF57606A);
     status.setTextSize(12);
+    status.setGravity(Gravity.END);
+    status.setPadding(0,4,2,8);
     status.setLetterSpacing(0.02f);
-    back.setTextColor(dark()?0xFF79C0FF:0xFF0969DA);
+    back.setTextColor(foreground());
+    back.setBackground(rounded(cardSurface(),borderColor(),14));
+    back.setElevation(2f*getResources().getDisplayMetrics().density);
   }
   void styleEditorTool(Button control){
     control.setMinHeight(48);
@@ -518,6 +530,7 @@ public class MainActivity extends Activity {
     page.setClipToPadding(false);
     page.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
     page.setFocusable(false);
+    // Let Android retain ownership of clock/status and gesture navigation insets.
     page.setFitsSystemWindows(false);
   }
   LinearLayout column() { LinearLayout l=new LinearLayout(this);l.setOrientation(1);l.setPadding(18,16,18,16);l.setBackgroundColor(surface());return l; }
@@ -527,9 +540,11 @@ public class MainActivity extends Activity {
     root=column();root.setFocusableInTouchMode(true);root.requestFocus();setContentView(root);
     LinearLayout header=new LinearLayout(this);header.setOrientation(LinearLayout.HORIZONTAL);header.setGravity(Gravity.CENTER_VERTICAL);root.addView(header);
     TextView title=text("DinNote",27);title.setLetterSpacing(-0.03f);title.setPadding(2,9,12,9);title.setTypeface(null,Typeface.BOLD);title.setTextColor(foreground());title.setContentDescription("DinNote halaman utama");title.setElegantTextHeight(true);title.setMaxLines(1);title.setTextDirection(View.TEXT_DIRECTION_LOCALE);title.setIncludeFontPadding(false);title.setEllipsize(android.text.TextUtils.TruncateAt.END);header.addView(title,new LinearLayout.LayoutParams(0,-2,1));
+    header.setBackground(rounded(cardSurface(),borderColor(),16));
+    header.setPadding(12,6,8,6);
     TextView appearance=text("⚙",21);appearance.setTextColor(accent());appearance.setBackground(rounded(cardSurface(),borderColor(),14));appearance.setGravity(Gravity.CENTER);appearance.setTextSize(20);appearance.setContentDescription("Buka tetapan DinNote");appearance.setAccessibilityHeading(false);appearance.setTooltipText("Tetapan");appearance.setSoundEffectsEnabled(true);appearance.setFocusable(true);appearance.setClickable(true);appearance.setMinWidth(48);appearance.setMinHeight(48);appearance.setHapticFeedbackEnabled(true);appearance.setPadding(8,8,8,8);appearance.setElevation(1f);appearance.setStateListAnimator(null);appearance.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);appearance.setOnClickListener(v->showSettings());header.addView(appearance);
     View headerDivider=new View(this);headerDivider.setBackgroundColor(borderColor());headerDivider.setContentDescription("Pemisah tajuk");LinearLayout.LayoutParams hd=new LinearLayout.LayoutParams(-1,1);hd.setMargins(0,12,0,18);root.addView(headerDivider,hd);
-    ScrollView homeScroll=new ScrollView(this);homeScroll.setFillViewport(false);homeScroll.setScrollbarFadingEnabled(true);homeScroll.setVerticalFadingEdgeEnabled(false);homeScroll.setContentDescription("Kandungan halaman utama DinNote");homeScroll.setFocusable(false);homeScroll.setVerticalScrollBarEnabled(false);homeScroll.setFadingEdgeLength(0);homeScroll.setSmoothScrollingEnabled(true);homeScroll.setDescendantFocusability(android.view.ViewGroup.FOCUS_AFTER_DESCENDANTS);homeScroll.setOverScrollMode(View.OVER_SCROLL_IF_CONTENT_SCROLLS);homeScroll.setClipToPadding(false);homeScroll.setPadding(0,0,0,2);root.addView(homeScroll,new LinearLayout.LayoutParams(-1,0,1));
+    ScrollView homeScroll=new ScrollView(this);homeScroll.setFillViewport(false);homeScroll.setScrollbarFadingEnabled(true);homeScroll.setVerticalFadingEdgeEnabled(false);homeScroll.setContentDescription("Kandungan halaman utama DinNote");homeScroll.setFocusable(false);homeScroll.setVerticalScrollBarEnabled(true);homeScroll.setFadingEdgeLength(0);homeScroll.setSmoothScrollingEnabled(true);homeScroll.setDescendantFocusability(android.view.ViewGroup.FOCUS_AFTER_DESCENDANTS);homeScroll.setOverScrollMode(View.OVER_SCROLL_IF_CONTENT_SCROLLS);homeScroll.setClipToPadding(false);homeScroll.setPadding(0,0,0,2);root.addView(homeScroll,new LinearLayout.LayoutParams(-1,0,1));
     LinearLayout homeContent=new LinearLayout(this);homeContent.setOrientation(1);homeContent.setPadding(0,0,0,32);homeContent.setFocusableInTouchMode(false);homeContent.setClipToPadding(false);homeScroll.addView(homeContent);
     // Emerald-and-gold DinNote identity, contained entirely within the app window.
     LinearLayout hero=new LinearLayout(this);
