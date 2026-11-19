@@ -6,8 +6,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      HAS_SIGNING_KEY: ${{ secrets.DINNOTE_KEYSTORE_BASE64 != '' && 'true' || 'false' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -25,6 +23,15 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.12'
+      - name: Ensure optional OCR remains removed
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -Ein 'tesseract|com\\.google\\.mlkit|text-recognition|ara\\.traineddata' app/build.gradle.kts app/src/main/java/com/dinkolami/dinnote/MainActivity.java; then
+            echo "::error::OCR dependency or model reference found in core app sources"
+            exit 1
+          fi
+          echo "OCR dependencies and model references absent from core app sources." >> "$GITHUB_STEP_SUMMARY"
       - name: Build clean debug APK
         run: |
           set -o pipefail
