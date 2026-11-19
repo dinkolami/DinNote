@@ -492,19 +492,23 @@ public class MainActivity extends Activity {
     title.setBackground(rounded(cardSurface(),borderColor(),16));
     body.setPadding(20,20,20,20);
     body.setTextSize(16);
-    body.setLineSpacing(7f,1.12f);
+    body.setLineSpacing(8f,1.16f);
+    body.setTextColor(foreground());
+    body.setHintTextColor(dark()?0xFF9AB6A7:0xFF72877B);
     body.setBackground(rounded(cardSurface(),borderColor(),18));
+    body.setScrollBarStyle(View.SCROLLBARS_INSIDE_INSET);
     status.setTextColor(dark()?0xFF8B949E:0xFF57606A);
     status.setTextSize(12);
     status.setLetterSpacing(0.02f);
     back.setTextColor(dark()?0xFF79C0FF:0xFF0969DA);
   }
   void styleEditorTool(Button control){
-    control.setMinHeight(44);
-    control.setTextSize(13);
+    control.setMinHeight(48);
+    control.setTextSize(14);
     control.setTypeface(Typeface.DEFAULT,Typeface.BOLD);
-    control.setPadding(4,8,4,8);
-    control.setBackground(rounded(cardSurface(),borderColor(),12));
+    control.setPadding(6,10,6,10);
+    control.setTextColor(foreground());
+    control.setBackground(rounded(cardSurface(),borderColor(),14));
   }
   // Android resizes the editor when Samsung Keyboard appears; system bars stay native.
   void enableKeyboardAwareEditor(LinearLayout page) {
@@ -531,7 +535,7 @@ public class MainActivity extends Activity {
     LinearLayout hero=new LinearLayout(this);
     hero.setOrientation(LinearLayout.VERTICAL);
     hero.setGravity(Gravity.CENTER);
-    hero.setPadding(16,22,16,22);
+    hero.setPadding(20,24,20,24);
     android.graphics.drawable.GradientDrawable heroBackground=new android.graphics.drawable.GradientDrawable(
       android.graphics.drawable.GradientDrawable.Orientation.TL_BR,
       new int[]{0xFF064B3B,0xFF08765B,0xFF0C614B});
@@ -546,13 +550,13 @@ public class MainActivity extends Activity {
     emblem.setGravity(Gravity.CENTER);
     emblem.setTextColor(0xFFF3DCA1);
     hero.addView(emblem);
-    TextView heroName=text("DinNote",34);
+    TextView heroName=text("DinNote",31);
     heroName.setTypeface(Typeface.SERIF,Typeface.BOLD);
     heroName.setGravity(Gravity.CENTER);
     heroName.setTextColor(Color.WHITE);
     heroName.setPadding(0,0,0,0);
     hero.addView(heroName);
-    TextView heroCaption=text("Nota & Maktabah Islam",15);
+    TextView heroCaption=text("Catatan peribadi • Perpustakaan ilmu",14);
     heroCaption.setGravity(Gravity.CENTER);
     heroCaption.setTextColor(0xFFF3DCA1);
     heroCaption.setPadding(0,0,0,8);
