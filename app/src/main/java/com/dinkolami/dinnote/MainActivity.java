@@ -25,7 +25,7 @@ public class MainActivity extends Activity {
   @Override public boolean dispatchTouchEvent(MotionEvent event){
     LinearLayout toolbar=readerToolbar;
     boolean readerActive=toolbar!=null && toolbar.isAttachedToWindow()
-      && toolbar.getRootView()==getWindow().getDecorView();
+      && toolbar.getWindowToken()==getWindow().getDecorView().getWindowToken();
     if(readerActive){
       int action=event.getActionMasked();
       int slop=ViewConfiguration.get(this).getScaledTouchSlop();
@@ -44,7 +44,8 @@ public class MainActivity extends Activity {
             toolbar.setVisibility(toolbar.getVisibility()==View.VISIBLE?View.GONE:View.VISIBLE);
             toolbar.bringToFront();
             toolbar.requestLayout();
-            return true;
+            // Do not swallow ACTION_UP: child buttons and scrolling need normal dispatch.
+            return super.dispatchTouchEvent(event);
           }
           readerLastTap=now;readerLastX=x;readerLastY=y;
         }else readerLastTap=0L;
@@ -910,6 +911,7 @@ public class MainActivity extends Activity {
       if(!c.moveToFirst()){Toast.makeText(this,"Nota tidak ditemui",Toast.LENGTH_SHORT).show();showHome();return;}
       String heading=c.getString(0),plain=c.getString(1),html=c.getString(3);
       int noteColor=c.getInt(2);
+      readerToolbar=null;readerLastTap=0L;
       LinearLayout page=column();page.setPadding(0,0,0,0);setContentView(page);
       LinearLayout actions=new LinearLayout(this);actions.setOrientation(LinearLayout.HORIZONTAL);
       actions.setPadding(8,4,8,4);actions.setBackgroundColor(cardSurface());
