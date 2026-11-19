@@ -579,6 +579,13 @@ public class MainActivity extends Activity {
    org.json.JSONObject backup=new org.json.JSONObject(new String(buffer.toByteArray(),java.nio.charset.StandardCharsets.UTF_8));
    if(!"DinNote-backup-v1".equals(backup.optString("format")))throw new java.io.IOException("Format sandaran tidak sah");
    // Backups from a different installed application must not overwrite DinNote data.
+   // Validate optional metadata types without rejecting older v1 backups.
+   if(backup.has("app_package")&&!(backup.opt("app_package") instanceof String))
+    throw new java.io.IOException("Identiti aplikasi dalam sandaran tidak sah");
+   if(backup.has("storage")&&!(backup.opt("storage") instanceof String))
+    throw new java.io.IOException("Maklumat storan dalam sandaran tidak sah");
+   if(backup.has("exported_at")&&!(backup.opt("exported_at") instanceof Number))
+    throw new java.io.IOException("Tarikh sandaran tidak sah");
    String backupPackage=backup.optString("app_package","");
    if(!backupPackage.isEmpty()&&!getPackageName().equals(backupPackage))
     throw new java.io.IOException("Sandaran daripada aplikasi lain; data sedia ada tidak diubah");
