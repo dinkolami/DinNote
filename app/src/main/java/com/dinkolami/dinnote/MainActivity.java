@@ -350,6 +350,12 @@ public class MainActivity extends Activity {
   TextView content=text(prefs.getString(key,""),readingSizes[fontLevel]);
   content.setTextColor(0xff30343b);content.setTextIsSelectable(true);content.setLineSpacing(dp(6),1.12f);
   body.addView(content,new LinearLayout.LayoutParams(-1,-2));
+  String readingText=prefs.getString(key,"").trim();
+  int wordCount=readingText.isEmpty()?0:readingText.split("\\s+").length;
+  TextView wordCounter=text(wordCount+" perkataan",12);
+  wordCounter.setTextColor(0xff687078);
+  wordCounter.setPadding(dp(24),dp(4),dp(24),dp(16));
+  body.addView(wordCounter);
   root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
   readerDetector=new android.view.GestureDetector(this,new android.view.GestureDetector.SimpleOnGestureListener(){
    @Override public boolean onDown(android.view.MotionEvent e){return true;}
