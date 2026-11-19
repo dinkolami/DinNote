@@ -177,7 +177,7 @@ public class MainActivity extends Activity {
   note.setOnClickListener(v->openSection(false));book.setOnClickListener(v->openSection(true));
   // Compact GitHub-style shortcuts, without changing the approved header.
   LinearLayout shortcuts=new LinearLayout(this);shortcuts.setOrientation(1);
-  shortcuts.setPadding(dp(4),dp(6),dp(4),dp(4));page.addView(shortcuts);
+  shortcuts.setPadding(dp(4),dp(3),dp(4),dp(2));page.addView(shortcuts);
   dashboardSection(shortcuts,"📌  Nota disemat",dashboardKeys("pinned_",false),true);
   dashboardSection(shortcuts,"◷  Terakhir dikemaskini",dashboardKeys("updated_",false),false);
   String resume=prefs.getString("last_edited_key","");
@@ -215,8 +215,9 @@ public class MainActivity extends Activity {
    }
   TextView add=dashboardText("＋  Nota baharu",15,true);add.setGravity(Gravity.CENTER);
   add.setBackground(rounded(0xfff6f8fa,0xffd0d7de,10));
+  add.setPadding(dp(12),dp(10),dp(12),dp(10));
   LinearLayout.LayoutParams ap=new LinearLayout.LayoutParams(-1,-2);
-  ap.topMargin=dp(8);page.addView(add,ap);
+  ap.topMargin=dp(5);page.addView(add,ap);
   add.setContentDescription("Cipta nota baharu");add.setFocusable(true);
   add.setOnClickListener(v->{maktabah=false;edit(null);});
  }
@@ -229,15 +230,25 @@ public class MainActivity extends Activity {
   return out;
  }
  void dashboardSection(LinearLayout target,String heading,ArrayList<String> keys,boolean pin){
-  TextView title=dashboardText(heading,15,true);target.addView(title);
+  // Compact, consistent GitHub-style outline icons and tighter vertical rhythm.
+  TextView title=dashboardText((pin?"⌖  ":"◷  ")+(pin?"Nota disemat":"Terakhir dikemaskini"),15,true);
+  title.setPadding(dp(8),dp(7),dp(8),dp(5));target.addView(title);
   if(keys.isEmpty()){
    TextView empty=dashboardText(pin?"Belum ada nota disemat":"Belum ada nota dikemaskini",13,false);
-   empty.setTextColor(0xff656d76);target.addView(empty);return;
+   empty.setTextColor(0xff656d76);empty.setPadding(dp(10),dp(4),dp(10),dp(7));
+   target.addView(empty);return;
   }
   for(int i=0;i<Math.min(5,keys.size());i++){
    String key=keys.get(i),label=prefs.getString("title_"+key,"").trim();
-   TextView entry=dashboardText("  "+(label.isEmpty()?"Tanpa tajuk":label)+"  ›",14,false);
-   target.addView(entry);entry.setOnClickListener(v->{maktabah=key.startsWith("m_");read(key);});
+   TextView entry=dashboardText("☷  "+(label.isEmpty()?"Tanpa tajuk":label)+"   ›",14,false);
+   entry.setTextColor(0xff26352e);
+   entry.setPadding(dp(12),dp(11),dp(12),dp(11));
+   entry.setBackground(rounded(0xffffffff,0xffd0d7de,10));
+   LinearLayout.LayoutParams ep=new LinearLayout.LayoutParams(-1,-2);
+   ep.bottomMargin=dp(5);target.addView(entry,ep);
+   entry.setFocusable(true);
+   entry.setContentDescription("Buka nota "+(label.isEmpty()?"Tanpa tajuk":label));
+   entry.setOnClickListener(v->{maktabah=key.startsWith("m_");read(key);});
   }
  }
  android.graphics.drawable.GradientDrawable rounded(int fill,int stroke,int radius){
