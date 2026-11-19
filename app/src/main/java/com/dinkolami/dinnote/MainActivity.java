@@ -128,7 +128,7 @@ public class MainActivity extends Activity {
 
  int dp(int n){return (int)(n*getResources().getDisplayMetrics().density+0.5f);}
  int dp(float n){return (int)(n*getResources().getDisplayMetrics().density+0.5f);}
- android.graphics.drawable.GradientDrawable subtleNoteBorder(int radius){android.graphics.drawable.GradientDrawable d=new android.graphics.drawable.GradientDrawable();d.setColor(Color.WHITE);d.setCornerRadius(dp(radius));d.setStroke(dp(0.5f),0xffe5e7eb);return d;}
+ android.graphics.drawable.GradientDrawable silverGradient(int radius){android.graphics.drawable.GradientDrawable d=new android.graphics.drawable.GradientDrawable(android.graphics.drawable.GradientDrawable.Orientation.TL_BR,new int[]{0xfff4f5f7,0xffffffff,0xffe3e5e9});d.setCornerRadius(dp(radius));d.setStroke(dp(1),0xffd7dbe0);return d;}\n android.graphics.drawable.GradientDrawable subtleNoteBorder(int radius){android.graphics.drawable.GradientDrawable d=new android.graphics.drawable.GradientDrawable();d.setColor(Color.WHITE);d.setCornerRadius(dp(radius));d.setStroke(dp(0.5f),0xffe5e7eb);return d;}
  TextView dashboardText(String value,int size,boolean bold){TextView t=text(value,size);t.setPadding(dp(10),dp(8),dp(10),dp(8));if(bold)t.setTypeface(null,1);return t;}
  LinearLayout dashboardCard(){LinearLayout c=new LinearLayout(this);c.setOrientation(1);c.setPadding(dp(14),dp(12),dp(14),dp(12));android.graphics.drawable.GradientDrawable bg=new android.graphics.drawable.GradientDrawable();bg.setColor(Color.WHITE);bg.setCornerRadius(dp(17));bg.setStroke(dp(1),0xffe1e5e4);c.setBackground(bg);c.setElevation(dp(3));return c;}
  void applyTouchFeedback(View view){
@@ -170,16 +170,16 @@ public class MainActivity extends Activity {
   card.setBackground(rounded(Color.WHITE,0xffe5e7eb,8));
   LinearLayout.LayoutParams cp=new LinearLayout.LayoutParams(-1,-2);page.addView(card,cp);
   TextView count=dashboardText("Nota dan Maktabah",15,true);
-  count.setBackgroundColor(0xfff6f8fa);card.addView(count);
+  count.setGravity(Gravity.CENTER);count.setTextColor(0xff123b2b);count.setBackgroundColor(Color.WHITE);card.addView(count);
   View divider=new View(this);divider.setBackgroundColor(0xffe5e7eb);
   card.addView(divider,new LinearLayout.LayoutParams(-1,dp(1)));
   LinearLayout tiles=new LinearLayout(this);tiles.setPadding(dp(8),dp(5),dp(8),dp(4));card.addView(tiles);
-  TextView note=dashboardText("▤  Nota",15,true);
-  TextView book=dashboardText("▱  Maktabah",15,true);
+  TextView note=dashboardText("▤\nNota",15,true);
+  TextView book=dashboardText("▱\nMaktabah",15,true);
   note.setGravity(Gravity.CENTER);book.setGravity(Gravity.CENTER);note.setFocusable(true);book.setFocusable(true);
-  note.setBackground(rounded(0xfff6f8fa,0xffe5e7eb,8));
-  book.setBackground(rounded(0xfff6f8fa,0xffe5e7eb,8));
-  LinearLayout.LayoutParams a=new LinearLayout.LayoutParams(0,dp(64),1);a.rightMargin=dp(4);
+  note.setBackground(silverGradient(10));
+  book.setBackground(silverGradient(10));
+  LinearLayout.LayoutParams a=new LinearLayout.LayoutParams(0,dp(78),1);a.rightMargin=dp(4);
   LinearLayout.LayoutParams b=new LinearLayout.LayoutParams(0,dp(64),1);b.leftMargin=dp(4);
   tiles.addView(note,a);tiles.addView(book,b);
   note.setContentDescription("Buka senarai Nota");book.setContentDescription("Buka Maktabah");
@@ -227,7 +227,7 @@ public class MainActivity extends Activity {
     item.setOnClickListener(v->{maktabah=k.startsWith("m_");read(k);});
    }
   TextView add=dashboardText("＋  Nota baharu",15,true);add.setGravity(Gravity.CENTER);
-  add.setBackground(rounded(0xfff6f8fa,0xffe5e7eb,8));
+  add.setBackground(silverGradient(8));
   add.setPadding(dp(12),dp(8),dp(12),dp(8));
   LinearLayout.LayoutParams ap=new LinearLayout.LayoutParams(-1,-2);
   ap.topMargin=dp(3);page.addView(add,ap);
