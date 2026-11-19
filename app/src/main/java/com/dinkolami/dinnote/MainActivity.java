@@ -212,7 +212,7 @@ public class MainActivity extends Activity {
           }).show());
       }
     }
-    if(items.getChildCount()==0)items.addView(text(filter.isEmpty()?"Belum ada kategori Nota. Tekan Tambah kategori untuk mula.":"Tiada kategori sepadan dengan carian.",15));
+    if(items.getChildCount()==0)items.addView(text(filter.isEmpty()?"Belum ada kategori Nota. Tekan Tambah kategori untuk mula.":"Tiada kategori sepadan dengan carian.",16));
   }
   void promptNoteCategory(int id,String existing){
     EditText input=field();input.setSingleLine(true);input.setText(existing);input.setFilters(new InputFilter[]{new InputFilter.LengthFilter(100)});
