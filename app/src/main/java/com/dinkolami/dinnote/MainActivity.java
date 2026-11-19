@@ -283,18 +283,29 @@ public class MainActivity extends Activity {
     }
     String k=keys.get(i);String t=prefs.getString("title_"+k,"");
     if(t.trim().isEmpty())t="Tanpa tajuk";
-    TextView item=dashboardText((k.startsWith("m_")?"▱  ":"▤  ")+t,13,false);
-    long when=prefs.getLong("viewed_"+k,0L);
-    if(when>0L)item.setText(item.getText()+"   ·   "+new java.text.SimpleDateFormat("dd MMM",new java.util.Locale("ms","MY")).format(new java.util.Date(when)));
+    // Light emerald list: slightly larger titles, dates consistently aligned right.
+    FrameLayout row=new FrameLayout(this);
+    row.setBackground(subtleNoteBorder(8));
+    TextView item=dashboardText((k.startsWith("m_")?"▱  ":"▤  ")+t,14,false);
     item.setTextColor(0xff26352e);
-    item.setCompoundDrawablePadding(dp(8));
-    item.setBackground(subtleNoteBorder(8));
+    item.setPadding(dp(10),dp(5),dp(88),dp(5));
+    item.setSingleLine(true);item.setEllipsize(android.text.TextUtils.TruncateAt.END);
+    row.addView(item,new FrameLayout.LayoutParams(-1,-2));
+    long when=prefs.getLong("viewed_"+k,0L);
+    if(when>0L){
+     TextView date=dashboardText(new java.text.SimpleDateFormat("dd MMM",new java.util.Locale("ms","MY")).format(new java.util.Date(when)),12,false);
+     date.setTextColor(0xff35644a);date.setGravity(Gravity.CENTER);
+     date.setBackground(rounded(0xffeaf7eb,0xffeaf7eb,14));
+     date.setPadding(dp(8),dp(3),dp(8),dp(3));
+     FrameLayout.LayoutParams dateParams=new FrameLayout.LayoutParams(-2,-2,Gravity.RIGHT|Gravity.CENTER_VERTICAL);
+     dateParams.rightMargin=dp(8);row.addView(date,dateParams);
+    }
     LinearLayout.LayoutParams itemParams=new LinearLayout.LayoutParams(-1,-2);
     itemParams.bottomMargin=dp(3);
-    if(wide)(i<5?left:right).addView(item,itemParams);else recentNotes.addView(item,itemParams);
-    item.setPadding(dp(10),dp(5),dp(10),dp(5));applyTouchFeedback(item);item.setMaxLines(1);item.setEllipsize(android.text.TextUtils.TruncateAt.END);
-    item.setContentDescription("Buka "+(k.startsWith("m_")?"kitab ":"nota ")+t);
-    item.setOnClickListener(v->{maktabah=k.startsWith("m_");read(k);});
+    if(wide)(i<5?left:right).addView(row,itemParams);else recentNotes.addView(row,itemParams);
+    applyTouchFeedback(row);row.setFocusable(true);
+    row.setContentDescription("Buka "+(k.startsWith("m_")?"kitab ":"nota ")+t);
+    row.setOnClickListener(v->{maktabah=k.startsWith("m_");read(k);});
    }
   }
   TextView add=dashboardText("＋  Nota baharu",15,true);add.setGravity(Gravity.CENTER);
@@ -334,7 +345,7 @@ public class MainActivity extends Activity {
   }
   for(int i=0;i<Math.min(5,keys.size());i++){
    String key=keys.get(i),label=prefs.getString("title_"+key,"").trim();
-   TextView entry=dashboardText("▤  "+(label.isEmpty()?"Tanpa tajuk":label),13,false);
+   TextView entry=dashboardText("▤  "+(label.isEmpty()?"Tanpa tajuk":label),14,false);
    entry.setTextColor(0xff26352e);
    entry.setSingleLine(true);entry.setEllipsize(android.text.TextUtils.TruncateAt.END);
    entry.setPadding(dp(10),dp(6),dp(10),dp(6));
