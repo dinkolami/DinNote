@@ -60,7 +60,7 @@ public class MainActivity extends Activity {
     if(items!=null)list(query);
    }).setNegativeButton("Batal",null).show();
  }
- void notesPage(){editor=null;titleEditor=null;categoryPicker=null;selected=null;base("DinNote");LinearLayout tabs=new LinearLayout(this);tabs.setPadding(12,12,12,8);TextView notes=text("✎  Nota",16);TextView books=text("▤  Maktabah",16);notes.setGravity(Gravity.CENTER);books.setGravity(Gravity.CENTER);notes.setBackgroundColor(maktabah?0xfff6f8fa:0xffddf4ff);books.setBackgroundColor(maktabah?0xffddf4ff:0xfff6f8fa);tabs.addView(notes,new LinearLayout.LayoutParams(0,-2,1));tabs.addView(books,new LinearLayout.LayoutParams(0,-2,1));root.addView(tabs);notes.setOnClickListener(v->openSection(false));books.setOnClickListener(v->openSection(true));LinearLayout tools=new LinearLayout(this);tools.setPadding(12,4,12,4);Button add=new Button(this);add.setAllCaps(false);add.setText(maktabah?"+ Kitab baharu":"+ Nota baharu");tools.addView(add,new LinearLayout.LayoutParams(0,-2,1));add.setOnClickListener(v->edit(null));Button manage=new Button(this);manage.setAllCaps(false);manage.setText("⚙ Kategori");tools.addView(manage);manage.setOnClickListener(v->manageCategories());root.addView(tools);EditText search=new EditText(this);search.setSingleLine(true);search.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);search.setTextSize(15);search.setHint(maktabah?"Cari dalam Maktabah":"Cari nota");search.setContentDescription(maktabah?"Carian kitab":"Carian nota");search.setPadding(24,12,24,12);root.addView(search);LinearLayout filters=new LinearLayout(this);filters.setPadding(12,0,12,8);TextView folder=text("▤  "+(maktabah?"Maktabah":"Nota")+"  /",14);filters.addView(folder);Spinner catFilter=new Spinner(this);catFilter.setContentDescription("Tapis mengikut kategori");ArrayList<String> cats=new ArrayList<>();cats.add("Semua");cats.addAll(categories());catFilter.setAdapter(new ArrayAdapter<>(this,android.R.layout.simple_spinner_dropdown_item,cats));int ci=cats.indexOf(categoryFilter);catFilter.setSelection(ci<0?0:ci);filters.addView(catFilter,new LinearLayout.LayoutParams(0,-2,1));root.addView(filters);View line=new View(this);line.setBackgroundColor(0xffd0d7de);root.addView(line,new LinearLayout.LayoutParams(-1,1));ScrollView sc=new ScrollView(this);sc.setOverScrollMode(View.OVER_SCROLL_NEVER);items=new LinearLayout(this);items.setOrientation(1);sc.addView(items);root.addView(sc,new LinearLayout.LayoutParams(-1,0,1));catFilter.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener(){public void onNothingSelected(android.widget.AdapterView<?> p){}public void onItemSelected(android.widget.AdapterView<?> p,View v,int pos,long id){categoryFilter=cats.get(pos);list(search.getText().toString());}});search.addTextChangedListener(new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){list(s.toString());}public void afterTextChanged(Editable e){}});list("");}
+ void notesPage(){editor=null;titleEditor=null;categoryPicker=null;selected=null;base("DinNote");LinearLayout tabs=new LinearLayout(this);tabs.setPadding(12,12,12,8);TextView notes=text("✎  Nota",16);TextView books=text("▤  Maktabah",16);notes.setGravity(Gravity.CENTER);books.setGravity(Gravity.CENTER);notes.setBackgroundColor(maktabah?0xfff6f8fa:0xffddf4ff);books.setBackgroundColor(maktabah?0xffddf4ff:0xfff6f8fa);tabs.addView(notes,new LinearLayout.LayoutParams(0,-2,1));tabs.addView(books,new LinearLayout.LayoutParams(0,-2,1));root.addView(tabs);notes.setOnClickListener(v->openSection(false));books.setOnClickListener(v->openSection(true));LinearLayout tools=new LinearLayout(this);tools.setPadding(12,4,12,4);Button add=new Button(this);add.setAllCaps(false);add.setText(maktabah?"+ Kitab baharu":"+ Nota baharu");tools.addView(add,new LinearLayout.LayoutParams(0,-2,1));add.setOnClickListener(v->edit(null));Button manage=new Button(this);manage.setAllCaps(false);manage.setText("⚙ Kategori");tools.addView(manage);manage.setOnClickListener(v->manageCategories());root.addView(tools);EditText search=new EditText(this);search.setSingleLine(true);search.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);search.setSelectAllOnFocus(false);search.setTextSize(15);search.setHint(maktabah?"Cari dalam Maktabah":"Cari nota");search.setContentDescription(maktabah?"Carian kitab":"Carian nota");search.setPadding(24,12,24,12);root.addView(search);LinearLayout filters=new LinearLayout(this);filters.setPadding(12,0,12,8);TextView folder=text("▤  "+(maktabah?"Maktabah":"Nota")+"  /",14);filters.addView(folder);Spinner catFilter=new Spinner(this);catFilter.setContentDescription("Tapis mengikut kategori");ArrayList<String> cats=new ArrayList<>();cats.add("Semua");cats.addAll(categories());catFilter.setAdapter(new ArrayAdapter<>(this,android.R.layout.simple_spinner_dropdown_item,cats));int ci=cats.indexOf(categoryFilter);catFilter.setSelection(ci<0?0:ci);filters.addView(catFilter,new LinearLayout.LayoutParams(0,-2,1));root.addView(filters);View line=new View(this);line.setBackgroundColor(0xffd0d7de);root.addView(line,new LinearLayout.LayoutParams(-1,1));ScrollView sc=new ScrollView(this);sc.setOverScrollMode(View.OVER_SCROLL_NEVER);items=new LinearLayout(this);items.setOrientation(1);sc.addView(items);root.addView(sc,new LinearLayout.LayoutParams(-1,0,1));catFilter.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener(){public void onNothingSelected(android.widget.AdapterView<?> p){}public void onItemSelected(android.widget.AdapterView<?> p,View v,int pos,long id){categoryFilter=cats.get(pos);list(search.getText().toString());}});search.addTextChangedListener(new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){list(s.toString());}public void afterTextChanged(Editable e){}});list("");}
 
  int dp(int n){return (int)(n*getResources().getDisplayMetrics().density+0.5f);}
  TextView dashboardText(String value,int size,boolean bold){TextView t=text(value,size);t.setPadding(dp(10),dp(8),dp(10),dp(8));if(bold)t.setTypeface(null,1);return t;}
@@ -69,47 +69,47 @@ public class MainActivity extends Activity {
  void home(){
   items=null;sectionOpen=false;editor=null;titleEditor=null;categoryPicker=null;selected=null;maktabah=false;
   base("DinNote");
-  ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);
-  scroll.setOverScrollMode(View.OVER_SCROLL_NEVER);
+  ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);scroll.setVerticalScrollBarEnabled(false);
+  scroll.setOverScrollMode(View.OVER_SCROLL_NEVER);scroll.setSmoothScrollingEnabled(true);
   root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
   LinearLayout page=new LinearLayout(this);page.setOrientation(1);
-  page.setPadding(dp(16),dp(18),dp(16),dp(28));scroll.addView(page);
+  page.setPadding(dp(16),dp(20),dp(16),dp(32));scroll.addView(page);
   TextView recent=dashboardText("Baru dilihat  ▾",15,true);
-  recent.setBackground(rounded(0xfff6f8fa,0xffd0d7de,12));
-  LinearLayout.LayoutParams rp=new LinearLayout.LayoutParams(-2,-2);rp.bottomMargin=dp(20);
+  recent.setBackground(rounded(0xfff6f8fa,0xffd0d7de,10));
+  LinearLayout.LayoutParams rp=new LinearLayout.LayoutParams(-2,-2);rp.bottomMargin=dp(22);
   page.addView(recent,rp);
-  recent.setContentDescription("Pilih paparan: baru dilihat, semua nota atau Maktabah");
+  recent.setContentDescription("Pilih paparan: baru dilihat, semua nota atau Maktabah");recent.setFocusable(true);
   recent.setOnClickListener(v->new AlertDialog.Builder(this).setItems(new String[]{"Baru dilihat","Semua nota","Maktabah"},(d,i)->{if(i==2)openSection(true);else openSection(false);}).show());
-  TextView heading=dashboardText("Baru dilihat",22,true);heading.setPadding(dp(2),dp(8),0,dp(16));page.addView(heading);
-  EditText search=new EditText(this);search.setSingleLine(true);search.setTextSize(16);
+  TextView heading=dashboardText("Baru dilihat",22,true);heading.setPadding(dp(2),dp(8),0,dp(18));page.addView(heading);
+  EditText search=new EditText(this);search.setSingleLine(true);search.setTextSize(15);
   search.setHint("Cari nota atau kitab");search.setContentDescription("Carian nota dan kitab");
   search.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);
   search.setInputType(android.text.InputType.TYPE_CLASS_TEXT);
-  search.setPadding(dp(14),dp(10),dp(14),dp(10));
+  search.setPadding(dp(16),dp(10),dp(16),dp(10));
   search.setBackground(rounded(Color.WHITE,0xffd0d7de,11));
-  LinearLayout.LayoutParams sp=new LinearLayout.LayoutParams(-1,dp(52));sp.bottomMargin=dp(18);
+  LinearLayout.LayoutParams sp=new LinearLayout.LayoutParams(-1,dp(52));sp.bottomMargin=dp(20);
   page.addView(search,sp);
   search.setOnEditorActionListener((v,id,event)->{String q=search.getText().toString().trim();if(q.isEmpty()){search.setError("Masukkan kata carian");return true;}openSection(false);list(q);return true;});
-  LinearLayout card=new LinearLayout(this);card.setOrientation(1);
+  LinearLayout card=new LinearLayout(this);card.setOrientation(1);card.setClipToPadding(false);
   card.setBackground(rounded(Color.WHITE,0xffd0d7de,12));
   LinearLayout.LayoutParams cp=new LinearLayout.LayoutParams(-1,-2);page.addView(card,cp);
-  TextView count=dashboardText("Nota dan Maktabah",16,true);
+  TextView count=dashboardText("Nota dan Maktabah",15,true);
   count.setBackgroundColor(0xfff6f8fa);card.addView(count);
   View divider=new View(this);divider.setBackgroundColor(0xffd0d7de);
   card.addView(divider,new LinearLayout.LayoutParams(-1,dp(1)));
-  LinearLayout tiles=new LinearLayout(this);tiles.setPadding(dp(10),dp(18),dp(10),dp(16));card.addView(tiles);
+  LinearLayout tiles=new LinearLayout(this);tiles.setPadding(dp(12),dp(18),dp(12),dp(18));card.addView(tiles);
   TextView note=dashboardText("▤  Nota",18,true);
   TextView book=dashboardText("▤  Maktabah",18,true);
-  note.setGravity(Gravity.CENTER);book.setGravity(Gravity.CENTER);
+  note.setGravity(Gravity.CENTER);book.setGravity(Gravity.CENTER);note.setFocusable(true);book.setFocusable(true);
   note.setBackground(rounded(0xfff6f8fa,0xffd0d7de,10));
   book.setBackground(rounded(0xfff6f8fa,0xffd0d7de,10));
-  LinearLayout.LayoutParams a=new LinearLayout.LayoutParams(0,dp(100),1);a.rightMargin=dp(6);
-  LinearLayout.LayoutParams b=new LinearLayout.LayoutParams(0,dp(100),1);b.leftMargin=dp(6);
+  LinearLayout.LayoutParams a=new LinearLayout.LayoutParams(0,dp(96),1);a.rightMargin=dp(6);
+  LinearLayout.LayoutParams b=new LinearLayout.LayoutParams(0,dp(96),1);b.leftMargin=dp(6);
   tiles.addView(note,a);tiles.addView(book,b);
   note.setContentDescription("Buka senarai Nota");book.setContentDescription("Buka Maktabah");
   note.setOnClickListener(v->openSection(false));book.setOnClickListener(v->openSection(true));
   LinearLayout recentNotes=new LinearLayout(this);recentNotes.setOrientation(1);
-  recentNotes.setPadding(dp(12),dp(12),dp(12),dp(28));card.addView(recentNotes);
+  recentNotes.setPadding(dp(14),dp(14),dp(14),dp(28));card.addView(recentNotes);
   ArrayList<String> keys=new ArrayList<>();
   for(String k:prefs.getAll().keySet())if(k.startsWith("n_"))keys.add(k);
   Collections.sort(keys,Collections.reverseOrder());
@@ -119,7 +119,7 @@ public class MainActivity extends Activity {
    TextView empty=dashboardText("Belum ada nota dilihat",18,true);
    empty.setGravity(Gravity.CENTER);recentNotes.addView(empty);
    TextView hint=dashboardText("Nota anda akan dipaparkan di sini.",14,false);
-   hint.setGravity(Gravity.CENTER);hint.setTextColor(0xff656d76);recentNotes.addView(hint);
+   hint.setGravity(Gravity.CENTER);hint.setTextColor(0xff656d76);hint.setTextSize(13);recentNotes.addView(hint);
   }else{
    for(int i=0;i<Math.min(5,keys.size());i++){
     String k=keys.get(i);String t=prefs.getString("title_"+k,"");
@@ -132,7 +132,7 @@ public class MainActivity extends Activity {
   add.setBackground(rounded(0xfff6f8fa,0xffd0d7de,10));
   LinearLayout.LayoutParams ap=new LinearLayout.LayoutParams(-1,-2);
   ap.topMargin=dp(16);page.addView(add,ap);
-  add.setContentDescription("Cipta nota baharu");
+  add.setContentDescription("Cipta nota baharu");add.setFocusable(true);
   add.setOnClickListener(v->{maktabah=false;edit(null);});
  }
  android.graphics.drawable.GradientDrawable rounded(int fill,int stroke,int radius){
