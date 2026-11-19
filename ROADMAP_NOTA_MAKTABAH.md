@@ -67,7 +67,7 @@ Dokumen ini menyimpan semua 100 cadangan supaya cadangan yang belum dipilih tida
 - [ ] 52. Senarai bernombor dan berbulet — format senarai tersusun.
 - [ ] 53. Indentasi perenggan — laraskan aras senarai dan petikan.
 - [ ] 54. Petikan blok — bezakan nukilan daripada teks biasa.
-- [ ] 55. Masukkan tarikh dan masa — cap masa pada nota.
+- [ ] 55. Masukkan tarikh dan masa — cap masa pada nota. **Status: Kod di-commit, belum diuji APK/pengguna** (`c004c34`); menu editor menyediakan tarikh, masa atau kedua-duanya.
 - [ ] 56. Pautan boleh diklik — buka URL dalam nota.
 - [ ] 57. Lampiran imej — masukkan gambar dalam nota.
 - [ ] 58. Lampiran audio — sertakan rakaman suara dalam nota.
