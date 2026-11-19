@@ -282,7 +282,7 @@ public class MainActivity extends Activity {
     Button back=button();back.setText("← DinNote");back.setTextSize(14);page.addView(back);back.setOnClickListener(v->showHome());
     TextView libraryTitle=text("Maktabah",21);libraryTitle.setTypeface(null,Typeface.BOLD);page.addView(libraryTitle);
     EditText categorySearch=field();categorySearch.setSingleLine(true);categorySearch.setHint("Cari kategori Maktabah…");categorySearch.setContentDescription("Cari kategori Maktabah");page.addView(categorySearch);
-    Button add=button();add.setText("+ Tambah kategori Maktabah");add.setTextColor(accent());page.addView(add);
+    Button add=button();add.setText("+ Tambah kategori Maktabah");add.setContentDescription("Tambah kategori baharu Maktabah");add.setTextColor(accent());page.addView(add);
     add.setOnClickListener(v->promptCategory());
     ScrollView scroll=new ScrollView(this);LinearLayout items=new LinearLayout(this);items.setOrientation(1);scroll.addView(items);page.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
     categorySearch.addTextChangedListener(new TextWatcher(){
