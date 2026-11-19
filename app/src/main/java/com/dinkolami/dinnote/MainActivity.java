@@ -90,7 +90,7 @@ public class MainActivity extends Activity {
     e.setBackground(rounded(cardSurface(),borderColor(),12));return e;
   }
   TextView text(String value,int size) { TextView t=new TextView(this);t.setText(value);t.setTextSize(size);t.setTextColor(foreground());t.setPadding(10,9,10,9);return t; }
-  LinearLayout column() { LinearLayout l=new LinearLayout(this);l.setOrientation(1);l.setPadding(12,12,12,12);l.setBackgroundColor(surface());return l; }
+  LinearLayout column() { LinearLayout l=new LinearLayout(this);l.setOrientation(1);l.setPadding(16,14,16,14);l.setBackgroundColor(surface());return l; }
   void showHome() {
     flushPendingSave();
     editingBook=false;editingNote=false;saveIndicator=null;
