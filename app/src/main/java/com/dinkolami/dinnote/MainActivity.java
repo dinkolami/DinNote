@@ -31,7 +31,7 @@ public class MainActivity extends Activity {
   header.setPadding(dp(8),dp(4),dp(8),dp(4));header.setBackgroundColor(0xfff6f8fa);
   ImageView menu=headerIcon("☰",0xff102b25,"Buka menu DinNote");header.addView(menu);
   menu.setOnClickListener(v->new AlertDialog.Builder(this).setItems(new String[]{"Halaman utama","Nota","Maktabah","Kategori"},(d,i)->{if(i==0)home();else if(i==3)manageCategories();else openSection(i==2);}).show());
-  ImageView logo=new ImageView(this);logo.setImageResource(R.drawable.dinnote_header_logo);logo.setScaleType(ImageView.ScaleType.FIT_CENTER);logo.setContentDescription("Logo DinNote");logo.setClickable(true);
+  ImageView logo=new ImageView(this);logo.setImageBitmap(transparentHeaderLogo());logo.setScaleType(ImageView.ScaleType.FIT_CENTER);logo.setContentDescription("Logo DinNote");logo.setClickable(true);
   LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(dp(40),dp(40));lp.leftMargin=dp(7);lp.rightMargin=dp(5);header.addView(logo,lp);
   logo.setOnClickListener(v->home());
   TextView name=text("DinNote",18);name.setTypeface(android.graphics.Typeface.DEFAULT,android.graphics.Typeface.NORMAL);name.setTextColor(0xff123e2b);
@@ -48,6 +48,38 @@ public class MainActivity extends Activity {
   root.addView(header,new LinearLayout.LayoutParams(-1,dp(62)));
   View border=new View(this);border.setBackgroundColor(0xffd0d7de);
   root.addView(border,new LinearLayout.LayoutParams(-1,dp(1)));
+ }
+ android.graphics.Bitmap transparentHeaderLogo(){
+  android.graphics.Bitmap original=android.graphics.BitmapFactory.decodeResource(getResources(),R.drawable.dinnote_header_logo);
+  if(original==null)return null;
+  android.graphics.Bitmap result=original.copy(android.graphics.Bitmap.Config.ARGB_8888,true);
+  int w=result.getWidth(),h=result.getHeight(),count=w*h;
+  int[] pixels=new int[count];result.getPixels(pixels,0,w,0,0,w,h);
+  boolean[] seen=new boolean[count];int[] queue=new int[count];int head=0,tail=0;
+  for(int x=0;x<w;x++){
+   int top=x,bottom=(h-1)*w+x;
+   if(!seen[top]&&lightBackground(pixels[top])){seen[top]=true;queue[tail++]=top;}
+   if(!seen[bottom]&&lightBackground(pixels[bottom])){seen[bottom]=true;queue[tail++]=bottom;}
+  }
+  for(int y=0;y<h;y++){
+   int left=y*w,right=left+w-1;
+   if(!seen[left]&&lightBackground(pixels[left])){seen[left]=true;queue[tail++]=left;}
+   if(!seen[right]&&lightBackground(pixels[right])){seen[right]=true;queue[tail++]=right;}
+  }
+  while(head<tail){
+   int pos=queue[head++],x=pos%w,y=pos/w;
+   pixels[pos]=0x00000000;
+   int[] neighbors={x>0?pos-1:-1,x<w-1?pos+1:-1,y>0?pos-w:-1,y<h-1?pos+w:-1};
+   for(int next:neighbors)if(next>=0&&!seen[next]&&lightBackground(pixels[next])){
+    seen[next]=true;queue[tail++]=next;
+   }
+  }
+  result.setPixels(pixels,0,w,0,0,w,h);
+  return result;
+ }
+ boolean lightBackground(int color){
+  return android.graphics.Color.alpha(color)<20||
+   (android.graphics.Color.red(color)>237&&android.graphics.Color.green(color)>237&&android.graphics.Color.blue(color)>237);
  }
  ImageView headerIcon(String symbol,int color,String description){
   int px=dp(34);android.graphics.Bitmap bitmap=android.graphics.Bitmap.createBitmap(px,px,android.graphics.Bitmap.Config.ARGB_8888);
