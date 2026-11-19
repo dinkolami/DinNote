@@ -502,6 +502,11 @@ public class MainActivity extends Activity {
 
  void startBackup(){
   save();
+  // Flush pending asynchronous preference writes before reading a consistent backup snapshot.
+  if(!prefs.edit().commit()){
+   Toast.makeText(this,"Backup dibatalkan: gagal menyimpan data terkini",Toast.LENGTH_LONG).show();
+   return;
+  }
   Intent intent=new Intent(Intent.ACTION_CREATE_DOCUMENT);
   intent.addCategory(Intent.CATEGORY_OPENABLE);
   intent.setType("application/json");
