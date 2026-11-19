@@ -114,7 +114,7 @@ public class MainActivity extends Activity {
     libraryMenu.setContentDescription("Buka kategori kitab Maktabah");libraryMenu.setOnClickListener(v->showLibrary());
     notesMenu.setContentDescription("Buka kategori Nota peribadi");notesMenu.setOnClickListener(v->showNoteCategories());
     // Front-page pinned notes: compact, accessible, and independent of category filtering.
-    LinearLayout pinnedSection=new LinearLayout(this);pinnedSection.setOrientation(1);pinnedSection.setContentDescription("Bahagian nota penting dipin pada halaman utama");
+    LinearLayout pinnedSection=new LinearLayout(this);pinnedSection.setOrientation(1);pinnedSection.setContentDescription("Bahagian nota penting dipin pada halaman utama");pinnedSection.setPadding(0,6,0,8);
     homeContent.addView(pinnedSection);
     try(Cursor pinnedNotes=db.getReadableDatabase().rawQuery(
       "SELECT n.id,n.title,n.body,n.updated,n.category_id FROM notes n WHERE n.pinned=1 ORDER BY n.updated DESC,n.id DESC",null)){
@@ -125,15 +125,15 @@ public class MainActivity extends Activity {
         pinnedHeader.setGravity(Gravity.CENTER_VERTICAL);
         pinnedSection.addView(pinnedHeader);
         TextView pinnedHeading=text("📌 Nota Dipin ("+pinnedCount+")",17);
-        pinnedHeading.setTypeface(null,Typeface.BOLD);pinnedHeading.setContentDescription("Jumlah nota dipin: "+pinnedCount);
+        pinnedHeading.setTypeface(null,Typeface.BOLD);pinnedHeading.setContentDescription("Jumlah nota dipin: "+pinnedCount);pinnedHeading.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
         pinnedHeader.addView(pinnedHeading,new LinearLayout.LayoutParams(0,-2,1));
         Button togglePinned=button();
         boolean collapsed=getPreferences(MODE_PRIVATE).getBoolean("pinnedCollapsed",false);
-        togglePinned.setText(collapsed?"Papar":"Sembunyi");
+        togglePinned.setText(collapsed?"Papar":"Sembunyi");togglePinned.setMinWidth(88);
         togglePinned.setContentDescription(collapsed?"Paparkan nota dipin":"Sembunyikan nota dipin");
         pinnedHeader.addView(togglePinned,new LinearLayout.LayoutParams(-2,-2));
         LinearLayout pinnedItems=new LinearLayout(this);
-        pinnedItems.setOrientation(1);pinnedSection.addView(pinnedItems);
+        pinnedItems.setOrientation(1);pinnedItems.setContentDescription("Senarai nota dipin");pinnedSection.addView(pinnedItems);
         pinnedItems.setVisibility(collapsed?View.GONE:View.VISIBLE);
         togglePinned.setOnClickListener(v->{
           boolean hide=pinnedItems.getVisibility()==View.VISIBLE;
@@ -160,13 +160,13 @@ public class MainActivity extends Activity {
           LinearLayout.LayoutParams cardParams=new LinearLayout.LayoutParams(0,-2,1);
           cardParams.setMargins(0,4,6,4);pinnedRow.addView(pinnedCard,cardParams);
           TextView pinnedTitleView=text("📌 "+pinnedTitle,15);
-          pinnedTitleView.setTypeface(null,Typeface.BOLD);
+          pinnedTitleView.setTypeface(null,Typeface.BOLD);pinnedTitleView.setTextColor(foreground());
           pinnedTitleView.setMaxLines(2);pinnedTitleView.setTextIsSelectable(false);pinnedTitleView.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
           pinnedTitleView.setEllipsize(android.text.TextUtils.TruncateAt.END);
           pinnedCard.addView(pinnedTitleView);
           if(!pinnedBody.isEmpty()){
             TextView preview=text(pinnedBody.length()>110?pinnedBody.substring(0,110)+"…":pinnedBody,13);
-            preview.setMaxLines(2);preview.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
+            preview.setMaxLines(2);preview.setTextColor(foreground());preview.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
             preview.setEllipsize(android.text.TextUtils.TruncateAt.END);
             pinnedCard.addView(preview);
           }
@@ -175,13 +175,13 @@ public class MainActivity extends Activity {
           long updated=pinnedNotes.getLong(3);
           String dateLabel=updated>0?dateFormat.format(new java.util.Date(updated)).toString():"";
           TextView meta=text(category+(dateLabel.isEmpty()?"":" · "+dateLabel),12);
-          meta.setTextColor(dark()?0xFF8B949E:0xFF656D76);
+          meta.setTextColor(dark()?0xFF8B949E:0xFF656D76);meta.setMaxLines(1);meta.setEllipsize(android.text.TextUtils.TruncateAt.END);
           pinnedCard.addView(meta);
-          pinnedCard.setContentDescription("Buka nota dipin "+pinnedTitle);
-          pinnedCard.setClickable(true);pinnedCard.setFocusable(true);pinnedCard.setMinimumHeight(56);
+          pinnedCard.setContentDescription("Buka nota dipin "+pinnedTitle+" dalam kategori "+category);
+          pinnedCard.setClickable(true);pinnedCard.setFocusable(true);pinnedCard.setMinimumHeight(56);pinnedCard.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);
           pinnedCard.setOnClickListener(v->edit(pinnedId));
           Button unpin=button();unpin.setText("📌");
-          unpin.setContentDescription("Nyahpin "+pinnedTitle);
+          unpin.setContentDescription("Nyahpin "+pinnedTitle+" daripada halaman utama");
           pinnedRow.addView(unpin,new LinearLayout.LayoutParams(56,-2));
           unpin.setOnClickListener(v->{
             db.getWritableDatabase().execSQL("UPDATE notes SET pinned=0 WHERE id=?",new Object[]{pinnedId});
