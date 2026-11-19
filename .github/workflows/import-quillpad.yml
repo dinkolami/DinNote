@@ -4,12 +4,17 @@ on:
   push:
     branches: [quillpad-migration]
 
+concurrency:
+  group: dinnote-quillpad-migration-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: write
 
 jobs:
   import:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Check out isolated migration branch
         uses: actions/checkout@v4
@@ -51,6 +56,7 @@ jobs:
   build:
     needs: import
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - name: Check out imported Quillpad source
         uses: actions/checkout@v4
