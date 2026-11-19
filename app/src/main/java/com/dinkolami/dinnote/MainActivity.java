@@ -546,6 +546,9 @@ public class MainActivity extends Activity {
    try{
     org.json.JSONObject obj=new org.json.JSONObject();
     obj.put("format","DinNote-backup-v1");
+    // Informational metadata for future SQLite migration; v1 backups stay compatible.
+    obj.put("storage","SharedPreferences");
+    obj.put("exported_at",System.currentTimeMillis());
     org.json.JSONObject values=new org.json.JSONObject();
     for(java.util.Map.Entry<String,?> entry:prefs.getAll().entrySet()){
      Object value=entry.getValue();
