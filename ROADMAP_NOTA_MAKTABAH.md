@@ -133,6 +133,14 @@ Dokumen ini menyimpan semua 100 cadangan supaya cadangan yang belum dipilih tida
 ## Cadangan tambahan selepas 100
 - [ ] **101. Imbas Kitab ke Teks (OCR Arab dan Rumi)** — ambil foto dengan kamera atau pilih imej galeri; kenal pasti tulisan Arab (termasuk harakat setakat kemampuan OCR), Melayu/Rumi dan Inggeris; paparkan hasil untuk semakan dan pembetulan sebelum disimpan sebagai teks boleh edit/cari dalam Maktabah. **Status: Dalam proses — pemilihan foto/pratonton (`7dd48b5`) dan OCR Rumi dengan semakan sebelum masukkan teks (`fb72f67`) telah di-commit. Aliran OCR Arab melalui aplikasi luar dan import teks papan klip dengan semakan (`b3866e3`) sudah di-commit; OCR Arab dalaman, penyimpanan imej, binaan APK dan ujian pengguna belum siap.** Utamakan pemprosesan pada peranti jika enjin OCR menyokong bahasa yang diperlukan; jika tidak, nilai alternatif dengan persetujuan pengguna. Jangan ubah reka bentuk asal, status bar atau navigation bar Android.
 
+## Penilaian teknikal OCR Arab dalaman (cadangan 101)
+- **Enjin calon:** Tesseract 5 melalui pustaka Android Tesseract4Android; model bahasa rasmi `ara.traineddata` daripada `tessdata_fast` (asas) atau `tessdata_best` (ujian ketepatan). Tesseract menyenaraikan model Arab, tetapi ketepatan harakat belum dijamin.
+- **Status keputusan:** Penilaian dibuat; **belum diintegrasikan**. Jangan tambah dependensi atau model besar sebelum menyemak keserasian Gradle/Android, lesen, saiz APK, sumber model dan ujian pada telefon sebenar.
+- **Reka bentuk:** Kekalkan pilihan OCR Rumi dan aliran OCR Arab melalui aplikasi luar sementara. Apabila OCR Arab dalaman siap, paparkan hasil dalam editor semakan sebelum simpan; jangan timpa teks asal secara automatik.
+- **Ujian wajib:** halaman kitab Arab berbaris/tanpa baris, campuran Arab-Rumi, halaman senget/kabur, RTL, kesalahan huruf mirip, titik dan harakat, penggunaan memori Fold6, mod tanpa internet, dan pemasangan/kemas kini APK.
+- **Privasi:** Utamakan proses OCR setempat; jika model perlu dimuat turun, maklumkan saiz dan minta persetujuan. Jangan hantar foto ke pelayan tanpa pilihan jelas pengguna.
+- **Rujukan:** https://tesseract-ocr.github.io/tessdoc/Data-Files ; https://f-droid.org/packages/io.github.subhamtyagi.ocr/
+
 ## Peraturan penjagaan pelan induk
 - Dokumen ini ialah rujukan tetap untuk **100 cadangan bernombor 1–100**; jangan padam, tukar nombor, atau anggap cadangan berbaki terbatal tanpa persetujuan pengguna.
 - Perincian pelaksanaan untuk nombor 51–100 hendaklah mengikut perbincangan pengguna: editor nota, pengurusan Maktabah, pengajian Arab/Melayu, keselamatan data, dan pengalaman pengguna.
