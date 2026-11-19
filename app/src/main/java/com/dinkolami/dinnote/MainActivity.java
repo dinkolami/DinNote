@@ -287,7 +287,7 @@ public class MainActivity extends Activity {
     EditText categorySearch=field();categorySearch.setSingleLine(true);categorySearch.setSelectAllOnFocus(false);categorySearch.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);categorySearch.setHint("Cari kategori Maktabah…");categorySearch.setContentDescription("Cari kategori Maktabah");categorySearch.setTextSize(15);page.addView(categorySearch);
     Button add=button();add.setText("+ Tambah kategori Maktabah");add.setContentDescription("Tambah kategori baharu Maktabah");add.setTextColor(accent());page.addView(add);
     add.setOnClickListener(v->promptCategory());
-    ScrollView scroll=new ScrollView(this);LinearLayout items=new LinearLayout(this);items.setOrientation(1);scroll.addView(items);page.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
+    ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);LinearLayout items=new LinearLayout(this);items.setOrientation(1);scroll.addView(items);page.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
     categorySearch.addTextChangedListener(new TextWatcher(){
       public void beforeTextChanged(CharSequence text,int start,int count,int after){}
       public void onTextChanged(CharSequence text,int start,int before,int count){populateLibraryCategories(items,text.toString());}
