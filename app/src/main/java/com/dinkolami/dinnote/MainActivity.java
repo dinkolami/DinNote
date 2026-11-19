@@ -576,6 +576,18 @@ public class MainActivity extends Activity {
    if(!"DinNote-backup-v1".equals(backup.optString("format")))throw new java.io.IOException("Format sandaran tidak sah");
    org.json.JSONObject values=backup.getJSONObject("data");
    if(values.length()==0)throw new java.io.IOException("Sandaran kosong; data sedia ada tidak diubah");
+   // Reject unrelated JSON before clearing the existing DinNote preferences.
+   boolean recognized=false;
+   java.util.Iterator<String> backupKeys=values.keys();
+   while(backupKeys.hasNext()){
+    String key=backupKeys.next();
+    if(key.equals("categories_n")||key.equals("categories_m")||
+      key.startsWith("n_")||key.startsWith("m_")||
+      key.startsWith("title_n_")||key.startsWith("title_m_")){
+     recognized=true;break;
+    }
+   }
+   if(!recognized)throw new java.io.IOException("Fail tidak mengandungi data DinNote; data sedia ada tidak diubah");
    java.util.Iterator<String> validationKeys=values.keys();
    while(validationKeys.hasNext()){
     String key=validationKeys.next();
