@@ -35,9 +35,10 @@ public class MainActivity extends Activity {
     if(themeMode==2)return true;
     return (getResources().getConfiguration().uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK)==android.content.res.Configuration.UI_MODE_NIGHT_YES;
   }
-  int surface(){return dark()?0xFF0B1D19:0xFFF7FAF6;}
-  int foreground(){return dark()?0xFFE7F4EB:0xFF123C31;}
-  int borderColor(){return dark()?0xFF285044:0xFFD6E7DB;}
+  boolean pearlPalette(){return getPreferences(MODE_PRIVATE).getBoolean("pearlTurquoiseGold",true);}
+  int surface(){return dark()?0xFF0B1D19:(pearlPalette()?0xFFFAFBF8:0xFFF7FAF6);}
+  int foreground(){return dark()?0xFFE7F4EB:(pearlPalette()?0xFF234B49:0xFF123C31);}
+  int borderColor(){return dark()?0xFF285044:(pearlPalette()?0xFFD9E6E1:0xFFD6E7DB);}
   int background = Color.rgb(247,250,246);
   void applyAppearance(){
     // Theme only the app content. Android owns the top status bar and bottom navigation bar.
@@ -64,6 +65,8 @@ public class MainActivity extends Activity {
     Button editorSpacing=button();editorSpacing.setText("↕  Jarak baris editor  ·  "+(getPreferences(MODE_PRIVATE).getBoolean("editorComfortSpacing",true)?"Selesa":"Padat"));
     options.addView(editorSpacing);
     editorSpacing.setOnClickListener(v->{boolean current=getPreferences(MODE_PRIVATE).getBoolean("editorComfortSpacing",true);getPreferences(MODE_PRIVATE).edit().putBoolean("editorComfortSpacing",!current).apply();showSettings();});
+    Button palette=button();palette.setText("✦  Palet Pearl • Gold • Turquoise  ·  "+(pearlPalette()?"Aktif":"Asal"));
+    options.addView(palette);palette.setOnClickListener(v->{getPreferences(MODE_PRIVATE).edit().putBoolean("pearlTurquoiseGold",!pearlPalette()).apply();applyAppearance();showSettings();});
     Button sort=button();sort.setText("↕  Susunan nota  ·  "+new String[]{"Terkini","Terlama","Tajuk A-Z"}[Math.max(0,Math.min(noteSort,2))]);
     options.addView(sort);sort.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Susunan nota")
       .setSingleChoiceItems(new String[]{"Terkini","Terlama","Tajuk A-Z"},Math.max(0,Math.min(2,noteSort)),(dialog,which)->{
@@ -471,7 +474,7 @@ public class MainActivity extends Activity {
     retry.setOnClickListener(v->{try {db=new DB(this);db.getWritableDatabase();showHome();}catch(Exception error){showStartupError(error);}});
   }
   int cardSurface(){return dark()?0xFF161B22:0xFFFFFFFF;}
-  int accent(){return dark()?0xFF68C7A1:0xFF087C59;}
+  int accent(){return dark()?0xFF68C7A1:(pearlPalette()?0xFF008F8B:0xFF087C59);}
   android.graphics.drawable.GradientDrawable rounded(int color,int stroke,int radius){
     android.graphics.drawable.GradientDrawable d=new android.graphics.drawable.GradientDrawable();
     d.setColor(color);d.setCornerRadius(radius);d.setStroke(1,stroke);return d;
@@ -549,6 +552,7 @@ public class MainActivity extends Activity {
     header.setBackground(rounded(cardSurface(),borderColor(),16));
     header.setPadding(12,6,8,6);
     header.setElevation(2f*getResources().getDisplayMetrics().density);
+    header.setContentDescription("Header DinNote, kekal di atas semasa skrol");
     header.setClipToPadding(false);
     TextView appearance=text("⚙",21);appearance.setTextColor(accent());appearance.setBackground(rounded(cardSurface(),borderColor(),14));appearance.setGravity(Gravity.CENTER);appearance.setTextSize(20);appearance.setContentDescription("Buka tetapan DinNote");appearance.setAccessibilityHeading(false);appearance.setTooltipText("Tetapan");appearance.setSoundEffectsEnabled(true);appearance.setFocusable(true);appearance.setClickable(true);appearance.setMinWidth(48);appearance.setMinHeight(48);appearance.setHapticFeedbackEnabled(true);appearance.setPadding(8,8,8,8);appearance.setElevation(1f);appearance.setStateListAnimator(null);appearance.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);appearance.setOnClickListener(v->showSettings());header.addView(appearance);
     View headerDivider=new View(this);headerDivider.setBackgroundColor(borderColor());headerDivider.setContentDescription("Pemisah tajuk");LinearLayout.LayoutParams hd=new LinearLayout.LayoutParams(-1,1);hd.setMargins(0,12,0,18);root.addView(headerDivider,hd);
@@ -562,17 +566,17 @@ public class MainActivity extends Activity {
     hero.setPadding(20,18,20,18);
     android.graphics.drawable.GradientDrawable heroBackground=new android.graphics.drawable.GradientDrawable(
       android.graphics.drawable.GradientDrawable.Orientation.TL_BR,
-      new int[]{0xFF064B3B,0xFF08765B,0xFF0C614B});
+      pearlPalette()?new int[]{0xFF075D60,0xFF087C78,0xFF0D6967}:new int[]{0xFF064B3B,0xFF08765B,0xFF0C614B});
     heroBackground.setCornerRadius(18f*getResources().getDisplayMetrics().density);
-    heroBackground.setStroke((int)(1*getResources().getDisplayMetrics().density),0xFFC9A65A);
+    heroBackground.setStroke((int)(1*getResources().getDisplayMetrics().density),pearlPalette()?0xFFE5C57D:0xFFC9A65A);
     hero.setBackground(heroBackground);
     hero.setElevation(1f*getResources().getDisplayMetrics().density);
     LinearLayout.LayoutParams heroParams=new LinearLayout.LayoutParams(-1,-2);
     heroParams.setMargins(0,4,0,18);
     homeContent.addView(hero,heroParams);
-    TextView emblem=text("✦  📖  ✦",27);
+    TextView emblem=text("✧  📖  ✧",27);
     emblem.setGravity(Gravity.CENTER);
-    emblem.setTextColor(0xFFF3DCA1);
+    emblem.setTextColor(pearlPalette()?0xFFF5E7C7:0xFFF3DCA1);
     hero.addView(emblem);
     TextView heroName=text("DinNote",31);
     heroName.setTypeface(Typeface.SERIF,Typeface.BOLD);
@@ -582,12 +586,12 @@ public class MainActivity extends Activity {
     hero.addView(heroName);
     TextView heroCaption=text("Catatan peribadi • Perpustakaan ilmu",14);
     heroCaption.setGravity(Gravity.CENTER);
-    heroCaption.setTextColor(0xFFF3DCA1);
+    heroCaption.setTextColor(pearlPalette()?0xFFE8F7F1:0xFFF3DCA1);
     heroCaption.setPadding(0,0,0,8);
     hero.addView(heroCaption);
     TextView heroRule=text("◆ ───────── ◆",12);
     heroRule.setGravity(Gravity.CENTER);
-    heroRule.setTextColor(0xFFD7B56B);
+    heroRule.setTextColor(pearlPalette()?0xFFE5C57D:0xFFD7B56B);
     hero.addView(heroRule);
     TextView welcome=text("DINNOTE  /  NOTA & MAKTABAH",11);
     welcome.setLetterSpacing(0.12f);welcome.setTypeface(null,Typeface.BOLD);
