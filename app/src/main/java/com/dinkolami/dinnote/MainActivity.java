@@ -29,8 +29,8 @@ public class MainActivity extends Activity {
   setContentView(root);applySystemBarInsets(root);
   LinearLayout header=new LinearLayout(this);header.setGravity(Gravity.CENTER_VERTICAL);
   header.setPadding(dp(8),dp(4),dp(8),dp(4));header.setBackgroundColor(0xfff6f8fa);
-  ImageView menu=headerIcon("☰",0xff102b25,"Buka menu DinNote");header.addView(menu);
-  menu.setOnClickListener(v->new AlertDialog.Builder(this).setItems(new String[]{"Halaman utama","Nota","Maktabah","Kategori"},(d,i)->{if(i==0)home();else if(i==3)manageCategories();else openSection(i==2);}).show());
+  ImageView menu=headerIcon("⌂",0xff102b25,"Halaman utama DinNote");header.addView(menu);
+  menu.setOnClickListener(v->home());
   ImageView logo=new ImageView(this);logo.setImageBitmap(transparentHeaderLogo());logo.setScaleType(ImageView.ScaleType.FIT_CENTER);logo.setContentDescription("Logo DinNote");logo.setClickable(true);
   LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(dp(40),dp(40));lp.leftMargin=dp(7);lp.rightMargin=dp(5);header.addView(logo,lp);
   logo.setOnClickListener(v->home());
