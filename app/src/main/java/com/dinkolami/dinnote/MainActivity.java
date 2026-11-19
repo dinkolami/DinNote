@@ -102,7 +102,7 @@ public class MainActivity extends Activity {
     // Two equal-width, minimal home cards; keep Android system bars untouched.
     LinearLayout homeCards=new LinearLayout(this);homeCards.setOrientation(LinearLayout.HORIZONTAL);
     homeCards.setGravity(Gravity.CENTER_VERTICAL);root.addView(homeCards);
-    Button notesMenu=button();notesMenu.setText("▤\nNota\nCatatan peribadi");notesMenu.setTextColor(accent());notesMenu.setTypeface(null,Typeface.BOLD);
+    Button notesMenu=button();notesMenu.setText("▤\nNota\nNota peribadi");notesMenu.setTextColor(accent());notesMenu.setTypeface(null,Typeface.BOLD);
     notesMenu.setGravity(Gravity.CENTER);notesMenu.setMinHeight(124);
     Button libraryMenu=button();libraryMenu.setText("▥\nMaktabah\nKoleksi kitab");libraryMenu.setTextColor(accent());libraryMenu.setTypeface(null,Typeface.BOLD);
     libraryMenu.setGravity(Gravity.CENTER);libraryMenu.setMinHeight(124);
