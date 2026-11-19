@@ -481,6 +481,23 @@ public class MainActivity extends Activity {
     e.setBackground(rounded(cardSurface(),borderColor(),12));return e;
   }
   TextView text(String value,int size) { TextView t=new TextView(this);t.setText(value);t.setTextSize(size);t.setTextColor(foreground());t.setPadding(10,9,10,9);return t; }
+  // Keep editor actions visible above Samsung Keyboard without altering system bars.
+  void enableKeyboardAwareEditor(LinearLayout page) {
+    getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
+    final int left=page.getPaddingLeft(), top=page.getPaddingTop(), right=page.getPaddingRight(), base=page.getPaddingBottom();
+    if(android.os.Build.VERSION.SDK_INT>=30) {
+      page.setOnApplyWindowInsetsListener((view,insets)->{
+        int ime=insets.getInsets(android.view.WindowInsets.Type.ime()).bottom;
+        int nav=insets.getInsets(android.view.WindowInsets.Type.navigationBars()).bottom;
+        boolean visible=insets.isVisible(android.view.WindowInsets.Type.ime());
+        page.setPadding(left,top,right,base+(visible?Math.max(0,ime-nav):0));
+        return insets;
+      });
+      page.requestApplyInsets();
+    } else {
+      getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+    }
+  }
   LinearLayout column() { LinearLayout l=new LinearLayout(this);l.setOrientation(1);l.setPadding(16,14,16,14);l.setBackgroundColor(surface());return l; }
   void showHome() {
     flushPendingSave();
@@ -710,7 +727,7 @@ public class MainActivity extends Activity {
   }
   void edit(int id) {
     flushPendingSave();editingNote=true;
-    LinearLayout page=column();setContentView(page);
+    LinearLayout page=column();setContentView(page);enableKeyboardAwareEditor(page);
     Button back=button();back.setText("← Nota");back.setTextSize(14);back.setContentDescription("Kembali ke halaman Nota");back.setMinHeight(48);page.addView(back);
     saveIndicator=text("Disimpan secara automatik",12);saveIndicator.setContentDescription("Status simpanan automatik");page.addView(saveIndicator);
     final int[] chosenCategory={-1};
@@ -836,7 +853,7 @@ public class MainActivity extends Activity {
 
   void editBook(int id,int categoryId,String categoryName){
     flushPendingSave();editingBook=true;activeCategoryId=categoryId;activeCategoryName=categoryName;
-    LinearLayout page=column();setContentView(page);
+    LinearLayout page=column();setContentView(page);enableKeyboardAwareEditor(page);
     Button back=button();back.setText("← Maktabah");back.setContentDescription("Kembali ke senarai kitab");back.setMinHeight(48);page.addView(back);
     saveIndicator=text("Disimpan secara automatik",12);saveIndicator.setContentDescription("Status simpanan automatik kitab");page.addView(saveIndicator);
     EditText title=field();title.setContentDescription("Tajuk kitab");title.setHint("Tajuk kitab");title.setSingleLine(true);title.setFilters(new InputFilter[]{new InputFilter.LengthFilter(200)});title.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_NEXT);title.setTextSize(17);title.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);title.setSelectAllOnFocus(false);page.addView(title);
