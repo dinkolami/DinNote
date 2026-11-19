@@ -49,9 +49,9 @@ public class MainActivity extends Activity {
     LinearLayout page=column();setContentView(page);
     Button back=button();back.setText("← DinNote");back.setContentDescription("Kembali ke halaman utama");
     page.addView(back);back.setOnClickListener(v->showHome());
-    TextView heading=text("⚙ Tetapan DinNote",21);heading.setTypeface(null,Typeface.BOLD);page.addView(heading);
+    TextView heading=text("⚙  Tetapan DinNote",21);heading.setTypeface(null,Typeface.BOLD);page.addView(heading);
     TextView subtitle=text("Penampilan • Editor • Nota • Data",13);page.addView(subtitle);
-    ScrollView scroll=new ScrollView(this);scroll.setFillViewport(false);scroll.setVerticalScrollBarEnabled(true);scroll.setClipToPadding(false);page.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
+    ScrollView scroll=new ScrollView(this);scroll.setSmoothScrollingEnabled(true);scroll.setFillViewport(false);scroll.setVerticalScrollBarEnabled(true);scroll.setClipToPadding(false);page.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
     LinearLayout options=new LinearLayout(this);options.setOrientation(1);scroll.addView(options);
     TextView displayTitle=text("PAPARAN",12);displayTitle.setTypeface(null,Typeface.BOLD);options.addView(displayTitle);
     Button appearance=button();appearance.setText("◐  Penampilan  ·  "+new String[]{"Ikut sistem","Cerah","Gelap"}[Math.max(0,Math.min(2,themeMode))]);
@@ -499,7 +499,7 @@ public class MainActivity extends Activity {
   // Keep editor actions visible above Samsung Keyboard without altering system bars.
   // Restrained, consistent editor styling shared by Nota and Maktabah.
   void styleEditorPage(LinearLayout page,EditText title,EditText body,TextView status,Button back){
-    page.setPadding(18,14,18,12);
+    page.setPadding(18,12,18,14);
     title.setTextSize(20);
     title.setLetterSpacing(0.012f);
     title.setTypeface(Typeface.DEFAULT,Typeface.BOLD);
@@ -517,6 +517,8 @@ public class MainActivity extends Activity {
     body.setVerticalScrollBarEnabled(true);
     body.setOverScrollMode(View.OVER_SCROLL_IF_CONTENT_SCROLLS);
     body.setFadingEdgeLength(12);
+    body.setScrollBarFadeDuration(250);
+    body.setScrollbarFadingEnabled(true);
     status.setTextColor(dark()?0xFF8B949E:0xFF57606A);
     status.setTextSize(12);
     status.setGravity(Gravity.END);
@@ -525,6 +527,8 @@ public class MainActivity extends Activity {
     back.setTextColor(foreground());
     back.setBackground(rounded(cardSurface(),borderColor(),10));
     back.setElevation(2f*getResources().getDisplayMetrics().density);
+    back.setMinHeight(48);
+    back.setContentDescription("Kembali ke senarai; perubahan nota disimpan secara automatik");
   }
   void styleEditorTool(Button control){
     control.setMinHeight(48);
@@ -554,10 +558,12 @@ public class MainActivity extends Activity {
     TextView title=text("DinNote",27);title.setLetterSpacing(-0.03f);title.setPadding(2,9,12,9);title.setTypeface(null,Typeface.BOLD);title.setTextColor(foreground());title.setContentDescription("DinNote halaman utama");title.setElegantTextHeight(true);title.setMaxLines(1);title.setTextDirection(View.TEXT_DIRECTION_LOCALE);title.setIncludeFontPadding(false);title.setEllipsize(android.text.TextUtils.TruncateAt.END);header.addView(title,new LinearLayout.LayoutParams(0,-2,1));
     header.setBackground(rounded(cardSurface(),borderColor(),16));
     header.setPadding(12,8,8,8);
-    header.setElevation(2f*getResources().getDisplayMetrics().density);
+    header.setElevation(3f*getResources().getDisplayMetrics().density);
+    header.setMinimumHeight((int)(56*getResources().getDisplayMetrics().density));
     header.setContentDescription("Header DinNote di bawah status bar Android, kekal ketika skrol");
     header.setAlpha(1f);
     header.setClipToPadding(false);
+    header.setClickable(false);
     TextView appearance=text("⚙",21);appearance.setTextColor(accent());appearance.setBackground(rounded(cardSurface(),borderColor(),14));appearance.setGravity(Gravity.CENTER);appearance.setTextSize(20);appearance.setContentDescription("Buka tetapan DinNote");appearance.setAccessibilityHeading(false);appearance.setTooltipText("Tetapan");appearance.setSoundEffectsEnabled(true);appearance.setFocusable(true);appearance.setClickable(true);appearance.setMinWidth(48);appearance.setMinHeight(48);appearance.setHapticFeedbackEnabled(true);appearance.setPadding(8,8,8,8);appearance.setElevation(1f);appearance.setStateListAnimator(null);appearance.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);appearance.setOnClickListener(v->showSettings());header.addView(appearance);
     View headerDivider=new View(this);headerDivider.setBackgroundColor(borderColor());headerDivider.setContentDescription("Pemisah tajuk");LinearLayout.LayoutParams hd=new LinearLayout.LayoutParams(-1,1);hd.setMargins(0,12,0,18);root.addView(headerDivider,hd);
     // Header remains visible while the home content scrolls beneath it.
@@ -566,8 +572,11 @@ public class MainActivity extends Activity {
     final boolean smoothHeaderEnabled=getPreferences(MODE_PRIVATE).getBoolean("smoothHeader",true);
     homeScroll.setOnScrollChangeListener((View.OnScrollChangeListener)(v,scrollX,scrollY,oldX,oldY)->{
       if(smoothHeaderEnabled){
-        float target=1f-Math.min(0.12f,Math.max(0,scrollY)/500f);
-        header.animate().alpha(target).setDuration(160).start();
+        float target=1f-Math.min(0.10f,Math.max(0,scrollY)/600f);
+        if(Math.abs(header.getAlpha()-target)>0.015f){
+          header.animate().cancel();
+          header.animate().alpha(target).setDuration(180).start();
+        }
       } else if(header.getAlpha()!=1f){header.animate().cancel();header.setAlpha(1f);}
     });
     LinearLayout homeContent=new LinearLayout(this);homeContent.setOrientation(1);homeContent.setPadding(0,0,0,32);homeContent.setFocusableInTouchMode(false);homeContent.setClipToPadding(false);homeScroll.addView(homeContent);
