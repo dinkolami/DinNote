@@ -22,13 +22,14 @@ jobs:
         run: |
           set -euo pipefail
           git clone --depth 1 https://github.com/quillpad/quillpad.git /tmp/quillpad-upstream
+          git -C /tmp/quillpad-upstream rev-parse HEAD | tee /tmp/quillpad-upstream-sha
           test -f /tmp/quillpad-upstream/LICENSE || test -f /tmp/quillpad-upstream/LICENSE.md || test -f /tmp/quillpad-upstream/COPYING
       - name: Import source while retaining this migration workflow
         run: |
           set -euo pipefail
           mkdir -p /tmp/dinnote-workflow
           cp .github/workflows/import-quillpad.yml /tmp/dinnote-workflow/import-quillpad.yml
-          rsync -a --delete --exclude='.git/' /tmp/quillpad-upstream/ ./
+          rsync -a --delete --exclude='.git/' --exclude='.github/workflows/' /tmp/quillpad-upstream/ ./
           mkdir -p .github/workflows
           cp /tmp/dinnote-workflow/import-quillpad.yml .github/workflows/import-quillpad.yml
           git config user.name "github-actions[bot]"
@@ -42,6 +43,7 @@ jobs:
         run: |
           test -f settings.gradle || test -f settings.gradle.kts
           test -f gradlew
+          test -f LICENSE || test -f LICENSE.md || test -f COPYING
           echo "Upstream source imported. Rename and integration are separate steps."
 
   build:
