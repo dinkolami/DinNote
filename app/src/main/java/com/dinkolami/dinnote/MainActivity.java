@@ -366,7 +366,8 @@ public class MainActivity extends Activity {
   if(count==0)target.addView(dashboardText(important?"Tiada nota dalam kategori Penting.":"Belum ada nota. Tekan + untuk mencipta nota.",14,false));
  }
 
- boolean matchesSearch(String content,String[] terms){String normalized=content.replaceAll("\\s+"," ").toLowerCase(java.util.Locale.ROOT);for(String term:terms)if(!normalized.contains(term))return false;return true;}\n void list(String filter){filter=filter.trim();String query=filter.replaceAll("\\s+"," ").toLowerCase(java.util.Locale.ROOT);String[] terms=query.isEmpty()?new String[0]:query.split(" ");items.removeAllViews();ArrayList<String> keys=new ArrayList<>();for(String k:prefs.getAll().keySet())if(k.startsWith(maktabah?"m_":"n_")&&prefs.getAll().get(k) instanceof String)keys.add(k);Collections.sort(keys,(a,b)->{
+ boolean matchesSearch(String content,String[] terms){String normalized=content.replaceAll("\\s+"," ").toLowerCase(java.util.Locale.ROOT);for(String term:terms)if(!normalized.contains(term))return false;return true;}
+ void list(String filter){filter=filter.trim();String query=filter.replaceAll("\\s+"," ").toLowerCase(java.util.Locale.ROOT);String[] terms=query.isEmpty()?new String[0]:query.split(" ");items.removeAllViews();ArrayList<String> keys=new ArrayList<>();for(String k:prefs.getAll().keySet())if(k.startsWith(maktabah?"m_":"n_")&&prefs.getAll().get(k) instanceof String)keys.add(k);Collections.sort(keys,(a,b)->{
    boolean pinA=prefs.getBoolean("pinned_"+a,false),pinB=prefs.getBoolean("pinned_"+b,false);
    if(pinA!=pinB)return pinA?-1:1;
    if("Tajuk A–Z".equals(sortMode)){int byTitle=prefs.getString("title_"+a,"").trim().compareToIgnoreCase(prefs.getString("title_"+b,"").trim());if(byTitle!=0)return byTitle;}
