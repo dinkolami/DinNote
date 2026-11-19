@@ -129,6 +129,12 @@ public class MainActivity extends Activity {
  int dp(int n){return (int)(n*getResources().getDisplayMetrics().density+0.5f);}
  TextView dashboardText(String value,int size,boolean bold){TextView t=text(value,size);t.setPadding(dp(10),dp(8),dp(10),dp(8));if(bold)t.setTypeface(null,1);return t;}
  LinearLayout dashboardCard(){LinearLayout c=new LinearLayout(this);c.setOrientation(1);c.setPadding(dp(14),dp(12),dp(14),dp(12));android.graphics.drawable.GradientDrawable bg=new android.graphics.drawable.GradientDrawable();bg.setColor(Color.WHITE);bg.setCornerRadius(dp(17));bg.setStroke(dp(1),0xffe1e5e4);c.setBackground(bg);c.setElevation(dp(3));return c;}
+ void applyTouchFeedback(View view){
+  android.util.TypedValue value=new android.util.TypedValue();
+  if(getTheme().resolveAttribute(android.R.attr.selectableItemBackground,value,true)){
+   view.setForeground(getDrawable(value.resourceId));
+  }
+ }
  void openSection(boolean books){sectionOpen=true;maktabah=books;categoryFilter="Semua";notesPage();}
  void home(){
   items=null;sectionOpen=false;editor=null;titleEditor=null;categoryPicker=null;selected=null;maktabah=false;
@@ -137,47 +143,48 @@ public class MainActivity extends Activity {
   scroll.setOverScrollMode(View.OVER_SCROLL_NEVER);scroll.setSmoothScrollingEnabled(true);
   root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
   LinearLayout page=new LinearLayout(this);page.setOrientation(1);
-  page.setPadding(dp(16),dp(6),dp(16),dp(14));scroll.addView(page);
+  page.setPadding(dp(8),dp(6),dp(8),dp(12));scroll.addView(page);
   TextView recent=dashboardText("Baru dilihat  ▾",15,true);
   recent.setBackground(rounded(0xfff6f8fa,0xffd0d7de,10));
   LinearLayout quickTools=new LinearLayout(this);quickTools.setOrientation(LinearLayout.HORIZONTAL);quickTools.setGravity(Gravity.CENTER_VERTICAL);
-  LinearLayout.LayoutParams quickParams=new LinearLayout.LayoutParams(-1,-2);quickParams.bottomMargin=dp(5);
+  LinearLayout.LayoutParams quickParams=new LinearLayout.LayoutParams(-1,-2);quickParams.bottomMargin=dp(4);
   page.addView(quickTools,quickParams);
-  LinearLayout.LayoutParams rp=new LinearLayout.LayoutParams(-2,dp(44));rp.rightMargin=dp(8);
+  LinearLayout.LayoutParams rp=new LinearLayout.LayoutParams(-2,dp(42));rp.rightMargin=dp(6);
   recent.setGravity(Gravity.CENTER_VERTICAL);recent.setPadding(dp(12),0,dp(12),0);
   quickTools.addView(recent,rp);
   recent.setContentDescription("Pilih paparan: baru dilihat, semua nota atau Maktabah");recent.setFocusable(true);
   recent.setOnClickListener(v->new AlertDialog.Builder(this).setItems(new String[]{"Baru dilihat","Semua nota","Maktabah"},(d,i)->{if(i==2)openSection(true);else openSection(false);}).show());
-  EditText search=new EditText(this);search.setSingleLine(true);search.setTextSize(15);
+  EditText search=new EditText(this);search.setSingleLine(true);search.setTextSize(14);
   search.setHint("Cari nota atau kitab");search.setContentDescription("Carian nota dan kitab");
   search.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);
   search.setInputType(android.text.InputType.TYPE_CLASS_TEXT);
   search.setPadding(dp(12),dp(6),dp(12),dp(6));
   search.setBackground(rounded(Color.WHITE,0xffd0d7de,11));
-  LinearLayout.LayoutParams sp=new LinearLayout.LayoutParams(0,dp(44),1);
+  LinearLayout.LayoutParams sp=new LinearLayout.LayoutParams(0,dp(42),1);
   quickTools.addView(search,sp);
   search.setOnEditorActionListener((v,id,event)->{String q=search.getText().toString().trim();if(q.isEmpty()){search.setError("Masukkan kata carian");return true;}openSection(false);list(q);return true;});
   LinearLayout card=new LinearLayout(this);card.setOrientation(1);card.setClipToPadding(false);
-  card.setBackground(rounded(Color.WHITE,0xffd0d7de,12));
+  card.setBackground(rounded(Color.WHITE,0xffd0d7de,8));
   LinearLayout.LayoutParams cp=new LinearLayout.LayoutParams(-1,-2);page.addView(card,cp);
   TextView count=dashboardText("Nota dan Maktabah",15,true);
   count.setBackgroundColor(0xfff6f8fa);card.addView(count);
   View divider=new View(this);divider.setBackgroundColor(0xffd0d7de);
   card.addView(divider,new LinearLayout.LayoutParams(-1,dp(1)));
-  LinearLayout tiles=new LinearLayout(this);tiles.setPadding(dp(10),dp(6),dp(10),dp(4));card.addView(tiles);
-  TextView note=dashboardText("▤  Nota",16,true);
-  TextView book=dashboardText("▱  Maktabah",16,true);
+  LinearLayout tiles=new LinearLayout(this);tiles.setPadding(dp(8),dp(5),dp(8),dp(4));card.addView(tiles);
+  TextView note=dashboardText("▤  Nota",15,true);
+  TextView book=dashboardText("▱  Maktabah",15,true);
   note.setGravity(Gravity.CENTER);book.setGravity(Gravity.CENTER);note.setFocusable(true);book.setFocusable(true);
-  note.setBackground(rounded(0xfff6f8fa,0xffd0d7de,10));
-  book.setBackground(rounded(0xfff6f8fa,0xffd0d7de,10));
-  LinearLayout.LayoutParams a=new LinearLayout.LayoutParams(0,dp(66),1);a.rightMargin=dp(6);
-  LinearLayout.LayoutParams b=new LinearLayout.LayoutParams(0,dp(66),1);b.leftMargin=dp(6);
+  note.setBackground(rounded(0xfff6f8fa,0xffd0d7de,8));
+  book.setBackground(rounded(0xfff6f8fa,0xffd0d7de,8));
+  LinearLayout.LayoutParams a=new LinearLayout.LayoutParams(0,dp(64),1);a.rightMargin=dp(4);
+  LinearLayout.LayoutParams b=new LinearLayout.LayoutParams(0,dp(64),1);b.leftMargin=dp(4);
   tiles.addView(note,a);tiles.addView(book,b);
   note.setContentDescription("Buka senarai Nota");book.setContentDescription("Buka Maktabah");
   note.setOnClickListener(v->openSection(false));book.setOnClickListener(v->openSection(true));
+  applyTouchFeedback(note);applyTouchFeedback(book);
   // Compact GitHub-style shortcuts, without changing the approved header.
   LinearLayout shortcuts=new LinearLayout(this);shortcuts.setOrientation(1);
-  shortcuts.setPadding(dp(4),dp(2),dp(4),dp(1));page.addView(shortcuts);
+  shortcuts.setPadding(dp(2),dp(2),dp(2),dp(1));page.addView(shortcuts);
   dashboardSection(shortcuts,"📌  Nota disemat",dashboardKeys("pinned_",false),true);
   dashboardSection(shortcuts,"◷  Terakhir dikemaskini",dashboardKeys("updated_",false),false);
   String resume=prefs.getString("last_edited_key","");
@@ -216,12 +223,13 @@ public class MainActivity extends Activity {
     item.setOnClickListener(v->{maktabah=k.startsWith("m_");read(k);});
    }
   TextView add=dashboardText("＋  Nota baharu",15,true);add.setGravity(Gravity.CENTER);
-  add.setBackground(rounded(0xfff6f8fa,0xffd0d7de,10));
+  add.setBackground(rounded(0xfff6f8fa,0xffd0d7de,8));
   add.setPadding(dp(12),dp(8),dp(12),dp(8));
   LinearLayout.LayoutParams ap=new LinearLayout.LayoutParams(-1,-2);
-  ap.topMargin=dp(4);page.addView(add,ap);
+  ap.topMargin=dp(3);page.addView(add,ap);
   add.setContentDescription("Cipta nota baharu");add.setFocusable(true);
   add.setOnClickListener(v->{maktabah=false;edit(null);});
+  applyTouchFeedback(add);applyTouchFeedback(recent);
  }
  ArrayList<String> dashboardKeys(String field,boolean includeBooks){
   ArrayList<String> out=new ArrayList<>();
