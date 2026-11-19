@@ -103,7 +103,7 @@ public class MainActivity extends Activity {
     LinearLayout homeContent=new LinearLayout(this);homeContent.setOrientation(1);homeContent.setFocusableInTouchMode(false);homeScroll.addView(homeContent);
     // Two equal-width, minimal home cards; keep Android system bars untouched.
     LinearLayout homeCards=new LinearLayout(this);homeCards.setOrientation(LinearLayout.HORIZONTAL);
-    homeCards.setGravity(Gravity.CENTER_VERTICAL);homeContent.addView(homeCards);
+    homeCards.setGravity(Gravity.CENTER_VERTICAL);homeCards.setContentDescription("Menu utama Nota dan Maktabah");homeContent.addView(homeCards);
     Button notesMenu=button();notesMenu.setText("▤\nNota\nNota peribadi");notesMenu.setTextColor(accent());notesMenu.setTypeface(null,Typeface.BOLD);
     notesMenu.setGravity(Gravity.CENTER);notesMenu.setMinHeight(124);
     Button libraryMenu=button();libraryMenu.setText("▥\nMaktabah\nKitab & ilmu Islam");libraryMenu.setTextColor(accent());libraryMenu.setTypeface(null,Typeface.BOLD);
