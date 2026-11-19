@@ -329,9 +329,10 @@ public class MainActivity extends Activity {
     EditText body=field();body.setHint("Tulis nota di sini…");body.setTextSize(15);body.setGravity(Gravity.TOP|Gravity.START);body.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);body.setTextColor(foreground());
     body.setMinLines(5);body.setSelectAllOnFocus(false);body.setContentDescription("Kandungan nota");page.addView(body,new LinearLayout.LayoutParams(-1,0,1));
     final Button[] deleteButton={null};
-    final int[] noteId={id};final boolean[] loading={true};final int[] noteColor={Color.WHITE};final Runnable[] saveAction={null};
+    final int[] noteId={id};final boolean[] loading={true};final int[] noteColor={Color.WHITE};final boolean[] notePinned={false};final Runnable[] saveAction={null};
     int[] colors={Color.WHITE,0xFFFFF4B8,0xFFDDF4DF,0xFFDCEEFF,0xFFFFE1E9,0xFFECE2FF};
     LinearLayout toolbar=new LinearLayout(this);toolbar.setOrientation(LinearLayout.HORIZONTAL);page.addView(toolbar,new LinearLayout.LayoutParams(-1,-2));
+    Button pinButton=button();pinButton.setText("○ Pin");pinButton.setContentDescription("Pin nota ke halaman utama");page.addView(pinButton);pinButton.setOnClickListener(v->{notePinned[0]=!notePinned[0];pinButton.setText(notePinned[0]?"📌 Dipin":"○ Pin");pinButton.setContentDescription(notePinned[0]?"Nyahpin nota":"Pin nota ke halaman utama");if(saveAction[0]!=null)scheduleSave(saveAction[0]);});
     Button colorButton=button();colorButton.setText("Warna");toolbar.addView(colorButton,new LinearLayout.LayoutParams(0,-2,1));
     Button checkButton=button();checkButton.setText("☐");toolbar.addView(checkButton,new LinearLayout.LayoutParams(0,-2,1));
     Button boldButton=button();boldButton.setText("B");boldButton.setContentDescription("Tebalkan teks dipilih");boldButton.setTypeface(null,Typeface.BOLD);toolbar.addView(boldButton,new LinearLayout.LayoutParams(0,-2,1));
@@ -342,10 +343,10 @@ public class MainActivity extends Activity {
     checkButton.setOnClickListener(v->{int start=Math.max(0,body.getSelectionStart());body.getText().insert(start,"☐ ");});
     boldButton.setOnClickListener(v->styleSelection(body,Typeface.BOLD));
     italicButton.setOnClickListener(v->styleSelection(body,Typeface.ITALIC));
-    if(id>=0){try(Cursor c=db.getReadableDatabase().rawQuery("SELECT title,body,color FROM notes WHERE id=?",new String[]{""+id})){if(c.moveToFirst()){title.setText(c.getString(0));body.setText(c.getString(1));noteColor[0]=c.getInt(2);body.setBackground(rounded(noteColor[0]==Color.WHITE?cardSurface():noteColor[0],borderColor(),16));body.setTextColor(noteColor[0]==Color.WHITE?foreground():Color.BLACK);}}}
+    if(id>=0){try(Cursor c=db.getReadableDatabase().rawQuery("SELECT title,body,color,pinned FROM notes WHERE id=?",new String[]{""+id})){if(c.moveToFirst()){title.setText(c.getString(0));body.setText(c.getString(1));noteColor[0]=c.getInt(2);notePinned[0]=c.getInt(3)==1;pinButton.setText(notePinned[0]?"📌 Dipin":"○ Pin");pinButton.setContentDescription(notePinned[0]?"Nyahpin nota":"Pin nota ke halaman utama");body.setBackground(rounded(noteColor[0]==Color.WHITE?cardSurface():noteColor[0],borderColor(),16));body.setTextColor(noteColor[0]==Color.WHITE?foreground():Color.BLACK);}}}
     loading[0]=false;
     Runnable save=()->{if(loading[0])return;String t=title.getText().toString(),b=body.getText().toString();if(noteId[0]<0&&t.trim().isEmpty()&&b.trim().isEmpty()){setSaveStatus("Nota kosong");return;}
-      ContentValues values=new ContentValues();values.put("title",t);values.put("body",b);values.put("updated",System.currentTimeMillis());values.put("color",noteColor[0]);values.put("category_id",chosenCategory[0]);
+      ContentValues values=new ContentValues();values.put("title",t);values.put("body",b);values.put("updated",System.currentTimeMillis());values.put("color",noteColor[0]);values.put("category_id",chosenCategory[0]);values.put("pinned",notePinned[0]?1:0);
       try{if(noteId[0]<0){noteId[0]=(int)db.getWritableDatabase().insertOrThrow("notes",null,values);deleteButton[0].setEnabled(true);}else db.getWritableDatabase().update("notes",values,"id=?",new String[]{""+noteId[0]});setSaveStatus("✓ Disimpan");}catch(Exception e){android.util.Log.e("DinNote","Note save failed",e);setSaveStatus("Gagal disimpan");Toast.makeText(this,"Nota gagal disimpan",Toast.LENGTH_LONG).show();}
     };
     saveAction[0]=save;saveActionHolder[0]=save;
