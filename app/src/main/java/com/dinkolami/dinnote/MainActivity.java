@@ -89,7 +89,7 @@ public class MainActivity extends Activity {
   search.setBackground(rounded(Color.WHITE,0xffd0d7de,11));
   LinearLayout.LayoutParams sp=new LinearLayout.LayoutParams(-1,dp(52));sp.bottomMargin=dp(18);
   page.addView(search,sp);
-  search.setOnEditorActionListener((v,id,event)->{String q=search.getText().toString().trim();openSection(false);if(!q.isEmpty())list(q);return true;});
+  search.setOnEditorActionListener((v,id,event)->{String q=search.getText().toString().trim();if(q.isEmpty()){search.setError("Masukkan kata carian");return true;}openSection(false);list(q);return true;});
   LinearLayout card=new LinearLayout(this);card.setOrientation(1);
   card.setBackground(rounded(Color.WHITE,0xffd0d7de,12));
   LinearLayout.LayoutParams cp=new LinearLayout.LayoutParams(-1,-2);page.addView(card,cp);
