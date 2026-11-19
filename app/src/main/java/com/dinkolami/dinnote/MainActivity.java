@@ -139,9 +139,9 @@ public class MainActivity extends Activity {
   search.setHint("Cari nota atau kitab");search.setContentDescription("Carian nota dan kitab");
   search.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);
   search.setInputType(android.text.InputType.TYPE_CLASS_TEXT);
-  search.setPadding(dp(16),dp(10),dp(16),dp(10));
+  search.setPadding(dp(12),dp(6),dp(12),dp(6));
   search.setBackground(rounded(Color.WHITE,0xffd0d7de,11));
-  LinearLayout.LayoutParams sp=new LinearLayout.LayoutParams(-1,dp(52));sp.bottomMargin=dp(20);
+  LinearLayout.LayoutParams sp=new LinearLayout.LayoutParams(-1,dp(44));sp.bottomMargin=dp(20);
   page.addView(search,sp);
   search.setOnEditorActionListener((v,id,event)->{String q=search.getText().toString().trim();if(q.isEmpty()){search.setError("Masukkan kata carian");return true;}openSection(false);list(q);return true;});
   LinearLayout card=new LinearLayout(this);card.setOrientation(1);card.setClipToPadding(false);
