@@ -297,7 +297,7 @@ public class MainActivity extends Activity {
     String filter=query==null?"":query.trim();
     try(Cursor c=db.getReadableDatabase().rawQuery("SELECT id,name FROM categories WHERE name LIKE ? ORDER BY name COLLATE NOCASE",new String[]{"%"+filter+"%"})){
       while(c.moveToNext()){int categoryId=c.getInt(0);String name=c.getString(1);
-        LinearLayout categoryRow=new LinearLayout(this);categoryRow.setOrientation(LinearLayout.HORIZONTAL);categoryRow.setGravity(Gravity.CENTER_VERTICAL);items.addView(categoryRow);
+        LinearLayout categoryRow=new LinearLayout(this);categoryRow.setOrientation(LinearLayout.HORIZONTAL);categoryRow.setGravity(Gravity.CENTER_VERTICAL);categoryRow.setMinimumHeight(48);items.addView(categoryRow);
         Button item=button();item.setText("▥  "+name);item.setContentDescription("Buka kategori "+name);
         categoryRow.addView(item,new LinearLayout.LayoutParams(0,-2,1));item.setOnClickListener(v->showBooks(categoryId,name));
         Button options=button();options.setText("⋮");options.setContentDescription("Urus kategori "+name);
