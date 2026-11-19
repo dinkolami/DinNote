@@ -130,8 +130,12 @@ public class MainActivity extends Activity {
   page.setPadding(dp(16),dp(20),dp(16),dp(32));scroll.addView(page);
   TextView recent=dashboardText("Baru dilihat  ▾",15,true);
   recent.setBackground(rounded(0xfff6f8fa,0xffd0d7de,10));
-  LinearLayout.LayoutParams rp=new LinearLayout.LayoutParams(-2,-2);rp.bottomMargin=dp(22);
-  page.addView(recent,rp);
+  LinearLayout quickTools=new LinearLayout(this);quickTools.setOrientation(LinearLayout.HORIZONTAL);quickTools.setGravity(Gravity.CENTER_VERTICAL);
+  LinearLayout.LayoutParams quickParams=new LinearLayout.LayoutParams(-1,-2);quickParams.bottomMargin=dp(22);
+  page.addView(quickTools,quickParams);
+  LinearLayout.LayoutParams rp=new LinearLayout.LayoutParams(-2,dp(44));rp.rightMargin=dp(8);
+  recent.setGravity(Gravity.CENTER_VERTICAL);recent.setPadding(dp(12),0,dp(12),0);
+  quickTools.addView(recent,rp);
   recent.setContentDescription("Pilih paparan: baru dilihat, semua nota atau Maktabah");recent.setFocusable(true);
   recent.setOnClickListener(v->new AlertDialog.Builder(this).setItems(new String[]{"Baru dilihat","Semua nota","Maktabah"},(d,i)->{if(i==2)openSection(true);else openSection(false);}).show());
   TextView heading=dashboardText("Baru dilihat",22,true);heading.setPadding(dp(2),dp(8),0,dp(18));page.addView(heading);
@@ -141,8 +145,8 @@ public class MainActivity extends Activity {
   search.setInputType(android.text.InputType.TYPE_CLASS_TEXT);
   search.setPadding(dp(12),dp(6),dp(12),dp(6));
   search.setBackground(rounded(Color.WHITE,0xffd0d7de,11));
-  LinearLayout.LayoutParams sp=new LinearLayout.LayoutParams(-1,dp(44));sp.bottomMargin=dp(20);
-  page.addView(search,sp);
+  LinearLayout.LayoutParams sp=new LinearLayout.LayoutParams(0,dp(44),1);
+  quickTools.addView(search,sp);
   search.setOnEditorActionListener((v,id,event)->{String q=search.getText().toString().trim();if(q.isEmpty()){search.setError("Masukkan kata carian");return true;}openSection(false);list(q);return true;});
   LinearLayout card=new LinearLayout(this);card.setOrientation(1);card.setClipToPadding(false);
   card.setBackground(rounded(Color.WHITE,0xffd0d7de,12));
