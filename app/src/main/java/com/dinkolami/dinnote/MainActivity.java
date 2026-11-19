@@ -900,23 +900,44 @@ public class MainActivity extends Activity {
         }
       });
 
-      // Dispatch gestures at the ScrollView level before child TextViews consume events.
-      // Double tap toggles the reader toolbar; initial toolbar remains visible for accessibility.
-      final android.view.GestureDetector readerGestures=new android.view.GestureDetector(this,
-        new android.view.GestureDetector.SimpleOnGestureListener(){
-          @Override public boolean onDown(android.view.MotionEvent e){return true;}
-          @Override public boolean onDoubleTap(android.view.MotionEvent e){
-            int next=actions.getVisibility()==View.VISIBLE?View.GONE:View.VISIBLE;
-            actions.setVisibility(next);
-            if(next==View.VISIBLE) actions.bringToFront();
-            actions.requestLayout();
-            android.util.Log.i("DinNote","Reader double tap: toolbar "+(next==View.VISIBLE?"shown":"hidden"));
-            return true;
-          }
-        });
+      // Track completed taps at the ScrollView boundary, even when text children consume touch.
+      // Do not consume events: native scrolling and child interactions must continue working.
+      final long[] lastTapTime={0L};
+      final float[] lastTapX={0f},lastTapY={0f},downX={0f},downY={0f};
+      final boolean[] moved={false};
+      final int touchSlop=android.view.ViewConfiguration.get(this).getScaledTouchSlop();
+      final float maxDistance=touchSlop*4f;
       ScrollView scroll=new ScrollView(this){
         @Override public boolean dispatchTouchEvent(android.view.MotionEvent event){
-          readerGestures.onTouchEvent(event);
+          switch(event.getActionMasked()){
+            case android.view.MotionEvent.ACTION_DOWN:
+              downX[0]=event.getX();downY[0]=event.getY();moved[0]=false;
+              break;
+            case android.view.MotionEvent.ACTION_MOVE:
+              if(Math.abs(event.getX()-downX[0])>touchSlop ||
+                 Math.abs(event.getY()-downY[0])>touchSlop)moved[0]=true;
+              break;
+            case android.view.MotionEvent.ACTION_UP:
+              if(!moved[0] && Math.abs(event.getX()-downX[0])<=touchSlop &&
+                 Math.abs(event.getY()-downY[0])<=touchSlop){
+                long now=event.getEventTime();
+                float dx=event.getX()-lastTapX[0],dy=event.getY()-lastTapY[0];
+                if(lastTapTime[0]>0 && now-lastTapTime[0]<=450 &&
+                   dx*dx+dy*dy<=maxDistance*maxDistance){
+                  lastTapTime[0]=0L;
+                  boolean show=actions.getVisibility()!=View.VISIBLE;
+                  actions.setVisibility(show?View.VISIBLE:View.GONE);
+                  if(show)actions.bringToFront();
+                  actions.requestLayout();
+                  android.util.Log.i("DinNote","Double tap toggled toolbar: "+show);
+                }else{
+                  lastTapTime[0]=now;lastTapX[0]=event.getX();lastTapY[0]=event.getY();
+                }
+              }else lastTapTime[0]=0L;
+              break;
+            case android.view.MotionEvent.ACTION_CANCEL:
+              lastTapTime[0]=0L;break;
+          }
           return super.dispatchTouchEvent(event);
         }
       };
