@@ -99,10 +99,18 @@ public class MainActivity extends Activity {
     TextView title=text("DinNote",20);title.setTypeface(null,Typeface.BOLD);header.addView(title,new LinearLayout.LayoutParams(0,-2,1));
     TextView appearance=text("⚙",22);appearance.setContentDescription("Tetapan");appearance.setFocusable(true);appearance.setOnClickListener(v->showSettings());header.addView(appearance);
     View headerDivider=new View(this);headerDivider.setBackgroundColor(borderColor());LinearLayout.LayoutParams hd=new LinearLayout.LayoutParams(-1,1);hd.setMargins(0,4,0,12);root.addView(headerDivider,hd);
-    Button notesMenu=button();notesMenu.setText("Nota");notesMenu.setTextColor(accent());notesMenu.setTypeface(null,Typeface.BOLD);root.addView(notesMenu);
-    Button libraryMenu=button();libraryMenu.setText("Maktabah");libraryMenu.setTextColor(accent());libraryMenu.setTypeface(null,Typeface.BOLD);root.addView(libraryMenu);
+    // Two equal-width, minimal home cards; keep Android system bars untouched.
+    LinearLayout homeCards=new LinearLayout(this);homeCards.setOrientation(LinearLayout.HORIZONTAL);
+    homeCards.setGravity(Gravity.CENTER_VERTICAL);root.addView(homeCards);
+    Button notesMenu=button();notesMenu.setText("▤\nNota\nCatatan peribadi");notesMenu.setTextColor(accent());notesMenu.setTypeface(null,Typeface.BOLD);
+    notesMenu.setGravity(Gravity.CENTER);notesMenu.setMinHeight(110);
+    Button libraryMenu=button();libraryMenu.setText("▥\nMaktabah\nKoleksi kitab");libraryMenu.setTextColor(accent());libraryMenu.setTypeface(null,Typeface.BOLD);
+    libraryMenu.setGravity(Gravity.CENTER);libraryMenu.setMinHeight(110);
+    LinearLayout.LayoutParams noteCardParams=new LinearLayout.LayoutParams(0,-2,1);noteCardParams.setMargins(0,4,6,8);
+    LinearLayout.LayoutParams libraryCardParams=new LinearLayout.LayoutParams(0,-2,1);libraryCardParams.setMargins(6,4,0,8);
+    homeCards.addView(notesMenu,noteCardParams);homeCards.addView(libraryMenu,libraryCardParams);
     libraryMenu.setContentDescription("Buka Maktabah");libraryMenu.setOnClickListener(v->showLibrary());
-    notesMenu.setContentDescription("Buka Nota");notesMenu.setOnClickListener(v->showHome());
+    notesMenu.setContentDescription("Buka Nota");notesMenu.setOnClickListener(v->{if(search!=null)search.requestFocus();});
     Button categoriesButton=button();categoriesButton.setText("Kategori Nota");root.addView(categoriesButton);
     categoriesButton.setOnClickListener(v->showNoteCategories());
     Button sort=button();sort.setText("Susun: "+new String[]{"Terkini","Terlama","Tajuk A-Z"}[noteSort]);root.addView(sort);
