@@ -2,7 +2,7 @@ package com.dinkolami.dinnote;
 import android.app.*;import android.os.*;import android.graphics.Color;import android.view.*;import android.widget.*;import android.text.*;import android.content.*;import java.util.*;
 public class MainActivity extends Activity {
  LinearLayout root,items; android.view.GestureDetector readerDetector; EditText editor,titleEditor; TextView saveIndicator; Spinner categoryPicker; String categoryFilter="Semua"; String sortMode="Terbaru"; String selected=null; boolean maktabah=false, sectionOpen=false; android.content.SharedPreferences prefs;
- int green=Color.rgb(24,39,35), gold=Color.rgb(185,143,53); static final int BACKUP_CREATE=4201, BACKUP_OPEN=4202;
+ int green=Color.rgb(24,39,35), gold=Color.rgb(185,143,53); static final int BACKUP_CREATE=4201, BACKUP_OPEN=4202, MAKTABAH_IMAGE_OPEN=4203;
  public void onCreate(Bundle b){super.onCreate(b);prefs=getSharedPreferences("notes",0);seedDefaultCategories();seedSampleArticles();home();}
  void applySystemBarInsets(LinearLayout view){
   // Keep Android's real clock, battery and network status bar visible.
@@ -384,8 +384,43 @@ public class MainActivity extends Activity {
   else android.widget.Toast.makeText(this,"Gagal membuat salinan",android.widget.Toast.LENGTH_LONG).show();
  }
  void confirmDelete(String key){new AlertDialog.Builder(this).setMessage("Padam nota ini?").setPositiveButton("Padam",(d,w)->{prefs.edit().remove(key).remove("title_"+key).remove("cat_"+key).remove("viewed_"+key).remove("updated_"+key).remove("pinned_"+key).apply();selected=null;if(sectionOpen)notesPage();else home();}).setNegativeButton("Batal",null).show();}
- void edit(String key){if(key!=null){maktabah=key.startsWith("m_");prefs.edit().putString("last_edited_key",key).apply();}editor=null;saveIndicator=null;selected=key;cleanBase();LinearLayout bar=new LinearLayout(this);bar.setGravity(Gravity.CENTER_VERTICAL);root.addView(bar);action("‹",bar,()->{save();if(selected!=null)read(selected);else if(sectionOpen)notesPage();else home();});TextView spacer=text("",12);bar.addView(spacer,new LinearLayout.LayoutParams(0,1,1));action("Selesai",bar,()->{save();if(selected!=null)read(selected);else if(sectionOpen)notesPage();else home();});action("⋮",bar,()->new AlertDialog.Builder(this).setItems(new String[]{"Masukkan tarikh","Masukkan masa","Masukkan tarikh dan masa","Padam"},(d,i)->{if(i<3)insertCurrentDateTime(i);else if(selected!=null)confirmDelete(selected);}).show());categoryPicker=new Spinner(this);categoryPicker.setContentDescription("Kategori nota");ArrayList<String> choices=new ArrayList<>();choices.add("Tanpa kategori");choices.addAll(categories());categoryPicker.setAdapter(new ArrayAdapter<>(this,android.R.layout.simple_spinner_dropdown_item,choices));String savedCat=key==null?"Tanpa kategori":prefs.getString("cat_"+key,"Tanpa kategori");int pos=choices.indexOf(savedCat);categoryPicker.setSelection(pos<0?0:pos);root.addView(categoryPicker);saveIndicator=text("Autosimpan aktif",12);saveIndicator.setTextColor(0xff687078);saveIndicator.setPadding(dp(24),dp(2),dp(24),dp(2));root.addView(saveIndicator);titleEditor=new EditText(this);titleEditor.setSingleLine(true);titleEditor.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_NEXT);titleEditor.setTextSize(21);titleEditor.setHint(maktabah?"Tajuk kitab":"Tajuk nota");titleEditor.setContentDescription(maktabah?"Tajuk kitab":"Tajuk nota");titleEditor.setPadding(24,12,24,12);titleEditor.setBackgroundColor(Color.WHITE);root.addView(titleEditor);if(key!=null)titleEditor.setText(prefs.getString("title_"+key,""));editor=new EditText(this);editor.setGravity(Gravity.TOP);editor.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);editor.setTextSize(16);editor.setTextColor(0xff30343b);editor.setPadding(24,16,24,16);editor.setLineSpacing(5,1.08f);editor.setHint("Tulis di sini…");editor.setContentDescription("Kandungan nota");editor.setBackgroundColor(Color.WHITE);editor.setInputType(android.text.InputType.TYPE_CLASS_TEXT|android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE|android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);root.addView(editor,new LinearLayout.LayoutParams(-1,0,1));if(key!=null)editor.setText(prefs.getString(key,""));TextWatcher watcher=new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){save();}public void afterTextChanged(Editable e){}};titleEditor.addTextChangedListener(watcher);editor.addTextChangedListener(watcher);categoryPicker.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener(){public void onNothingSelected(android.widget.AdapterView<?> p){}public void onItemSelected(android.widget.AdapterView<?> p,View v,int position,long id){save();}});}
+ void edit(String key){if(key!=null){maktabah=key.startsWith("m_");prefs.edit().putString("last_edited_key",key).apply();}editor=null;saveIndicator=null;selected=key;cleanBase();LinearLayout bar=new LinearLayout(this);bar.setGravity(Gravity.CENTER_VERTICAL);root.addView(bar);action("‹",bar,()->{save();if(selected!=null)read(selected);else if(sectionOpen)notesPage();else home();});TextView spacer=text("",12);bar.addView(spacer,new LinearLayout.LayoutParams(0,1,1));action("Selesai",bar,()->{save();if(selected!=null)read(selected);else if(sectionOpen)notesPage();else home();});action("⋮",bar,()->{String[] options=maktabah?new String[]{"Masukkan tarikh","Masukkan masa","Masukkan tarikh dan masa","Pilih foto kitab (pratonton)","Padam"}:new String[]{"Masukkan tarikh","Masukkan masa","Masukkan tarikh dan masa","Padam"};new AlertDialog.Builder(this).setItems(options,(d,i)->{if(i<3)insertCurrentDateTime(i);else if(maktabah&&i==3)chooseKitabPhoto();else if(selected!=null)confirmDelete(selected);}).show();});categoryPicker=new Spinner(this);categoryPicker.setContentDescription("Kategori nota");ArrayList<String> choices=new ArrayList<>();choices.add("Tanpa kategori");choices.addAll(categories());categoryPicker.setAdapter(new ArrayAdapter<>(this,android.R.layout.simple_spinner_dropdown_item,choices));String savedCat=key==null?"Tanpa kategori":prefs.getString("cat_"+key,"Tanpa kategori");int pos=choices.indexOf(savedCat);categoryPicker.setSelection(pos<0?0:pos);root.addView(categoryPicker);saveIndicator=text("Autosimpan aktif",12);saveIndicator.setTextColor(0xff687078);saveIndicator.setPadding(dp(24),dp(2),dp(24),dp(2));root.addView(saveIndicator);titleEditor=new EditText(this);titleEditor.setSingleLine(true);titleEditor.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_NEXT);titleEditor.setTextSize(21);titleEditor.setHint(maktabah?"Tajuk kitab":"Tajuk nota");titleEditor.setContentDescription(maktabah?"Tajuk kitab":"Tajuk nota");titleEditor.setPadding(24,12,24,12);titleEditor.setBackgroundColor(Color.WHITE);root.addView(titleEditor);if(key!=null)titleEditor.setText(prefs.getString("title_"+key,""));editor=new EditText(this);editor.setGravity(Gravity.TOP);editor.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);editor.setTextSize(16);editor.setTextColor(0xff30343b);editor.setPadding(24,16,24,16);editor.setLineSpacing(5,1.08f);editor.setHint("Tulis di sini…");editor.setContentDescription("Kandungan nota");editor.setBackgroundColor(Color.WHITE);editor.setInputType(android.text.InputType.TYPE_CLASS_TEXT|android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE|android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);root.addView(editor,new LinearLayout.LayoutParams(-1,0,1));if(key!=null)editor.setText(prefs.getString(key,""));TextWatcher watcher=new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){save();}public void afterTextChanged(Editable e){}};titleEditor.addTextChangedListener(watcher);editor.addTextChangedListener(watcher);categoryPicker.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener(){public void onNothingSelected(android.widget.AdapterView<?> p){}public void onItemSelected(android.widget.AdapterView<?> p,View v,int position,long id){save();}});}
 
+ void chooseKitabPhoto(){
+  Intent intent=new Intent(Intent.ACTION_OPEN_DOCUMENT);
+  intent.setType("image/*");
+  intent.addCategory(Intent.CATEGORY_OPENABLE);
+  startActivityForResult(intent,MAKTABAH_IMAGE_OPEN);
+ }
+ void previewKitabPhoto(android.net.Uri uri){
+  try{
+   android.graphics.BitmapFactory.Options bounds=new android.graphics.BitmapFactory.Options();
+   bounds.inJustDecodeBounds=true;
+   try(java.io.InputStream in=getContentResolver().openInputStream(uri)){
+    if(in==null)throw new java.io.IOException("Imej tidak dapat dibuka");
+    android.graphics.BitmapFactory.decodeStream(in,null,bounds);
+   }
+   if(bounds.outWidth<=0||bounds.outHeight<=0)throw new java.io.IOException("Format imej tidak disokong");
+   android.graphics.BitmapFactory.Options options=new android.graphics.BitmapFactory.Options();
+   options.inSampleSize=1;
+   while(Math.max(bounds.outWidth/options.inSampleSize,bounds.outHeight/options.inSampleSize)>1400)options.inSampleSize*=2;
+   android.graphics.Bitmap bitmap;
+   try(java.io.InputStream in=getContentResolver().openInputStream(uri)){
+    if(in==null)throw new java.io.IOException("Imej tidak dapat dibuka");
+    bitmap=android.graphics.BitmapFactory.decodeStream(in,null,options);
+   }
+   if(bitmap==null)throw new java.io.IOException("Imej tidak dapat dibaca");
+   ImageView image=new ImageView(this);
+   image.setImageBitmap(bitmap);
+   image.setScaleType(ImageView.ScaleType.FIT_CENTER);
+   image.setAdjustViewBounds(true);
+   ScrollView scroll=new ScrollView(this);
+   scroll.addView(image,new ScrollView.LayoutParams(-1,-2));
+   new AlertDialog.Builder(this).setTitle("Pratonton foto kitab")
+    .setMessage("Foto ini belum ditukar kepada tulisan. OCR Arab dan Rumi akan dibangunkan pada peringkat seterusnya. Foto belum disimpan dalam Maktabah.")
+    .setView(scroll).setPositiveButton("Tutup",null).show();
+  }catch(Exception e){new AlertDialog.Builder(this).setTitle("Foto tidak dapat dibuka").setMessage(e.getMessage()).setPositiveButton("OK",null).show();}
+ }
  void insertCurrentDateTime(int mode){
   if(editor==null)return;
   java.util.Date now=new java.util.Date();
@@ -474,6 +509,7 @@ public class MainActivity extends Activity {
   super.onActivityResult(request,result,data);
   if(result!=RESULT_OK||data==null||data.getData()==null)return;
   android.net.Uri uri=data.getData();
+  if(request==MAKTABAH_IMAGE_OPEN){previewKitabPhoto(uri);return;}
   if(request==BACKUP_CREATE){
    try{
     org.json.JSONObject obj=new org.json.JSONObject();
