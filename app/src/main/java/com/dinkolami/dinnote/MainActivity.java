@@ -114,7 +114,7 @@ public class MainActivity extends Activity {
     libraryMenu.setContentDescription("Buka kategori kitab Maktabah");libraryMenu.setOnClickListener(v->showLibrary());
     notesMenu.setContentDescription("Buka kategori Nota peribadi");notesMenu.setOnClickListener(v->showNoteCategories());
     TextView libraryHeading=text("Kategori Maktabah",17);libraryHeading.setContentDescription("Senarai kategori Maktabah");libraryHeading.setTypeface(null,Typeface.BOLD);homeContent.addView(libraryHeading);
-    LinearLayout libraryShortcuts=new LinearLayout(this);libraryShortcuts.setOrientation(1);libraryShortcuts.setContentDescription("Pintasan kategori Maktabah");homeContent.addView(libraryShortcuts);
+    LinearLayout libraryShortcuts=new LinearLayout(this);libraryShortcuts.setOrientation(1);libraryShortcuts.setContentDescription("Senarai pintasan kategori Maktabah");homeContent.addView(libraryShortcuts);
     try(Cursor cats=db.getReadableDatabase().rawQuery("SELECT id,name FROM categories ORDER BY name COLLATE NOCASE LIMIT 8",null)){
       while(cats.moveToNext()){
         final int categoryId=cats.getInt(0);final String categoryName=cats.getString(1);
