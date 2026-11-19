@@ -495,15 +495,15 @@ public class MainActivity extends Activity {
     TextView welcome=text("RUANG PERIBADI ANDA",11);
     welcome.setLetterSpacing(0.16f);welcome.setTypeface(null,Typeface.BOLD);
     welcome.setTextColor(accent());welcome.setPadding(3,6,3,0);homeContent.addView(welcome);
-    TextView intro=text("Idea tersusun. Ilmu terpelihara.",16);
+    TextView intro=text("Catat dengan tenang. Simpan ilmu dengan rapi.",15);
     intro.setTextColor(dark()?0xFFADB9C8:0xFF576574);
     intro.setPadding(3,0,3,14);homeContent.addView(intro);
     // Two equal-width, minimal home cards; keep Android system bars untouched.
     LinearLayout homeCards=new LinearLayout(this);homeCards.setOrientation(LinearLayout.HORIZONTAL);
     homeCards.setGravity(Gravity.CENTER_VERTICAL);homeCards.setBaselineAligned(false);homeCards.setMinimumHeight(142);homeCards.setContentDescription("Menu utama Nota dan Maktabah");homeContent.addView(homeCards);
-    Button notesMenu=button();notesMenu.setText("✎\nNota\nCatatan peribadi");notesMenu.setTextColor(accent());notesMenu.setTypeface(null,Typeface.BOLD);notesMenu.setTextSize(16);notesMenu.setLetterSpacing(0.01f);notesMenu.setBackground(rounded(cardSurface(),borderColor(),20));
+    Button notesMenu=button();notesMenu.setText("✎\nNota\nTulis & susun");notesMenu.setTextColor(accent());notesMenu.setTypeface(null,Typeface.BOLD);notesMenu.setTextSize(16);notesMenu.setLetterSpacing(0.01f);notesMenu.setBackground(rounded(cardSurface(),borderColor(),20));
     notesMenu.setGravity(Gravity.CENTER);notesMenu.setLineSpacing(3,1f);notesMenu.setMinWidth(0);notesMenu.setMinHeight(136);notesMenu.setMaxLines(4);notesMenu.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
-    Button libraryMenu=button();libraryMenu.setText("▤\nMaktabah\nKoleksi ilmu");libraryMenu.setTextColor(accent());libraryMenu.setTypeface(null,Typeface.BOLD);
+    Button libraryMenu=button();libraryMenu.setText("▤\nMaktabah\nKitab & rujukan");libraryMenu.setTextColor(accent());libraryMenu.setTypeface(null,Typeface.BOLD);
     libraryMenu.setTextSize(16);libraryMenu.setLetterSpacing(0.01f);libraryMenu.setBackground(rounded(cardSurface(),borderColor(),20));libraryMenu.setGravity(Gravity.CENTER);libraryMenu.setLineSpacing(3,1f);libraryMenu.setMinWidth(0);libraryMenu.setMinHeight(136);libraryMenu.setMaxLines(4);libraryMenu.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
     LinearLayout.LayoutParams noteCardParams=new LinearLayout.LayoutParams(0,-2,1);noteCardParams.setMargins(0,6,6,16);
     LinearLayout.LayoutParams libraryCardParams=new LinearLayout.LayoutParams(0,-2,1);libraryCardParams.setMargins(6,6,0,16);
@@ -521,7 +521,7 @@ public class MainActivity extends Activity {
         pinnedHeader.setOrientation(LinearLayout.HORIZONTAL);
         pinnedHeader.setGravity(Gravity.CENTER_VERTICAL);
         pinnedSection.addView(pinnedHeader);
-        TextView pinnedHeading=text("⌁  Nota penting  ·  "+pinnedCount,16);
+        TextView pinnedHeading=text("📌  Nota dipin  ·  "+pinnedCount,16);
         pinnedHeading.setTypeface(null,Typeface.BOLD);pinnedHeading.setContentDescription("Jumlah nota dipin: "+pinnedCount);pinnedHeading.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
         pinnedHeader.addView(pinnedHeading,new LinearLayout.LayoutParams(0,-2,1));
         Button togglePinned=button();
@@ -593,7 +593,7 @@ public class MainActivity extends Activity {
     recentHeading.setLetterSpacing(0.15f);recentHeading.setTypeface(null,Typeface.BOLD);
     recentHeading.setTextColor(accent());recentHeading.setPadding(3,12,3,5);
     homeContent.addView(recentHeading);
-    Button sort=button();sort.setText("↕ Susun: +new String[]{"Terkini","Terlama","Tajuk A-Z"}[noteSort]);homeContent.addView(sort);
+    Button sort=button();sort.setText("↕ Susun: "+new String[]{"Terkini","Terlama","Tajuk A-Z"}[noteSort]);homeContent.addView(sort);
     sort.setContentDescription("Pilih susunan nota: "+new String[]{"Terkini","Terlama","Tajuk A-Z"}[noteSort]);sort.setOnClickListener(v->new AlertDialog.Builder(this).setItems(new String[]{"Terkini","Terlama","Tajuk A-Z"},(d,w)->{noteSort=w;getPreferences(MODE_PRIVATE).edit().putInt("noteSort",w).apply();sort.setText("↕ Susun: "+new String[]{"Terkini","Terlama","Tajuk A-Z"}[w]);refresh(noteFilter);}).show());
     search=field();search.setContentDescription("Cari tajuk dan kandungan nota");search.setSingleLine(true);search.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);search.setSelectAllOnFocus(false);search.setHint("⌕  Cari dalam nota…");search.setText(noteFilter);search.setSelection(search.length());homeContent.addView(search);
     Button add=button();add.setText("＋  Nota baharu");add.setBackground(rounded(cardSurface(),accent(),16));add.setTextColor(accent());add.setContentDescription("Tulis nota peribadi baharu");homeContent.addView(add);add.setOnClickListener(v->edit(-1));
