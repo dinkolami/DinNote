@@ -152,6 +152,12 @@ Dokumen ini menyimpan semua 100 cadangan supaya cadangan yang belum dipilih tida
 - Backup ke folder DinNote pada telefon perlu boleh dipulihkan; data aplikasi **tidak** berpindah secara automatik ke telefon lain hanya dengan memasang APK.
 - Jika menambah cadangan baharu selepas nombor 100, sambung penomboran; kekalkan sejarah cadangan terdahulu.
 
+## Audit saiz dan kelancaran APK
+- **Status: Dalam proses.** Workflow GitHub Actions kini akan memaparkan saiz APK release (MiB dan bait) dalam ringkasan setiap binaan berjaya, dengan sasaran nasihat 30 MiB, bukan had wajib. Commit workflow: `68743ae`.
+- Dua pustaka OCR (ML Kit Latin dan Tesseract4Android) telah dimasukkan; model Arab tidak dibungkus terus dalam APK. Saiz sebenar dan penggunaan RAM belum diukur atau disahkan pada peranti.
+- Jika saiz melebihi sasaran, audit pustaka dan fail besar sebelum membuang fungsi. Jangan mengaktifkan pengecilan kod atau membuang dependensi secara membuta tuli tanpa ujian binaan, OCR dan migrasi data.
+- OCR digunakan atas permintaan sahaja; keutamaan kekal Nota dan Maktabah yang lancar, reka bentuk diluluskan dan data selamat.
+
 ## Protokol peringatan sebelum dan selepas pelaksanaan
 - **Sebelum** memulakan setiap cadangan: maklumkan nombor dan nama fungsi, skop perubahan, risiko kepada data/reka bentuk, serta ujian yang dirancang. Dapatkan pengesahan jika skop baharu atau mengubah reka bentuk yang diluluskan.
 - **Selepas** pelaksanaan: laporkan apa yang benar-benar berubah, pautan/SHA commit, status GitHub Actions dan ujian APK, isu yang belum selesai, serta nombor cadangan seterusnya.
