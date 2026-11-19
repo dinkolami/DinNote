@@ -158,29 +158,49 @@ public class MainActivity extends Activity {
   void showNoteCategories(){
     flushPendingSave();
     LinearLayout page=column();setContentView(page);
-    Button back=button();back.setText("← Nota");page.addView(back);back.setOnClickListener(v->showHome());
-    page.addView(text("Kategori Nota",22));
-    Button all=button();all.setText("Semua nota");page.addView(all);all.setOnClickListener(v->{selectedNoteCategory=-1;showHome();});
+    Button back=button();back.setText("← DinNote");page.addView(back);back.setOnClickListener(v->showHome());
+    TextView heading=text("Kategori Nota",21);heading.setTypeface(null,Typeface.BOLD);page.addView(heading);
+    EditText categorySearch=field();categorySearch.setSingleLine(true);categorySearch.setHint("Cari kategori Nota…");page.addView(categorySearch);
+    Button all=button();all.setText("▤  Semua nota");page.addView(all);all.setOnClickListener(v->{selectedNoteCategory=-1;showHome();});
     Button add=button();add.setText("+ Tambah kategori");add.setTextColor(accent());page.addView(add);add.setOnClickListener(v->promptNoteCategory(-1,""));
     ScrollView scroll=new ScrollView(this);LinearLayout items=new LinearLayout(this);items.setOrientation(1);scroll.addView(items);page.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
-    try(Cursor c=db.getReadableDatabase().rawQuery("SELECT id,name FROM note_categories ORDER BY name COLLATE NOCASE",null)){
+    categorySearch.addTextChangedListener(new TextWatcher(){
+      public void beforeTextChanged(CharSequence text,int start,int count,int after){}
+      public void onTextChanged(CharSequence text,int start,int before,int count){populateNoteCategories(items,text.toString());}
+      public void afterTextChanged(Editable text){}
+    });
+    populateNoteCategories(items,"");
+  }
+  void populateNoteCategories(LinearLayout items,String query){
+    items.removeAllViews();
+    String filter=query==null?"":query.trim();
+    try(Cursor c=db.getReadableDatabase().rawQuery("SELECT id,name FROM note_categories WHERE name LIKE ? ORDER BY name COLLATE NOCASE",new String[]{"%"+filter+"%"})){
       while(c.moveToNext()){
         final int id=c.getInt(0);final String name=c.getString(1);
-        LinearLayout row=new LinearLayout(this);row.setOrientation(LinearLayout.HORIZONTAL);items.addView(row);
-        Button open=button();open.setText(name);row.addView(open,new LinearLayout.LayoutParams(0,-2,1));
+        LinearLayout row=new LinearLayout(this);row.setOrientation(LinearLayout.HORIZONTAL);row.setGravity(Gravity.CENTER_VERTICAL);items.addView(row);
+        Button open=button();open.setText("▤  "+name);row.addView(open,new LinearLayout.LayoutParams(0,-2,1));
         open.setOnClickListener(v->{selectedNoteCategory=id;showHome();});
-        Button rename=button();rename.setText("Edit");row.addView(rename,new LinearLayout.LayoutParams(-2,-2));
-        rename.setOnClickListener(v->promptNoteCategory(id,name));
-        Button delete=button();delete.setText("Del");row.addView(delete,new LinearLayout.LayoutParams(-2,-2));
-        delete.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Padam kategori?")
-          .setMessage("Nota dalam kategori ini tidak dipadam. Nota akan dipindahkan ke Tanpa kategori.")
-          .setNegativeButton("Batal",null).setPositiveButton("Padam",(d,w)->{
-            SQLiteDatabase writable=db.getWritableDatabase();writable.beginTransaction();
-            try{ContentValues cv=new ContentValues();cv.put("category_id",-1);writable.update("notes",cv,"category_id=?",new String[]{""+id});writable.delete("note_categories","id=?",new String[]{""+id});writable.setTransactionSuccessful();}finally{writable.endTransaction();}
-            if(selectedNoteCategory==id)selectedNoteCategory=-1;showNoteCategories();
+        Button options=button();options.setText("⋮");options.setContentDescription("Urus kategori "+name);row.addView(options,new LinearLayout.LayoutParams(-2,-2));
+        options.setOnClickListener(v->new AlertDialog.Builder(this).setTitle(name)
+          .setItems(new String[]{"Ubah nama","Padam kategori"},(d,which)->{
+            if(which==0){promptNoteCategory(id,name);return;}
+            new AlertDialog.Builder(this).setTitle("Padam kategori?")
+              .setMessage("Nota dalam kategori ini tidak dipadam. Nota akan dipindahkan ke Tanpa kategori.")
+              .setNegativeButton("Batal",null).setPositiveButton("Padam",(dd,w)->{
+                SQLiteDatabase writable=db.getWritableDatabase();writable.beginTransaction();
+                try{
+                  ContentValues cv=new ContentValues();cv.put("category_id",-1);
+                  writable.update("notes",cv,"category_id=?",new String[]{String.valueOf(id)});
+                  writable.delete("note_categories","id=?",new String[]{String.valueOf(id)});
+                  writable.setTransactionSuccessful();
+                }finally{writable.endTransaction();}
+                if(selectedNoteCategory==id)selectedNoteCategory=-1;
+                showNoteCategories();
+              }).show();
           }).show());
       }
     }
+    if(items.getChildCount()==0)items.addView(text(filter.isEmpty()?"Belum ada kategori Nota. Tekan + Tambah kategori.":"Tiada kategori ditemui.",15));
   }
   void promptNoteCategory(int id,String existing){
     EditText input=field();input.setSingleLine(true);input.setText(existing);input.setFilters(new InputFilter[]{new InputFilter.LengthFilter(100)});
