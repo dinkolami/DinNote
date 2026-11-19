@@ -111,6 +111,17 @@ public class MainActivity extends Activity {
     homeCards.addView(notesMenu,noteCardParams);homeCards.addView(libraryMenu,libraryCardParams);
     libraryMenu.setContentDescription("Buka Maktabah");libraryMenu.setOnClickListener(v->showLibrary());
     notesMenu.setContentDescription("Buka Nota");notesMenu.setOnClickListener(v->showNoteCategories());
+    TextView libraryHeading=text("Kategori Maktabah",16);libraryHeading.setTypeface(null,Typeface.BOLD);root.addView(libraryHeading);
+    LinearLayout libraryShortcuts=new LinearLayout(this);libraryShortcuts.setOrientation(1);root.addView(libraryShortcuts);
+    try(Cursor cats=db.getReadableDatabase().rawQuery("SELECT id,name FROM categories ORDER BY name COLLATE NOCASE LIMIT 8",null)){
+      while(cats.moveToNext()){
+        final int categoryId=cats.getInt(0);final String categoryName=cats.getString(1);
+        Button shortcut=button();shortcut.setText("▥  "+categoryName);libraryShortcuts.addView(shortcut);
+        shortcut.setOnClickListener(v->showBooks(categoryId,categoryName));
+      }
+    }catch(Exception e){android.util.Log.w("DinNote","Library shortcuts unavailable",e);}
+    Button allLibrary=button();allLibrary.setText("Lihat / Urus semua kategori Maktabah");libraryShortcuts.addView(allLibrary);
+    allLibrary.setOnClickListener(v->showLibrary());
     Button categoriesButton=button();categoriesButton.setText("Kategori Nota");root.addView(categoriesButton);
     categoriesButton.setOnClickListener(v->showNoteCategories());
     // Home category shortcuts, matching the original DinNote two-section layout.
