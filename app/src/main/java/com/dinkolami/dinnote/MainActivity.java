@@ -22,7 +22,7 @@ public class MainActivity extends Activity {
   int activeCategoryId=-1;
   String activeCategoryName="";
   void flushPendingSave(){if(pendingSave!=null){Runnable action=pendingSave;pendingSave=null;saveHandler.removeCallbacks(action);action.run();}}
-  void scheduleSave(Runnable action){if(pendingSave!=null&&pendingSave!=action)flushPendingSave();saveHandler.removeCallbacks(action);pendingSave=action;saveHandler.postDelayed(action,450);}
+  void scheduleSave(Runnable action){if(pendingSave!=null&&pendingSave!=action)flushPendingSave();saveHandler.removeCallbacks(action);pendingSave=action;saveHandler.postDelayed(()->{if(pendingSave==action){pendingSave=null;action.run();}},450);}
   @Override protected void onPause(){flushPendingSave();super.onPause();}
   LinearLayout root, list;
   EditText search;
@@ -83,7 +83,7 @@ public class MainActivity extends Activity {
   void showHome() {
     flushPendingSave();
     editingBook=false;
-    root=column();setContentView(root);
+    root=column();root.setFocusableInTouchMode(true);setContentView(root);
     TextView title=text("▤  DinNote",23);title.setTypeface(null,2);root.addView(title);
     TextView appearance=text("⚙",22);appearance.setContentDescription("Tetapan penampilan");appearance.setOnClickListener(v->appearanceSettings());root.addView(appearance);
     Button notesMenu=button();notesMenu.setText("📝  Nota");root.addView(notesMenu);
@@ -92,7 +92,7 @@ public class MainActivity extends Activity {
     notesMenu.setOnClickListener(v->showHome());
     Button sort=button();sort.setText("Susun: "+new String[]{"Terkini","Terlama","Tajuk A-Z"}[noteSort]);root.addView(sort);
     sort.setOnClickListener(v->new AlertDialog.Builder(this).setItems(new String[]{"Terkini","Terlama","Tajuk A-Z"},(d,w)->{noteSort=w;getPreferences(MODE_PRIVATE).edit().putInt("noteSort",w).apply();sort.setText("Susun: "+new String[]{"Terkini","Terlama","Tajuk A-Z"}[w]);refresh(noteFilter);}).show());
-    search=field();search.setSingleLine(true);search.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);search.setSelectAllOnFocus(false);search.setHint("Cari tajuk atau kandungan nota…");search.setText(noteFilter);root.addView(search);
+    search=field();search.setSingleLine(true);search.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);search.setSelectAllOnFocus(false);search.setHint("Cari tajuk atau kandungan nota…");search.setText(noteFilter);search.setSelection(search.length());root.addView(search);
     Button add=button();add.setText("+ Nota baharu");add.setContentDescription("Cipta nota baharu");root.addView(add);add.setOnClickListener(v->edit(-1));
     ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);list=new LinearLayout(this);list.setOrientation(1);scroll.addView(list);root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
     search.addTextChangedListener(new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){noteFilter=s.toString();refresh(noteFilter);}public void afterTextChanged(Editable e){}});
@@ -104,12 +104,12 @@ public class MainActivity extends Activity {
     list.removeAllViews();
     int visibleCount=0;
     try(Cursor c=db.getReadableDatabase().rawQuery("SELECT id,title,body,color FROM notes WHERE title LIKE ? OR body LIKE ? ORDER BY "+(noteSort==1?"updated ASC,id ASC":noteSort==2?"title COLLATE NOCASE ASC,id DESC":"updated DESC,id DESC"),new String[]{"%"+query+"%","%"+query+"%"})) {
-      while(c.moveToNext()){visibleCount++;final int id=c.getInt(0);String heading=c.getString(1);String body=c.getString(2);if(heading==null)heading="";if(body==null)body="";int noteColor=c.getInt(3);
+      while(c.moveToNext()){visibleCount++;final int id=c.getInt(0);String heading=c.getString(1);String body=c.getString(2);if(heading==null)heading="";if(body==null)body="";body=body.replace("\r"," ").replace("\n"," ");int noteColor=c.getInt(3);
         TextView item=text((heading.isEmpty()?"Tanpa tajuk":heading)+"\n"+(body.length()>90?body.substring(0,90)+"…":body),15);
         item.setBackground(rounded(noteColor==Color.WHITE?cardSurface():noteColor,borderColor(),16));item.setTextColor(noteColor==Color.WHITE?foreground():Color.BLACK);LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2);p.setMargins(0,5,0,5);list.addView(item,p);item.setOnClickListener(v->edit(id));
       }
     }
-    if(visibleCount==0)list.addView(text(query.trim().isEmpty()?"Belum ada nota. Tekan + Nota baharu untuk mula.":"Tiada nota ditemui.",16));
+    if(visibleCount==0)list.addView(text(query.trim().isEmpty()?"Belum ada nota. Tekan + Nota baharu untuk menulis.":"Tiada nota ditemui.",16));
   }
   void edit(int id) {
     flushPendingSave();
@@ -123,9 +123,9 @@ public class MainActivity extends Activity {
     LinearLayout toolbar=new LinearLayout(this);toolbar.setOrientation(LinearLayout.HORIZONTAL);page.addView(toolbar,new LinearLayout.LayoutParams(-1,-2));
     Button colorButton=button();colorButton.setText("Warna");toolbar.addView(colorButton,new LinearLayout.LayoutParams(0,-2,1));
     Button checkButton=button();checkButton.setText("☐");toolbar.addView(checkButton,new LinearLayout.LayoutParams(0,-2,1));
-    Button boldButton=button();boldButton.setText("B");boldButton.setTypeface(null,Typeface.BOLD);toolbar.addView(boldButton,new LinearLayout.LayoutParams(0,-2,1));
-    Button italicButton=button();italicButton.setText("I");italicButton.setTypeface(null,Typeface.ITALIC);toolbar.addView(italicButton,new LinearLayout.LayoutParams(0,-2,1));
-    Button underlineButton=button();underlineButton.setText("U");toolbar.addView(underlineButton,new LinearLayout.LayoutParams(0,-2,1));
+    Button boldButton=button();boldButton.setText("B");boldButton.setContentDescription("Tebalkan teks dipilih");boldButton.setTypeface(null,Typeface.BOLD);toolbar.addView(boldButton,new LinearLayout.LayoutParams(0,-2,1));
+    Button italicButton=button();italicButton.setText("I");italicButton.setContentDescription("Condongkan teks dipilih");italicButton.setTypeface(null,Typeface.ITALIC);toolbar.addView(italicButton,new LinearLayout.LayoutParams(0,-2,1));
+    Button underlineButton=button();underlineButton.setText("U");underlineButton.setContentDescription("Gariskan teks dipilih");toolbar.addView(underlineButton,new LinearLayout.LayoutParams(0,-2,1));
     underlineButton.setOnClickListener(v->underlineSelection(body));
     colorButton.setOnClickListener(v->{int index=0;for(int i=0;i<colors.length;i++)if(colors[i]==noteColor[0])index=i;noteColor[0]=colors[(index+1)%colors.length];body.setBackground(rounded(noteColor[0]==Color.WHITE?cardSurface():noteColor[0],borderColor(),16));body.setTextColor(noteColor[0]==Color.WHITE?foreground():Color.BLACK);saveColor(noteId[0],noteColor[0]);});
     checkButton.setOnClickListener(v->{int start=Math.max(0,body.getSelectionStart());body.getText().insert(start,"☐ ");});
@@ -135,7 +135,7 @@ public class MainActivity extends Activity {
     loading[0]=false;
     Runnable save=()->{if(loading[0])return;String t=title.getText().toString(),b=body.getText().toString();if(noteId[0]<0&&t.trim().isEmpty()&&b.trim().isEmpty())return;
       ContentValues values=new ContentValues();values.put("title",t);values.put("body",b);values.put("updated",System.currentTimeMillis());values.put("color",noteColor[0]);
-      if(noteId[0]<0)noteId[0]=(int)db.getWritableDatabase().insertOrThrow("notes",null,values);else db.getWritableDatabase().update("notes",values,"id=?",new String[]{""+noteId[0]});
+      try{if(noteId[0]<0)noteId[0]=(int)db.getWritableDatabase().insertOrThrow("notes",null,values);else db.getWritableDatabase().update("notes",values,"id=?",new String[]{""+noteId[0]});}catch(Exception e){android.util.Log.e("DinNote","Note save failed",e);Toast.makeText(this,"Nota gagal disimpan",Toast.LENGTH_LONG).show();}
     };
     TextWatcher watcher=new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){scheduleSave(save);}public void afterTextChanged(Editable e){}};
     title.addTextChangedListener(watcher);body.addTextChangedListener(watcher);
@@ -143,7 +143,7 @@ public class MainActivity extends Activity {
     back.setOnClickListener(v->{flushPendingSave();showHome();});
     title.setContentDescription("Tajuk nota");body.setContentDescription("Kandungan nota Arab dan Rumi");body.setTextColor(foreground());
     Button delete=button();delete.setText("Padam nota");delete.setEnabled(id>=0);delete.setContentDescription(id>=0?"Padam nota":"Simpan nota dahulu sebelum memadam");page.addView(delete);
-    delete.setOnClickListener(v->new AlertDialog.Builder(this).setMessage("Padam nota ini?").setNegativeButton("Batal",null).setPositiveButton("Padam",(d,w)->{saveHandler.removeCallbacks(save);pendingSave=null;if(noteId[0]>=0)db.getWritableDatabase().delete("notes","id=?",new String[]{""+noteId[0]});showHome();}).show());
+    delete.setOnClickListener(v->new AlertDialog.Builder(this).setMessage("Padam nota ini?").setNegativeButton("Batal",null).setPositiveButton("Padam",(d,w)->{pendingSave=null;if(noteId[0]>=0)db.getWritableDatabase().delete("notes","id=?",new String[]{""+noteId[0]});showHome();}).show());
   }
   void showLibrary() {
     flushPendingSave();editingBook=false;
@@ -179,7 +179,7 @@ public class MainActivity extends Activity {
     flushPendingSave();editingBook=false;activeCategoryId=categoryId;activeCategoryName=categoryName;
     LinearLayout page=column();setContentView(page);
     Button back=button();back.setText("← Maktabah");page.addView(back);back.setOnClickListener(v->showLibrary());
-    page.addView(text("📁  "+categoryName,21));
+    page.addView(text("📁  "+categoryName,21));page.setFocusableInTouchMode(true);
     Button add=button();add.setText("+ Tambah kitab");add.setContentDescription("Cipta kitab dalam kategori "+categoryName);page.addView(add);add.setOnClickListener(v->editBook(-1,categoryId,categoryName));
     EditText bookSearch=field();bookSearch.setSingleLine(true);bookSearch.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);bookSearch.setSelectAllOnFocus(false);bookSearch.setHint("Cari kitab dalam kategori…");page.addView(bookSearch);
     ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);LinearLayout items=new LinearLayout(this);items.setOrientation(1);scroll.addView(items);page.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
@@ -196,7 +196,7 @@ public class MainActivity extends Activity {
         item.setContentDescription("Buka kitab "+(heading==null?"Tanpa tajuk":heading));items.addView(item);item.setOnClickListener(v->editBook(bookId,categoryId,categoryName));
       }
     }
-    if(visibleCount==0)items.addView(text(query.trim().isEmpty()?"Kategori ini belum mempunyai kitab.":"Tiada kitab ditemui.",16));
+    if(visibleCount==0)items.addView(text(query.trim().isEmpty()?"Belum ada kitab. Tekan + Tambah kitab untuk mula.":"Tiada kitab ditemui.",16));
   }
 
   void editBook(int id,int categoryId,String categoryName){
@@ -214,9 +214,9 @@ public class MainActivity extends Activity {
     LinearLayout toolbar=new LinearLayout(this);toolbar.setOrientation(LinearLayout.HORIZONTAL);
     page.addView(toolbar,new LinearLayout.LayoutParams(-1,-2));
     Button check=button();check.setText("☐");toolbar.addView(check,new LinearLayout.LayoutParams(0,-2,1));
-    Button bold=button();bold.setText("B");bold.setTypeface(null,Typeface.BOLD);toolbar.addView(bold,new LinearLayout.LayoutParams(0,-2,1));
-    Button italic=button();italic.setText("I");italic.setTypeface(null,Typeface.ITALIC);toolbar.addView(italic,new LinearLayout.LayoutParams(0,-2,1));
-    Button underline=button();underline.setText("U");toolbar.addView(underline,new LinearLayout.LayoutParams(0,-2,1));
+    Button bold=button();bold.setText("B");bold.setContentDescription("Tebalkan teks dipilih");bold.setTypeface(null,Typeface.BOLD);toolbar.addView(bold,new LinearLayout.LayoutParams(0,-2,1));
+    Button italic=button();italic.setText("I");italic.setContentDescription("Condongkan teks dipilih");italic.setTypeface(null,Typeface.ITALIC);toolbar.addView(italic,new LinearLayout.LayoutParams(0,-2,1));
+    Button underline=button();underline.setText("U");underline.setContentDescription("Gariskan teks dipilih");toolbar.addView(underline,new LinearLayout.LayoutParams(0,-2,1));
     underline.setOnClickListener(v->underlineSelection(body));
     check.setOnClickListener(v->body.getText().insert(Math.max(0,body.getSelectionStart()),"☐ "));
     bold.setOnClickListener(v->styleSelection(body,Typeface.BOLD));
@@ -226,8 +226,8 @@ public class MainActivity extends Activity {
       if(bookId[0]<0&&t.trim().isEmpty()&&content.trim().isEmpty())return;
       ContentValues cv=new ContentValues();cv.put("title",t);cv.put("body",content);
       cv.put("category_id",categoryId);cv.put("updated",System.currentTimeMillis());
-      if(bookId[0]<0)bookId[0]=(int)db.getWritableDatabase().insertOrThrow("books",null,cv);
-      else db.getWritableDatabase().update("books",cv,"id=?",new String[]{""+bookId[0]});
+      try{if(bookId[0]<0)bookId[0]=(int)db.getWritableDatabase().insertOrThrow("books",null,cv);
+      else db.getWritableDatabase().update("books",cv,"id=?",new String[]{""+bookId[0]});}catch(Exception e){android.util.Log.e("DinNote","Book save failed",e);Toast.makeText(this,"Kitab gagal disimpan",Toast.LENGTH_LONG).show();}
     };
     TextWatcher watcher=new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}
       public void onTextChanged(CharSequence s,int st,int before,int count){scheduleSave(save);}
@@ -238,7 +238,7 @@ public class MainActivity extends Activity {
     Button delete=button();delete.setText("Padam kitab");delete.setEnabled(id>=0);delete.setContentDescription(id>=0?"Padam kitab":"Simpan kitab dahulu sebelum memadam");page.addView(delete);
     delete.setOnClickListener(v->new AlertDialog.Builder(this).setMessage("Padam kitab ini?")
       .setNegativeButton("Batal",null).setPositiveButton("Padam",(d,w)->{
-        saveHandler.removeCallbacks(save);pendingSave=null;if(bookId[0]>=0)db.getWritableDatabase().delete("books","id=?",new String[]{""+bookId[0]});
+        pendingSave=null;if(bookId[0]>=0)db.getWritableDatabase().delete("books","id=?",new String[]{""+bookId[0]});
         showBooks(categoryId,categoryName);
       }).show());
   }
