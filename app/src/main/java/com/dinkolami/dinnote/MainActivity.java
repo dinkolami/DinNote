@@ -29,27 +29,35 @@ public class MainActivity extends Activity {
   setContentView(root);applySystemBarInsets(root);
   LinearLayout header=new LinearLayout(this);header.setGravity(Gravity.CENTER_VERTICAL);
   header.setPadding(dp(12),0,dp(12),0);header.setBackgroundColor(0xfff6f8fa);
-  TextView menu=text("☰",23);menu.setContentDescription("Buka menu DinNote");menu.setGravity(Gravity.CENTER);
-  menu.setPadding(dp(10),dp(8),dp(10),dp(8));header.addView(menu);
+  ImageView menu=headerIcon("☰",0xff102b25,"Buka menu DinNote");header.addView(menu);
   menu.setOnClickListener(v->new AlertDialog.Builder(this).setItems(new String[]{"Halaman utama","Nota","Maktabah","Kategori"},(d,i)->{if(i==0)home();else if(i==3)manageCategories();else openSection(i==2);}).show());
-  ImageView logo=new ImageView(this);logo.setImageResource(R.drawable.dinnote_header_logo);logo.setScaleType(ImageView.ScaleType.FIT_CENTER);logo.setContentDescription("Logo DinNote");
+  ImageView logo=new ImageView(this);logo.setImageResource(R.drawable.dinnote_header_logo);logo.setScaleType(ImageView.ScaleType.FIT_CENTER);logo.setContentDescription("Logo DinNote");logo.setClickable(true);
   LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(dp(40),dp(40));lp.leftMargin=dp(7);lp.rightMargin=dp(5);header.addView(logo,lp);
   logo.setOnClickListener(v->home());
   TextView name=text("DinNote",18);name.setTypeface(android.graphics.Typeface.DEFAULT,android.graphics.Typeface.NORMAL);name.setTextColor(0xff123e2b);
-  name.setPadding(dp(3),0,0,0);header.addView(name,new LinearLayout.LayoutParams(0,-2,1));
+  name.setGravity(Gravity.BOTTOM);name.setPadding(dp(3),0,0,dp(7));header.addView(name,new LinearLayout.LayoutParams(0,dp(40),1));
   name.setOnClickListener(v->home());
-  TextView searchIcon=text("⌕",27);searchIcon.setContentDescription("Cari nota");
-  searchIcon.setPadding(dp(10),dp(8),dp(10),dp(8));header.addView(searchIcon);
+  ImageView searchIcon=headerIcon("⌕",0xff102b25,"Cari nota");header.addView(searchIcon);
   searchIcon.setOnClickListener(v->searchNotesDialog());
-  TextView inbox=text("▱",24);inbox.setContentDescription("Buka nota");
-  inbox.setPadding(dp(9),dp(8),dp(9),dp(8));header.addView(inbox);
+  ImageView inbox=headerIcon("▱",0xff102b25,"Buka nota");header.addView(inbox);
   inbox.setOnClickListener(v->openSection(false));
-  TextView avatar=text("◉",23);avatar.setTextColor(0xff126b43);
-  avatar.setContentDescription("Urus kategori");avatar.setPadding(dp(9),dp(8),dp(9),dp(8));header.addView(avatar);
+  ImageView avatar=headerIcon("⚙",0xff126b43,"Urus kategori");header.addView(avatar);
   avatar.setOnClickListener(v->manageCategories());
   root.addView(header,new LinearLayout.LayoutParams(-1,dp(62)));
   View border=new View(this);border.setBackgroundColor(0xffd0d7de);
   root.addView(border,new LinearLayout.LayoutParams(-1,dp(1)));
+ }
+ ImageView headerIcon(String symbol,int color,String description){
+  int px=dp(44);android.graphics.Bitmap bitmap=android.graphics.Bitmap.createBitmap(px,px,android.graphics.Bitmap.Config.ARGB_8888);
+  android.graphics.Canvas canvas=new android.graphics.Canvas(bitmap);
+  android.graphics.Paint paint=new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
+  paint.setColor(color);paint.setTextSize(dp(27));paint.setTypeface(android.graphics.Typeface.DEFAULT);
+  paint.setTextAlign(android.graphics.Paint.Align.CENTER);
+  android.graphics.Paint.FontMetrics fm=paint.getFontMetrics();
+  canvas.drawText(symbol,px/2f,px/2f-(fm.ascent+fm.descent)/2f,paint);
+  ImageView view=new ImageView(this);view.setImageBitmap(bitmap);view.setContentDescription(description);
+  view.setClickable(true);view.setFocusable(true);view.setScaleType(ImageView.ScaleType.FIT_CENTER);
+  return view;
  }
  void searchNotesDialog(){
   final EditText field=new EditText(this);field.setSingleLine(true);field.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);field.setHint("Cari tajuk atau kandungan nota");field.setContentDescription("Carian tajuk dan kandungan");
