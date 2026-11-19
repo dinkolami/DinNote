@@ -116,7 +116,7 @@ public class MainActivity extends Activity {
     try(Cursor cats=db.getReadableDatabase().rawQuery("SELECT id,name FROM categories ORDER BY name COLLATE NOCASE LIMIT 8",null)){
       while(cats.moveToNext()){
         final int categoryId=cats.getInt(0);final String categoryName=cats.getString(1);
-        Button shortcut=button();shortcut.setText("▥  "+categoryName);libraryShortcuts.addView(shortcut);
+        Button shortcut=button();shortcut.setText("▥  "+categoryName);shortcut.setContentDescription("Buka kitab kategori "+categoryName);libraryShortcuts.addView(shortcut);
         shortcut.setOnClickListener(v->showBooks(categoryId,categoryName));
       }
     }catch(Exception e){android.util.Log.w("DinNote","Library shortcuts unavailable",e);}
