@@ -195,7 +195,7 @@ public class MainActivity extends Activity {
   LinearLayout page=new LinearLayout(this);page.setOrientation(1);
   page.setPadding(dp(8),dp(6),dp(8),dp(12));scroll.addView(page);
   TextView recent=dashboardText("Baru dilihat  ▾",15,true);
-  recent.setBackground(rounded(0xfff6f8fa,0xffe5e7eb,8));
+  recent.setBackground(rounded(0xffeaf7eb,0xffc9e8cf,8));
   LinearLayout quickTools=new LinearLayout(this);quickTools.setOrientation(LinearLayout.HORIZONTAL);quickTools.setGravity(Gravity.CENTER_VERTICAL);
   LinearLayout.LayoutParams quickParams=new LinearLayout.LayoutParams(-1,-2);quickParams.bottomMargin=dp(4);
   page.addView(quickTools,quickParams);
@@ -225,8 +225,8 @@ public class MainActivity extends Activity {
   TextView note=dashboardText("▤\nNota",14,true);
   TextView book=dashboardText("▱\nMaktabah",14,true);
   note.setGravity(Gravity.CENTER);book.setGravity(Gravity.CENTER);note.setFocusable(true);book.setFocusable(true);
-  note.setBackground(silverGradient(10));
-  book.setBackground(silverGradient(10));
+  note.setBackground(rounded(0xfff0fbf2,0xffbde6c5,10));
+  book.setBackground(rounded(0xfff0fbf2,0xffbde6c5,10));
   LinearLayout.LayoutParams a=new LinearLayout.LayoutParams(0,dp(78),1);a.rightMargin=dp(4);
   LinearLayout.LayoutParams b=new LinearLayout.LayoutParams(0,dp(78),1);b.leftMargin=dp(4);
   tiles.addView(note,a);tiles.addView(book,b);
@@ -241,7 +241,7 @@ public class MainActivity extends Activity {
   String resume=prefs.getString("last_edited_key","");
   if(!resume.isEmpty()&&prefs.contains(resume)){
    TextView resumeButton=dashboardText("✎  Sambung menulis  ›",15,true);
-   resumeButton.setBackground(rounded(0xfff6f8fa,0xffd0d7de,10));
+   resumeButton.setBackground(rounded(0xffeffaf1,0xffa6dcb3,10));
    shortcuts.addView(resumeButton);
    resumeButton.setOnClickListener(v->edit(resume));
   }
