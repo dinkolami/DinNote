@@ -390,6 +390,96 @@ public class MainActivity extends Activity {
  void cleanBase(){readerDetector=null;root=new LinearLayout(this);root.setOrientation(1);root.setBackgroundColor(Color.WHITE);setContentView(root);applySystemBarInsets(root);}
  Button action(String label,LinearLayout bar,Runnable callback){Button b=new Button(this);b.setText(label);b.setAllCaps(false);b.setTextSize(13);b.setMinWidth(0);b.setMinimumWidth(0);b.setMinHeight(0);b.setMinimumHeight(0);b.setPadding(dp(12),dp(8),dp(12),dp(8));b.setBackground(rounded(0xfff6f8fa,0xffe1e7e3,12));LinearLayout.LayoutParams buttonParams=new LinearLayout.LayoutParams(-2,dp(42));buttonParams.setMargins(dp(3),dp(5),dp(3),dp(5));bar.addView(b,buttonParams);b.setOnClickListener(v->callback.run());return b;}
  void returnFromReader(){selected=null;if(sectionOpen)notesPage();else home();}
+
+ void showPagedReader(String key){
+  final String original=prefs.getString(key,"");
+  final String heading=prefs.getString("title_"+key,"");
+  final boolean spread=getResources().getConfiguration().screenWidthDp>=500&&prefs.getBoolean("reader_two_columns",true);
+  final int level=Math.max(0,Math.min(3,prefs.getInt("reader_font_level",1)));
+  final int fontSize=(key.startsWith("m_")?new int[]{15,18,21,25}:new int[]{13,15,18,22})[level];
+  final int theme=prefs.getInt("reader_theme",0);
+  final int paper=theme==0?0xffffffff:theme==2?0xfff2f8f3:0xfffffcf4;
+  final LinearLayout pages=new LinearLayout(this);pages.setOrientation(LinearLayout.HORIZONTAL);
+  pages.setPadding(dp(8),dp(8),dp(8),dp(8));
+  final TextView counter=text("",12);counter.setGravity(Gravity.CENTER);
+  final LinearLayout controls=new LinearLayout(this);controls.setGravity(Gravity.CENTER_VERTICAL);
+  Button previous=new Button(this);previous.setText("‹");previous.setContentDescription("Halaman sebelumnya");
+  Button next=new Button(this);next.setText("›");next.setContentDescription("Halaman seterusnya");
+  controls.addView(previous,new LinearLayout.LayoutParams(dp(54),-2));
+  controls.addView(counter,new LinearLayout.LayoutParams(0,-2,1));
+  controls.addView(next,new LinearLayout.LayoutParams(dp(54),-2));
+  root.addView(pages,new LinearLayout.LayoutParams(-1,0,1));root.addView(controls);
+  pages.post(()->{
+   int availableWidth=Math.max(dp(160),pages.getWidth()-dp(24));
+   int pageWidth=spread?(availableWidth-dp(12))/2:availableWidth;
+   int pageHeight=Math.max(dp(160),pages.getHeight()-dp(24));
+   final ArrayList<String> chunks=new ArrayList<>();
+   int cursor=0;
+   while(cursor<original.length()){
+    TextView probe=text("",fontSize);probe.setPadding(dp(12),dp(12),dp(12),dp(12));
+    probe.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
+    probe.setLineSpacing(dp(3),1.15f);
+    int low=cursor+1,high=original.length(),best=low;
+    while(low<=high){
+     int mid=low+(high-low)/2;
+     probe.setText(original.substring(cursor,mid));
+     probe.measure(View.MeasureSpec.makeMeasureSpec(pageWidth,View.MeasureSpec.EXACTLY),View.MeasureSpec.makeMeasureSpec(0,View.MeasureSpec.UNSPECIFIED));
+     if(probe.getMeasuredHeight()<=pageHeight){best=mid;low=mid+1;}else high=mid-1;
+    }
+    int end=Math.min(original.length(),Math.max(cursor+1,best));
+    if(end<original.length()){
+     int boundary=original.lastIndexOf(' ',end);
+     int newline=original.lastIndexOf('\n',end);
+     boundary=Math.max(boundary,newline);
+     if(boundary>cursor+(end-cursor)/2)end=boundary+1;
+    }
+    chunks.add(original.substring(cursor,end));cursor=end;
+   }
+   if(chunks.isEmpty())chunks.add("");
+   final int total=chunks.size();
+   final int[] index={Math.min(Math.max(0,prefs.getInt("reading_page_"+key,0)),total-1)};
+   if(spread)index[0]=(index[0]/2)*2;
+   final Runnable render=()->{
+    pages.removeAllViews();
+    int first=index[0],count=spread?2:1;
+    for(int j=0;j<count;j++){
+     int n=first+j;
+     TextView page=text(n<total?chunks.get(n):"",fontSize);
+     page.setTextColor(0xff26372e);page.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
+     page.setGravity(Gravity.TOP);page.setTextIsSelectable(true);
+     page.setLineSpacing(dp(3),1.15f);page.setPadding(dp(12),dp(12),dp(12),dp(12));
+     page.setBackground(rounded(paper,0xffdde5e1,10));
+     LinearLayout.LayoutParams params=new LinearLayout.LayoutParams(0,-1,1);
+     if(j>0)params.leftMargin=dp(12);
+     pages.addView(page,params);
+    }
+    counter.setText((first+1)+(spread&&first+1<total?"–"+(first+2):"")+" / "+total+"  •  "+heading);
+    previous.setEnabled(first>0);next.setEnabled(first+(spread?2:1)<total);
+    prefs.edit().putInt("reading_page_"+key,first).apply();
+   };
+   previous.setOnClickListener(v->{index[0]=Math.max(0,index[0]-(spread?2:1));render.run();});
+   next.setOnClickListener(v->{index[0]=Math.min(total-1,index[0]+(spread?2:1));render.run();});
+   pages.setOnTouchListener(new View.OnTouchListener(){
+    float startX,startY;
+    public boolean onTouch(View v,android.view.MotionEvent e){
+     if(e.getAction()==android.view.MotionEvent.ACTION_DOWN){startX=e.getX();startY=e.getY();return true;}
+     if(e.getAction()==android.view.MotionEvent.ACTION_UP){
+      float dx=e.getX()-startX;
+      if(Math.abs(dx)>dp(55)&&Math.abs(dx)>Math.abs(e.getY()-startY)){
+       int step=spread?2:1;
+       index[0]=Math.max(0,Math.min(total-1,index[0]+(dx<0?step:-step)));
+       if(spread)index[0]=(index[0]/2)*2;
+       render.run();
+      }
+      return true;
+     }
+     return true;
+    }
+   });
+   render.run();
+  });
+ }
+
  void read(String key){
   editor=null;titleEditor=null;saveIndicator=null;selected=key;prefs.edit().putLong("viewed_"+key,System.currentTimeMillis()).putString(key.startsWith("m_")?"reading_last_m":"reading_last_n",key).apply();cleanBase();
   LinearLayout bar=new LinearLayout(this);bar.setGravity(Gravity.CENTER_VERTICAL);bar.setPadding(dp(8),dp(3),dp(8),dp(3));bar.setBackground(rounded(0xfff8faf8,0xffe1e7e3,12));root.addView(bar);
@@ -398,6 +488,8 @@ public class MainActivity extends Activity {
   Button readerFont=action("Aa",bar,()->{new AlertDialog.Builder(this).setTitle("Tetapan bacaan").setItems(new String[]{"Saiz tulisan","Latar Putih","Latar Ivory","Latar Hijau Lembut","Jarak baris: biasa","Jarak baris: luas"},(dialog,choice)->{if(choice==0)new AlertDialog.Builder(this).setTitle("Saiz tulisan").setSingleChoiceItems(new String[]{"Kecil","Biasa","Besar","Sangat besar"},prefs.getInt("reader_font_level",1),(d,which)->{prefs.edit().putInt("reader_font_level",which).apply();d.dismiss();read(key);}).setNegativeButton("Batal",null).show();else if(choice<=3){prefs.edit().putInt("reader_theme",choice-1).apply();read(key);}else{prefs.edit().putBoolean("reader_wide_spacing",choice==5).apply();read(key);}}).show();});readerFont.setContentDescription("Ubah saiz tulisan Nota dan Maktabah");
   Button bookmarkButton=action("♧",bar,()->{int pos=prefs.getInt("reading_scroll_"+key,0);new AlertDialog.Builder(this).setTitle("Penanda bacaan").setMessage("Kedudukan terakhir: "+pos+" px").setPositiveButton("Simpan penanda",(d,w)->{prefs.edit().putInt("bookmark_scroll_"+key,prefs.getInt("reading_scroll_"+key,0)).apply();Toast.makeText(this,"Penanda disimpan",Toast.LENGTH_SHORT).show();}).setNeutralButton("Pergi ke penanda",(d,w)->{int target=prefs.getInt("bookmark_scroll_"+key,-1);if(target>=0){read(key);root.post(()->{ScrollView currentScroll=(ScrollView)root.getChildAt(root.getChildCount()-2);currentScroll.post(()->currentScroll.scrollTo(0,target));});}else Toast.makeText(this,"Tiada penanda",Toast.LENGTH_SHORT).show();}).setNegativeButton("Tutup",null).show();});bookmarkButton.setContentDescription("Penanda bacaan");Button readerEdit=action("✎ Edit",bar,()->edit(key));readerEdit.setContentDescription(key.startsWith("m_")?"Sunting kandungan kitab":"Sunting kandungan nota");
   Button layoutButton=action("▥",bar,()->{boolean now=prefs.getBoolean("reader_two_columns",getResources().getConfiguration().screenWidthDp>=600);prefs.edit().putBoolean("reader_two_columns",!now).apply();read(key);});layoutButton.setContentDescription("Tukar paparan satu atau dua kolum");layoutButton.setTextColor(0xff176b47); Button chaptersButton=action("☷",bar,()->{String[] lines=prefs.getString(key,"").split("\\R");ArrayList<String> chapters=new ArrayList<>();ArrayList<Integer> offsets=new ArrayList<>();int offset=0;for(String line:lines){String trimmed=line.trim();if((trimmed.matches("(?i)^(bab|fasal|chapter)\\s+.*")||trimmed.startsWith("باب ")||trimmed.startsWith("فصل "))&&trimmed.length()<120){chapters.add(trimmed);offsets.add(offset);}offset+=line.length()+1;}if(chapters.isEmpty()){Toast.makeText(this,"Tiada tajuk bab dikenal pasti",Toast.LENGTH_SHORT).show();return;}new AlertDialog.Builder(this).setTitle("Isi kandungan").setItems(chapters.toArray(new String[0]),(d,i)->{int target=offsets.get(i);read(key);root.post(()->{ScrollView currentScroll=(ScrollView)root.getChildAt(root.getChildCount()-2);TextView currentText=(TextView)((LinearLayout)currentScroll.getChildAt(0)).getChildAt(((LinearLayout)currentScroll.getChildAt(0)).getChildCount()-2);android.text.Layout layout=currentText.getLayout();if(layout!=null){int line=layout.getLineForOffset(Math.min(target,currentText.length()));currentScroll.scrollTo(0,currentText.getTop()+layout.getLineTop(line));}});}).show();});chaptersButton.setContentDescription("Isi kandungan bab");Button readerOptions=action("⋮",bar,()->new AlertDialog.Builder(this).setItems(new String[]{"Edit","Semat / Buka sematan","Duplikasi","Padam"},(d,i)->{if(i==0)edit(key);else if(i==1){boolean pinned=prefs.getBoolean("pinned_"+key,false);prefs.edit().putBoolean("pinned_"+key,!pinned).apply();android.widget.Toast.makeText(this,pinned?"Sematan dibuang":"Nota disemat",android.widget.Toast.LENGTH_SHORT).show();read(key);}else if(i==2)duplicateNote(key);else confirmDelete(key);}).show());readerOptions.setContentDescription(key.startsWith("m_")?"Menu tindakan kitab":"Menu tindakan nota");
+  // Page-by-page reader for long Nota and Maktabah content.
+  if(prefs.getString(key,"").length()>=100){showPagedReader(key);return;}
   String heading=prefs.getString("title_"+key,"");
   TextView sectionLabel=text(key.startsWith("m_")?"▤  Maktabah":"✎  Nota",12);sectionLabel.setTextColor(0xff23714b);sectionLabel.setPadding(dp(20),dp(10),dp(20),dp(2));
   ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);scroll.setOverScrollMode(View.OVER_SCROLL_NEVER);
