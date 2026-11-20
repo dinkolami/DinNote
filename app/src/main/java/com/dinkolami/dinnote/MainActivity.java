@@ -397,8 +397,8 @@ public class MainActivity extends Activity {
     if(when>0L){
      TextView date=dashboardText(new java.text.SimpleDateFormat("dd MMM",new java.util.Locale("ms","MY")).format(new java.util.Date(when)),12,false);
      date.setTextColor(0xff35644a);date.setGravity(Gravity.CENTER);date.setSingleLine(true);
-     date.setBackground(rounded(0xfff6f3e9,0xffead8ac,14));date.setIncludeFontPadding(false);
-     date.setPadding(dp(8),dp(3),dp(8),dp(3));
+     date.setBackground(rounded(0xfffaf7ee,0xffe8d9b6,14));date.setIncludeFontPadding(false);date.setMaxLines(1);date.setEllipsize(android.text.TextUtils.TruncateAt.END);
+     date.setPadding(dp(7),dp(3),dp(7),dp(3));
      FrameLayout.LayoutParams dateParams=new FrameLayout.LayoutParams(-2,-2,Gravity.RIGHT|Gravity.CENTER_VERTICAL);
      dateParams.rightMargin=dp(8);row.addView(date,dateParams);date.setContentDescription("Dilihat pada "+new java.text.SimpleDateFormat("dd MMMM",new java.util.Locale("ms","MY")).format(new java.util.Date(when)));
     }
@@ -456,7 +456,7 @@ public class MainActivity extends Activity {
    LinearLayout.LayoutParams ep=new LinearLayout.LayoutParams(-1,-2);
    ep.bottomMargin=dp(5);target.addView(entry,ep);applyTouchFeedback(entry);
    entry.setFocusable(true);
-   entry.setContentDescription("Buka "+(key.startsWith("m_")?"kitab ":"nota ")+(label.isEmpty()?"Tanpa tajuk":label));
+   entry.setContentDescription("Buka "+(key.startsWith("m_")?"kitab ":"nota ")+(label.isEmpty()?"Tanpa tajuk":label));entry.setTooltipText(label.isEmpty()?"Tanpa tajuk":label);
    entry.setOnClickListener(v->{maktabah=key.startsWith("m_");read(key);});
   }
  }
