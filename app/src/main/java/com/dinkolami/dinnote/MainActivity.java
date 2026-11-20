@@ -1953,7 +1953,26 @@ public class MainActivity extends Activity {
  @Override public void onConfigurationChanged(android.content.res.Configuration newConfig){
   super.onConfigurationChanged(newConfig);
   // Rebuild only the home dashboard on Fold6 fold/unfold; retain active editor and reader.
-  if(root!=null && root.findViewWithTag("dinnote_home")!=null){home();return;}
+  if(root!=null && root.findViewWithTag("dinnote_home")!=null){
+   // Preserve proportional home scroll position when the Fold6 changes width.
+   ScrollView oldScroll=null;
+   for(int i=0;i<root.getChildCount();i++)if(root.getChildAt(i) instanceof ScrollView){oldScroll=(ScrollView)root.getChildAt(i);break;}
+   float scrollFraction=0f;
+   if(oldScroll!=null && oldScroll.getChildCount()>0){
+    int oldRange=Math.max(1,oldScroll.getChildAt(0).getHeight()-oldScroll.getHeight());
+    scrollFraction=Math.min(1f,Math.max(0f,(float)oldScroll.getScrollY()/oldRange));
+   }
+   final float restoreFraction=scrollFraction;
+   home();
+   for(int i=0;i<root.getChildCount();i++)if(root.getChildAt(i) instanceof ScrollView){
+    final ScrollView newScroll=(ScrollView)root.getChildAt(i);
+    newScroll.post(()->{
+     if(newScroll.getChildCount()>0){int range=Math.max(0,newScroll.getChildAt(0).getHeight()-newScroll.getHeight());newScroll.scrollTo(0,Math.round(restoreFraction*range));}
+    });
+    break;
+   }
+   return;
+  }
   if(editor!=null){
    // Keep the active editor and unsaved typing intact across fold/unfold.
    // Reflow text using Android's new width without recreating the editor.
