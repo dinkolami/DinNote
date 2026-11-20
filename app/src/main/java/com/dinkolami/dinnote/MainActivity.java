@@ -290,10 +290,10 @@ public class MainActivity extends Activity {
   LinearLayout page=new LinearLayout(this);page.setOrientation(1);
   page.setPadding(dp(10),dp(6),dp(10),dp(12));page.setBackgroundColor(0xfffffcf4);page.setTag("dinnote_home");scroll.addView(page);
   TextView recent=dashboardText("Baru dilihat  ▾",15,true);
-  recent.setBackground(rounded(0xfffffdf8,0xffd7bd79,8));recent.setTextColor(0xff176b47);
+  recent.setBackground(rounded(0xfffffdf8,0xffdec995,9));recent.setTextColor(0xff176b47);recent.setIncludeFontPadding(false);
   LinearLayout quickTools=new LinearLayout(this);quickTools.setOrientation(LinearLayout.HORIZONTAL);quickTools.setGravity(Gravity.CENTER_VERTICAL);
   LinearLayout.LayoutParams quickParams=new LinearLayout.LayoutParams(-1,-2);quickParams.bottomMargin=dp(1);
-  quickTools.setPadding(dp(10),dp(4),dp(10),dp(5));quickTools.setBackgroundColor(0xfffffcf4);
+  quickTools.setPadding(dp(10),dp(4),dp(10),dp(6));quickTools.setBackgroundColor(0xfffffcf4);quickTools.setElevation(dp(1));
   // Keep dashboard search and view selector visible while the note list scrolls.
   root.addView(quickTools,2,quickParams);
   LinearLayout.LayoutParams rp=new LinearLayout.LayoutParams(-2,dp(42));rp.rightMargin=dp(6);
@@ -306,7 +306,7 @@ public class MainActivity extends Activity {
   search.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);
   search.setInputType(android.text.InputType.TYPE_CLASS_TEXT);
   search.setPadding(dp(12),dp(6),dp(12),dp(6));
-  search.setBackground(rounded(0xffffffff,0xffd7bd79,8));
+  search.setBackground(rounded(0xffffffff,0xffdec995,9));
   LinearLayout.LayoutParams sp=new LinearLayout.LayoutParams(0,dp(42),1);
   quickTools.addView(search,sp);
   search.addTextChangedListener(new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){String q=s.toString().trim();if(!q.isEmpty())showHomeSearchResults(q);}public void afterTextChanged(Editable e){}});
