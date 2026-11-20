@@ -403,7 +403,7 @@ public class MainActivity extends Activity {
   String cleaned=raw.replace("\\r\\n"," ").replace("\\n"," ").replace("\\r"," ").replace("\\t"," ");
   cleaned=cleaned.replaceAll("\\s+"," ").trim();
   // Wrap Arabic runs individually to preserve natural RTL order within Malay sentences.
-  java.util.regex.Matcher matcher=java.util.regex.Pattern.compile("[\\p{InArabic}\\u064B-\\u065F\\u0670\\s]+").matcher(cleaned);
+  java.util.regex.Matcher matcher=java.util.regex.Pattern.compile("[\\p{InArabic}]+(?:\\s+[\\p{InArabic}]+)*").matcher(cleaned);
   StringBuffer result=new StringBuffer();
   android.text.BidiFormatter formatter=android.text.BidiFormatter.getInstance(false);
   while(matcher.find()){
