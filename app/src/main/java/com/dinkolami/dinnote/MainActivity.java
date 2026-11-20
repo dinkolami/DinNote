@@ -41,9 +41,9 @@ public class MainActivity extends Activity {
   setContentView(root);applySystemBarInsets(root);
   LinearLayout header=new LinearLayout(this);header.setGravity(Gravity.CENTER_VERTICAL);
   header.setPadding(dp(8),dp(3),dp(8),dp(3));header.setBackgroundColor(0xfffffdf7);
-  ImageView menu=headerIcon("⌂",0xff102b25,"Halaman utama DinNote");header.addView(menu);
+  ImageView menu=headerIcon("⌂",0xffb48a38,"Halaman utama DinNote");header.addView(menu);
   menu.setOnClickListener(v->home());
-  ImageView settingsMenu=headerIcon("☰",0xff102b25,"Menu DinNote dan Tetapan");header.addView(settingsMenu);
+  ImageView settingsMenu=headerIcon("☰",0xffb48a38,"Menu DinNote dan Tetapan");header.addView(settingsMenu);
   settingsMenu.setOnClickListener(v->showMainMenu());
   ImageView logo=new ImageView(this);logo.setImageBitmap(transparentHeaderLogo());logo.setScaleType(ImageView.ScaleType.FIT_CENTER);logo.setContentDescription("Logo DinNote");logo.setClickable(true);logo.setPadding(dp(3),dp(3),dp(3),dp(3));logo.setBackground(rounded(0xfffffdf7,0xffb89543,50));logo.setClipToOutline(true);
   LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(dp(34),dp(34));lp.leftMargin=dp(6);lp.rightMargin=dp(5);header.addView(logo,lp);
@@ -51,11 +51,11 @@ public class MainActivity extends Activity {
   TextView name=text("DinNote",16);name.setTypeface(android.graphics.Typeface.create("serif",android.graphics.Typeface.ITALIC));name.setTextColor(0xff075033);
   name.setGravity(Gravity.CENTER_VERTICAL);name.setPadding(dp(3),0,0,0);header.addView(name,new LinearLayout.LayoutParams(0,dp(40),1));
   name.setOnClickListener(v->home());
-  ImageView inbox=headerIcon("▣",0xff102b25,"Buka nota");header.addView(inbox);
+  ImageView inbox=headerIcon("▣",0xffb48a38,"Buka nota");header.addView(inbox);
   inbox.setOnClickListener(v->openSection(false));
-  ImageView bell=headerIcon("♧",0xff126b43,"Peringatan nota");header.addView(bell);
+  ImageView bell=headerIcon("♧",0xffb48a38,"Peringatan nota");header.addView(bell);
   bell.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Peringatan").setMessage("Peringatan nota belum tersedia.").setPositiveButton("OK",null).show());
-  ImageView avatar=headerIcon("☪",0xff126b43,"Urus kategori");header.addView(avatar);
+  ImageView avatar=headerIcon("☪",0xffb48a38,"Urus kategori");header.addView(avatar);
   avatar.setOnClickListener(v->manageCategories());
   root.addView(header,new LinearLayout.LayoutParams(-1,dp(54)));
   View border=new View(this);border.setBackgroundColor(0xffd5bb72);
@@ -110,7 +110,7 @@ public class MainActivity extends Activity {
   }else{canvas.drawText(symbol,px/2f,px/2f-(fm.ascent+fm.descent)/2f,paint);}
   ImageView view=new ImageView(this);view.setImageBitmap(bitmap);view.setContentDescription(description);
   view.setClickable(true);view.setFocusable(true);view.setScaleType(ImageView.ScaleType.FIT_CENTER);
-  android.graphics.drawable.GradientDrawable frame=new android.graphics.drawable.GradientDrawable();frame.setColor(0xffffffff);frame.setCornerRadius(dp(10));frame.setStroke(dp(1),0xffe5e7eb);view.setBackground(frame);
+  android.graphics.drawable.GradientDrawable frame=new android.graphics.drawable.GradientDrawable();frame.setColor(0xfffdf9eb);frame.setCornerRadius(dp(10));frame.setStroke(dp(1),0xffc9a34f);view.setBackground(frame);
   view.setPadding(dp(5),dp(5),dp(5),dp(5));
   LinearLayout.LayoutParams iconParams=new LinearLayout.LayoutParams(dp(34),dp(34));iconParams.leftMargin=dp(3);iconParams.rightMargin=dp(3);view.setLayoutParams(iconParams);
   return view;
@@ -312,8 +312,8 @@ public class MainActivity extends Activity {
   LinearLayout choices=new LinearLayout(this);choices.setOrientation(LinearLayout.HORIZONTAL);
   LinearLayout.LayoutParams choicesParams=new LinearLayout.LayoutParams(-1,-2);
   choicesParams.bottomMargin=dp(20);page.addView(choices,choicesParams);
-  TextView note=dashboardText("▤\\nNota",20,true);
-  TextView book=dashboardText("▥\\nMaktabah",20,true);
+  TextView note=dashboardText("▤\nNota",20,true);
+  TextView book=dashboardText("▥\nMaktabah",20,true);
   for(TextView tile:new TextView[]{note,book}){
    tile.setGravity(Gravity.CENTER);tile.setTextColor(0xffffe6a9);
    android.graphics.drawable.GradientDrawable tileBg=new android.graphics.drawable.GradientDrawable();
