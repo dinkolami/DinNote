@@ -1945,7 +1945,7 @@ public class MainActivity extends Activity {
   if(selected!=null&&prefs.contains(selected)){
    String key=selected;
    saveReaderPosition(key);
-   root.post(()->{if(editor==null&&key.equals(selected))read(key);});
+   root.post(()->{if(!isFinishing()&&!isDestroyed()&&editor==null&&key.equals(selected)&&prefs.contains(key))read(key);});
   }
  }
  // Durable checkpoint when Android backgrounds the editor; protects recent autosaved text
