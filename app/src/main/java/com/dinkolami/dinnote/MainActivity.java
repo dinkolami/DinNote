@@ -384,7 +384,7 @@ public class MainActivity extends Activity {
     if(t.trim().isEmpty())t="Tanpa tajuk";
     // Light emerald list: slightly larger titles, dates consistently aligned right.
     FrameLayout row=new FrameLayout(this);
-    row.setBackground(subtleNoteBorder(8));row.setMinimumHeight(dp(38));
+    row.setBackground(subtleNoteBorder(9));row.setMinimumHeight(dp(40));
     TextView item=dashboardText((k.startsWith("m_")?"▱  ":"▤  ")+t,14,false);
     item.setTextColor(0xff26352e);item.setGravity(Gravity.CENTER_VERTICAL);
     item.setPadding(dp(10),dp(8),dp(88),dp(8));item.setIncludeFontPadding(false);
@@ -400,7 +400,7 @@ public class MainActivity extends Activity {
      dateParams.rightMargin=dp(8);row.addView(date,dateParams);date.setContentDescription("Dilihat pada "+new java.text.SimpleDateFormat("dd MMMM",new java.util.Locale("ms","MY")).format(new java.util.Date(when)));
     }
     LinearLayout.LayoutParams itemParams=new LinearLayout.LayoutParams(-1,-2);
-    itemParams.bottomMargin=dp(4);
+    itemParams.bottomMargin=dp(5);
     if(wide)(i<5?left:right).addView(row,itemParams);else recentNotes.addView(row,itemParams);
     applyTouchFeedback(row);row.setFocusable(true);
     row.setContentDescription("Buka "+(k.startsWith("m_")?"kitab ":"nota ")+t);
@@ -436,7 +436,7 @@ public class MainActivity extends Activity {
  void dashboardSection(LinearLayout target,String heading,ArrayList<String> keys,boolean pin){
   // Compact, consistent GitHub-style outline icons and tighter vertical rhythm.
   TextView title=dashboardText((pin?"⌖  ":"◷  ")+(pin?"Nota disemat":"Terakhir dikemaskini"),15,true);
-  title.setTextColor(0xff225c42);title.setBackground(rounded(0xffe1f0df,0xffd2e4ce,8));title.setPadding(dp(10),dp(8),dp(10),dp(8));LinearLayout.LayoutParams titleParams=new LinearLayout.LayoutParams(-1,-2);titleParams.topMargin=dp(5);titleParams.bottomMargin=dp(5);target.addView(title,titleParams);
+  title.setTextColor(0xff225c42);title.setBackground(rounded(0xffe8f3e5,0xffd6e6d1,9));title.setPadding(dp(10),dp(8),dp(10),dp(8));title.setIncludeFontPadding(false);LinearLayout.LayoutParams titleParams=new LinearLayout.LayoutParams(-1,-2);titleParams.topMargin=dp(5);titleParams.bottomMargin=dp(5);target.addView(title,titleParams);
   if(keys.isEmpty()){
    TextView empty=dashboardText(pin?"Belum ada nota disemat":"Belum ada nota dikemaskini",13,false);
    empty.setTextColor(0xff68756c);empty.setPadding(dp(10),dp(5),dp(10),dp(8));
@@ -449,9 +449,9 @@ public class MainActivity extends Activity {
    entry.setTextColor(0xff26352e);entry.setGravity(Gravity.CENTER_VERTICAL);
    entry.setSingleLine(true);entry.setEllipsize(android.text.TextUtils.TruncateAt.END);
    entry.setPadding(dp(10),dp(7),dp(10),dp(7));entry.setIncludeFontPadding(false);
-   entry.setBackground(subtleNoteBorder(8));entry.setMinHeight(dp(38));
+   entry.setBackground(subtleNoteBorder(9));entry.setMinHeight(dp(40));
    LinearLayout.LayoutParams ep=new LinearLayout.LayoutParams(-1,-2);
-   ep.bottomMargin=dp(4);target.addView(entry,ep);applyTouchFeedback(entry);
+   ep.bottomMargin=dp(5);target.addView(entry,ep);applyTouchFeedback(entry);
    entry.setFocusable(true);
    entry.setContentDescription("Buka "+(key.startsWith("m_")?"kitab ":"nota ")+(label.isEmpty()?"Tanpa tajuk":label));
    entry.setOnClickListener(v->{maktabah=key.startsWith("m_");read(key);});
