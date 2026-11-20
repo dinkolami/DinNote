@@ -61,27 +61,13 @@ public class MainActivity extends Activity {
   android.widget.FrameLayout headerFrame=new android.widget.FrameLayout(this);
   headerFrame.setBackgroundColor(0xfffffdf7);
   headerFrame.addView(header,new android.widget.FrameLayout.LayoutParams(-1,dp(54)));
-  View goldDome=new View(this){
-   final android.graphics.Paint gold=new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
-   @Override protected void onDraw(android.graphics.Canvas canvas){
-    super.onDraw(canvas);
-    float width=getWidth(),middle=width/2f;
-    float edge=dp(13),peak=dp(1.5f),shoulder=dp(12);
-    android.graphics.Path outline=new android.graphics.Path();
-    outline.moveTo(0,edge);
-    outline.cubicTo(width*.19f,edge,width*.37f,shoulder,middle,peak);
-    outline.cubicTo(width*.63f,shoulder,width*.81f,edge,width,edge);
-    gold.setStyle(android.graphics.Paint.Style.STROKE);
-    gold.setStrokeWidth(dp(.8f));
-    gold.setStrokeCap(android.graphics.Paint.Cap.ROUND);
-    gold.setStrokeJoin(android.graphics.Paint.Join.ROUND);
-    gold.setColor(0xffc5a35a);
-    canvas.drawPath(outline,gold);
-   }
-  };
+  // Approved gold arch is a raster PNG extracted from the signed-off Fold/Unfold mockup.
+  ImageView goldDome=new ImageView(this);
+  goldDome.setImageResource(R.drawable.dinnote_approved_gold_arch);
+  goldDome.setScaleType(ImageView.ScaleType.FIT_XY);
   goldDome.setClickable(false);
   goldDome.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
-  headerFrame.addView(goldDome,new android.widget.FrameLayout.LayoutParams(-1,dp(16),android.view.Gravity.TOP));
+  headerFrame.addView(goldDome,new android.widget.FrameLayout.LayoutParams(-1,dp(24),android.view.Gravity.TOP));
   root.addView(headerFrame,new LinearLayout.LayoutParams(-1,dp(54)));
   View border=new View(this);border.setBackgroundColor(0xffd5bb72);
   root.addView(border,new LinearLayout.LayoutParams(-1,dp(1)));
