@@ -1325,9 +1325,10 @@ public class MainActivity extends Activity {
   underlineButton.setContentDescription("Garis bawah teks terpilih");
   Button dividerButton=action("─",formatBar,()->insertEditorText("\n---\n"));
   dividerButton.setTextColor(0xffb49a43);dividerButton.setContentDescription("Masukkan divider emas");
-  Button fontButton=action("Aa",formatBar,()->new AlertDialog.Builder(this).setTitle("Saiz tulisan editor").setItems(new String[]{"Kecil","Biasa","Besar","Sangat besar"},(d,i)->{prefs.edit().putInt("editor_font_level",i).apply();if(editor!=null)editor.setTextSize(new int[]{13,15,18,22}[i]);}).show());
+  Button fontButton=action("Aa",formatBar,()->new AlertDialog.Builder(this).setTitle("Saiz tulisan editor").setItems(new String[]{"Kecil","Biasa","Besar","Sangat besar"},(d,i)->{prefs.edit().putInt("reader_font_level",i).putInt("editor_font_level",i).apply();if(editor!=null)applySharedTextMetrics(editor);}).show());
   fontButton.setContentDescription("Saiz tulisan editor");
   // Uniform compact emerald buttons; formatting is highlighted while the caret is inside markup.
+  // One shared editor toolbar for Nota and Maktabah: identical actions, order and sizing.
   Button[] formatButtons={boldButton,italicButton,bulletButton,numberedButton,checklistButton,underlineButton,dividerButton,fontButton};
   for(Button button:formatButtons){
    button.setTextColor(0xff176b47);
