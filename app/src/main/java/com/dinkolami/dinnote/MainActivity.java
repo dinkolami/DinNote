@@ -445,7 +445,7 @@ public class MainActivity extends Activity {
  void dashboardSection(LinearLayout target,String heading,ArrayList<String> keys,boolean pin){
   // Compact, consistent GitHub-style outline icons and tighter vertical rhythm.
   TextView title=dashboardText((pin?"⌖  ":"◷  ")+heading,15,true);
-  title.setTextColor(0xff225c42);title.setBackground(rounded(0xffe8f3e5,0xffd6e6d1,9));title.setPadding(dp(10),dp(8),dp(10),dp(8));title.setIncludeFontPadding(false);title.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);title.setSingleLine(true);title.setEllipsize(android.text.TextUtils.TruncateAt.END);title.setContentDescription(heading);title.setTooltipText(heading);LinearLayout.LayoutParams titleParams=new LinearLayout.LayoutParams(-1,-2);titleParams.topMargin=dp(5);titleParams.bottomMargin=dp(5);target.addView(title,titleParams);
+  title.setTextColor(0xff225c42);title.setBackground(rounded(0xffe8f3e5,0xffd6e6d1,9));title.setPadding(dp(10),dp(8),dp(10),dp(8));title.setIncludeFontPadding(false);title.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);title.setSingleLine(true);title.setEllipsize(android.text.TextUtils.TruncateAt.END);title.setContentDescription(heading);title.setTooltipText(heading);title.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);LinearLayout.LayoutParams titleParams=new LinearLayout.LayoutParams(-1,-2);titleParams.topMargin=dp(5);titleParams.bottomMargin=dp(5);target.addView(title,titleParams);
   if(keys.isEmpty()){
    TextView empty=dashboardText(pin?"Belum ada nota disemat":"Belum ada nota dikemaskini",13,false);
    empty.setTextColor(0xff68756c);empty.setPadding(dp(10),dp(6),dp(10),dp(8));
