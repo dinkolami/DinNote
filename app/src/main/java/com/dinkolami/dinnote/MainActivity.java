@@ -338,8 +338,24 @@ public class MainActivity extends Activity {
   // Compact GitHub-style shortcuts, without changing the approved header.
   LinearLayout shortcuts=new LinearLayout(this);shortcuts.setOrientation(1);
   shortcuts.setPadding(dp(2),dp(2),dp(2),dp(1));page.addView(shortcuts);
-  dashboardSection(shortcuts,"Nota disemat",dashboardKeys("pinned_",false),true);
-  dashboardSection(shortcuts,"Terakhir dikemaskini",dashboardKeys("updated_",false),false);
+  if(getResources().getConfiguration().screenWidthDp>=500){
+   LinearLayout sectionColumns=new LinearLayout(this);
+   sectionColumns.setOrientation(LinearLayout.HORIZONTAL);
+   LinearLayout pinnedColumn=new LinearLayout(this);pinnedColumn.setOrientation(LinearLayout.VERTICAL);
+   LinearLayout updatedColumn=new LinearLayout(this);updatedColumn.setOrientation(LinearLayout.VERTICAL);
+   LinearLayout.LayoutParams pinnedParams=new LinearLayout.LayoutParams(0,-2,1);
+   pinnedParams.rightMargin=dp(5);
+   LinearLayout.LayoutParams updatedParams=new LinearLayout.LayoutParams(0,-2,1);
+   updatedParams.leftMargin=dp(5);
+   sectionColumns.addView(pinnedColumn,pinnedParams);
+   sectionColumns.addView(updatedColumn,updatedParams);
+   shortcuts.addView(sectionColumns,new LinearLayout.LayoutParams(-1,-2));
+   dashboardSection(pinnedColumn,"Nota disemat",dashboardKeys("pinned_",false),true);
+   dashboardSection(updatedColumn,"Terakhir dikemaskini",dashboardKeys("updated_",false),false);
+  }else{
+   dashboardSection(shortcuts,"Nota disemat",dashboardKeys("pinned_",false),true);
+   dashboardSection(shortcuts,"Terakhir dikemaskini",dashboardKeys("updated_",false),false);
+  }
   String resume=prefs.getString("last_edited_key","");
   if(!resume.isEmpty()&&prefs.contains(resume)){
    TextView resumeButton=dashboardText("✎  Sambung menulis  ›",15,true);
