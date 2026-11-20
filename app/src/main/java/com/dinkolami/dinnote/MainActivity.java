@@ -939,6 +939,44 @@ public class MainActivity extends Activity {
   intent.putExtra(Intent.EXTRA_TITLE,"DinNote-backup.json");
   startActivityForResult(intent,BACKUP_CREATE);
  }
+ void startContentImport(){
+  Intent intent=new Intent(Intent.ACTION_OPEN_DOCUMENT);
+  intent.addCategory(Intent.CATEGORY_OPENABLE);
+  intent.setType("application/json");
+  startActivityForResult(intent,CONTENT_IMPORT);
+ }
+ void importContent(android.net.Uri uri){
+  try{
+   java.io.ByteArrayOutputStream buffer=new java.io.ByteArrayOutputStream();
+   try(java.io.InputStream in=getContentResolver().openInputStream(uri)){
+    if(in==null)throw new java.io.IOException("Fail tidak dapat dibaca");
+    byte[] chunk=new byte[8192];int n,total=0;
+    while((n=in.read(chunk))!=-1){total+=n;if(total>5*1024*1024)throw new java.io.IOException("Fail terlalu besar");buffer.write(chunk,0,n);}
+   }
+   org.json.JSONObject doc=new org.json.JSONObject(new String(buffer.toByteArray(),java.nio.charset.StandardCharsets.UTF_8));
+   if(!"DinNote-content-v1".equals(doc.optString("format")))throw new java.io.IOException("Format JSON tidak disokong");
+   org.json.JSONArray items=doc.getJSONArray("items");
+   if(items.length()<1||items.length()>1000)throw new java.io.IOException("Had 1 hingga 1000 nota");
+   java.util.ArrayList<org.json.JSONObject> checked=new java.util.ArrayList<>();
+   for(int i=0;i<items.length();i++){
+    org.json.JSONObject item=items.getJSONObject(i);
+    String section=item.getString("section"),title=item.getString("title"),content=item.getString("content");
+    if(!(section.equals("nota")||section.equals("maktabah"))||title.trim().isEmpty()||title.length()>300||content.trim().isEmpty()||content.length()>200000)throw new java.io.IOException("Item "+(i+1)+" tidak sah");
+    checked.add(item);
+   }
+   android.content.SharedPreferences.Editor edit=prefs.edit();
+   for(org.json.JSONObject item:checked){
+    boolean book=item.getString("section").equals("maktabah");
+    String id=(book?"m_":"n_")+java.util.UUID.randomUUID().toString();
+    edit.putString(id,item.getString("content"));
+    edit.putString("title_"+id,item.getString("title"));
+    edit.putString("cat_"+id,item.optString("category","Tanpa kategori"));
+   }
+   if(!edit.commit())throw new java.io.IOException("Simpanan gagal");
+   Toast.makeText(this,checked.size()+" nota berjaya diimport",Toast.LENGTH_LONG).show();
+   notesPage();
+  }catch(Exception e){android.util.Log.e("DinNote","Import gagal",e);new AlertDialog.Builder(this).setTitle("Import gagal").setMessage(e.getMessage()).setPositiveButton("OK",null).show();}
+ }
  void startRestore(){
   Intent intent=new Intent(Intent.ACTION_OPEN_DOCUMENT);
   intent.addCategory(Intent.CATEGORY_OPENABLE);
