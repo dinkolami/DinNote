@@ -1329,7 +1329,27 @@ public class MainActivity extends Activity {
  @Override public void onConfigurationChanged(android.content.res.Configuration newConfig){
   super.onConfigurationChanged(newConfig);
   if(editor!=null)return; // Preserve in-progress editing and autosave.
-  if(sectionOpen&&selected==null){root.post(()->{if(editor==null&&selected==null&&sectionOpen)notesPage();});return;}
+  if(sectionOpen&&selected==null){
+   if(listScroll!=null){
+    int y=listScroll.getScrollY();
+    int extent=Math.max(1,listScroll.getChildAt(0).getHeight()-listScroll.getHeight());
+    float fraction=Math.min(1f,Math.max(0f,(float)y/extent));
+    if(maktabah)savedBooksScroll=y;else savedNotesScroll=y;
+    final boolean currentSection=maktabah;
+    root.post(()->{
+     if(editor!=null||selected!=null||!sectionOpen||maktabah!=currentSection)return;
+     notesPage();
+     ScrollView target=listScroll;
+     if(target!=null)target.post(()->{
+      int max=Math.max(0,target.getChildAt(0).getHeight()-target.getHeight());
+      int restored=Math.round(fraction*max);
+      target.scrollTo(0,restored);
+      if(maktabah)savedBooksScroll=restored;else savedNotesScroll=restored;
+     });
+    });
+   }else root.post(()->{if(editor==null&&selected==null&&sectionOpen)notesPage();});
+   return;
+  }
   if(selected!=null&&prefs.contains(selected)){
    String key=selected;
    root.post(()->{if(editor==null&&key.equals(selected))read(key);});
