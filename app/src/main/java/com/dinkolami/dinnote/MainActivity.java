@@ -578,7 +578,7 @@ public class MainActivity extends Activity {
   TextView headingView=text(heading,17);headingView.setGravity(Gravity.CENTER);headingView.setTypeface(null,android.graphics.Typeface.BOLD);headingView.setMaxLines(2);
   headingView.setEllipsize(android.text.TextUtils.TruncateAt.END);
   headingView.setPadding(dp(16),dp(8),dp(16),dp(8));
-  headingView.setBackground(rounded(paper,0xffdde5e1,2));headingView.setElevation(0);
+  headingView.setTextColor(0xff145c40);headingView.setBackground(rounded(0xfffffcf4,0xffc9a34f,12));headingView.setElevation(dp(1));
   LinearLayout.LayoutParams titleParams=new LinearLayout.LayoutParams(-1,-2);
   titleParams.setMargins(dp(10),dp(6),dp(10),dp(4));root.addView(headingView,titleParams);
   LinearLayout pageRow=new LinearLayout(this);pageRow.setOrientation(LinearLayout.HORIZONTAL);
@@ -619,8 +619,8 @@ public class MainActivity extends Activity {
   LinearLayout.LayoutParams controlParams;
   // Bookmark remains in the upper reader toolbar; omit duplicate lower control.
   // Progress label sits on the lower reading-frame border, not in the toolbar.
-  indicator.setTextColor(0xff356b50);
-  indicator.setBackgroundColor(paper);
+  indicator.setTextColor(0xff176b47);
+  indicator.setBackground(rounded(0xfffffcf4,0xffc9a34f,10));
   indicator.setPadding(dp(9),0,dp(9),0);
   FrameLayout.LayoutParams progressParams=new FrameLayout.LayoutParams(-2,dp(22),Gravity.BOTTOM|Gravity.CENTER_HORIZONTAL);
   progressParams.bottomMargin=dp(1);
@@ -711,7 +711,7 @@ public class MainActivity extends Activity {
       if(arabic&&prefs.getBoolean("reader_arabic_clear_font",false))page.setTypeface(android.graphics.Typeface.create("serif",android.graphics.Typeface.NORMAL));
       page.setLineSpacing(extraLine,lineMultiplier);
       page.setPadding(dp(12),dp(10),dp(12),dp(10));
-      page.setBackground(rounded(paper,0xffdde5e1,2));page.setElevation(0);
+      page.setBackground(rounded(paper,0xffd3c197,5));page.setElevation(0);
       LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(0,-1,1);
       if(i>0)lp.leftMargin=dp(8);
       pageRow.addView(page,lp);
