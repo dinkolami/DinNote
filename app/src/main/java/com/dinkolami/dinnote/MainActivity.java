@@ -1658,6 +1658,10 @@ public class MainActivity extends Activity {
  }
  void startBackup(){
   save();
+  if(editor!=null&&selected==null&&editor.getText().length()>0){
+   Toast.makeText(this,"Sila simpan nota dahulu sebelum membuat sandaran",Toast.LENGTH_LONG).show();
+   return;
+  }
   // Flush pending asynchronous preference writes before reading a consistent backup snapshot.
   if(!prefs.edit().commit()){
    Toast.makeText(this,"Backup dibatalkan: gagal menyimpan data terkini",Toast.LENGTH_LONG).show();
