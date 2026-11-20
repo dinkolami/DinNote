@@ -1030,6 +1030,15 @@ public class MainActivity extends Activity {
  void categoryActions(String old){new AlertDialog.Builder(this).setTitle(old).setItems(new String[]{"Ubah nama","Padam kategori"},(d,which)->{if(which==0)categoryDialog(old);else new AlertDialog.Builder(this).setMessage("Padam kategori? Nota tidak akan dipadam.").setPositiveButton("Padam",(a,b)->{ArrayList<String> c=categories();c.remove(old);storeCategories(c);for(String k:prefs.getAll().keySet())if(k.startsWith(maktabah?"m_":"n_")&&old.equals(prefs.getString("cat_"+k,"")))prefs.edit().putString("cat_"+k,"Tanpa kategori").apply();categoryFilter="Semua";openSection(maktabah);}).setNegativeButton("Batal",null).show();}).show();}
  void categoryDialog(String old){EditText field=new EditText(this);field.setSingleLine(true);field.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_DONE);field.setHint("Nama kategori");if(old!=null)field.setText(old);new AlertDialog.Builder(this).setTitle(old==null?"Kategori baharu":"Ubah nama kategori").setView(field).setPositiveButton("Simpan",(d,w)->{String name=field.getText().toString().trim().replace("|","");if(name.isEmpty()||name.equals("Semua")||name.equals("Tanpa kategori"))return;ArrayList<String> c=categories();if(c.contains(name)&&!name.equals(old))return;if(old!=null)c.remove(old);c.add(name);storeCategories(c);if(old!=null){for(String k:prefs.getAll().keySet())if(k.startsWith(maktabah?"m_":"n_")&&old.equals(prefs.getString("cat_"+k,"")))prefs.edit().putString("cat_"+k,name).apply();}categoryFilter="Semua";home();}).setNegativeButton("Batal",null).show();}
 
+ String backupDigest(org.json.JSONObject values) throws Exception{
+  java.util.ArrayList<String> keys=new java.util.ArrayList<>();
+  java.util.Iterator<String> iterator=values.keys();
+  while(iterator.hasNext())keys.add(iterator.next());
+  java.util.Collections.sort(keys);
+  StringBuilder canonical=new StringBuilder();
+  for(String key:keys)canonical.append(org.json.JSONObject.quote(key)).append(':').append(org.json.JSONObject.valueToString(values.get(key))).append(';');
+  return sha256Hex(canonical.toString());
+ }
  String sha256Hex(String value) throws java.security.NoSuchAlgorithmException{
   byte[] digest=java.security.MessageDigest.getInstance("SHA-256").digest(value.getBytes(java.nio.charset.StandardCharsets.UTF_8));
   StringBuilder result=new StringBuilder();
@@ -1112,7 +1121,7 @@ public class MainActivity extends Activity {
     }
     obj.put("data",values);
     // Integrity digest covers the canonical JSON representation of the stored values.
-    obj.put("data_sha256",sha256Hex(values.toString()));
+    obj.put("data_sha256",backupDigest(values));
     byte[] backupBytes=obj.toString(2).getBytes(java.nio.charset.StandardCharsets.UTF_8);
     if(backupBytes.length>20*1024*1024)throw new java.io.IOException("Sandaran melebihi had 20 MB");
     try(java.io.OutputStream out=getContentResolver().openOutputStream(uri,"wt")){
@@ -1141,7 +1150,7 @@ public class MainActivity extends Activity {
    if(backup.has("app_package")&&(! (backup.opt("app_package") instanceof String)||!getPackageName().equals(backup.optString("app_package"))))
     throw new java.io.IOException("Sandaran bukan daripada DinNote");
    org.json.JSONObject values=backup.getJSONObject("data");
-   if(backup.has("data_sha256")&&!sha256Hex(values.toString()).equalsIgnoreCase(backup.getString("data_sha256")))
+   if(backup.has("data_sha256")&&!backupDigest(values).equalsIgnoreCase(backup.getString("data_sha256")))
     throw new java.io.IOException("Integriti fail sandaran gagal");
    int notes=0,books=0;
    java.util.Iterator<String> keys=values.keys();
@@ -1196,7 +1205,7 @@ public class MainActivity extends Activity {
    if(!backupPackage.isEmpty()&&!getPackageName().equals(backupPackage))
     throw new java.io.IOException("Sandaran daripada aplikasi lain; data sedia ada tidak diubah");
    org.json.JSONObject values=backup.getJSONObject("data");
-   if(backup.has("data_sha256")&&!sha256Hex(values.toString()).equalsIgnoreCase(backup.getString("data_sha256")))
+   if(backup.has("data_sha256")&&!backupDigest(values).equalsIgnoreCase(backup.getString("data_sha256")))
     throw new java.io.IOException("Integriti fail sandaran gagal; data sedia ada tidak diubah");
    if(values.length()==0)throw new java.io.IOException("Sandaran kosong; data sedia ada tidak diubah");
    // Reject unrelated JSON before clearing the existing DinNote preferences.
