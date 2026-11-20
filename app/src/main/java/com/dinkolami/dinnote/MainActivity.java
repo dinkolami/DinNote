@@ -310,7 +310,7 @@ public class MainActivity extends Activity {
   card.setBackground(rounded(0xfffffdf8,0xffc9a34f,8));
   LinearLayout.LayoutParams cp=new LinearLayout.LayoutParams(-1,-2);page.addView(card,cp);
   TextView count=dashboardText("Nota dan Maktabah",15,true);
-  count.setGravity(Gravity.CENTER);count.setTextColor(0xff176b47);count.setBackgroundColor(0xfffffdf8);card.addView(count);
+  count.setGravity(Gravity.CENTER);count.setTextColor(0xff176b47);count.setBackgroundColor(0xfffffdf8);count.setPadding(dp(8),dp(9),dp(8),dp(9));card.addView(count);
   View divider=new View(this);divider.setBackgroundColor(0xffe8d8b0);
   card.addView(divider,new LinearLayout.LayoutParams(-1,dp(1)));
   LinearLayout tiles=new LinearLayout(this);tiles.setPadding(dp(8),dp(7),dp(8),dp(7));card.addView(tiles);
@@ -338,7 +338,7 @@ public class MainActivity extends Activity {
    resumeButton.setOnClickListener(v->edit(resume));
   }
   LinearLayout recentNotes=new LinearLayout(this);recentNotes.setOrientation(1);
-  recentNotes.setPadding(dp(10),dp(2),dp(10),dp(5));card.addView(recentNotes);
+  recentNotes.setPadding(dp(10),dp(4),dp(10),dp(7));card.addView(recentNotes);
   ArrayList<String> keys=new ArrayList<>();
   for(String k:prefs.getAll().keySet())if((k.startsWith("n_")||k.startsWith("m_"))&&prefs.getLong("viewed_"+k,0L)>0L)keys.add(k);
   Collections.sort(keys,(firstKey,secondKey)->Long.compare(prefs.getLong("viewed_"+secondKey,0L),prefs.getLong("viewed_"+firstKey,0L)));
@@ -358,17 +358,17 @@ public class MainActivity extends Activity {
     columns=new LinearLayout(this);columns.setOrientation(LinearLayout.HORIZONTAL);
     left=new LinearLayout(this);left.setOrientation(LinearLayout.VERTICAL);
     right=new LinearLayout(this);right.setOrientation(LinearLayout.VERTICAL);
-    LinearLayout.LayoutParams leftParams=new LinearLayout.LayoutParams(0,-2,1);leftParams.rightMargin=dp(4);
-    LinearLayout.LayoutParams rightParams=new LinearLayout.LayoutParams(0,-2,1);rightParams.leftMargin=dp(4);
+    LinearLayout.LayoutParams leftParams=new LinearLayout.LayoutParams(0,-2,1);leftParams.rightMargin=dp(5);
+    LinearLayout.LayoutParams rightParams=new LinearLayout.LayoutParams(0,-2,1);rightParams.leftMargin=dp(5);
     columns.addView(left,leftParams);columns.addView(right,rightParams);
     recentNotes.addView(columns,new LinearLayout.LayoutParams(-1,-2));
    }
    for(int i=0;i<(wide?10:Math.min(5,keys.size()));i++){
     if(i>=keys.size()){
      TextView placeholder=dashboardText("＋  Ruang nota "+(i+1),13,false);
-     placeholder.setTextColor(0xff8a9290);placeholder.setGravity(Gravity.CENTER_VERTICAL);
+     placeholder.setTextColor(0xff7a897f);placeholder.setGravity(Gravity.CENTER_VERTICAL);placeholder.setPadding(dp(10),0,dp(8),0);
      placeholder.setBackground(subtleNoteBorder(8));
-     LinearLayout.LayoutParams emptyParams=new LinearLayout.LayoutParams(-1,dp(38));emptyParams.bottomMargin=dp(3);
+     LinearLayout.LayoutParams emptyParams=new LinearLayout.LayoutParams(-1,dp(38));emptyParams.bottomMargin=dp(4);
      (i<5?left:right).addView(placeholder,emptyParams);
      placeholder.setOnClickListener(v->{maktabah=false;edit(null);});
      continue;
@@ -386,7 +386,7 @@ public class MainActivity extends Activity {
     long when=prefs.getLong("viewed_"+k,0L);
     if(when>0L){
      TextView date=dashboardText(new java.text.SimpleDateFormat("dd MMM",new java.util.Locale("ms","MY")).format(new java.util.Date(when)),12,false);
-     date.setTextColor(0xff35644a);date.setGravity(Gravity.CENTER);
+     date.setTextColor(0xff35644a);date.setGravity(Gravity.CENTER);date.setSingleLine(true);
      date.setBackground(rounded(0xfff6f3e9,0xffead8ac,14));
      date.setPadding(dp(8),dp(3),dp(8),dp(3));
      FrameLayout.LayoutParams dateParams=new FrameLayout.LayoutParams(-2,-2,Gravity.RIGHT|Gravity.CENTER_VERTICAL);
