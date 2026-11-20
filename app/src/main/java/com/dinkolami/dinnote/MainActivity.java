@@ -3,7 +3,7 @@ import android.app.*;import android.os.*;import android.graphics.Color;import an
 public class MainActivity extends Activity {
  LinearLayout root,items; android.view.GestureDetector readerDetector; EditText editor,titleEditor; TextView saveIndicator; Spinner categoryPicker; String categoryFilter="Semua"; String sortMode="Terbaru"; String selected=null; boolean maktabah=false, sectionOpen=false; android.content.SharedPreferences prefs;
  int green=Color.rgb(23,107,71), gold=Color.rgb(197,166,107); static final int BACKUP_CREATE=4201, BACKUP_OPEN=4202, CONTENT_IMPORT=4203;
- public void onCreate(Bundle b){super.onCreate(b);prefs=getSharedPreferences("notes",0);home(); // User content and categories are local; import them explicitly.}
+ public void onCreate(Bundle b){super.onCreate(b);prefs=getSharedPreferences("notes",0);home();} // User content and categories are local; import them explicitly.}
  void applySystemBarInsets(LinearLayout view){
   // Keep Android's real clock, battery and network status bar visible.
   getWindow().clearFlags(android.view.WindowManager.LayoutParams.FLAG_FULLSCREEN);
