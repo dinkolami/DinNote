@@ -571,7 +571,7 @@ public class MainActivity extends Activity {
   final int availableWidthDp=Math.round(getResources().getDisplayMetrics().widthPixels/getResources().getDisplayMetrics().density);
   final boolean spread=availableWidthDp>=500&&prefs.getBoolean("reader_two_columns",true);
   final int fontLevel=Math.max(0,Math.min(3,prefs.getInt("reader_font_level",1)));
-  final int fontSize=(key.startsWith("m_")?new int[]{13,15,16,18}:new int[]{13,15,16,18})[fontLevel];
+  final int fontSize=new int[]{13,15,16,18}[fontLevel];
   final int theme=prefs.getInt("reader_theme",0);
   final int paper=theme==0?0xffffffff:theme==2?0xfff2f8f3:0xfffffcf4;
   final String heading=prefs.getString("title_"+key,"");
