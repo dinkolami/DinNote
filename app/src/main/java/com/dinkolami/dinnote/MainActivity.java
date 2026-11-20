@@ -440,7 +440,8 @@ public class MainActivity extends Activity {
   if(keys.isEmpty()){
    TextView empty=dashboardText(pin?"Belum ada nota disemat":"Belum ada nota dikemaskini",13,false);
    empty.setTextColor(0xff68756c);empty.setPadding(dp(10),dp(5),dp(10),dp(8));
-   if(pin)target.addView(empty);return;
+   empty.setContentDescription(pin?"Tiada nota disemat":"Tiada nota yang dikemaskini");
+   target.addView(empty);return;
   }
   for(int i=0;i<Math.min(5,keys.size());i++){
    String key=keys.get(i),label=prefs.getString("title_"+key,"").trim();
@@ -448,11 +449,11 @@ public class MainActivity extends Activity {
    entry.setTextColor(0xff26352e);entry.setGravity(Gravity.CENTER_VERTICAL);
    entry.setSingleLine(true);entry.setEllipsize(android.text.TextUtils.TruncateAt.END);
    entry.setPadding(dp(10),dp(7),dp(10),dp(7));entry.setIncludeFontPadding(false);
-   entry.setBackground(subtleNoteBorder(8));
+   entry.setBackground(subtleNoteBorder(8));entry.setMinHeight(dp(38));
    LinearLayout.LayoutParams ep=new LinearLayout.LayoutParams(-1,-2);
    ep.bottomMargin=dp(4);target.addView(entry,ep);applyTouchFeedback(entry);
    entry.setFocusable(true);
-   entry.setContentDescription("Buka nota "+(label.isEmpty()?"Tanpa tajuk":label));
+   entry.setContentDescription("Buka "+(key.startsWith("m_")?"kitab ":"nota ")+(label.isEmpty()?"Tanpa tajuk":label));
    entry.setOnClickListener(v->{maktabah=key.startsWith("m_");read(key);});
   }
  }
