@@ -1269,6 +1269,14 @@ public class MainActivity extends Activity {
  void finishEditingSafely(){
   if(editor==null)return;
   save();
+  // Persist queued autosave writes before leaving the editor.
+  // If storage fails, retain the editor instead of presenting an unsaved reader.
+  if(!prefs.edit().commit()){
+   android.util.Log.e("DinNote","Failed to persist note before leaving editor");
+   if(saveIndicator!=null)saveIndicator.setText("⚠ Simpan gagal");
+   Toast.makeText(this,"Simpanan gagal. Cuba tekan Selesai sekali lagi.",Toast.LENGTH_LONG).show();
+   return;
+  }
   saveHistoryVersion(false);
   final String finishedKey=selected;
   final EditText oldEditor=editor;
