@@ -324,8 +324,8 @@ public class MainActivity extends Activity {
   View divider=new View(this);divider.setBackgroundColor(0xffe8d8b0);
   card.addView(divider,new LinearLayout.LayoutParams(-1,dp(1)));
   LinearLayout tiles=new LinearLayout(this);tiles.setPadding(dp(8),dp(7),dp(8),dp(7));card.addView(tiles);
-  TextView note=dashboardText("▤\nNota",14,true);
-  TextView book=dashboardText("▱\nMaktabah",14,true);
+  TextView note=dashboardText("Nota",18,true);
+  TextView book=dashboardText("Maktabah",18,true);
   note.setGravity(Gravity.CENTER);book.setGravity(Gravity.CENTER);note.setFocusable(true);book.setFocusable(true);note.setTextColor(0xff566a70);book.setTextColor(0xff566a70);
   note.setBackground(rounded(0xfff3f6f8,0xffd0d8df,11));
   book.setBackground(rounded(0xfff3f6f8,0xffd0d8df,11));
