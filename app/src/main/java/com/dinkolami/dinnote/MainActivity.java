@@ -459,6 +459,8 @@ public class MainActivity extends Activity {
     probe.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
     android.text.TextPaint paint=probe.getPaint();
     ArrayList<String> parts=new ArrayList<>();
+     ArrayList<Integer> repeatedPrefixLengths=new ArrayList<>();
+     int previousStop=0;
     int cursor=0;
     while(cursor<source.length()){
      // Limit the candidate for speed; a full page cannot contain this many
@@ -485,13 +487,15 @@ public class MainActivity extends Activity {
      if(stop<source.length()&&stop>cursor&&Character.isHighSurrogate(source.charAt(stop-1))&&Character.isLowSurrogate(source.charAt(stop)))stop--;
      if(stop<=cursor)stop=cursor+1;
      parts.add(source.substring(cursor,stop));
+      repeatedPrefixLengths.add(Math.max(0,Math.min(stop-cursor,previousStop-cursor)));
+      previousStop=stop;
      cursor=stop;
       if(lastLine>1 && overlapStart>0 && cursor<source.length()){
        int nextCursor=cursor-(chars-overlapStart);
        if(nextCursor>cursor-chars && nextCursor<cursor)cursor=nextCursor;
       }
     }
-    if(parts.isEmpty())parts.add("");
+    if(parts.isEmpty()){parts.add("");repeatedPrefixLengths.add(0);}
     final int total=parts.size();
     final int[] position={Math.min(total-1,Math.max(0,prefs.getInt("reading_page_"+key,0)))};
     if(spread)position[0]=position[0]/2*2;
@@ -501,6 +505,14 @@ public class MainActivity extends Activity {
      for(int i=0;i<(spread?2:1);i++){
       int pageNumber=position[0]+i;
       TextView page=text(pageNumber<total?parts.get(pageNumber):"",fontSize);
+       if(pageNumber<total && repeatedPrefixLengths.get(pageNumber)>0){
+        String visible=parts.get(pageNumber);
+        int repeated=Math.min(visible.length(),repeatedPrefixLengths.get(pageNumber));
+        android.text.SpannableString marked=new android.text.SpannableString(visible);
+        marked.setSpan(new android.text.style.BackgroundColorSpan(0xfffff0bd),0,repeated,android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        marked.setSpan(new android.text.style.UnderlineSpan(),0,repeated,android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        page.setText(marked);
+       }
       page.setTextColor(0xff26372e);page.setGravity(Gravity.TOP);
       page.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
       page.setLineSpacing(extraLine,lineMultiplier);
