@@ -736,8 +736,9 @@ public class MainActivity extends Activity {
   });
  }
 
- void searchInsideReader(String key){
-  EditText field=new EditText(this);field.setSingleLine(true);field.setHint("Cari perkataan Arab atau Rumi");
+ void searchInsideReader(String key){searchInsideReader(key,"");}
+ void searchInsideReader(String key,String preset){
+  EditText field=new EditText(this);field.setSingleLine(true);field.setHint("Cari perkataan Arab atau Rumi");field.setText(preset);
   new AlertDialog.Builder(this).setTitle("Cari dalam nota / kitab").setView(field)
    .setPositiveButton("Cari",(d,w)->{
     String term=field.getText().toString().trim();
@@ -852,8 +853,7 @@ public class MainActivity extends Activity {
   new AlertDialog.Builder(this).setTitle("Indeks Kitab ("+headings.size()+")")
    .setItems(headings.toArray(new String[0]),(d,which)->{
     String target=terms.get(which);
-    searchInsideReader(key);
-    Toast.makeText(this,"Cari: "+target,Toast.LENGTH_LONG).show();
+    searchInsideReader(key,target);
    }).setNegativeButton("Tutup",null).show();
  }
  void showBookMarginNote(String key){
