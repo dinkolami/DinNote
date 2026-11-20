@@ -338,8 +338,8 @@ public class MainActivity extends Activity {
   // Compact GitHub-style shortcuts, without changing the approved header.
   LinearLayout shortcuts=new LinearLayout(this);shortcuts.setOrientation(1);
   shortcuts.setPadding(dp(2),dp(2),dp(2),dp(1));page.addView(shortcuts);
-  dashboardSection(shortcuts,"📌  Nota disemat",dashboardKeys("pinned_",false),true);
-  dashboardSection(shortcuts,"◷  Terakhir dikemaskini",dashboardKeys("updated_",false),false);
+  dashboardSection(shortcuts,"Nota disemat",dashboardKeys("pinned_",false),true);
+  dashboardSection(shortcuts,"Terakhir dikemaskini",dashboardKeys("updated_",false),false);
   String resume=prefs.getString("last_edited_key","");
   if(!resume.isEmpty()&&prefs.contains(resume)){
    TextView resumeButton=dashboardText("✎  Sambung menulis  ›",15,true);
