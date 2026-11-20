@@ -830,6 +830,32 @@ public class MainActivity extends Activity {
    .setView(scroll).setNegativeButton("Tutup",null).create();
   popup[0].show();
  }
+ void showBookIndex(String key){
+  String content=prefs.getString(key,"");
+  String[] lines=content.split("\\n");
+  java.util.ArrayList<String> headings=new java.util.ArrayList<>();
+  java.util.ArrayList<String> terms=new java.util.ArrayList<>();
+  for(String raw:lines){
+   String line=raw.trim();
+   if(line.length()<3||line.length()>110)continue;
+   String lower=line.toLowerCase(java.util.Locale.ROOT);
+   if(lower.matches("^(bab|fasal|فصل|باب|chapter|section|juz|جزء)\\\\b.*")||line.startsWith("باب ")||line.startsWith("فصل ")){
+    headings.add(line);terms.add(line);
+    if(headings.size()>=100)break;
+   }
+  }
+  if(headings.isEmpty()){
+   new AlertDialog.Builder(this).setTitle("Indeks Kitab")
+    .setMessage("Belum ada tajuk bab atau fasal yang dikenal pasti. Gunakan baris bermula dengan Bab, Fasal, باب atau فصل.")
+    .setPositiveButton("Tutup",null).show();return;
+  }
+  new AlertDialog.Builder(this).setTitle("Indeks Kitab ("+headings.size()+")")
+   .setItems(headings.toArray(new String[0]),(d,which)->{
+    String target=terms.get(which);
+    searchInsideReader(key);
+    Toast.makeText(this,"Cari: "+target,Toast.LENGTH_LONG).show();
+   }).setNegativeButton("Tutup",null).show();
+ }
  void showBookMarginNote(String key){
   if(!key.startsWith("m_"))return;
   EditText input=new EditText(this);
@@ -858,6 +884,9 @@ public class MainActivity extends Activity {
    labels=java.util.Arrays.copyOf(labels,n+1);icons=java.util.Arrays.copyOf(icons,n+1);descriptions=java.util.Arrays.copyOf(descriptions,n+1);
    labels[n]=labels[n-1];icons[n]=icons[n-1];descriptions[n]=descriptions[n-1];
    labels[n-1]="Nota Tepi Kitab";icons[n-1]="✎";descriptions[n-1]="Catatan peribadi tanpa mengubah teks kitab";
+   labels=java.util.Arrays.copyOf(labels,n+2);icons=java.util.Arrays.copyOf(icons,n+2);descriptions=java.util.Arrays.copyOf(descriptions,n+2);
+   labels[n+1]=labels[n];icons[n+1]=icons[n];descriptions[n+1]=descriptions[n];
+   labels[n]="Indeks Kitab";icons[n]="☷";descriptions[n]="Senarai bab dan fasal yang dikesan";
   }
   ScrollView scroll=new ScrollView(this);scroll.setFillViewport(false);
   LinearLayout panel=new LinearLayout(this);panel.setOrientation(LinearLayout.VERTICAL);
@@ -893,7 +922,8 @@ public class MainActivity extends Activity {
     else if(option==4)copyReaderWithReference(key);
     else if(compact&&option==5){boolean next=!prefs.getBoolean("reader_swipe_mode",false);prefs.edit().putBoolean("reader_swipe_mode",next).apply();read(key);}
     else if(compact&&option==6){boolean now=prefs.getBoolean("reader_two_columns",true);prefs.edit().putBoolean("reader_two_columns",!now).apply();read(key);}
-    else if(book&&option==(compact?8:6))showBookMarginNote(key);
+    else if(book&&option==(compact?7:5))showBookMarginNote(key);
+    else if(book&&option==(compact?8:6))showBookIndex(key);
     else confirmDelete(key);
    });
   }
