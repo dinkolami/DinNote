@@ -407,23 +407,23 @@ public class MainActivity extends Activity {
   LinearLayout.LayoutParams titleParams=new LinearLayout.LayoutParams(-1,-2);
   titleParams.setMargins(dp(10),dp(6),dp(10),dp(4));root.addView(headingView,titleParams);
   LinearLayout pageRow=new LinearLayout(this);pageRow.setOrientation(LinearLayout.HORIZONTAL);
-  pageRow.setPadding(dp(8),dp(5),dp(8),dp(5));
+  pageRow.setPadding(dp(8),dp(3),dp(8),dp(3));
   root.addView(pageRow,new LinearLayout.LayoutParams(-1,0,1));
   LinearLayout navigation=new LinearLayout(this);navigation.setGravity(Gravity.CENTER_VERTICAL);
   Button prev=new Button(this);prev.setText("‹");prev.setContentDescription("Halaman sebelumnya");
   Button next=new Button(this);next.setText("›");next.setContentDescription("Halaman seterusnya");
   TextView indicator=text("",12);indicator.setGravity(Gravity.CENTER);indicator.setPadding(dp(2),0,dp(2),0);
-  navigation.addView(prev,new LinearLayout.LayoutParams(dp(54),dp(44)));
-  navigation.addView(indicator,new LinearLayout.LayoutParams(0,dp(44),1));
-  navigation.addView(next,new LinearLayout.LayoutParams(dp(54),dp(44)));
+  navigation.addView(prev,new LinearLayout.LayoutParams(dp(46),dp(34)));
+  navigation.addView(indicator,new LinearLayout.LayoutParams(0,dp(34),1));
+  navigation.addView(next,new LinearLayout.LayoutParams(dp(46),dp(34)));
   root.addView(navigation);
   LinearLayout actions=new LinearLayout(this);actions.setGravity(Gravity.CENTER);
   Button bookmark=new Button(this);bookmark.setText("♧");
   Button jump=new Button(this);jump.setText("Halaman");
   Button focus=new Button(this);focus.setText("Fokus");
-  actions.addView(bookmark,new LinearLayout.LayoutParams(0,dp(44),1));
-  actions.addView(jump,new LinearLayout.LayoutParams(0,dp(44),1));
-  actions.addView(focus,new LinearLayout.LayoutParams(0,dp(44),1));
+  actions.addView(bookmark,new LinearLayout.LayoutParams(0,dp(34),1));
+  actions.addView(jump,new LinearLayout.LayoutParams(0,dp(34),1));
+  actions.addView(focus,new LinearLayout.LayoutParams(0,dp(34),1));
   root.addView(actions);
   // Paginate after the view has been measured. Avoid repeated layout passes and
   // view-tree changes while Android is measuring the page content.
