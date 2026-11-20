@@ -4,11 +4,6 @@ public class MainActivity extends Activity {
  LinearLayout root,items,compactSummary; ScrollView listScroll,readerScroll; int savedNotesScroll=0,savedBooksScroll=0; String lastOpenedCard=null; android.view.GestureDetector readerDetector; EditText editor,titleEditor; TextView saveIndicator; Spinner categoryPicker; String categoryFilter="Semua"; String sortMode="Terbaru"; String selected=null; boolean maktabah=false, sectionOpen=false; android.content.SharedPreferences prefs;
  int green=Color.rgb(23,107,71), gold=Color.rgb(197,166,107); static final int BACKUP_CREATE=4201, BACKUP_OPEN=4202, CONTENT_IMPORT=4203;
  public void onCreate(Bundle b){super.onCreate(b);prefs=getSharedPreferences("notes",0);if(!prefs.getBoolean("font_defaults_13_15_16_18_applied",false)){prefs.edit().putInt("reader_font_level",1).putInt("editor_font_level",1).putBoolean("font_defaults_13_15_16_18_applied",true).apply();}if(prefs.contains("security_pin_hash"))promptUnlock();else home();} // User content and categories are local; import them explicitly.}
- @Override public void onConfigurationChanged(android.content.res.Configuration config){
-  super.onConfigurationChanged(config);
-  // Reflow the approved dashboard on Fold6 fold/unfold without resetting note data.
-  if(root!=null && root.findViewWithTag("dinnote_home")!=null)home();
- }
  void applySystemBarInsets(LinearLayout view){
   // Keep Android's real clock, battery and network status bar visible.
   getWindow().clearFlags(android.view.WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -1952,6 +1947,8 @@ public class MainActivity extends Activity {
  }
  @Override public void onConfigurationChanged(android.content.res.Configuration newConfig){
   super.onConfigurationChanged(newConfig);
+  // Rebuild only the home dashboard on Fold6 fold/unfold; retain active editor and reader.
+  if(root!=null && root.findViewWithTag("dinnote_home")!=null){home();return;}
   if(editor!=null){
    // Keep the active editor and unsaved typing intact across fold/unfold.
    // Reflow text using Android's new width without recreating the editor.
