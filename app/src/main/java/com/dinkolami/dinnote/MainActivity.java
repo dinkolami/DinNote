@@ -1780,6 +1780,8 @@ public class MainActivity extends Activity {
    if(buffer.size()==0)throw new java.io.IOException("Fail sandaran kosong; data sedia ada tidak diubah");
    org.json.JSONObject backup=new org.json.JSONObject(new String(buffer.toByteArray(),java.nio.charset.StandardCharsets.UTF_8));
    if(!"DinNote-backup-v1".equals(backup.optString("format")))throw new java.io.IOException("Format sandaran tidak sah");
+   if(backup.has("data_sha256")&&!(backup.opt("data_sha256") instanceof String))
+    throw new java.io.IOException("Jenis checksum sandaran tidak sah; data sedia ada tidak diubah");
    if(backup.has("app_package")&&(! (backup.opt("app_package") instanceof String)||!getPackageName().equals(backup.optString("app_package"))))
     throw new java.io.IOException("Sandaran bukan daripada DinNote");
    if(!backup.has("data")||!(backup.opt("data") instanceof org.json.JSONObject))
