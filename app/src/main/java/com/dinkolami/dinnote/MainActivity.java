@@ -413,7 +413,13 @@ public class MainActivity extends Activity {
     applyTouchFeedback(row);row.setFocusable(true);
     row.setContentDescription("Buka "+(k.startsWith("m_")?"kitab ":"nota ")+t);
     row.setTooltipText(t);
-    row.setOnClickListener(v->{maktabah=k.startsWith("m_");read(k);});
+    View.OnClickListener openRecent=v->{maktabah=k.startsWith("m_");read(k);};
+    row.setOnClickListener(openRecent);
+    item.setOnClickListener(openRecent);
+    for(int child=0;child<row.getChildCount();child++){
+     View childView=row.getChildAt(child);
+     childView.setOnClickListener(openRecent);
+    }
    }
   }
   TextView add=dashboardText("＋  Nota baharu",15,true);add.setGravity(Gravity.CENTER);
