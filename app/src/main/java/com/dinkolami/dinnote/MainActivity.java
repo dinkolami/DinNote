@@ -39,6 +39,9 @@ public class MainActivity extends Activity {
   readerDetector=null;
   root=new LinearLayout(this);root.setOrientation(1);root.setBackgroundColor(Color.WHITE);
   setContentView(root);applySystemBarInsets(root);
+  // Subtle content fade on navigation; keep system bars and all controls unchanged.
+  root.setAlpha(0.94f);
+  root.animate().alpha(1f).setDuration(140L).start();
   LinearLayout header=new LinearLayout(this);header.setGravity(Gravity.CENTER_VERTICAL);
   header.setPadding(dp(8),dp(3),dp(8),dp(3));header.setBackgroundColor(0xfffffdf7);
   ImageView menu=headerIcon("⌂",0xffb48a38,"Halaman utama DinNote");header.addView(menu);
