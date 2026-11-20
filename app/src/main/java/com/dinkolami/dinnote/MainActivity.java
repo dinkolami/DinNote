@@ -562,6 +562,33 @@ public class MainActivity extends Activity {
   });
  }
 
+ void searchInsideReader(String key){
+  EditText field=new EditText(this);field.setSingleLine(true);field.setHint("Cari perkataan Arab atau Rumi");
+  new AlertDialog.Builder(this).setTitle("Cari dalam nota / kitab").setView(field)
+   .setPositiveButton("Cari",(d,w)->{
+    String term=field.getText().toString().trim();
+    if(term.isEmpty())return;
+    String source=prefs.getString(key,"");
+    java.util.Locale locale=java.util.Locale.ROOT;
+    String haystack=source.toLowerCase(locale),needle=term.toLowerCase(locale);
+    int count=0,index=0,first=-1;
+    while((index=haystack.indexOf(needle,index))>=0){if(first<0)first=index;count++;index+=Math.max(1,needle.length());}
+    if(count==0){Toast.makeText(this,"Tiada padanan",Toast.LENGTH_SHORT).show();return;}
+    int from=Math.max(0,first-65),to=Math.min(source.length(),first+term.length()+100);
+    String excerpt=source.substring(from,to);
+    new AlertDialog.Builder(this).setTitle(count+" padanan ditemui")
+     .setMessage((from>0?"…":"")+excerpt+(to<source.length()?"…":""))
+     .setPositiveButton("Tutup",null).show();
+   }).setNegativeButton("Batal",null).show();
+ }
+ void copyReaderWithReference(String key){
+  String title=prefs.getString("title_"+key,"Tanpa tajuk");
+  String category=prefs.getString("cat_"+key,"");
+  String content=prefs.getString(key,"");
+  String output=title+(category.isEmpty()?"":" — "+category)+"\n\n"+content+"\n\nSumber: DinNote";
+  android.content.ClipboardManager clipboard=(android.content.ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
+  if(clipboard!=null){clipboard.setPrimaryClip(android.content.ClipData.newPlainText(title,output));Toast.makeText(this,"Teks dan tajuk disalin",Toast.LENGTH_SHORT).show();}
+ }
  void read(String key){
   editor=null;titleEditor=null;saveIndicator=null;selected=key;prefs.edit().putLong("viewed_"+key,System.currentTimeMillis()).putString(key.startsWith("m_")?"reading_last_m":"reading_last_n",key).apply();cleanBase();
   LinearLayout bar=new LinearLayout(this);bar.setGravity(Gravity.CENTER_VERTICAL);bar.setPadding(dp(8),dp(3),dp(8),dp(3));bar.setBackground(rounded(0xfff8faf8,0xffe1e7e3,12));root.addView(bar);
@@ -578,7 +605,7 @@ public class MainActivity extends Activity {
    verticalScroll.setContentDescription("Mod skrol menegak untuk Fold6 dibuka: baca dua kolum dengan skrol atas bawah");
    verticalScroll.setTextColor(0xff176b47);
   }
-  Button layoutButton=action("▥",bar,()->{boolean now=prefs.getBoolean("reader_two_columns",getResources().getConfiguration().screenWidthDp>=600);prefs.edit().putBoolean("reader_two_columns",!now).apply();read(key);});layoutButton.setContentDescription("Tukar paparan satu atau dua kolum");layoutButton.setTextColor(0xff176b47); Button readerOptions=action("⋮",bar,()->new AlertDialog.Builder(this).setItems(new String[]{"Edit","Semat / Buka sematan","Duplikasi","Padam"},(d,i)->{if(i==0)edit(key);else if(i==1){boolean pinned=prefs.getBoolean("pinned_"+key,false);prefs.edit().putBoolean("pinned_"+key,!pinned).apply();android.widget.Toast.makeText(this,pinned?"Sematan dibuang":"Nota disemat",android.widget.Toast.LENGTH_SHORT).show();read(key);}else if(i==2)duplicateNote(key);else confirmDelete(key);}).show());readerOptions.setContentDescription(key.startsWith("m_")?"Menu tindakan kitab":"Menu tindakan nota");
+  Button layoutButton=action("▥",bar,()->{boolean now=prefs.getBoolean("reader_two_columns",getResources().getConfiguration().screenWidthDp>=600);prefs.edit().putBoolean("reader_two_columns",!now).apply();read(key);});layoutButton.setContentDescription("Tukar paparan satu atau dua kolum");layoutButton.setTextColor(0xff176b47); Button readerOptions=action("⋮",bar,()->new AlertDialog.Builder(this).setItems(new String[]{"Edit","Semat / Buka sematan","Duplikasi","Padam","Cari dalam teks","Salin teks dan rujukan"},(d,i)->{if(i==0)edit(key);else if(i==1){boolean pinned=prefs.getBoolean("pinned_"+key,false);prefs.edit().putBoolean("pinned_"+key,!pinned).apply();android.widget.Toast.makeText(this,pinned?"Sematan dibuang":"Nota disemat",android.widget.Toast.LENGTH_SHORT).show();read(key);}else if(i==2)duplicateNote(key);else if(i==3)confirmDelete(key);else if(i==4)searchInsideReader(key);else copyReaderWithReference(key);}).show());readerOptions.setContentDescription(key.startsWith("m_")?"Menu tindakan kitab":"Menu tindakan nota");
   // Page-by-page reader for long Nota and Maktabah content.
   if(prefs.getString(key,"").length()>=100 && getResources().getConfiguration().screenWidthDp>=500 && prefs.getBoolean("reader_swipe_mode",false)){ // Optional unfolded swipe reader.
    try{showPagedReader(key);return;}
