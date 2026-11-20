@@ -57,7 +57,32 @@ public class MainActivity extends Activity {
   bell.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Peringatan").setMessage("Peringatan nota belum tersedia.").setPositiveButton("OK",null).show());
   ImageView avatar=headerIcon("☪",0xff126b43,"Urus kategori");header.addView(avatar);
   avatar.setOnClickListener(v->manageCategories());
-  root.addView(header,new LinearLayout.LayoutParams(-1,dp(54)));
+  // Gold pointed-dome accent sits inside the app header, below Android's status bar.
+  android.widget.FrameLayout headerFrame=new android.widget.FrameLayout(this);
+  headerFrame.setBackgroundColor(0xfffffdf7);
+  headerFrame.addView(header,new android.widget.FrameLayout.LayoutParams(-1,dp(54)));
+  View goldDome=new View(this){
+   final android.graphics.Paint gold=new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
+   @Override protected void onDraw(android.graphics.Canvas canvas){
+    super.onDraw(canvas);
+    float width=getWidth(),middle=width/2f;
+    float edge=dp(13),peak=dp(1.5f),shoulder=dp(12);
+    android.graphics.Path outline=new android.graphics.Path();
+    outline.moveTo(0,edge);
+    outline.cubicTo(width*.19f,edge,width*.37f,shoulder,middle,peak);
+    outline.cubicTo(width*.63f,shoulder,width*.81f,edge,width,edge);
+    gold.setStyle(android.graphics.Paint.Style.STROKE);
+    gold.setStrokeWidth(dp(.8f));
+    gold.setStrokeCap(android.graphics.Paint.Cap.ROUND);
+    gold.setStrokeJoin(android.graphics.Paint.Join.ROUND);
+    gold.setColor(0xffc5a35a);
+    canvas.drawPath(outline,gold);
+   }
+  };
+  goldDome.setClickable(false);
+  goldDome.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+  headerFrame.addView(goldDome,new android.widget.FrameLayout.LayoutParams(-1,dp(16),android.view.Gravity.TOP));
+  root.addView(headerFrame,new LinearLayout.LayoutParams(-1,dp(54)));
   View border=new View(this);border.setBackgroundColor(0xffd5bb72);
   root.addView(border,new LinearLayout.LayoutParams(-1,dp(1)));
  }
