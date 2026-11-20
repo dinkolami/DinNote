@@ -285,9 +285,9 @@ public class MainActivity extends Activity {
   scroll.setOverScrollMode(View.OVER_SCROLL_NEVER);scroll.setSmoothScrollingEnabled(true);
   root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
   LinearLayout page=new LinearLayout(this);page.setOrientation(1);
-  page.setPadding(dp(8),dp(6),dp(8),dp(12));page.setBackgroundColor(0xfffffcf4);scroll.addView(page);
+  page.setPadding(dp(10),dp(6),dp(10),dp(12));page.setBackgroundColor(0xfffffcf4);scroll.addView(page);
   TextView recent=dashboardText("Baru dilihat  ▾",15,true);
-  recent.setBackground(rounded(0xfff4f6eb,0xffc9a34f,8));
+  recent.setBackground(rounded(0xfffffdf8,0xffd7bd79,8));recent.setTextColor(0xff176b47);
   LinearLayout quickTools=new LinearLayout(this);quickTools.setOrientation(LinearLayout.HORIZONTAL);quickTools.setGravity(Gravity.CENTER_VERTICAL);
   LinearLayout.LayoutParams quickParams=new LinearLayout.LayoutParams(-1,-2);quickParams.bottomMargin=dp(4);
   page.addView(quickTools,quickParams);
@@ -313,7 +313,7 @@ public class MainActivity extends Activity {
   count.setGravity(Gravity.CENTER);count.setTextColor(0xff176b47);count.setBackgroundColor(0xfffffdf8);card.addView(count);
   View divider=new View(this);divider.setBackgroundColor(0xffe8d8b0);
   card.addView(divider,new LinearLayout.LayoutParams(-1,dp(1)));
-  LinearLayout tiles=new LinearLayout(this);tiles.setPadding(dp(8),dp(5),dp(8),dp(4));card.addView(tiles);
+  LinearLayout tiles=new LinearLayout(this);tiles.setPadding(dp(8),dp(7),dp(8),dp(7));card.addView(tiles);
   TextView note=dashboardText("▤\nNota",14,true);
   TextView book=dashboardText("▱\nMaktabah",14,true);
   note.setGravity(Gravity.CENTER);book.setGravity(Gravity.CENTER);note.setFocusable(true);book.setFocusable(true);note.setTextColor(0xff176b47);book.setTextColor(0xff176b47);
@@ -333,7 +333,7 @@ public class MainActivity extends Activity {
   String resume=prefs.getString("last_edited_key","");
   if(!resume.isEmpty()&&prefs.contains(resume)){
    TextView resumeButton=dashboardText("✎  Sambung menulis  ›",15,true);
-   resumeButton.setBackground(rounded(0xffeffaf1,0xffa6dcb3,10));
+   resumeButton.setBackground(rounded(0xfff1f8f1,0xffd7bd79,8));resumeButton.setTextColor(0xff176b47);
    shortcuts.addView(resumeButton);
    resumeButton.setOnClickListener(v->edit(resume));
   }
@@ -379,8 +379,8 @@ public class MainActivity extends Activity {
     FrameLayout row=new FrameLayout(this);
     row.setBackground(subtleNoteBorder(8));
     TextView item=dashboardText((k.startsWith("m_")?"▱  ":"▤  ")+t,14,false);
-    item.setTextColor(0xff26352e);
-    item.setPadding(dp(10),dp(5),dp(88),dp(5));
+    item.setTextColor(0xff26352e);item.setGravity(Gravity.CENTER_VERTICAL);
+    item.setPadding(dp(10),dp(7),dp(88),dp(7));
     item.setSingleLine(true);item.setEllipsize(android.text.TextUtils.TruncateAt.END);
     row.addView(item,new FrameLayout.LayoutParams(-1,-2));
     long when=prefs.getLong("viewed_"+k,0L);
@@ -393,7 +393,7 @@ public class MainActivity extends Activity {
      dateParams.rightMargin=dp(8);row.addView(date,dateParams);
     }
     LinearLayout.LayoutParams itemParams=new LinearLayout.LayoutParams(-1,-2);
-    itemParams.bottomMargin=dp(3);
+    itemParams.bottomMargin=dp(4);
     if(wide)(i<5?left:right).addView(row,itemParams);else recentNotes.addView(row,itemParams);
     applyTouchFeedback(row);row.setFocusable(true);
     row.setContentDescription("Buka "+(k.startsWith("m_")?"kitab ":"nota ")+t);
