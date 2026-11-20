@@ -3,7 +3,7 @@ import android.app.*;import android.os.*;import android.graphics.Color;import an
 public class MainActivity extends Activity {
  LinearLayout root,items,compactSummary; ScrollView listScroll; int savedNotesScroll=0,savedBooksScroll=0; String lastOpenedCard=null; android.view.GestureDetector readerDetector; EditText editor,titleEditor; TextView saveIndicator; Spinner categoryPicker; String categoryFilter="Semua"; String sortMode="Terbaru"; String selected=null; boolean maktabah=false, sectionOpen=false; android.content.SharedPreferences prefs;
  int green=Color.rgb(23,107,71), gold=Color.rgb(197,166,107); static final int BACKUP_CREATE=4201, BACKUP_OPEN=4202, CONTENT_IMPORT=4203;
- public void onCreate(Bundle b){super.onCreate(b);prefs=getSharedPreferences("notes",0);home();} // User content and categories are local; import them explicitly.}
+ public void onCreate(Bundle b){super.onCreate(b);prefs=getSharedPreferences("notes",0);if(prefs.contains("security_pin_hash"))promptUnlock();else home();} // User content and categories are local; import them explicitly.}
  void applySystemBarInsets(LinearLayout view){
   // Keep Android's real clock, battery and network status bar visible.
   getWindow().clearFlags(android.view.WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -124,9 +124,70 @@ public class MainActivity extends Activity {
     else showSettings();
    }).show();
  }
+ String hashPin(String pin,String salt) throws Exception{
+  byte[] saltBytes=android.util.Base64.decode(salt,android.util.Base64.NO_WRAP);
+  javax.crypto.spec.PBEKeySpec spec=new javax.crypto.spec.PBEKeySpec(pin.toCharArray(),saltBytes,120000,256);
+  try{
+   byte[] hash=javax.crypto.SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256").generateSecret(spec).getEncoded();
+   return android.util.Base64.encodeToString(hash,android.util.Base64.NO_WRAP);
+  }finally{spec.clearPassword();}
+ }
+ EditText pinField(){
+  EditText input=new EditText(this);
+  input.setInputType(android.text.InputType.TYPE_CLASS_NUMBER|android.text.InputType.TYPE_NUMBER_VARIATION_PASSWORD);
+  input.setSingleLine(true);input.setHint("PIN 4 hingga 8 digit");
+  input.setFilters(new android.text.InputFilter[]{new android.text.InputFilter.LengthFilter(8)});
+  return input;
+ }
+ boolean validPin(String pin){return pin.matches("[0-9]{4,8}");}
+ boolean verifyPin(String pin){
+  try{
+   String actual=hashPin(pin,prefs.getString("security_pin_salt",""));
+   byte[] a=android.util.Base64.decode(actual,android.util.Base64.NO_WRAP);
+   byte[] b=android.util.Base64.decode(prefs.getString("security_pin_hash",""),android.util.Base64.NO_WRAP);
+   return java.security.MessageDigest.isEqual(a,b);
+  }catch(Exception e){return false;}
+ }
+ void promptUnlock(){
+  EditText input=pinField();
+  AlertDialog dialog=new AlertDialog.Builder(this).setTitle("DinNote dikunci")
+   .setMessage("Masukkan PIN untuk membuka Nota dan Maktabah.")
+   .setView(input).setCancelable(false)
+   .setPositiveButton("Buka",null)
+   .setNegativeButton("Keluar",(d,w)->finish()).create();
+  dialog.setOnShowListener(v->dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(w->{
+   if(verifyPin(input.getText().toString())){dialog.dismiss();home();}
+   else{input.setText("");input.setError("PIN tidak tepat");}
+  }));
+  dialog.show();
+ }
+ void configurePin(){
+  boolean enabled=prefs.contains("security_pin_hash");
+  EditText input=pinField();
+  new AlertDialog.Builder(this).setTitle(enabled?"Matikan kunci PIN":"Aktifkan kunci PIN")
+   .setMessage(enabled?"Masukkan PIN semasa untuk mematikan kunci.":"Tetapkan PIN 4–8 digit. Simpan PIN dengan selamat; tiada pemulihan PIN automatik.")
+   .setView(input).setNegativeButton("Batal",null)
+   .setPositiveButton(enabled?"Matikan":"Set PIN",(d,w)->{
+    String pin=input.getText().toString();
+    if(enabled){
+     if(!verifyPin(pin)){Toast.makeText(this,"PIN salah; kunci masih aktif",Toast.LENGTH_LONG).show();return;}
+     if(prefs.edit().remove("security_pin_hash").remove("security_pin_salt").commit())
+      Toast.makeText(this,"Kunci PIN dimatikan",Toast.LENGTH_SHORT).show();
+    }else{
+     if(!validPin(pin)){Toast.makeText(this,"PIN mesti 4 hingga 8 digit",Toast.LENGTH_LONG).show();return;}
+     try{
+      byte[] salt=new byte[16];new java.security.SecureRandom().nextBytes(salt);
+      String encoded=android.util.Base64.encodeToString(salt,android.util.Base64.NO_WRAP);
+      if(!prefs.edit().putString("security_pin_salt",encoded).putString("security_pin_hash",hashPin(pin,encoded)).commit())
+       throw new java.io.IOException("Gagal menyimpan PIN");
+      Toast.makeText(this,"Kunci PIN diaktifkan",Toast.LENGTH_LONG).show();
+     }catch(Exception e){Toast.makeText(this,"Gagal mengaktifkan PIN",Toast.LENGTH_LONG).show();}
+    }
+   }).show();
+ }
  void showSettings(){
   new AlertDialog.Builder(this).setTitle("Tetapan DinNote")
-   .setItems(new String[]{"Saiz tulisan bacaan","Saiz tulisan editor","Backup ke fail","Restore daripada fail","Import kandungan JSON","Tong sampah","Maklumat aplikasi"},(dialog,which)->{
+   .setItems(new String[]{"Saiz tulisan bacaan","Saiz tulisan editor","Backup ke fail","Restore daripada fail","Import kandungan JSON","Tong sampah","Kunci PIN aplikasi","Maklumat aplikasi"},(dialog,which)->{
     if(which==0){
      new AlertDialog.Builder(this).setTitle("Saiz tulisan Nota dan Maktabah")
       .setSingleChoiceItems(new String[]{"Kecil","Biasa","Besar","Sangat besar"},
@@ -148,6 +209,7 @@ public class MainActivity extends Activity {
     else if(which==3)startRestore();
     else if(which==4)startContentImport();
     else if(which==5)showTrash();
+    else if(which==6)configurePin();
     else{
      String version="Tidak diketahui";
      try{
