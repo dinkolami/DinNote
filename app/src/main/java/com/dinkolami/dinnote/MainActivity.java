@@ -1092,7 +1092,7 @@ public class MainActivity extends Activity {
    if(sectionOpen)notesPage();else home();
    return;
   }
-  maktabah=key.startsWith("m_");prefs.edit().putString("last_edited_key",key).apply();}editor=null;saveIndicator=null;selected=key;cleanBase();LinearLayout bar=new LinearLayout(this);bar.setGravity(Gravity.CENTER_VERTICAL);root.addView(bar);action("‹",bar,()->finishEditingSafely());saveIndicator=text("✓ Disimpan",11);saveIndicator.setTextColor(0xff176b47);saveIndicator.setTypeface(null,android.graphics.Typeface.BOLD);saveIndicator.setGravity(Gravity.CENTER);saveIndicator.setPadding(dp(9),dp(5),dp(9),dp(5));saveIndicator.setBackground(rounded(0xffe5f5eb,0xffc9e8cf,12));LinearLayout.LayoutParams savedBadgeParams=new LinearLayout.LayoutParams(-2,-2);savedBadgeParams.leftMargin=dp(5);bar.addView(saveIndicator,savedBadgeParams);TextView spacer=text("",12);bar.addView(spacer,new LinearLayout.LayoutParams(0,1,1));final java.util.ArrayDeque<String> undoHistory=new java.util.ArrayDeque<>();final java.util.ArrayDeque<String> redoHistory=new java.util.ArrayDeque<>();final boolean[] restoring={false};final TextView[] historyButtons=new TextView[2];historyButtons[0]=action("↶",bar,()->{if(editor==null||undoHistory.isEmpty())return;restoring[0]=true;String current=editor.getText().toString();String previous=undoHistory.removeLast();redoHistory.addLast(current);editor.setText(previous);editor.setSelection(previous.length());restoring[0]=false;save();historyButtons[0].setAlpha(undoHistory.isEmpty()?0.35f:1f);historyButtons[1].setAlpha(1f);});historyButtons[1]=action("↷",bar,()->{if(editor==null||redoHistory.isEmpty())return;restoring[0]=true;String current=editor.getText().toString();String next=redoHistory.removeLast();undoHistory.addLast(current);editor.setText(next);editor.setSelection(next.length());restoring[0]=false;save();historyButtons[0].setAlpha(1f);historyButtons[1].setAlpha(redoHistory.isEmpty()?0.35f:1f);});historyButtons[0].setContentDescription("Undo perubahan teks");historyButtons[1].setContentDescription("Redo perubahan teks");for(TextView historyButton:historyButtons){historyButton.setTextSize(23);historyButton.setTextColor(0xff146b45);historyButton.setBackground(rounded(0xfff0f5f2,0xffc6d9cf,12));historyButton.setPadding(dp(9),dp(4),dp(9),dp(4));}historyButtons[0].setAlpha(0.45f);historyButtons[1].setAlpha(0.45f);Button doneButton=action("✓ Selesai",bar,()->finishEditingSafely());doneButton.setTextColor(Color.WHITE);doneButton.setTypeface(null,android.graphics.Typeface.BOLD);doneButton.setBackground(rounded(0xff08764e,0xffc5a85d,12));doneButton.setContentDescription("Selesai menyunting dan simpan nota");action("⋮",bar,()->{String[] options=maktabah?new String[]{"Masukkan tarikh","Masukkan masa","Masukkan tarikh dan masa","Padam"}:new String[]{"Masukkan tarikh","Masukkan masa","Masukkan tarikh dan masa","Padam"};new AlertDialog.Builder(this).setItems(options,(d,i)->{if(i<3)insertCurrentDateTime(i);else if(selected!=null)confirmDelete(selected);}).show();});categoryPicker=new Spinner(this);categoryPicker.setContentDescription(maktabah?"Kategori kitab":"Kategori nota");ArrayList<String> choices=new ArrayList<>();choices.add("Tanpa kategori");choices.addAll(categories());categoryPicker.setAdapter(new ArrayAdapter<>(this,android.R.layout.simple_spinner_dropdown_item,choices));String savedCat=key==null?"Tanpa kategori":prefs.getString("cat_"+key,"Tanpa kategori");
+  maktabah=key.startsWith("m_");prefs.edit().putString("last_edited_key",key).apply();}editor=null;saveIndicator=null;selected=key;cleanBase();LinearLayout bar=new LinearLayout(this);bar.setGravity(Gravity.CENTER_VERTICAL);root.addView(bar);action("‹",bar,()->finishEditingSafely());saveIndicator=text("✓ Disimpan",11);saveIndicator.setTextColor(0xff176b47);saveIndicator.setTypeface(null,android.graphics.Typeface.BOLD);saveIndicator.setGravity(Gravity.CENTER);saveIndicator.setPadding(dp(9),dp(5),dp(9),dp(5));saveIndicator.setBackground(rounded(0xffe5f5eb,0xffc9e8cf,12));LinearLayout.LayoutParams savedBadgeParams=new LinearLayout.LayoutParams(-2,-2);savedBadgeParams.leftMargin=dp(5);bar.addView(saveIndicator,savedBadgeParams);TextView spacer=text("",12);bar.addView(spacer,new LinearLayout.LayoutParams(0,1,1));final java.util.ArrayDeque<String> undoHistory=new java.util.ArrayDeque<>();final java.util.ArrayDeque<String> redoHistory=new java.util.ArrayDeque<>();final boolean[] restoring={false};final TextView[] historyButtons=new TextView[2];historyButtons[0]=action("↶",bar,()->{if(editor==null||undoHistory.isEmpty())return;restoring[0]=true;String current=editor.getText().toString();String previous=undoHistory.removeLast();redoHistory.addLast(current);editor.setText(previous);editor.setSelection(previous.length());restoring[0]=false;save();historyButtons[0].setAlpha(undoHistory.isEmpty()?0.35f:1f);historyButtons[1].setAlpha(1f);});historyButtons[1]=action("↷",bar,()->{if(editor==null||redoHistory.isEmpty())return;restoring[0]=true;String current=editor.getText().toString();String next=redoHistory.removeLast();undoHistory.addLast(current);editor.setText(next);editor.setSelection(next.length());restoring[0]=false;save();historyButtons[0].setAlpha(1f);historyButtons[1].setAlpha(redoHistory.isEmpty()?0.35f:1f);});historyButtons[0].setContentDescription("Undo perubahan teks");historyButtons[1].setContentDescription("Redo perubahan teks");for(TextView historyButton:historyButtons){historyButton.setTextSize(23);historyButton.setTextColor(0xff146b45);historyButton.setBackground(rounded(0xfff0f5f2,0xffc6d9cf,12));historyButton.setPadding(dp(9),dp(4),dp(9),dp(4));}historyButtons[0].setAlpha(0.45f);historyButtons[1].setAlpha(0.45f);Button doneButton=action("✓ Selesai",bar,()->finishEditingSafely());doneButton.setTextColor(Color.WHITE);doneButton.setTypeface(null,android.graphics.Typeface.BOLD);doneButton.setBackground(rounded(0xff08764e,0xffc5a85d,12));doneButton.setContentDescription("Selesai menyunting dan simpan nota");action("⋮",bar,()->{String[] options=new String[]{"Masukkan tarikh","Masukkan masa","Masukkan tarikh dan masa","Simpan versi","Sejarah suntingan","Padam"};new AlertDialog.Builder(this).setItems(options,(d,i)->{if(i<3)insertCurrentDateTime(i);else if(i==3)saveHistoryVersion();else if(i==4)showHistoryVersions();else if(selected!=null)confirmDelete(selected);}).show();});categoryPicker=new Spinner(this);categoryPicker.setContentDescription(maktabah?"Kategori kitab":"Kategori nota");ArrayList<String> choices=new ArrayList<>();choices.add("Tanpa kategori");choices.addAll(categories());categoryPicker.setAdapter(new ArrayAdapter<>(this,android.R.layout.simple_spinner_dropdown_item,choices));String savedCat=key==null?"Tanpa kategori":prefs.getString("cat_"+key,"Tanpa kategori");
   // Preserve an existing note category even if it is missing from the category list.
   if(!choices.contains(savedCat)){
    choices.add(savedCat);
@@ -1202,6 +1202,66 @@ public class MainActivity extends Activity {
   int end=Math.max(0,editor.getSelectionEnd());
   editor.getText().replace(Math.min(start,end),Math.max(start,end),value);
   save();
+ }
+ void saveHistoryVersion(){
+  if(editor==null)return;
+  save();
+  if(selected==null)return;
+  try{
+   org.json.JSONArray versions=new org.json.JSONArray(prefs.getString("history_"+selected,"[]"));
+   org.json.JSONObject entry=new org.json.JSONObject();
+   entry.put("time",System.currentTimeMillis());
+   entry.put("title",titleEditor==null?"":titleEditor.getText().toString());
+   entry.put("body",editor.getText().toString());
+   String category=categoryPicker==null||categoryPicker.getSelectedItem()==null?"Tanpa kategori":categoryPicker.getSelectedItem().toString();
+   entry.put("category",category);
+   if(versions.length()>0){
+    org.json.JSONObject last=versions.getJSONObject(versions.length()-1);
+    if(entry.getString("title").equals(last.optString("title"))&&entry.getString("body").equals(last.optString("body"))&&entry.getString("category").equals(last.optString("category"))){
+     Toast.makeText(this,"Versi ini sudah disimpan",Toast.LENGTH_SHORT).show();return;
+    }
+   }
+   org.json.JSONArray kept=new org.json.JSONArray();
+   for(int i=Math.max(0,versions.length()-9);i<versions.length();i++)kept.put(versions.getJSONObject(i));
+   kept.put(entry);
+   if(!prefs.edit().putString("history_"+selected,kept.toString()).commit())
+    throw new java.io.IOException("Gagal menyimpan sejarah");
+   Toast.makeText(this,"Versi disimpan dalam sejarah",Toast.LENGTH_SHORT).show();
+  }catch(Exception e){Toast.makeText(this,"Sejarah gagal disimpan: "+e.getMessage(),Toast.LENGTH_LONG).show();}
+ }
+ void showHistoryVersions(){
+  if(selected==null)return;
+  try{
+   org.json.JSONArray versions=new org.json.JSONArray(prefs.getString("history_"+selected,"[]"));
+   if(versions.length()==0){
+    new AlertDialog.Builder(this).setTitle("Sejarah suntingan").setMessage("Belum ada versi tersimpan. Pilih Simpan versi dalam menu editor.")
+     .setPositiveButton("OK",null).show();return;
+   }
+   String[] labels=new String[versions.length()];
+   for(int i=0;i<versions.length();i++){
+    org.json.JSONObject item=versions.getJSONObject(versions.length()-1-i);
+    labels[i]=new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm",java.util.Locale.getDefault()).format(new java.util.Date(item.optLong("time",0)))+" — "+item.optString("title","Tanpa tajuk");
+   }
+   new AlertDialog.Builder(this).setTitle("Sejarah suntingan").setItems(labels,(d,index)->{
+    try{
+     org.json.JSONObject item=versions.getJSONObject(versions.length()-1-index);
+     new AlertDialog.Builder(this).setTitle("Pulihkan versi?")
+      .setMessage("Kandungan editor semasa akan digantikan. Simpan versi semasa dahulu jika mahu menyimpannya.")
+      .setPositiveButton("Pulihkan",(a,b)->{
+       if(editor==null||titleEditor==null)return;
+       titleEditor.setText(item.optString("title",""));
+       editor.setText(item.optString("body",""));
+       if(categoryPicker!=null){
+        String category=item.optString("category","Tanpa kategori");
+        for(int i=0;i<categoryPicker.getCount();i++)
+         if(category.equals(categoryPicker.getItemAtPosition(i).toString())){categoryPicker.setSelection(i);break;}
+       }
+       save();
+       Toast.makeText(this,"Versi dipulihkan",Toast.LENGTH_SHORT).show();
+      }).setNegativeButton("Batal",null).show();
+    }catch(Exception e){Toast.makeText(this,"Gagal membaca versi",Toast.LENGTH_LONG).show();}
+   }).setNegativeButton("Tutup",null).show();
+  }catch(Exception e){Toast.makeText(this,"Sejarah tidak dapat dibuka",Toast.LENGTH_LONG).show();}
  }
  void save(){
   if(editor==null)return;
