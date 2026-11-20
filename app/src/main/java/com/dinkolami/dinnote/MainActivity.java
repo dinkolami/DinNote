@@ -387,16 +387,16 @@ public class MainActivity extends Activity {
     if(t.trim().isEmpty())t="Tanpa tajuk";
     // Light emerald list: slightly larger titles, dates consistently aligned right.
     FrameLayout row=new FrameLayout(this);
-    row.setBackground(subtleNoteBorder(9));row.setMinimumHeight(dp(48));
+    row.setBackground(subtleNoteBorder(9));row.setMinimumHeight(dp(42));
     TextView item=dashboardText((k.startsWith("m_")?"▱  ":"▤  ")+t,14,false);
     item.setTextColor(0xff303b42);item.setGravity(Gravity.CENTER_VERTICAL);
     item.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
     item.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);
-    item.setPadding(dp(10),dp(8),dp(prefs.getLong("viewed_"+k,0L)>0L?88:10),dp(8));item.setIncludeFontPadding(false);
-    item.setMinHeight(dp(48));
+    item.setPadding(dp(10),dp(4),dp(prefs.getLong("viewed_"+k,0L)>0L?88:10),dp(4));item.setIncludeFontPadding(false);
+    item.setMinHeight(dp(42));
     item.setTooltipText(t);item.setContentDescription(t);
     item.setSingleLine(true);item.setEllipsize(android.text.TextUtils.TruncateAt.END);
-    row.addView(item,new FrameLayout.LayoutParams(-1,-2));
+    row.addView(item,new FrameLayout.LayoutParams(-1,-2,Gravity.CENTER_VERTICAL));
     item.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
     long when=prefs.getLong("viewed_"+k,0L);
     if(when>0L){
