@@ -350,7 +350,7 @@ public class MainActivity extends Activity {
   LinearLayout recentNotes=new LinearLayout(this);recentNotes.setOrientation(1);
   recentNotes.setPadding(dp(10),dp(4),dp(10),dp(7));card.addView(recentNotes);
   ArrayList<String> keys=new ArrayList<>();
-  for(String k:prefs.getAll().keySet())if((k.startsWith("n_")||k.startsWith("m_"))&&prefs.getLong("viewed_"+k,0L)>0L)keys.add(k);
+  for(String k:prefs.getAll().keySet())if((k.startsWith("n_")||k.startsWith("m_"))&&prefs.getAll().get(k) instanceof String&&!prefs.getBoolean("deleted_"+k,false)&&prefs.getLong("viewed_"+k,0L)>0L)keys.add(k);
   Collections.sort(keys,(firstKey,secondKey)->{int order=Long.compare(prefs.getLong("viewed_"+secondKey,0L),prefs.getLong("viewed_"+firstKey,0L));return order!=0?order:firstKey.compareTo(secondKey);});
   if(keys.isEmpty()){
    TextView create=dashboardText("＋  Cipta nota pertama",13,true);create.setGravity(Gravity.CENTER);create.setMinHeight(dp(48));create.setContentDescription("Cipta nota baharu");applyTouchFeedback(create);create.setOnClickListener(v->{maktabah=false;edit(null);});recentNotes.addView(create);
@@ -437,6 +437,7 @@ public class MainActivity extends Activity {
  ArrayList<String> dashboardKeys(String field,boolean includeBooks){
   ArrayList<String> out=new ArrayList<>();
   for(String k:prefs.getAll().keySet())if((k.startsWith("n_")||(includeBooks&&k.startsWith("m_")))&&
+    prefs.getAll().get(k) instanceof String&&!prefs.getBoolean("deleted_"+k,false)&&
     (field.equals("pinned_")?prefs.getBoolean(field+k,false):prefs.getLong(field+k,0L)>0))out.add(k);
   Collections.sort(out,(a,b)->{
    int comparison=field.equals("pinned_")?
