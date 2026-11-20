@@ -126,7 +126,7 @@ public class MainActivity extends Activity {
  }
  void showSettings(){
   new AlertDialog.Builder(this).setTitle("Tetapan DinNote")
-   .setItems(new String[]{"Saiz tulisan bacaan","Saiz tulisan editor","Backup ke fail","Restore daripada fail","Import kandungan JSON","Maklumat aplikasi"},(dialog,which)->{
+   .setItems(new String[]{"Saiz tulisan bacaan","Saiz tulisan editor","Backup ke fail","Restore daripada fail","Import kandungan JSON","Tong sampah","Maklumat aplikasi"},(dialog,which)->{
     if(which==0){
      new AlertDialog.Builder(this).setTitle("Saiz tulisan Nota dan Maktabah")
       .setSingleChoiceItems(new String[]{"Kecil","Biasa","Besar","Sangat besar"},
@@ -147,6 +147,7 @@ public class MainActivity extends Activity {
     }else if(which==2)startBackup();
     else if(which==3)startRestore();
     else if(which==4)startContentImport();
+    else if(which==5)showTrash();
     else{
      String version="Tidak diketahui";
      try{
@@ -424,7 +425,7 @@ public class MainActivity extends Activity {
   matcher.appendTail(result);
   return result.toString();
  }
- void list(String filter){filter=filter.trim();String query=filter.replaceAll("\\s+"," ").toLowerCase(java.util.Locale.ROOT);String[] terms=query.isEmpty()?new String[0]:query.split(" ");items.removeAllViews();ArrayList<String> keys=new ArrayList<>();for(String k:prefs.getAll().keySet())if(k.startsWith(maktabah?"m_":"n_")&&prefs.getAll().get(k) instanceof String)keys.add(k);Collections.sort(keys,(a,b)->{
+ void list(String filter){filter=filter.trim();String query=filter.replaceAll("\\s+"," ").toLowerCase(java.util.Locale.ROOT);String[] terms=query.isEmpty()?new String[0]:query.split(" ");items.removeAllViews();ArrayList<String> keys=new ArrayList<>();for(String k:prefs.getAll().keySet())if(k.startsWith(maktabah?"m_":"n_")&&prefs.getAll().get(k) instanceof String&&!prefs.getBoolean("deleted_"+k,false))keys.add(k);Collections.sort(keys,(a,b)->{
    boolean pinA=prefs.getBoolean("pinned_"+a,false),pinB=prefs.getBoolean("pinned_"+b,false);
    if(pinA!=pinB)return pinA?-1:1;
    if("Tajuk A–Z".equals(sortMode)){int byTitle=prefs.getString("title_"+a,"").trim().compareToIgnoreCase(prefs.getString("title_"+b,"").trim());if(byTitle!=0)return byTitle;}
@@ -435,7 +436,7 @@ public class MainActivity extends Activity {
  LinearLayout countRow=new LinearLayout(this);countRow.setOrientation(LinearLayout.HORIZONTAL);countRow.setGravity(Gravity.CENTER_VERTICAL);countRow.setPadding(dp(16),dp(3),dp(12),dp(3));
  TextView countLabel=text(matches+" "+(maktabah?"kitab":"nota"),12);countLabel.setTextColor(0xff687078);countRow.addView(countLabel,new LinearLayout.LayoutParams(0,-2,1));
  String resumeKey=prefs.getString(maktabah?"reading_last_m":"reading_last_n","");
- if(resumeKey.startsWith(maktabah?"m_":"n_")&&prefs.contains(resumeKey)){
+ if(resumeKey.startsWith(maktabah?"m_":"n_")&&prefs.contains(resumeKey)&&!prefs.getBoolean("deleted_"+resumeKey,false)){
   String resumeTitle=prefs.getString("title_"+resumeKey,"Tanpa tajuk").trim();
   TextView resume=text("Sambung: "+resumeTitle+"  →",12);
   resume.setTypeface(null,android.graphics.Typeface.BOLD);resume.setTextColor(0xff176b47);
@@ -1011,7 +1012,58 @@ public class MainActivity extends Activity {
   if(saved){android.widget.Toast.makeText(this,"Salinan berjaya dibuat",android.widget.Toast.LENGTH_SHORT).show();read(copyKey);}
   else android.widget.Toast.makeText(this,"Gagal membuat salinan",android.widget.Toast.LENGTH_LONG).show();
  }
- void confirmDelete(String key){new AlertDialog.Builder(this).setMessage("Padam nota ini?").setPositiveButton("Padam",(d,w)->{android.content.SharedPreferences.Editor deletion=prefs.edit().remove(key).remove("title_"+key).remove("cat_"+key).remove("viewed_"+key).remove("updated_"+key).remove("pinned_"+key);if(key.contains("_sample_"))deletion.putBoolean("deleted_"+key,true);if(key.equals(prefs.getString("last_edited_key","")))deletion.remove("last_edited_key");deletion.apply();editor=null;titleEditor=null;categoryPicker=null;saveIndicator=null;selected=null;if(sectionOpen)notesPage();else home();}).setNegativeButton("Batal",null).show();}
+ void confirmDelete(String key){
+  new AlertDialog.Builder(this).setTitle("Alih ke Tong Sampah")
+   .setMessage("Nota atau kitab ini boleh dipulihkan semula melalui Tetapan > Tong sampah.")
+   .setPositiveButton("Alih",(d,w)->{
+    if(!prefs.edit().putBoolean("deleted_"+key,true).putLong("trashed_at_"+key,System.currentTimeMillis()).commit()){
+     Toast.makeText(this,"Gagal mengalihkan nota",Toast.LENGTH_LONG).show();return;
+    }
+    editor=null;titleEditor=null;categoryPicker=null;saveIndicator=null;selected=null;
+    if(sectionOpen)notesPage();else home();
+   }).setNegativeButton("Batal",null).show();
+ }
+ void showTrash(){
+  ArrayList<String> trash=new ArrayList<>();
+  for(String k:prefs.getAll().keySet())
+   if((k.startsWith("n_")||k.startsWith("m_"))&&prefs.getAll().get(k) instanceof String&&prefs.getBoolean("deleted_"+k,false))
+    trash.add(k);
+  Collections.sort(trash,(a,b)->Long.compare(prefs.getLong("trashed_at_"+b,0),prefs.getLong("trashed_at_"+a,0)));
+  if(trash.isEmpty()){
+   new AlertDialog.Builder(this).setTitle("Tong sampah").setMessage("Tiada nota atau kitab dipadam.")
+    .setPositiveButton("Tutup",null).show();return;
+  }
+  String[] labels=new String[trash.size()];
+  for(int i=0;i<trash.size();i++){
+   String k=trash.get(i),title=prefs.getString("title_"+k,"").trim();
+   labels[i]=(k.startsWith("m_")?"Kitab: ":"Nota: ")+(title.isEmpty()?"Tanpa tajuk":title);
+  }
+  new AlertDialog.Builder(this).setTitle("Tong sampah").setItems(labels,(dialog,index)->{
+   String k=trash.get(index);
+   new AlertDialog.Builder(this).setTitle(labels[index])
+    .setItems(new String[]{"Pulihkan","Padam kekal"},(d,choice)->{
+     if(choice==0){
+      if(prefs.edit().remove("deleted_"+k).remove("trashed_at_"+k).commit()){
+       Toast.makeText(this,"Nota berjaya dipulihkan",Toast.LENGTH_SHORT).show();
+       if(sectionOpen)notesPage();
+      }else Toast.makeText(this,"Pemulihan gagal",Toast.LENGTH_LONG).show();
+      showTrash();
+     }else{
+      new AlertDialog.Builder(this).setTitle("Padam kekal?")
+       .setMessage("Tindakan ini tidak boleh dibatalkan.")
+       .setPositiveButton("Padam kekal",(a,b)->{
+        android.content.SharedPreferences.Editor tx=prefs.edit().remove(k).remove("title_"+k)
+         .remove("cat_"+k).remove("viewed_"+k).remove("updated_"+k).remove("pinned_"+k)
+         .remove("trashed_at_"+k);
+        if(!k.contains("_sample_"))tx.remove("deleted_"+k);
+        if(tx.commit())Toast.makeText(this,"Dipadam kekal",Toast.LENGTH_SHORT).show();
+        else Toast.makeText(this,"Gagal memadam",Toast.LENGTH_LONG).show();
+        showTrash();
+       }).setNegativeButton("Batal",null).show();
+     }
+    }).show();
+  }).setNegativeButton("Tutup",null).show();
+ }
  void finishEditingSafely(){
   if(editor==null)return;
   save();
