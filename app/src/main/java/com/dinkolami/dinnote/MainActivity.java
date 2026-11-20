@@ -1084,7 +1084,7 @@ public class MainActivity extends Activity {
    String body=editor.getText().toString();
    String prefix=body.substring(0,Math.min(cursor,body.length()));
    boolean boldActive=(prefix.split(java.util.regex.Pattern.quote("**"),-1).length%2)==0;
-   boolean italicActive=(prefix.split("(?<!\\\\*)\\\\*(?!\\\\*)",-1).length%2)==0;
+   boolean italicActive=(prefix.replace("**","").length()-prefix.replace("**","").replace("*","").length())%2==1;
    boldButton.setBackground(rounded(boldActive?0xff08764e:0xfffbfdfb,boldActive?0xffc5a85d:0xffd6c78e,10));
    boldButton.setTextColor(boldActive?Color.WHITE:0xff176b47);
    italicButton.setBackground(rounded(italicActive?0xff08764e:0xfffbfdfb,italicActive?0xffc5a85d:0xffd6c78e,10));
@@ -1169,7 +1169,7 @@ public class MainActivity extends Activity {
     .putString("cat_"+selected,category).putLong("updated_"+selected,System.currentTimeMillis())
     .putString("last_edited_key",selected).apply();
   }
-  if(saveIndicator!=null)saveIndicator.setText("Disimpan");
+  if(saveIndicator!=null)saveIndicator.setText("✓ Disimpan");
  }
 
  void seedSampleArticles(){
