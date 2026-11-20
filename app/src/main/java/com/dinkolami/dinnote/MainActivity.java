@@ -275,8 +275,11 @@ public class MainActivity extends Activity {
  TextView dashboardText(String value,int size,boolean bold){TextView t=text(value,size);t.setPadding(dp(10),dp(8),dp(10),dp(8));if(bold)t.setTypeface(null,1);return t;}
  LinearLayout dashboardCard(){LinearLayout c=new LinearLayout(this);c.setOrientation(1);c.setPadding(dp(14),dp(12),dp(14),dp(12));android.graphics.drawable.GradientDrawable bg=new android.graphics.drawable.GradientDrawable();bg.setColor(Color.WHITE);bg.setCornerRadius(dp(17));bg.setStroke(dp(1),0xffe1e5e4);c.setBackground(bg);c.setElevation(dp(3));return c;}
  void applyTouchFeedback(View view){
+  view.setClickable(true);
+  view.setFocusable(true);
   android.util.TypedValue value=new android.util.TypedValue();
-  if(getTheme().resolveAttribute(android.R.attr.selectableItemBackground,value,true)){
+  if(getTheme().resolveAttribute(android.R.attr.selectableItemBackground,value,true)
+     && value.resourceId!=0){
    view.setForeground(getDrawable(value.resourceId));
   }
  }
