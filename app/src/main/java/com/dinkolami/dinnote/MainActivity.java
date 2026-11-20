@@ -391,9 +391,11 @@ public class MainActivity extends Activity {
     TextView item=dashboardText((k.startsWith("m_")?"▱  ":"▤  ")+t,14,false);
     item.setTextColor(0xff26352e);item.setGravity(Gravity.CENTER_VERTICAL);
     item.setPadding(dp(10),dp(8),dp(prefs.getLong("viewed_"+k,0L)>0L?88:10),dp(8));item.setIncludeFontPadding(false);
+    item.setMinHeight(dp(48));
     item.setTooltipText(t);
     item.setSingleLine(true);item.setEllipsize(android.text.TextUtils.TruncateAt.END);
     row.addView(item,new FrameLayout.LayoutParams(-1,-2));
+    item.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
     long when=prefs.getLong("viewed_"+k,0L);
     if(when>0L){
      TextView date=dashboardText(new java.text.SimpleDateFormat("dd MMM",new java.util.Locale("ms","MY")).format(new java.util.Date(when)),12,false);
@@ -401,7 +403,7 @@ public class MainActivity extends Activity {
      date.setBackground(rounded(0xfffaf7ee,0xffe8d9b6,14));date.setIncludeFontPadding(false);date.setMaxLines(1);date.setEllipsize(android.text.TextUtils.TruncateAt.END);
      date.setPadding(dp(7),dp(3),dp(7),dp(3));
      FrameLayout.LayoutParams dateParams=new FrameLayout.LayoutParams(-2,-2,Gravity.RIGHT|Gravity.CENTER_VERTICAL);
-     dateParams.rightMargin=dp(8);row.addView(date,dateParams);date.setContentDescription("Dilihat pada "+new java.text.SimpleDateFormat("dd MMMM",new java.util.Locale("ms","MY")).format(new java.util.Date(when)));
+     dateParams.rightMargin=dp(8);row.addView(date,dateParams);date.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);date.setContentDescription("Dilihat pada "+new java.text.SimpleDateFormat("dd MMMM",new java.util.Locale("ms","MY")).format(new java.util.Date(when)));
     }
     LinearLayout.LayoutParams itemParams=new LinearLayout.LayoutParams(-1,-2);
     itemParams.bottomMargin=dp(5);
