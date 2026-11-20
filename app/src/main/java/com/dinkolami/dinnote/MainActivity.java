@@ -470,9 +470,10 @@ public class MainActivity extends Activity {
   return out;
  }
  void dashboardSection(LinearLayout target,String heading,ArrayList<String> keys,boolean pin){
-  // Compact, consistent GitHub-style outline icons and tighter vertical rhythm.
+  // Keep folded rows compact; unfolded columns retain comfortable touch targets.
+  boolean folded=getResources().getConfiguration().screenWidthDp<500;
   TextView title=dashboardText((pin?"⌖  ":"◷  ")+heading,15,true);
-  title.setTextColor(0xff4e6269);title.setBackground(rounded(0xffeef2f5,0xffdce4ea,9));title.setPadding(dp(10),dp(8),dp(10),dp(8));title.setIncludeFontPadding(false);title.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);title.setSingleLine(true);title.setEllipsize(android.text.TextUtils.TruncateAt.END);title.setContentDescription(heading);title.setTooltipText(heading);title.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);LinearLayout.LayoutParams titleParams=new LinearLayout.LayoutParams(-1,-2);titleParams.topMargin=dp(5);titleParams.bottomMargin=dp(5);target.addView(title,titleParams);
+  title.setTextColor(0xff4e6269);title.setBackground(rounded(0xffeef2f5,0xffdce4ea,9));title.setPadding(dp(10),dp(folded?6:8),dp(10),dp(folded?6:8));title.setIncludeFontPadding(false);title.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);title.setSingleLine(true);title.setEllipsize(android.text.TextUtils.TruncateAt.END);title.setContentDescription(heading);title.setTooltipText(heading);title.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);LinearLayout.LayoutParams titleParams=new LinearLayout.LayoutParams(-1,-2);titleParams.topMargin=dp(5);titleParams.bottomMargin=dp(5);target.addView(title,titleParams);
   if(keys.isEmpty()){
    TextView empty=dashboardText(pin?"Belum ada nota disemat":"Belum ada nota dikemaskini",13,false);
    empty.setTextColor(0xff68756c);empty.setPadding(dp(10),dp(6),dp(10),dp(8));
@@ -495,10 +496,10 @@ public class MainActivity extends Activity {
    entry.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
    entry.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);
    entry.setSingleLine(true);entry.setEllipsize(android.text.TextUtils.TruncateAt.END);
-   entry.setPadding(dp(10),dp(7),dp(10),dp(7));entry.setIncludeFontPadding(false);
-   entry.setBackground(subtleNoteBorder(9));entry.setMinHeight(dp(48));
+   entry.setPadding(dp(10),dp(folded?4:7),dp(10),dp(folded?4:7));entry.setIncludeFontPadding(false);
+   entry.setBackground(subtleNoteBorder(9));entry.setMinHeight(dp(folded?42:48));
    LinearLayout.LayoutParams ep=new LinearLayout.LayoutParams(-1,-2);
-   ep.bottomMargin=dp(5);target.addView(entry,ep);applyTouchFeedback(entry);
+   ep.bottomMargin=dp(folded?4:5);target.addView(entry,ep);applyTouchFeedback(entry);
    entry.setFocusable(true);
    entry.setContentDescription("Buka "+(key.startsWith("m_")?"kitab ":"nota ")+(label.isEmpty()?"Tanpa tajuk":label));entry.setTooltipText(label.isEmpty()?"Tanpa tajuk":label);
    entry.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);
