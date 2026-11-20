@@ -390,6 +390,8 @@ public class MainActivity extends Activity {
     row.setBackground(subtleNoteBorder(9));row.setMinimumHeight(dp(48));
     TextView item=dashboardText((k.startsWith("m_")?"▱  ":"▤  ")+t,14,false);
     item.setTextColor(0xff26352e);item.setGravity(Gravity.CENTER_VERTICAL);
+    item.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
+    item.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);
     item.setPadding(dp(10),dp(8),dp(prefs.getLong("viewed_"+k,0L)>0L?88:10),dp(8));item.setIncludeFontPadding(false);
     item.setMinHeight(dp(48));
     item.setTooltipText(t);
@@ -454,6 +456,8 @@ public class MainActivity extends Activity {
    String key=keys.get(i),label=prefs.getString("title_"+key,"").trim();
    TextView entry=dashboardText((key.startsWith("m_")?"▱  ":"▤  ")+(label.isEmpty()?"Tanpa tajuk":label),14,false);
    entry.setTextColor(0xff26352e);entry.setGravity(Gravity.CENTER_VERTICAL);
+   entry.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
+   entry.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);
    entry.setSingleLine(true);entry.setEllipsize(android.text.TextUtils.TruncateAt.END);
    entry.setPadding(dp(10),dp(7),dp(10),dp(7));entry.setIncludeFontPadding(false);
    entry.setBackground(subtleNoteBorder(9));entry.setMinHeight(dp(48));
