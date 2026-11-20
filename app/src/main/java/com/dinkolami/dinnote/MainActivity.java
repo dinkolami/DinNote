@@ -411,7 +411,7 @@ public class MainActivity extends Activity {
   FrameLayout readingFrame=new FrameLayout(this);
   root.addView(readingFrame,new LinearLayout.LayoutParams(-1,0,1));
   readingFrame.addView(pageRow,new FrameLayout.LayoutParams(-1,-1));
-  // Compact single-row reader controls: previous, bookmark, focus, progress, next.
+  // Minimal reader controls: bookmark and progress only; swipe changes pages.
   LinearLayout navigation=new LinearLayout(this);navigation.setGravity(Gravity.CENTER_VERTICAL);
   navigation.setPadding(dp(8),dp(1),dp(8),dp(1));
   Button bookmark=new Button(this);bookmark.setText("♧");bookmark.setContentDescription("Simpan penanda halaman; tekan lama untuk pergi ke penanda");
@@ -425,13 +425,13 @@ public class MainActivity extends Activity {
    control.setBackground(rounded(0xffeff8f0,0xffb8d9c2,9));
   }
   LinearLayout.LayoutParams controlParams;
-  controlParams=new LinearLayout.LayoutParams(dp(34),dp(30));controlParams.rightMargin=dp(5);navigation.addView(bookmark,controlParams);
+  controlParams=new LinearLayout.LayoutParams(dp(30),dp(28));controlParams.rightMargin=dp(5);navigation.addView(bookmark,controlParams);
   // Progress label sits on the lower reading-frame border, not in the toolbar.
   indicator.setTextColor(0xff356b50);
   indicator.setBackgroundColor(paper);
   indicator.setPadding(dp(9),0,dp(9),0);
   FrameLayout.LayoutParams progressParams=new FrameLayout.LayoutParams(-2,dp(22),Gravity.BOTTOM|Gravity.CENTER_HORIZONTAL);
-  progressParams.bottomMargin=0;
+  progressParams.bottomMargin=dp(1);
   readingFrame.addView(indicator,progressParams);
   indicator.bringToFront();
   LinearLayout.LayoutParams navigationParams=new LinearLayout.LayoutParams(-1,-2);
@@ -449,9 +449,13 @@ public class MainActivity extends Activity {
     // Keep a small bottom reserve so the final line is never clipped.
     int width=Math.max(dp(80),(pageRow.getWidth()-dp(16)-(spread?dp(8):0))/(spread?2:1));
     int textWidth=Math.max(dp(40),width-dp(24));
-    int usableHeight=Math.max(dp(40),pageRow.getHeight()-dp(20)-dp(18));
+    int usableHeight=Math.max(dp(40),pageRow.getHeight()-dp(20)-dp(22));
+    // Use identical line spacing in the measuring layout and visible pages.
+    final boolean arabic=java.util.regex.Pattern.compile("[\\u0600-\\u06FF]").matcher(source).find();
+    final int extraLine=arabic?dp(3):dp(1);
+    final float lineMultiplier=arabic?1.12f:1.04f;
     TextView probe=text("",fontSize);
-    probe.setLineSpacing(dp(1),1.04f);
+    probe.setLineSpacing(extraLine,lineMultiplier);
     probe.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
     android.text.TextPaint paint=probe.getPaint();
     ArrayList<String> parts=new ArrayList<>();
@@ -465,7 +469,7 @@ public class MainActivity extends Activity {
       .obtain(candidate,0,candidate.length(),paint,textWidth)
       .setAlignment(android.text.Layout.Alignment.ALIGN_NORMAL)
       .setTextDirection(android.text.TextDirectionHeuristics.FIRSTSTRONG_LTR)
-      .setLineSpacing(dp(1),1.04f)
+      .setLineSpacing(extraLine,lineMultiplier)
       .setIncludePad(true).build();
      int lastLine=0;
      for(int line=0;line<layout.getLineCount();line++){
@@ -492,7 +496,7 @@ public class MainActivity extends Activity {
       TextView page=text(pageNumber<total?parts.get(pageNumber):"",fontSize);
       page.setTextColor(0xff26372e);page.setGravity(Gravity.TOP);
       page.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
-      page.setLineSpacing(dp(1),1.04f);
+      page.setLineSpacing(extraLine,lineMultiplier);
       page.setPadding(dp(12),dp(10),dp(12),dp(10));
       page.setBackground(rounded(paper,0xffdde5e1,2));page.setElevation(0);
       LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(0,-1,1);
@@ -504,7 +508,7 @@ public class MainActivity extends Activity {
         if(event.getAction()==android.view.MotionEvent.ACTION_DOWN){x=event.getX();y=event.getY();return true;}
         if(event.getAction()==android.view.MotionEvent.ACTION_UP){
          float dx=event.getX()-x;
-         if(Math.abs(dx)>dp(50)&&Math.abs(dx)>Math.abs(event.getY()-y)){
+         if(Math.abs(dx)>dp(65)&&Math.abs(dx)>Math.abs(event.getY()-y)*1.5f){
           position[0]=Math.max(0,Math.min(total-1,position[0]+(dx<0?(spread?2:1):-(spread?2:1))));
           if(spread)position[0]=position[0]/2*2;
           render[0].run();
