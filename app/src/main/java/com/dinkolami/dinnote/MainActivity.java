@@ -1911,7 +1911,8 @@ public class MainActivity extends Activity {
   if(sectionOpen&&selected==null){
    if(listScroll!=null){
     int y=listScroll.getScrollY();
-    int extent=Math.max(1,listScroll.getChildAt(0).getHeight()-listScroll.getHeight());
+    android.view.View listContent=listScroll.getChildAt(0);
+    int extent=Math.max(1,(listContent==null?0:listContent.getHeight())-listScroll.getHeight());
     float fraction=Math.min(1f,Math.max(0f,(float)y/extent));
     if(maktabah)savedBooksScroll=y;else savedNotesScroll=y;
     final boolean currentSection=maktabah;
@@ -1920,7 +1921,8 @@ public class MainActivity extends Activity {
      notesPage();
      ScrollView target=listScroll;
      if(target!=null)target.post(()->{
-      int max=Math.max(0,target.getChildAt(0).getHeight()-target.getHeight());
+      android.view.View targetContent=target.getChildAt(0);
+      int max=Math.max(0,(targetContent==null?0:targetContent.getHeight())-target.getHeight());
       int restored=Math.round(fraction*max);
       target.scrollTo(0,restored);
       if(maktabah)savedBooksScroll=restored;else savedNotesScroll=restored;
