@@ -550,7 +550,7 @@ public class MainActivity extends Activity {
   Button bookmarkButton=action("♧",bar,()->{int pos=prefs.getInt("reading_scroll_"+key,0);new AlertDialog.Builder(this).setTitle("Penanda bacaan").setMessage("Kedudukan terakhir: "+pos+" px").setPositiveButton("Simpan penanda",(d,w)->{prefs.edit().putInt("bookmark_scroll_"+key,prefs.getInt("reading_scroll_"+key,0)).apply();Toast.makeText(this,"Penanda disimpan",Toast.LENGTH_SHORT).show();}).setNeutralButton("Pergi ke penanda",(d,w)->{int target=prefs.getInt("bookmark_scroll_"+key,-1);if(target>=0){read(key);root.post(()->{ScrollView currentScroll=(ScrollView)root.getChildAt(root.getChildCount()-2);currentScroll.post(()->currentScroll.scrollTo(0,target));});}else Toast.makeText(this,"Tiada penanda",Toast.LENGTH_SHORT).show();}).setNegativeButton("Tutup",null).show();});bookmarkButton.setContentDescription("Penanda bacaan");Button readerEdit=action("✎ Edit",bar,()->edit(key));readerEdit.setContentDescription(key.startsWith("m_")?"Sunting kandungan kitab":"Sunting kandungan nota");
   Button layoutButton=action("▥",bar,()->{boolean now=prefs.getBoolean("reader_two_columns",getResources().getConfiguration().screenWidthDp>=600);prefs.edit().putBoolean("reader_two_columns",!now).apply();read(key);});layoutButton.setContentDescription("Tukar paparan satu atau dua kolum");layoutButton.setTextColor(0xff176b47); Button readerOptions=action("⋮",bar,()->new AlertDialog.Builder(this).setItems(new String[]{"Edit","Semat / Buka sematan","Duplikasi","Padam"},(d,i)->{if(i==0)edit(key);else if(i==1){boolean pinned=prefs.getBoolean("pinned_"+key,false);prefs.edit().putBoolean("pinned_"+key,!pinned).apply();android.widget.Toast.makeText(this,pinned?"Sematan dibuang":"Nota disemat",android.widget.Toast.LENGTH_SHORT).show();read(key);}else if(i==2)duplicateNote(key);else confirmDelete(key);}).show());readerOptions.setContentDescription(key.startsWith("m_")?"Menu tindakan kitab":"Menu tindakan nota");
   // Page-by-page reader for long Nota and Maktabah content.
-  if(prefs.getString(key,"").length()>=100&&!prefs.getBoolean("reader_safe_scroll_"+key,false)){
+  if(false && prefs.getString(key,"").length()>=100&&!prefs.getBoolean("reader_safe_scroll_"+key,false)){ // Temporarily disable clipped fixed-height pagination; use lossless scroll reader.
    try{showPagedReader(key);return;}
    catch(RuntimeException problem){
     android.util.Log.e("DinNote","Paged reader failed; using safe scrolling",problem);
@@ -582,10 +582,11 @@ public class MainActivity extends Activity {
    int middle=fullReadingText.length()/2;
    int split=fullReadingText.indexOf('\n',middle);
    if(split<0)split=fullReadingText.indexOf(' ',middle);
-   if(split<0)split=middle;
+   if(split<0){int next=middle;while(next<fullReadingText.length()&&!Character.isWhitespace(fullReadingText.charAt(next)))next++;split=next<fullReadingText.length()?next:middle;}
    LinearLayout columns=new LinearLayout(this);columns.setOrientation(LinearLayout.HORIZONTAL);
    columns.setPadding(dp(4),dp(8),dp(4),dp(12));
-   String[] halves={fullReadingText.substring(0,split).trim(),fullReadingText.substring(split).trim()};
+   // Preserve every original character, including newlines and whitespace at the split.
+    String[] halves={fullReadingText.substring(0,split),fullReadingText.substring(split)};
    for(int i=0;i<2;i++){
     TextView page=text(halves[i],readingSizes[fontLevel]);page.setTextColor(0xff26372e);
     page.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);page.setTextIsSelectable(true);
