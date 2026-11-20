@@ -647,7 +647,34 @@ public class MainActivity extends Activity {
   wordCounter.setTextColor(0xff687078);
   wordCounter.setPadding(dp(20),dp(8),dp(20),dp(20));
   body.addView(wordCounter);
-  root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));ProgressBar readingProgress=new ProgressBar(this,null,android.R.attr.progressBarStyleHorizontal);readingProgress.setMax(100);readingProgress.setProgressTintList(android.content.res.ColorStateList.valueOf(0xff176b47));readingProgress.setProgressBackgroundTintList(android.content.res.ColorStateList.valueOf(0xffe4f3e9));root.addView(readingProgress,new LinearLayout.LayoutParams(-1,dp(3)));scroll.getViewTreeObserver().addOnScrollChangedListener(()->{int maxScroll=Math.max(1,scroll.getChildAt(0).getHeight()-scroll.getHeight());readingProgress.setProgress(Math.min(100,scroll.getScrollY()*100/maxScroll));});int rememberedScroll=prefs.getInt("reading_scroll_"+key,0);scroll.post(()->scroll.scrollTo(0,Math.max(0,rememberedScroll)));scroll.setOnTouchListener((v,e)->{if(e.getAction()==android.view.MotionEvent.ACTION_UP)scroll.postDelayed(()->prefs.edit().putInt("reading_scroll_"+key,scroll.getScrollY()).apply(),160);return false;});
+  root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
+   // Compact reading progress indicator shared by Nota and Maktabah.
+   FrameLayout progressFrame=new FrameLayout(this);
+   progressFrame.setBackgroundColor(0xfff8faf8);
+   ProgressBar readingProgress=new ProgressBar(this,null,android.R.attr.progressBarStyleHorizontal);
+   readingProgress.setMax(100);
+   readingProgress.setProgressTintList(android.content.res.ColorStateList.valueOf(0xff176b47));
+   readingProgress.setProgressBackgroundTintList(android.content.res.ColorStateList.valueOf(0xffe4f3e9));
+   FrameLayout.LayoutParams trackParams=new FrameLayout.LayoutParams(-1,dp(3),Gravity.TOP);
+   progressFrame.addView(readingProgress,trackParams);
+   TextView readingPercent=text("0%",10);
+   readingPercent.setTextColor(0xff52745e);
+   readingPercent.setGravity(Gravity.CENTER);
+   readingPercent.setPadding(dp(5),0,dp(5),0);
+   readingPercent.setBackgroundColor(0xfff8faf8);
+   FrameLayout.LayoutParams percentParams=new FrameLayout.LayoutParams(-2,dp(18),Gravity.TOP|Gravity.RIGHT);
+   percentParams.rightMargin=dp(8);
+   progressFrame.addView(readingPercent,percentParams);
+   root.addView(progressFrame,new LinearLayout.LayoutParams(-1,dp(18)));
+   Runnable updateReadingProgress=()->{
+    if(scroll.getChildCount()==0)return;
+    int maxScroll=Math.max(0,scroll.getChildAt(0).getHeight()-scroll.getHeight());
+    int progress=maxScroll==0?100:Math.max(0,Math.min(100,Math.round(scroll.getScrollY()*100f/maxScroll)));
+    readingProgress.setProgress(progress);
+    readingPercent.setText(progress+"%");
+   };
+   scroll.getViewTreeObserver().addOnScrollChangedListener(updateReadingProgress::run);
+   scroll.post(updateReadingProgress);int rememberedScroll=prefs.getInt("reading_scroll_"+key,0);scroll.post(()->scroll.scrollTo(0,Math.max(0,rememberedScroll)));scroll.setOnTouchListener((v,e)->{if(e.getAction()==android.view.MotionEvent.ACTION_UP)scroll.postDelayed(()->prefs.edit().putInt("reading_scroll_"+key,scroll.getScrollY()).apply(),160);return false;});
   readerDetector=new android.view.GestureDetector(this,new android.view.GestureDetector.SimpleOnGestureListener(){
    @Override public boolean onDown(android.view.MotionEvent e){return true;}
    @Override public boolean onDoubleTap(android.view.MotionEvent e){bar.setVisibility(bar.getVisibility()==View.VISIBLE?View.GONE:View.VISIBLE);return true;}
