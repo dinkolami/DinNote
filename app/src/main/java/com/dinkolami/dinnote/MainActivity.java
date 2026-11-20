@@ -453,6 +453,7 @@ public class MainActivity extends Activity {
    empty.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);
    empty.setIncludeFontPadding(false);
    empty.setMaxLines(2);empty.setEllipsize(android.text.TextUtils.TruncateAt.END);
+   empty.setMinHeight(dp(36));empty.setGravity(Gravity.CENTER_VERTICAL);
    empty.setContentDescription(pin?"Tiada nota disemat":"Tiada nota yang dikemaskini");
    target.addView(empty);return;
   }
