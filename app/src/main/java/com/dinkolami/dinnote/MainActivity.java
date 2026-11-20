@@ -411,6 +411,7 @@ public class MainActivity extends Activity {
   TextView bookTitle=text(heading,14);bookTitle.setGravity(Gravity.CENTER);bookTitle.setTypeface(null,android.graphics.Typeface.BOLD);bookTitle.setPadding(dp(8),dp(4),dp(8),dp(4));
   root.addView(bookTitle);root.addView(pages,new LinearLayout.LayoutParams(-1,0,1));root.addView(controls);
   pages.post(()->{
+   try{
    int availableWidth=Math.max(dp(160),pages.getWidth()-dp(24));
    int pageWidth=spread?(availableWidth-dp(12))/2:availableWidth;
    int pageHeight=Math.max(dp(160),pages.getHeight()-dp(24));
@@ -510,6 +511,11 @@ public class MainActivity extends Activity {
     public void onChildViewRemoved(View parent,View child){}
    });
    render.run();
+   }catch(RuntimeException problem){
+    android.util.Log.e("DinNote","Pagination failed; restoring safe reading mode",problem);
+    prefs.edit().putBoolean("reader_safe_scroll_"+key,true).apply();
+    read(key);
+   }
   });
  }
 
@@ -522,7 +528,14 @@ public class MainActivity extends Activity {
   Button bookmarkButton=action("♧",bar,()->{int pos=prefs.getInt("reading_scroll_"+key,0);new AlertDialog.Builder(this).setTitle("Penanda bacaan").setMessage("Kedudukan terakhir: "+pos+" px").setPositiveButton("Simpan penanda",(d,w)->{prefs.edit().putInt("bookmark_scroll_"+key,prefs.getInt("reading_scroll_"+key,0)).apply();Toast.makeText(this,"Penanda disimpan",Toast.LENGTH_SHORT).show();}).setNeutralButton("Pergi ke penanda",(d,w)->{int target=prefs.getInt("bookmark_scroll_"+key,-1);if(target>=0){read(key);root.post(()->{ScrollView currentScroll=(ScrollView)root.getChildAt(root.getChildCount()-2);currentScroll.post(()->currentScroll.scrollTo(0,target));});}else Toast.makeText(this,"Tiada penanda",Toast.LENGTH_SHORT).show();}).setNegativeButton("Tutup",null).show();});bookmarkButton.setContentDescription("Penanda bacaan");Button readerEdit=action("✎ Edit",bar,()->edit(key));readerEdit.setContentDescription(key.startsWith("m_")?"Sunting kandungan kitab":"Sunting kandungan nota");
   Button layoutButton=action("▥",bar,()->{boolean now=prefs.getBoolean("reader_two_columns",getResources().getConfiguration().screenWidthDp>=600);prefs.edit().putBoolean("reader_two_columns",!now).apply();read(key);});layoutButton.setContentDescription("Tukar paparan satu atau dua kolum");layoutButton.setTextColor(0xff176b47); Button chaptersButton=action("☷",bar,()->{String[] lines=prefs.getString(key,"").split("\\R");ArrayList<String> chapters=new ArrayList<>();ArrayList<Integer> offsets=new ArrayList<>();int offset=0;for(String line:lines){String trimmed=line.trim();if((trimmed.matches("(?i)^(bab|fasal|chapter)\\s+.*")||trimmed.startsWith("باب ")||trimmed.startsWith("فصل "))&&trimmed.length()<120){chapters.add(trimmed);offsets.add(offset);}offset+=line.length()+1;}if(chapters.isEmpty()){Toast.makeText(this,"Tiada tajuk bab dikenal pasti",Toast.LENGTH_SHORT).show();return;}new AlertDialog.Builder(this).setTitle("Isi kandungan").setItems(chapters.toArray(new String[0]),(d,i)->{int target=offsets.get(i);read(key);root.post(()->{ScrollView currentScroll=(ScrollView)root.getChildAt(root.getChildCount()-2);TextView currentText=(TextView)((LinearLayout)currentScroll.getChildAt(0)).getChildAt(((LinearLayout)currentScroll.getChildAt(0)).getChildCount()-2);android.text.Layout layout=currentText.getLayout();if(layout!=null){int line=layout.getLineForOffset(Math.min(target,currentText.length()));currentScroll.scrollTo(0,currentText.getTop()+layout.getLineTop(line));}});}).show();});chaptersButton.setContentDescription("Isi kandungan bab");Button readerOptions=action("⋮",bar,()->new AlertDialog.Builder(this).setItems(new String[]{"Edit","Semat / Buka sematan","Duplikasi","Padam"},(d,i)->{if(i==0)edit(key);else if(i==1){boolean pinned=prefs.getBoolean("pinned_"+key,false);prefs.edit().putBoolean("pinned_"+key,!pinned).apply();android.widget.Toast.makeText(this,pinned?"Sematan dibuang":"Nota disemat",android.widget.Toast.LENGTH_SHORT).show();read(key);}else if(i==2)duplicateNote(key);else confirmDelete(key);}).show());readerOptions.setContentDescription(key.startsWith("m_")?"Menu tindakan kitab":"Menu tindakan nota");
   // Page-by-page reader for long Nota and Maktabah content.
-  if(prefs.getString(key,"").length()>=100){showPagedReader(key);return;}
+  if(prefs.getString(key,"").length()>=100&&!prefs.getBoolean("reader_safe_scroll_"+key,false)){
+   try{showPagedReader(key);return;}
+   catch(RuntimeException problem){
+    android.util.Log.e("DinNote","Paged reader failed; using safe scrolling",problem);
+    prefs.edit().putBoolean("reader_safe_scroll_"+key,true).apply();
+    cleanBase();read(key);return;
+   }
+  }
   String heading=prefs.getString("title_"+key,"");
   TextView sectionLabel=text(key.startsWith("m_")?"▤  Maktabah":"✎  Nota",12);sectionLabel.setTextColor(0xff23714b);sectionLabel.setPadding(dp(20),dp(10),dp(20),dp(2));
   ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);scroll.setOverScrollMode(View.OVER_SCROLL_NEVER);
