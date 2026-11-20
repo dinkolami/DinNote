@@ -515,7 +515,7 @@ public class MainActivity extends Activity {
    detail.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
    detail.setMaxLines(2);detail.setEllipsize(android.text.TextUtils.TruncateAt.END);
    card.addView(detail);
-   card.setMinHeight(dp(48));applyTouchFeedback(card);
+   card.setMinimumHeight(dp(48));applyTouchFeedback(card);
    card.setContentDescription("Buka nota "+title);
    card.setOnClickListener(v->{maktabah=false;read(k);});count++;
   }
