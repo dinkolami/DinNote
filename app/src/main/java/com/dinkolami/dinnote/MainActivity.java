@@ -202,7 +202,7 @@ public class MainActivity extends Activity {
        Math.max(0,Math.min(3,prefs.getInt("reader_font_level",0))),(d,choice)->{
         prefs.edit().putInt("reader_font_level",choice).putInt("editor_font_level",choice).apply();
         d.dismiss();
-        if(editor!=null)editor.setTextSize(new int[]{15,18,21,25}[choice]);
+        if(editor!=null)editor.setTextSize(new int[]{16,18,21,25}[choice]);
         Toast.makeText(this,"Saiz tulisan editor dikemas kini",Toast.LENGTH_SHORT).show();
        }).setNegativeButton("Batal",null).show();
     }else if(which==2)startBackup();
@@ -570,7 +570,7 @@ public class MainActivity extends Activity {
   final String source=prefs.getString(key,"");
   final boolean spread=getResources().getConfiguration().screenWidthDp>=500&&prefs.getBoolean("reader_two_columns",true);
   final int fontLevel=Math.max(0,Math.min(3,prefs.getInt("reader_font_level",0)));
-  final int fontSize=(key.startsWith("m_")?new int[]{15,18,21,25}:new int[]{13,15,18,22})[fontLevel];
+  final int fontSize=(key.startsWith("m_")?new int[]{16,18,21,25}:new int[]{13,15,18,22})[fontLevel];
   final int theme=prefs.getInt("reader_theme",0);
   final int paper=theme==0?0xffffffff:theme==2?0xfff2f8f3:0xfffffcf4;
   final String heading=prefs.getString("title_"+key,"");
@@ -626,7 +626,7 @@ public class MainActivity extends Activity {
     int usableHeight=Math.max(dp(40),pageRow.getHeight()-dp(20)-dp(72)); // Reserve an extra full text line and font-descent safety margin.
     // Use identical line spacing in the measuring layout and visible pages.
     final boolean arabic=java.util.regex.Pattern.compile("[\\u0600-\\u06FF]").matcher(source).find();
-    final int extraLine=prefs.getBoolean("reader_wide_spacing",false)?dp(5):0;
+    final int extraLine=prefs.getBoolean("reader_wide_spacing",false)?dp(5):dp(1);
     final float lineMultiplier=prefs.getBoolean("reader_wide_spacing",false)?1.15f:1.0f;
     TextView probe=text("",fontSize);
     probe.setLineSpacing(extraLine,lineMultiplier);
@@ -983,11 +983,11 @@ public class MainActivity extends Activity {
  }
  void applySharedTextMetrics(android.widget.TextView view){
   int level=Math.max(0,Math.min(3,prefs.getInt("reader_font_level",0)));
-  view.setTextSize(new int[]{15,18,21,25}[level]);
+  view.setTextSize(new int[]{16,18,21,25}[level]);
   view.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
   view.setBreakStrategy(android.text.Layout.BREAK_STRATEGY_SIMPLE);
   view.setHyphenationFrequency(android.text.Layout.HYPHENATION_FREQUENCY_NONE);
-  view.setLineSpacing(prefs.getBoolean("reader_wide_spacing",false)?dp(5):0,
+  view.setLineSpacing(prefs.getBoolean("reader_wide_spacing",false)?dp(5):dp(1),
    prefs.getBoolean("reader_wide_spacing",false)?1.15f:1.0f);
   view.setIncludeFontPadding(true);
  }
@@ -1039,10 +1039,10 @@ public class MainActivity extends Activity {
   if(!heading.isEmpty())body.addView(title);
   String readingCategory=prefs.getString("cat_"+key,"Tanpa kategori");String fullReadingText=prefs.getString(key,"");String firstReadingLine=fullReadingText.split("\\R",2)[0].trim();if(firstReadingLine.matches("(?i)^(bab|الفصل|باب)\\b.*")&&firstReadingLine.length()<110){TextView chapterLabel=text(firstReadingLine,16);chapterLabel.setTextColor(0xff176b47);chapterLabel.setTypeface(null,android.graphics.Typeface.BOLD);chapterLabel.setPadding(dp(20),dp(8),dp(20),dp(8));body.addView(chapterLabel);}TextView categoryLine=text("⌑  "+readingCategory,12);categoryLine.setTextColor(0xff52745e);categoryLine.setPadding(dp(24),0,dp(24),dp(8));categoryLine.setSingleLine(true);categoryLine.setEllipsize(android.text.TextUtils.TruncateAt.END);body.addView(categoryLine);View chapterRule=new View(this);chapterRule.setBackgroundColor(0xffdfe8df);LinearLayout.LayoutParams chapterRuleParams=new LinearLayout.LayoutParams(-1,dp(1));chapterRuleParams.setMargins(dp(20),dp(2),dp(20),dp(8));body.addView(chapterRule,chapterRuleParams);
   int fontLevel=Math.max(0,Math.min(3,prefs.getInt("reader_font_level",0)));
-  int[] readingSizes=new int[]{15,18,21,25}; // Match editor for both Nota and Maktabah.
+  int[] readingSizes=new int[]{16,18,21,25}; // Match editor for both Nota and Maktabah.
   TextView content=text("",readingSizes[fontLevel]);content.setText(formattedReadingText(prefs.getString(key,"")));boolean containsArabic=java.util.regex.Pattern.compile("[\\u0600-\\u06FF]").matcher(fullReadingText).find();if(containsArabic){if(prefs.getBoolean("reader_arabic_clear_font",false))content.setTypeface(android.graphics.Typeface.create("serif",android.graphics.Typeface.NORMAL));}
   content.setTextColor(0xff26372e);content.setGravity(Gravity.TOP);content.setBreakStrategy(android.text.Layout.BREAK_STRATEGY_SIMPLE);content.setHyphenationFrequency(android.text.Layout.HYPHENATION_FREQUENCY_NONE);content.setTextIsSelectable(true);content.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);int readingSide=dp(4); // 12dp frame + 8dp body + 4dp content = 24dp editor inset.
-  content.setPadding(readingSide,dp(10),readingSide,dp(12));if(prefs.getBoolean("reader_wide_spacing",false))content.setLineSpacing(dp(5),1.15f);else content.setLineSpacing(0,1.0f);content.setIncludeFontPadding(true);applySharedTextMetrics(content);
+  content.setPadding(readingSide,dp(10),readingSide,dp(12));if(prefs.getBoolean("reader_wide_spacing",false))content.setLineSpacing(dp(5),1.15f);else content.setLineSpacing(dp(1),1.0f);content.setIncludeFontPadding(true);applySharedTextMetrics(content);
   // Display list rows with subtle mint dividers; preserve the original stored text.
   String[] displayLines=fullReadingText.split("\\n",-1);
   boolean hasLists=false;
@@ -1088,7 +1088,7 @@ public class MainActivity extends Activity {
     TextView page=text("",readingSizes[fontLevel]);page.setText(formattedReadingText(halves[i]));page.setTextColor(0xff26372e);
     page.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);page.setTextIsSelectable(true);
     page.setGravity(Gravity.TOP);page.setPadding(dp(10),dp(8),dp(10),dp(8));
-    page.setLineSpacing(prefs.getBoolean("reader_wide_spacing",false)?dp(5):0,prefs.getBoolean("reader_wide_spacing",false)?1.15f:1.0f);
+    page.setLineSpacing(prefs.getBoolean("reader_wide_spacing",false)?dp(5):dp(1),prefs.getBoolean("reader_wide_spacing",false)?1.15f:1.0f);
     LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(0,-2,1);
     if(i==1)lp.leftMargin=dp(4);
     columns.addView(page,lp);
@@ -1125,7 +1125,7 @@ public class MainActivity extends Activity {
      itemRow.addView(markerView,new LinearLayout.LayoutParams(dp(30),dp(30)));
      TextView valueView=text("",readingSizes[fontLevel]);valueView.setText(formattedReadingText(value));valueView.setTextColor(0xff26372e);
      valueView.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);valueView.setTextIsSelectable(true);
-     valueView.setPadding(dp(10),0,dp(4),0);valueView.setLineSpacing(prefs.getBoolean("reader_wide_spacing",false)?dp(5):0,prefs.getBoolean("reader_wide_spacing",false)?1.15f:1.0f);
+     valueView.setPadding(dp(10),0,dp(4),0);valueView.setLineSpacing(prefs.getBoolean("reader_wide_spacing",false)?dp(5):dp(1),prefs.getBoolean("reader_wide_spacing",false)?1.15f:1.0f);
      itemRow.addView(valueView,new LinearLayout.LayoutParams(0,-2,1));
      readingRows.addView(itemRow);
      View fineDivider=new View(this);fineDivider.setBackgroundColor(0xffc5e7cb);
@@ -1134,7 +1134,7 @@ public class MainActivity extends Activity {
      TextView paragraph=text("",readingSizes[fontLevel]);paragraph.setText(formattedReadingText(line.isEmpty()?" ":line));
      paragraph.setTextColor(0xff26372e);paragraph.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
      paragraph.setTextIsSelectable(true);paragraph.setPadding(dp(4),dp(4),dp(4),dp(4));
-     paragraph.setLineSpacing(prefs.getBoolean("reader_wide_spacing",false)?dp(5):0,prefs.getBoolean("reader_wide_spacing",false)?1.15f:1.0f);readingRows.addView(paragraph);
+     paragraph.setLineSpacing(prefs.getBoolean("reader_wide_spacing",false)?dp(5):dp(1),prefs.getBoolean("reader_wide_spacing",false)?1.15f:1.0f);readingRows.addView(paragraph);
     }
    }
   }
@@ -1314,7 +1314,7 @@ public class MainActivity extends Activity {
    choices.add(savedCat);
    categoryPicker.setAdapter(new ArrayAdapter<>(this,android.R.layout.simple_spinner_dropdown_item,choices));
   }
-  int pos=choices.indexOf(savedCat);categoryPicker.setSelection(pos<0?0:pos);root.addView(categoryPicker);titleEditor=new EditText(this);titleEditor.setSingleLine(true);titleEditor.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_NEXT);titleEditor.setTextSize(20);titleEditor.setHint(maktabah?"Tajuk kitab":"Tajuk nota");titleEditor.setContentDescription(maktabah?"Tajuk kitab":"Tajuk nota");titleEditor.setPadding(dp(24),dp(12),dp(24),dp(12));titleEditor.setBackground(rounded(0xfffffdf7,0xffd8c68a,12));titleEditor.setTextColor(0xff154f36);titleEditor.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);root.addView(titleEditor);if(key!=null)titleEditor.setText(prefs.getString("title_"+key,""));editor=new EditText(this);editor.setGravity(Gravity.TOP);editor.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);editor.setBreakStrategy(android.text.Layout.BREAK_STRATEGY_SIMPLE);editor.setHyphenationFrequency(android.text.Layout.HYPHENATION_FREQUENCY_NONE);editor.setTextSize(new int[]{15,18,21,25}[Math.max(0,Math.min(3,prefs.getInt("reader_font_level",0)))]);editor.setTextColor(0xff30343b);editor.setPadding(dp(24),dp(10),dp(24),dp(12));editor.setLineSpacing(prefs.getBoolean("reader_wide_spacing",false)?dp(5):0,prefs.getBoolean("reader_wide_spacing",false)?1.15f:1.0f);editor.setIncludeFontPadding(true);applySharedTextMetrics(editor);editor.setHint(maktabah?"Tulis kandungan kitab di sini…":"Tulis nota di sini…");editor.setContentDescription(maktabah?"Kandungan kitab":"Kandungan nota");editor.setBackground(rounded(0xfffffefb,0xffb8d5c2,12));editor.setOnFocusChangeListener((v,focused)->editor.setBackground(rounded(0xfffffefb,focused?0xff168254:0xffb8d5c2,12)));editor.setInputType(android.text.InputType.TYPE_CLASS_TEXT|android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE|android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);LinearLayout formatBar=new LinearLayout(this);
+  int pos=choices.indexOf(savedCat);categoryPicker.setSelection(pos<0?0:pos);root.addView(categoryPicker);titleEditor=new EditText(this);titleEditor.setSingleLine(true);titleEditor.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_NEXT);titleEditor.setTextSize(20);titleEditor.setHint(maktabah?"Tajuk kitab":"Tajuk nota");titleEditor.setContentDescription(maktabah?"Tajuk kitab":"Tajuk nota");titleEditor.setPadding(dp(24),dp(12),dp(24),dp(12));titleEditor.setBackground(rounded(0xfffffdf7,0xffd8c68a,12));titleEditor.setTextColor(0xff154f36);titleEditor.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);root.addView(titleEditor);if(key!=null)titleEditor.setText(prefs.getString("title_"+key,""));editor=new EditText(this);editor.setGravity(Gravity.TOP);editor.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);editor.setBreakStrategy(android.text.Layout.BREAK_STRATEGY_SIMPLE);editor.setHyphenationFrequency(android.text.Layout.HYPHENATION_FREQUENCY_NONE);editor.setTextSize(new int[]{16,18,21,25}[Math.max(0,Math.min(3,prefs.getInt("reader_font_level",0)))]);editor.setTextColor(0xff30343b);editor.setPadding(dp(24),dp(10),dp(24),dp(12));editor.setLineSpacing(prefs.getBoolean("reader_wide_spacing",false)?dp(5):dp(1),prefs.getBoolean("reader_wide_spacing",false)?1.15f:1.0f);editor.setIncludeFontPadding(true);applySharedTextMetrics(editor);editor.setHint(maktabah?"Tulis kandungan kitab di sini…":"Tulis nota di sini…");editor.setContentDescription(maktabah?"Kandungan kitab":"Kandungan nota");editor.setBackground(rounded(0xfffffefb,0xffb8d5c2,12));editor.setOnFocusChangeListener((v,focused)->editor.setBackground(rounded(0xfffffefb,focused?0xff168254:0xffb8d5c2,12)));editor.setInputType(android.text.InputType.TYPE_CLASS_TEXT|android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE|android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);LinearLayout formatBar=new LinearLayout(this);
   formatBar.setGravity(Gravity.CENTER_VERTICAL);
   formatBar.setPadding(dp(5),dp(2),dp(5),dp(2));
   formatBar.setHorizontalScrollBarEnabled(false);
