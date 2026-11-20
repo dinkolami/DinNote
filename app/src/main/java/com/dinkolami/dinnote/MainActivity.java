@@ -391,130 +391,126 @@ public class MainActivity extends Activity {
  Button action(String label,LinearLayout bar,Runnable callback){Button b=new Button(this);b.setText(label);b.setAllCaps(false);b.setTextSize(13);b.setMinWidth(0);b.setMinimumWidth(0);b.setMinHeight(0);b.setMinimumHeight(0);b.setPadding(dp(12),dp(8),dp(12),dp(8));b.setBackground(rounded(0xfff6f8fa,0xffe1e7e3,12));LinearLayout.LayoutParams buttonParams=new LinearLayout.LayoutParams(-2,dp(42));buttonParams.setMargins(dp(3),dp(5),dp(3),dp(5));bar.addView(b,buttonParams);b.setOnClickListener(v->callback.run());return b;}
  void returnFromReader(){selected=null;if(sectionOpen)notesPage();else home();}
 
+
  void showPagedReader(String key){
-  final String original=prefs.getString(key,"");
-  final String heading=prefs.getString("title_"+key,"");
+  final String source=prefs.getString(key,"");
   final boolean spread=getResources().getConfiguration().screenWidthDp>=500&&prefs.getBoolean("reader_two_columns",true);
-  final int level=Math.max(0,Math.min(3,prefs.getInt("reader_font_level",1)));
-  final int fontSize=(key.startsWith("m_")?new int[]{15,18,21,25}:new int[]{13,15,18,22})[level];
+  final int fontLevel=Math.max(0,Math.min(3,prefs.getInt("reader_font_level",1)));
+  final int fontSize=(key.startsWith("m_")?new int[]{15,18,21,25}:new int[]{13,15,18,22})[fontLevel];
   final int theme=prefs.getInt("reader_theme",0);
   final int paper=theme==0?0xffffffff:theme==2?0xfff2f8f3:0xfffffcf4;
-  final LinearLayout pages=new LinearLayout(this);pages.setOrientation(LinearLayout.HORIZONTAL);
-  pages.setPadding(dp(8),dp(8),dp(8),dp(8));
-  final TextView counter=text("",12);counter.setGravity(Gravity.CENTER);counter.setTextColor(0xff176b47);
-  final LinearLayout controls=new LinearLayout(this);controls.setGravity(Gravity.CENTER_VERTICAL);
-  Button previous=new Button(this);previous.setText("‹");previous.setContentDescription("Halaman sebelumnya");
+  final String heading=prefs.getString("title_"+key,"");
+  TextView headingView=text(heading,15);headingView.setSingleLine(true);
+  headingView.setEllipsize(android.text.TextUtils.TruncateAt.END);
+  headingView.setPadding(dp(16),dp(6),dp(16),dp(6));
+  headingView.setBackground(rounded(paper,0xffdde5e1,10));
+  LinearLayout.LayoutParams titleParams=new LinearLayout.LayoutParams(-1,-2);
+  titleParams.setMargins(dp(10),dp(6),dp(10),dp(4));root.addView(headingView,titleParams);
+  LinearLayout pageRow=new LinearLayout(this);pageRow.setOrientation(LinearLayout.HORIZONTAL);
+  pageRow.setPadding(dp(8),dp(5),dp(8),dp(5));
+  root.addView(pageRow,new LinearLayout.LayoutParams(-1,0,1));
+  LinearLayout navigation=new LinearLayout(this);navigation.setGravity(Gravity.CENTER_VERTICAL);
+  Button prev=new Button(this);prev.setText("‹");prev.setContentDescription("Halaman sebelumnya");
   Button next=new Button(this);next.setText("›");next.setContentDescription("Halaman seterusnya");
-  controls.addView(previous,new LinearLayout.LayoutParams(dp(54),-2));
-  controls.addView(counter,new LinearLayout.LayoutParams(0,-2,1));
-  controls.addView(next,new LinearLayout.LayoutParams(dp(54),-2));
-  TextView bookTitle=text(heading,14);bookTitle.setGravity(Gravity.CENTER);bookTitle.setTypeface(null,android.graphics.Typeface.BOLD);bookTitle.setPadding(dp(8),dp(4),dp(8),dp(4));
-  root.addView(bookTitle);root.addView(pages,new LinearLayout.LayoutParams(-1,0,1));root.addView(controls);
-  pages.post(()->{
+  TextView indicator=text("",12);indicator.setGravity(Gravity.CENTER);indicator.setPadding(dp(2),0,dp(2),0);
+  navigation.addView(prev,new LinearLayout.LayoutParams(dp(54),dp(44)));
+  navigation.addView(indicator,new LinearLayout.LayoutParams(0,dp(44),1));
+  navigation.addView(next,new LinearLayout.LayoutParams(dp(54),dp(44)));
+  root.addView(navigation);
+  LinearLayout actions=new LinearLayout(this);actions.setGravity(Gravity.CENTER);
+  Button bookmark=new Button(this);bookmark.setText("♧");
+  Button jump=new Button(this);jump.setText("Halaman");
+  Button focus=new Button(this);focus.setText("Fokus");
+  actions.addView(bookmark,new LinearLayout.LayoutParams(0,dp(44),1));
+  actions.addView(jump,new LinearLayout.LayoutParams(0,dp(44),1));
+  actions.addView(focus,new LinearLayout.LayoutParams(0,dp(44),1));
+  root.addView(actions);
+  // Paginate after the view has been measured. Avoid repeated layout passes and
+  // view-tree changes while Android is measuring the page content.
+  pageRow.post(()->{
+   if(pageRow.getParent()==null||root==null)return;
    try{
-   int availableWidth=Math.max(dp(160),pages.getWidth()-dp(24));
-   int pageWidth=spread?(availableWidth-dp(12))/2:availableWidth;
-   int pageHeight=Math.max(dp(160),pages.getHeight()-dp(24));
-   final ArrayList<String> chunks=new ArrayList<>();
-   int cursor=0;
-   while(cursor<original.length()){
-    TextView probe=text("",fontSize);probe.setPadding(dp(12),dp(12),dp(12),dp(12));
-    probe.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
+    int width=Math.max(dp(120),(pageRow.getWidth()-dp(22))/(spread?2:1));
+    int height=Math.max(dp(100),pageRow.getHeight()-dp(12));
+    TextView probe=text("",fontSize);
+    probe.setPadding(dp(12),dp(10),dp(12),dp(10));
     probe.setLineSpacing(dp(3),1.15f);
-    int low=cursor+1,high=original.length(),best=low;
-    while(low<=high){
-     int mid=low+(high-low)/2;
-     probe.setText(original.substring(cursor,mid));
-     probe.measure(View.MeasureSpec.makeMeasureSpec(pageWidth,View.MeasureSpec.EXACTLY),View.MeasureSpec.makeMeasureSpec(0,View.MeasureSpec.UNSPECIFIED));
-     if(probe.getMeasuredHeight()<=pageHeight){best=mid;low=mid+1;}else high=mid-1;
-    }
-    int end=Math.min(original.length(),Math.max(cursor+1,best));
-    if(end<original.length()){
-     int boundary=original.lastIndexOf(' ',end);
-     int newline=original.lastIndexOf('\n',end);
-     boundary=Math.max(boundary,newline);
-     if(boundary>cursor+(end-cursor)/2)end=boundary+1;
-    }
-    chunks.add(original.substring(cursor,end));cursor=end;
-   }
-   if(chunks.isEmpty())chunks.add("");
-   final int total=chunks.size();
-   final TextView progress=text("",11);progress.setGravity(Gravity.CENTER);progress.setPadding(dp(6),0,dp(6),dp(3));root.addView(progress);
-   final LinearLayout extras=new LinearLayout(this);extras.setGravity(Gravity.CENTER);
-   Button bookmark=new Button(this);bookmark.setAllCaps(false);bookmark.setText("♧ Simpan");
-   Button jump=new Button(this);jump.setAllCaps(false);jump.setText("Halaman");
-   Button focus=new Button(this);focus.setAllCaps(false);focus.setText("Fokus");
-   extras.addView(bookmark,new LinearLayout.LayoutParams(0,-2,1));
-   extras.addView(jump,new LinearLayout.LayoutParams(0,-2,1));
-   extras.addView(focus,new LinearLayout.LayoutParams(0,-2,1));
-   root.addView(extras);
-   final int[] index={Math.min(Math.max(0,prefs.getInt("reading_page_"+key,0)),total-1)};
-   if(spread)index[0]=(index[0]/2)*2;
-   final boolean[] focused={false};
-   final Runnable render=()->{
-    pages.removeAllViews();
-    int first=index[0],count=spread?2:1;
-    for(int j=0;j<count;j++){
-     int n=first+j;
-     TextView page=text(n<total?chunks.get(n):"",fontSize);
-     page.setTextColor(0xff26372e);page.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
-     page.setGravity(Gravity.TOP);page.setTextIsSelectable(false);
-     page.setLineSpacing(dp(3),1.15f);page.setPadding(dp(12),dp(12),dp(12),dp(12));
-     page.setBackground(rounded(paper,0xffdde5e1,10));
-     LinearLayout.LayoutParams params=new LinearLayout.LayoutParams(0,-1,1);
-     if(j>0)params.leftMargin=dp(12);
-     pages.addView(page,params);
-     if(j==0&&spread){
-      View divider=new View(this);divider.setBackgroundColor(0xffc5a66b);
-      pages.addView(divider,new LinearLayout.LayoutParams(dp(1),-1));
+    probe.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
+    ArrayList<String> parts=new ArrayList<>();
+    int cursor=0;
+    while(cursor<source.length()){
+     int lo=cursor+1,hi=source.length(),best=lo;
+     while(lo<=hi){
+      int mid=lo+(hi-lo)/2;
+      probe.setText(source.substring(cursor,mid));
+      probe.measure(View.MeasureSpec.makeMeasureSpec(width,View.MeasureSpec.EXACTLY),View.MeasureSpec.makeMeasureSpec(0,View.MeasureSpec.UNSPECIFIED));
+      if(probe.getMeasuredHeight()<=height){best=mid;lo=mid+1;}else hi=mid-1;
      }
-    }
-    counter.setText((first+1)+(spread&&first+1<total?"–"+(first+2):"")+" / "+total);
-    progress.setText("Bacaan "+Math.min(100,Math.round((first+(spread?2:1))*100f/total))+"%");
-    bookTitle.setVisibility(focused[0]?View.GONE:View.VISIBLE);
-    extras.setVisibility(focused[0]?View.GONE:View.VISIBLE);
-    previous.setEnabled(first>0);next.setEnabled(first+(spread?2:1)<total);
-    prefs.edit().putInt("reading_page_"+key,first).apply();
-   };
-   bookmark.setOnClickListener(v->{prefs.edit().putInt("bookmark_page_"+key,index[0]).apply();Toast.makeText(this,"Penanda halaman disimpan",Toast.LENGTH_SHORT).show();});
-   jump.setOnClickListener(v->{
-    EditText field=new EditText(this);field.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);field.setHint("1 – "+total);
-    new AlertDialog.Builder(this).setTitle("Pergi ke halaman").setView(field).setPositiveButton("Pergi",(d,w)->{
-     try{int target=Integer.parseInt(field.getText().toString())-1;if(target<0||target>=total){Toast.makeText(this,"Nombor halaman tidak sah",Toast.LENGTH_SHORT).show();return;}index[0]=spread?(target/2)*2:target;render.run();}
-     catch(NumberFormatException ex){Toast.makeText(this,"Masukkan nombor halaman",Toast.LENGTH_SHORT).show();}
-    }).setNeutralButton("Penanda",(d,w)->{index[0]=Math.max(0,Math.min(total-1,prefs.getInt("bookmark_page_"+key,0)));if(spread)index[0]=(index[0]/2)*2;render.run();}).setNegativeButton("Batal",null).show();
-   });
-   focus.setOnClickListener(v->{focused[0]=!focused[0];focus.setText(focused[0]?"Tamat fokus":"Fokus");render.run();});
-   previous.setOnClickListener(v->{index[0]=Math.max(0,index[0]-(spread?2:1));render.run();});
-   next.setOnClickListener(v->{index[0]=Math.min(total-1,index[0]+(spread?2:1));render.run();});
-   final View.OnTouchListener swipeListener=new View.OnTouchListener(){
-    float startX,startY;
-    public boolean onTouch(View v,android.view.MotionEvent e){
-     if(e.getAction()==android.view.MotionEvent.ACTION_DOWN){startX=e.getX();startY=e.getY();return true;}
-     if(e.getAction()==android.view.MotionEvent.ACTION_UP){
-      float dx=e.getX()-startX;
-      if(Math.abs(dx)>dp(55)&&Math.abs(dx)>Math.abs(e.getY()-startY)){
-       int step=spread?2:1;
-       index[0]=Math.max(0,Math.min(total-1,index[0]+(dx<0?step:-step)));
-       if(spread)index[0]=(index[0]/2)*2;
-       render.run();
-      }
-      return true;
+     int stop=Math.max(cursor+1,best);
+     if(stop<source.length()){
+      int space=source.lastIndexOf(' ',stop),newline=source.lastIndexOf('\n',stop);
+      int boundary=Math.max(space,newline);
+      if(boundary>cursor+(stop-cursor)/2)stop=boundary+1;
      }
-     return true;
+     parts.add(source.substring(cursor,stop));cursor=stop;
     }
-   };
-   pages.setOnTouchListener(swipeListener);
-   // Children normally consume touch events: attach swipe navigation to each page.
-   pages.setOnHierarchyChangeListener(new ViewGroup.OnHierarchyChangeListener(){
-    public void onChildViewAdded(View parent,View child){if(child instanceof TextView)child.setOnTouchListener(swipeListener);}
-    public void onChildViewRemoved(View parent,View child){}
-   });
-   render.run();
-   }catch(RuntimeException problem){
-    android.util.Log.e("DinNote","Pagination failed; restoring safe reading mode",problem);
+    if(parts.isEmpty())parts.add("");
+    final int total=parts.size();
+    final int[] position={Math.min(total-1,Math.max(0,prefs.getInt("reading_page_"+key,0)))};
+    if(spread)position[0]=position[0]/2*2;
+    final boolean[] focused={false};
+    final Runnable[] render={null};
+    render[0]=()->{
+     pageRow.removeAllViews();
+     for(int i=0;i<(spread?2:1);i++){
+      int pageNumber=position[0]+i;
+      TextView page=text(pageNumber<total?parts.get(pageNumber):"",fontSize);
+      page.setTextColor(0xff26372e);page.setGravity(Gravity.TOP);
+      page.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
+      page.setLineSpacing(dp(3),1.15f);
+      page.setPadding(dp(12),dp(10),dp(12),dp(10));
+      page.setBackground(rounded(paper,0xffdde5e1,10));
+      LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(0,-1,1);
+      if(i>0)lp.leftMargin=dp(8);
+      pageRow.addView(page,lp);
+      page.setOnTouchListener(new View.OnTouchListener(){
+       float x,y;
+       public boolean onTouch(View v,android.view.MotionEvent event){
+        if(event.getAction()==android.view.MotionEvent.ACTION_DOWN){x=event.getX();y=event.getY();return true;}
+        if(event.getAction()==android.view.MotionEvent.ACTION_UP){
+         float dx=event.getX()-x;
+         if(Math.abs(dx)>dp(50)&&Math.abs(dx)>Math.abs(event.getY()-y)){
+          position[0]=Math.max(0,Math.min(total-1,position[0]+(dx<0?(spread?2:1):-(spread?2:1))));
+          if(spread)position[0]=position[0]/2*2;
+          render[0].run();
+         }
+         return true;
+        }
+        return true;
+       }
+      });
+     }
+     indicator.setText((position[0]+1)+(spread&&position[0]+1<total?"–"+(position[0]+2):"")+" / "+total+" · "+Math.min(100,Math.round((position[0]+(spread?2:1))*100f/total))+"%");
+     prev.setEnabled(position[0]>0);next.setEnabled(position[0]+(spread?2:1)<total);
+     headingView.setVisibility(focused[0]?View.GONE:View.VISIBLE);
+     prefs.edit().putInt("reading_page_"+key,position[0]).apply();
+    };
+    prev.setOnClickListener(v->{position[0]=Math.max(0,position[0]-(spread?2:1));render[0].run();});
+    next.setOnClickListener(v->{position[0]=Math.min(total-1,position[0]+(spread?2:1));if(spread)position[0]=position[0]/2*2;render[0].run();});
+    bookmark.setOnClickListener(v->{prefs.edit().putInt("bookmark_page_"+key,position[0]).apply();Toast.makeText(this,"Penanda disimpan",Toast.LENGTH_SHORT).show();});
+    jump.setOnClickListener(v->{
+     EditText field=new EditText(this);field.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);field.setHint("1 – "+total);
+     new AlertDialog.Builder(this).setTitle("Pergi ke halaman").setView(field).setPositiveButton("Pergi",(d,w)->{
+      try{int target=Integer.parseInt(field.getText().toString())-1;if(target>=0&&target<total){position[0]=spread?target/2*2:target;render[0].run();}}
+      catch(NumberFormatException ignored){}
+     }).setNeutralButton("Penanda",(d,w)->{position[0]=Math.max(0,Math.min(total-1,prefs.getInt("bookmark_page_"+key,0)));if(spread)position[0]=position[0]/2*2;render[0].run();}).setNegativeButton("Batal",null).show();
+    });
+    focus.setOnClickListener(v->{focused[0]=!focused[0];focus.setText(focused[0]?"Tamat fokus":"Fokus");render[0].run();});
+    render[0].run();
+   }catch(Exception error){
+    android.util.Log.e("DinNote","Paged reader error",error);
     prefs.edit().putBoolean("reader_safe_scroll_"+key,true).apply();
-    read(key);
+    if(key.equals(selected))read(key);
    }
   });
  }
@@ -528,7 +524,7 @@ public class MainActivity extends Activity {
   Button bookmarkButton=action("♧",bar,()->{int pos=prefs.getInt("reading_scroll_"+key,0);new AlertDialog.Builder(this).setTitle("Penanda bacaan").setMessage("Kedudukan terakhir: "+pos+" px").setPositiveButton("Simpan penanda",(d,w)->{prefs.edit().putInt("bookmark_scroll_"+key,prefs.getInt("reading_scroll_"+key,0)).apply();Toast.makeText(this,"Penanda disimpan",Toast.LENGTH_SHORT).show();}).setNeutralButton("Pergi ke penanda",(d,w)->{int target=prefs.getInt("bookmark_scroll_"+key,-1);if(target>=0){read(key);root.post(()->{ScrollView currentScroll=(ScrollView)root.getChildAt(root.getChildCount()-2);currentScroll.post(()->currentScroll.scrollTo(0,target));});}else Toast.makeText(this,"Tiada penanda",Toast.LENGTH_SHORT).show();}).setNegativeButton("Tutup",null).show();});bookmarkButton.setContentDescription("Penanda bacaan");Button readerEdit=action("✎ Edit",bar,()->edit(key));readerEdit.setContentDescription(key.startsWith("m_")?"Sunting kandungan kitab":"Sunting kandungan nota");
   Button layoutButton=action("▥",bar,()->{boolean now=prefs.getBoolean("reader_two_columns",getResources().getConfiguration().screenWidthDp>=600);prefs.edit().putBoolean("reader_two_columns",!now).apply();read(key);});layoutButton.setContentDescription("Tukar paparan satu atau dua kolum");layoutButton.setTextColor(0xff176b47); Button chaptersButton=action("☷",bar,()->{String[] lines=prefs.getString(key,"").split("\\R");ArrayList<String> chapters=new ArrayList<>();ArrayList<Integer> offsets=new ArrayList<>();int offset=0;for(String line:lines){String trimmed=line.trim();if((trimmed.matches("(?i)^(bab|fasal|chapter)\\s+.*")||trimmed.startsWith("باب ")||trimmed.startsWith("فصل "))&&trimmed.length()<120){chapters.add(trimmed);offsets.add(offset);}offset+=line.length()+1;}if(chapters.isEmpty()){Toast.makeText(this,"Tiada tajuk bab dikenal pasti",Toast.LENGTH_SHORT).show();return;}new AlertDialog.Builder(this).setTitle("Isi kandungan").setItems(chapters.toArray(new String[0]),(d,i)->{int target=offsets.get(i);read(key);root.post(()->{ScrollView currentScroll=(ScrollView)root.getChildAt(root.getChildCount()-2);TextView currentText=(TextView)((LinearLayout)currentScroll.getChildAt(0)).getChildAt(((LinearLayout)currentScroll.getChildAt(0)).getChildCount()-2);android.text.Layout layout=currentText.getLayout();if(layout!=null){int line=layout.getLineForOffset(Math.min(target,currentText.length()));currentScroll.scrollTo(0,currentText.getTop()+layout.getLineTop(line));}});}).show();});chaptersButton.setContentDescription("Isi kandungan bab");Button readerOptions=action("⋮",bar,()->new AlertDialog.Builder(this).setItems(new String[]{"Edit","Semat / Buka sematan","Duplikasi","Padam"},(d,i)->{if(i==0)edit(key);else if(i==1){boolean pinned=prefs.getBoolean("pinned_"+key,false);prefs.edit().putBoolean("pinned_"+key,!pinned).apply();android.widget.Toast.makeText(this,pinned?"Sematan dibuang":"Nota disemat",android.widget.Toast.LENGTH_SHORT).show();read(key);}else if(i==2)duplicateNote(key);else confirmDelete(key);}).show());readerOptions.setContentDescription(key.startsWith("m_")?"Menu tindakan kitab":"Menu tindakan nota");
   // Page-by-page reader for long Nota and Maktabah content.
-  if(prefs.getString(key,"").length()>=100&&!prefs.getBoolean("reader_safe_scroll_"+key,false)){
+  if(prefs.getString(key,"").length()>=100){
    try{showPagedReader(key);return;}
    catch(RuntimeException problem){
     android.util.Log.e("DinNote","Paged reader failed; using safe scrolling",problem);
@@ -540,7 +536,7 @@ public class MainActivity extends Activity {
   TextView sectionLabel=text(key.startsWith("m_")?"▤  Maktabah":"✎  Nota",12);sectionLabel.setTextColor(0xff23714b);sectionLabel.setPadding(dp(20),dp(10),dp(20),dp(2));
   ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);scroll.setOverScrollMode(View.OVER_SCROLL_NEVER);
   LinearLayout body=new LinearLayout(this);body.setOrientation(1);int readingTheme=prefs.getInt("reader_theme",0);int paperColor=readingTheme==0?0xffffffff:readingTheme==2?0xfff2f8f3:0xfffffcf4;body.setBackground(rounded(paperColor,0xffdde5e1,12));LinearLayout.LayoutParams readingFrame=new LinearLayout.LayoutParams(-1,-2);readingFrame.setMargins(dp(10),dp(8),dp(10),dp(12));scroll.addView(body,readingFrame);body.addView(sectionLabel);
-  TextView title=text(heading,20);title.setBackgroundColor(paperColor);title.setTextColor(green);title.setTypeface(null,android.graphics.Typeface.BOLD);title.setPadding(dp(20),dp(6),dp(20),dp(8));title.setTextIsSelectable(true);title.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);title.setIncludeFontPadding(true);
+  TextView title=text(heading,20);title.setMaxLines(3);title.setEllipsize(android.text.TextUtils.TruncateAt.END);title.setBackgroundColor(paperColor);title.setTextColor(green);title.setTypeface(null,android.graphics.Typeface.BOLD);title.setPadding(dp(20),dp(6),dp(20),dp(8));title.setTextIsSelectable(true);title.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);title.setIncludeFontPadding(true);
   if(!heading.isEmpty())body.addView(title);
   String readingCategory=prefs.getString("cat_"+key,"Tanpa kategori");String fullReadingText=prefs.getString(key,"");String firstReadingLine=fullReadingText.split("\\R",2)[0].trim();if(firstReadingLine.matches("(?i)^(bab|الفصل|باب)\\b.*")&&firstReadingLine.length()<110){TextView chapterLabel=text(firstReadingLine,16);chapterLabel.setTextColor(0xff176b47);chapterLabel.setTypeface(null,android.graphics.Typeface.BOLD);chapterLabel.setPadding(dp(20),dp(8),dp(20),dp(8));body.addView(chapterLabel);}TextView categoryLine=text("⌑  "+readingCategory,12);categoryLine.setTextColor(0xff52745e);categoryLine.setPadding(dp(20),0,dp(20),dp(8));body.addView(categoryLine);View chapterRule=new View(this);chapterRule.setBackgroundColor(0xffdfe8df);LinearLayout.LayoutParams chapterRuleParams=new LinearLayout.LayoutParams(-1,dp(1));chapterRuleParams.setMargins(dp(20),dp(2),dp(20),dp(8));body.addView(chapterRule,chapterRuleParams);
   int fontLevel=Math.max(0,Math.min(3,prefs.getInt("reader_font_level",1)));
