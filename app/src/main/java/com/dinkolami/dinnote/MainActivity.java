@@ -1114,13 +1114,44 @@ public class MainActivity extends Activity {
    }
   }
   String heading=prefs.getString("title_"+key,"");
-  TextView sectionLabel=text(key.startsWith("m_")?"▤  Maktabah":"✎  Nota",12);sectionLabel.setTextColor(0xff23714b);sectionLabel.setPadding(dp(24),dp(10),dp(24),dp(2));
+  String readingCategory=prefs.getString("cat_"+key,"Tanpa kategori");
+  if(readingCategory.trim().isEmpty())readingCategory="Tanpa kategori";
+  String fullReadingText=prefs.getString(key,"");
   ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);scroll.setOverScrollMode(View.OVER_SCROLL_NEVER);
   readerScroll=scroll;
-  LinearLayout body=new LinearLayout(this);body.setOrientation(1);int paperColor=0xfffffcf4;body.setBackground(rounded(paperColor,0xffc9a34f,12));body.setPadding(dp(8),dp(6),dp(8),dp(8));body.setClipChildren(true);body.setClipToPadding(true);LinearLayout.LayoutParams readingFrame=new LinearLayout.LayoutParams(-1,-2);readingFrame.setMargins(dp(12),dp(8),dp(12),dp(12));scroll.addView(body,readingFrame);body.addView(sectionLabel);
-  TextView title=text(heading,20);title.setMaxLines(3);title.setEllipsize(android.text.TextUtils.TruncateAt.END);title.setBackground(rounded(0xfffffcf4,0xffc9a34f,12));title.setTextColor(0xff145c40);title.setTypeface(null,android.graphics.Typeface.BOLD);title.setPadding(dp(24),dp(8),dp(24),dp(8));title.setGravity(Gravity.CENTER_VERTICAL|Gravity.START);title.setTextIsSelectable(true);title.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);title.setIncludeFontPadding(true);
+  LinearLayout body=new LinearLayout(this);body.setOrientation(1);
+  int paperColor=0xfffffcf4;body.setBackground(rounded(paperColor,0xffc9a34f,12));
+  body.setPadding(dp(8),dp(6),dp(8),dp(8));body.setClipChildren(true);body.setClipToPadding(true);
+  LinearLayout.LayoutParams readingFrame=new LinearLayout.LayoutParams(-1,-2);
+  readingFrame.setMargins(dp(12),dp(8),dp(12),dp(12));scroll.addView(body,readingFrame);
+  LinearLayout metaRow=new LinearLayout(this);metaRow.setOrientation(LinearLayout.HORIZONTAL);
+  metaRow.setGravity(Gravity.CENTER_VERTICAL);metaRow.setPadding(dp(16),dp(4),dp(16),dp(4));
+  TextView sectionLabel=text(key.startsWith("m_")?"▤  Maktabah":"✎  Nota",12);
+  sectionLabel.setTextColor(0xff23714b);sectionLabel.setSingleLine(true);
+  sectionLabel.setIncludeFontPadding(false);
+  metaRow.addView(sectionLabel,new LinearLayout.LayoutParams(0,-2,1));
+  TextView categoryLine=text("⌑  "+readingCategory,12);
+  categoryLine.setTextColor(0xff52745e);categoryLine.setSingleLine(true);
+  categoryLine.setEllipsize(android.text.TextUtils.TruncateAt.END);
+  categoryLine.setGravity(Gravity.END|Gravity.CENTER_VERTICAL);
+  categoryLine.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_END);
+  categoryLine.setIncludeFontPadding(false);
+  metaRow.addView(categoryLine,new LinearLayout.LayoutParams(0,-2,1));
+  body.addView(metaRow,new LinearLayout.LayoutParams(-1,-2));
+  TextView title=text(heading,20);title.setMaxLines(3);
+  title.setEllipsize(android.text.TextUtils.TruncateAt.END);
+  title.setBackground(rounded(0xfffffcf4,0xffc9a34f,12));
+  title.setTextColor(0xff145c40);title.setTypeface(null,android.graphics.Typeface.BOLD);
+  title.setPadding(dp(24),dp(8),dp(24),dp(8));
+  title.setGravity(Gravity.CENTER_VERTICAL|Gravity.START);title.setTextIsSelectable(true);
+  title.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);title.setIncludeFontPadding(true);
   if(!heading.isEmpty())body.addView(title);
-  String readingCategory=prefs.getString("cat_"+key,"Tanpa kategori");String fullReadingText=prefs.getString(key,"");String firstReadingLine=fullReadingText.split("\\R",2)[0].trim();if(firstReadingLine.matches("(?i)^(bab|الفصل|باب)\\b.*")&&firstReadingLine.length()<110){TextView chapterLabel=text(firstReadingLine,16);chapterLabel.setTextColor(0xff176b47);chapterLabel.setTypeface(null,android.graphics.Typeface.BOLD);chapterLabel.setPadding(dp(20),dp(8),dp(20),dp(8));body.addView(chapterLabel);}TextView categoryLine=text("⌑  "+readingCategory,12);categoryLine.setTextColor(0xff52745e);categoryLine.setPadding(dp(24),0,dp(24),dp(8));categoryLine.setSingleLine(true);categoryLine.setEllipsize(android.text.TextUtils.TruncateAt.END);body.addView(categoryLine);View chapterRule=new View(this);chapterRule.setBackgroundColor(0xffc9a34f);LinearLayout.LayoutParams chapterRuleParams=new LinearLayout.LayoutParams(-1,dp(1));chapterRuleParams.setMargins(dp(20),dp(2),dp(20),dp(8));body.addView(chapterRule,chapterRuleParams);
+  String firstReadingLine=fullReadingText.split("\\R",2)[0].trim();
+  if(firstReadingLine.matches("(?i)^(bab|الفصل|باب)\\b.*")&&firstReadingLine.length()<110){
+   TextView chapterLabel=text(firstReadingLine,16);
+   chapterLabel.setTextColor(0xff176b47);chapterLabel.setTypeface(null,android.graphics.Typeface.BOLD);
+   chapterLabel.setPadding(dp(20),dp(8),dp(20),dp(8));body.addView(chapterLabel);
+  }
   int fontLevel=Math.max(0,Math.min(3,prefs.getInt("reader_font_level",1)));
   int[] readingSizes=new int[]{13,15,16,18}; // Match editor for both Nota and Maktabah.
   TextView content=text("",readingSizes[fontLevel]);content.setText(formattedReadingText(prefs.getString(key,"")));boolean containsArabic=java.util.regex.Pattern.compile("[\\u0600-\\u06FF]").matcher(fullReadingText).find();if(containsArabic){if(prefs.getBoolean("reader_arabic_clear_font",false))content.setTypeface(android.graphics.Typeface.create("serif",android.graphics.Typeface.NORMAL));}
