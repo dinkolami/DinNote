@@ -572,8 +572,7 @@ public class MainActivity extends Activity {
   final boolean spread=availableWidthDp>=500&&prefs.getBoolean("reader_two_columns",true);
   final int fontLevel=Math.max(0,Math.min(3,prefs.getInt("reader_font_level",1)));
   final int fontSize=new int[]{13,15,16,18}[fontLevel];
-  final int theme=prefs.getInt("reader_theme",0);
-  final int paper=theme==0?0xffffffff:theme==2?0xfff2f8f3:0xfffffcf4;
+  final int paper=0xfffffcf4;
   final String heading=prefs.getString("title_"+key,"");
   TextView headingView=text(heading,17);headingView.setGravity(Gravity.CENTER);headingView.setTypeface(null,android.graphics.Typeface.BOLD);headingView.setMaxLines(2);
   headingView.setEllipsize(android.text.TextUtils.TruncateAt.END);
@@ -814,12 +813,11 @@ public class MainActivity extends Activity {
   LinearLayout panel=new LinearLayout(this);panel.setOrientation(LinearLayout.VERTICAL);
   panel.setPadding(dp(16),dp(6),dp(16),dp(12));scroll.addView(panel);
   final AlertDialog[] popup=new AlertDialog[1];
-  String[] headings={"SAIZ TULISAN","WARNA KERTAS","JARAK BARIS","TULISAN ARAB"};
-  String[][] options={{"Kecil","Biasa","Besar","Sangat besar"},{"Putih","Ivory","Hijau lembut"},{"Biasa","Luas"},{"Biasa","Lebih jelas"}};
+  String[] headings={"SAIZ TULISAN","JARAK BARIS","TULISAN ARAB"};
+  String[][] options={{"Kecil","Biasa","Besar","Sangat besar"},{"Biasa","Luas"},{"Biasa","Lebih jelas"}};
   int font=Math.max(0,Math.min(3,prefs.getInt("reader_font_level",1)));
-  int theme=Math.max(0,Math.min(2,prefs.getInt("reader_theme",1)));
-  int[] selected={font,theme,prefs.getBoolean("reader_wide_spacing",false)?1:0,prefs.getBoolean("reader_arabic_clear_font",false)?1:0};
-  for(int group=0;group<4;group++){
+  int[] selected={font,prefs.getBoolean("reader_wide_spacing",false)?1:0,prefs.getBoolean("reader_arabic_clear_font",false)?1:0};
+  for(int group=0;group<3;group++){
    final int g=group;
    TextView heading=text(headings[group],12);heading.setTypeface(null,android.graphics.Typeface.BOLD);
    heading.setTextColor(0xff176b47);heading.setPadding(dp(4),dp(group==0?10:16),dp(4),dp(8));panel.addView(heading);
@@ -838,8 +836,7 @@ public class MainActivity extends Activity {
     chip.setContentDescription(options[group][index]+(active?", dipilih":""));
     chip.setOnClickListener(v->{
      if(g==0)prefs.edit().putInt("reader_font_level",choice).apply();
-     else if(g==1)prefs.edit().putInt("reader_theme",choice).apply();
-     else if(g==2)prefs.edit().putBoolean("reader_wide_spacing",choice==1).apply();
+     else if(g==1)prefs.edit().putBoolean("reader_wide_spacing",choice==1).apply();
      else prefs.edit().putBoolean("reader_arabic_clear_font",choice==1).apply();
      popup[0].dismiss();read(key);
     });
@@ -1059,7 +1056,7 @@ public class MainActivity extends Activity {
   TextView sectionLabel=text(key.startsWith("m_")?"▤  Maktabah":"✎  Nota",12);sectionLabel.setTextColor(0xff23714b);sectionLabel.setPadding(dp(24),dp(10),dp(24),dp(2));
   ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);scroll.setOverScrollMode(View.OVER_SCROLL_NEVER);
   readerScroll=scroll;
-  LinearLayout body=new LinearLayout(this);body.setOrientation(1);int readingTheme=prefs.getInt("reader_theme",0);int paperColor=readingTheme==0?0xffffffff:readingTheme==2?0xfff2f8f3:0xfffffcf4;body.setBackground(rounded(paperColor,0xffc9a34f,12));body.setPadding(dp(8),dp(6),dp(8),dp(8));body.setClipChildren(true);body.setClipToPadding(true);LinearLayout.LayoutParams readingFrame=new LinearLayout.LayoutParams(-1,-2);readingFrame.setMargins(dp(12),dp(8),dp(12),dp(12));scroll.addView(body,readingFrame);body.addView(sectionLabel);
+  LinearLayout body=new LinearLayout(this);body.setOrientation(1);int paperColor=0xfffffcf4;body.setBackground(rounded(paperColor,0xffc9a34f,12));body.setPadding(dp(8),dp(6),dp(8),dp(8));body.setClipChildren(true);body.setClipToPadding(true);LinearLayout.LayoutParams readingFrame=new LinearLayout.LayoutParams(-1,-2);readingFrame.setMargins(dp(12),dp(8),dp(12),dp(12));scroll.addView(body,readingFrame);body.addView(sectionLabel);
   TextView title=text(heading,20);title.setMaxLines(3);title.setEllipsize(android.text.TextUtils.TruncateAt.END);title.setBackground(rounded(0xfffffcf4,0xffc9a34f,12));title.setTextColor(0xff145c40);title.setTypeface(null,android.graphics.Typeface.BOLD);title.setPadding(dp(24),dp(8),dp(24),dp(8));title.setGravity(Gravity.CENTER_VERTICAL|Gravity.START);title.setTextIsSelectable(true);title.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);title.setIncludeFontPadding(true);
   if(!heading.isEmpty())body.addView(title);
   String readingCategory=prefs.getString("cat_"+key,"Tanpa kategori");String fullReadingText=prefs.getString(key,"");String firstReadingLine=fullReadingText.split("\\R",2)[0].trim();if(firstReadingLine.matches("(?i)^(bab|الفصل|باب)\\b.*")&&firstReadingLine.length()<110){TextView chapterLabel=text(firstReadingLine,16);chapterLabel.setTextColor(0xff176b47);chapterLabel.setTypeface(null,android.graphics.Typeface.BOLD);chapterLabel.setPadding(dp(20),dp(8),dp(20),dp(8));body.addView(chapterLabel);}TextView categoryLine=text("⌑  "+readingCategory,12);categoryLine.setTextColor(0xff52745e);categoryLine.setPadding(dp(24),0,dp(24),dp(8));categoryLine.setSingleLine(true);categoryLine.setEllipsize(android.text.TextUtils.TruncateAt.END);body.addView(categoryLine);View chapterRule=new View(this);chapterRule.setBackgroundColor(0xffc9a34f);LinearLayout.LayoutParams chapterRuleParams=new LinearLayout.LayoutParams(-1,dp(1));chapterRuleParams.setMargins(dp(20),dp(2),dp(20),dp(8));body.addView(chapterRule,chapterRuleParams);
