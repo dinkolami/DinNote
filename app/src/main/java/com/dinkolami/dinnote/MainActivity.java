@@ -1873,6 +1873,11 @@ public class MainActivity extends Activity {
         key.startsWith("cat_n_")||key.startsWith("cat_m_")||
         key.equals("categories_n")||key.equals("categories_m"))&&!(value instanceof String))
      throw new java.io.IOException("Jenis data nota atau kategori tidak sah; data sedia ada tidak diubah");
+    // Font levels are integer preferences; reject malformed backups before clearing local data.
+    if((key.equals("reader_font_level")||key.equals("editor_font_level"))&&
+       (!(value instanceof Number)||((Number)value).doubleValue()%1!=0||
+        ((Number)value).doubleValue()<0||((Number)value).doubleValue()>3))
+     throw new java.io.IOException("Saiz font dalam sandaran tidak sah; data sedia ada tidak diubah");
     // Validate types of known settings to prevent runtime ClassCastException after restore.
     if((key.startsWith("updated_")||key.startsWith("viewed_"))&&
        (!(value instanceof Number)||((Number)value).doubleValue()%1!=0))
