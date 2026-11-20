@@ -57,42 +57,7 @@ public class MainActivity extends Activity {
   bell.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Peringatan").setMessage("Peringatan nota belum tersedia.").setPositiveButton("OK",null).show());
   ImageView avatar=headerIcon("☪",0xff126b43,"Urus kategori");header.addView(avatar);
   avatar.setOnClickListener(v->manageCategories());
-  // Separate decorative header band: green above the gold pointed arch, ivory below.
-  // Keep all interactive buttons below the ornament; never overlay their touch targets.
-  android.widget.FrameLayout headerFrame=new android.widget.FrameLayout(this);
-  headerFrame.setBackgroundColor(0xfffffdf7);
-  View archBand=new View(this){
-   final android.graphics.Paint paint=new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
-   @Override protected void onDraw(android.graphics.Canvas canvas){
-    super.onDraw(canvas);
-    float w=getWidth(),mid=w/2f,edge=dp(13),peak=dp(1.5f);
-    android.graphics.Path arch=new android.graphics.Path();
-    arch.moveTo(0,edge);
-    arch.cubicTo(w*.19f,edge,w*.39f,dp(12),mid,peak);
-    arch.cubicTo(w*.61f,dp(12),w*.81f,edge,w,edge);
-    android.graphics.Path emerald=new android.graphics.Path();
-    emerald.moveTo(0,0);emerald.lineTo(w,0);emerald.lineTo(w,edge);
-    emerald.cubicTo(w*.81f,edge,w*.61f,dp(12),mid,peak);
-    emerald.cubicTo(w*.39f,dp(12),w*.19f,edge,0,edge);
-    emerald.close();
-    paint.setStyle(android.graphics.Paint.Style.FILL);
-    paint.setColor(0xff075033);
-    canvas.drawPath(emerald,paint);
-    paint.setStyle(android.graphics.Paint.Style.STROKE);
-    paint.setStrokeWidth(dp(1.1f));
-    paint.setStrokeCap(android.graphics.Paint.Cap.ROUND);
-    paint.setStrokeJoin(android.graphics.Paint.Join.ROUND);
-    paint.setColor(0xffc6a45c);
-    canvas.drawPath(arch,paint);
-   }
-  };
-  archBand.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
-  headerFrame.addView(archBand,new android.widget.FrameLayout.LayoutParams(-1,dp(15),android.view.Gravity.TOP));
-  header.setBackgroundColor(android.graphics.Color.TRANSPARENT);
-  android.widget.FrameLayout.LayoutParams headerPosition=new android.widget.FrameLayout.LayoutParams(-1,dp(48),android.view.Gravity.TOP);
-  headerPosition.topMargin=dp(14);
-  headerFrame.addView(header,headerPosition);
-  root.addView(headerFrame,new LinearLayout.LayoutParams(-1,dp(62)));
+  root.addView(header,new LinearLayout.LayoutParams(-1,dp(54)));
   View border=new View(this);border.setBackgroundColor(0xffd5bb72);
   root.addView(border,new LinearLayout.LayoutParams(-1,dp(1)));
  }
