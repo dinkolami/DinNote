@@ -1270,7 +1270,11 @@ public class MainActivity extends Activity {
   if(editor==null)return;
   save();
   // Include the latest history snapshot in the same durable flush as the note.
-  saveHistoryVersion(false);
+  if(!saveHistoryVersion(false)){
+   if(saveIndicator!=null)saveIndicator.setText("⚠ Sejarah gagal");
+   Toast.makeText(this,"Sejarah suntingan gagal disimpan. Editor dikekalkan.",Toast.LENGTH_LONG).show();
+   return;
+  }
   // Persist queued autosave writes before leaving the editor.
   // If storage fails, retain the editor instead of presenting an unsaved reader.
   if(!prefs.edit().commit()){
@@ -1417,10 +1421,10 @@ public class MainActivity extends Activity {
   save();
  }
  void saveHistoryVersion(){saveHistoryVersion(true);}
- void saveHistoryVersion(boolean notify){
-  if(editor==null)return;
+ boolean saveHistoryVersion(boolean notify){
+  if(editor==null)return false;
   save();
-  if(selected==null)return;
+  if(selected==null)return false;
   try{
    org.json.JSONArray versions=new org.json.JSONArray(prefs.getString("history_"+selected,"[]"));
    org.json.JSONObject entry=new org.json.JSONObject();
@@ -1432,7 +1436,7 @@ public class MainActivity extends Activity {
    if(versions.length()>0){
     org.json.JSONObject last=versions.getJSONObject(versions.length()-1);
     if(entry.getString("title").equals(last.optString("title"))&&entry.getString("body").equals(last.optString("body"))&&entry.getString("category").equals(last.optString("category"))){
-     if(notify)Toast.makeText(this,"Versi ini sudah disimpan",Toast.LENGTH_SHORT).show();return;
+     if(notify)Toast.makeText(this,"Versi ini sudah disimpan",Toast.LENGTH_SHORT).show();return true;
     }
    }
    org.json.JSONArray kept=new org.json.JSONArray();
@@ -1441,7 +1445,8 @@ public class MainActivity extends Activity {
    if(!prefs.edit().putString("history_"+selected,kept.toString()).commit())
     throw new java.io.IOException("Gagal menyimpan sejarah");
    if(notify)Toast.makeText(this,"Versi disimpan dalam sejarah",Toast.LENGTH_SHORT).show();
-  }catch(Exception e){android.util.Log.e("DinNote","Sejarah gagal disimpan",e);if(notify)Toast.makeText(this,"Sejarah gagal disimpan: "+e.getMessage(),Toast.LENGTH_LONG).show();}
+   return true;
+  }catch(Exception e){android.util.Log.e("DinNote","Sejarah gagal disimpan",e);if(notify)Toast.makeText(this,"Sejarah gagal disimpan: "+e.getMessage(),Toast.LENGTH_LONG).show();return false;}
  }
  void showHistoryVersions(){
   if(selected==null)return;
@@ -1463,7 +1468,10 @@ public class MainActivity extends Activity {
       .setMessage("Kandungan editor semasa akan digantikan. Simpan versi semasa dahulu jika mahu menyimpannya.")
       .setPositiveButton("Pulihkan",(a,b)->{
        if(editor==null||titleEditor==null)return;
-       saveHistoryVersion(false);
+       if(!saveHistoryVersion(false)){
+        Toast.makeText(this,"Gagal menyimpan versi semasa; pemulihan dibatalkan",Toast.LENGTH_LONG).show();
+        return;
+       }
        titleEditor.setText(item.optString("title",""));
        editor.setText(item.optString("body",""));
        if(categoryPicker!=null){
