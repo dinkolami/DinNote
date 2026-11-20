@@ -1777,6 +1777,7 @@ public class MainActivity extends Activity {
     byte[] chunk=new byte[8192];int n,total=0;
     while((n=in.read(chunk))!=-1){total+=n;if(total>20*1024*1024)throw new java.io.IOException("Fail terlalu besar");buffer.write(chunk,0,n);}
    }
+   if(buffer.size()==0)throw new java.io.IOException("Fail sandaran kosong; data sedia ada tidak diubah");
    org.json.JSONObject backup=new org.json.JSONObject(new String(buffer.toByteArray(),java.nio.charset.StandardCharsets.UTF_8));
    if(!"DinNote-backup-v1".equals(backup.optString("format")))throw new java.io.IOException("Format sandaran tidak sah");
    if(backup.has("app_package")&&(! (backup.opt("app_package") instanceof String)||!getPackageName().equals(backup.optString("app_package"))))
