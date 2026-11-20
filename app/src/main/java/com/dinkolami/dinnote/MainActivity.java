@@ -414,7 +414,28 @@ public class MainActivity extends Activity {
   boolean hasLists=false;
   for(String line:displayLines)if(line.trim().equals("---")){hasLists=true;break;}
   for(String line:displayLines)if(line.matches("^\\s*(?:\\d+\\.\\s+|[•☐☑✓]\\s+).*")){hasLists=true;break;}
-  if(!hasLists)body.addView(content,new LinearLayout.LayoutParams(-1,-2));
+  boolean twoColumnReading=getResources().getConfiguration().screenWidthDp>=600&&fullReadingText.length()>=450;
+  if(!hasLists&&!twoColumnReading)body.addView(content,new LinearLayout.LayoutParams(-1,-2));
+  else if(!hasLists){
+   // Split at a word boundary for balanced side-by-side reading on unfolded devices.
+   int middle=fullReadingText.length()/2;
+   int split=fullReadingText.indexOf(' ',middle);
+   if(split<0)split=fullReadingText.indexOf('\\n',middle);
+   if(split<0)split=middle;
+   LinearLayout columns=new LinearLayout(this);columns.setOrientation(LinearLayout.HORIZONTAL);
+   columns.setPadding(dp(10),dp(8),dp(10),dp(12));
+   String[] halves={fullReadingText.substring(0,split).trim(),fullReadingText.substring(split).trim()};
+   for(int i=0;i<2;i++){
+    TextView page=text(halves[i],readingSizes[fontLevel]);page.setTextColor(0xff26372e);
+    page.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);page.setTextIsSelectable(true);
+    page.setGravity(Gravity.TOP);page.setPadding(dp(10),dp(8),dp(10),dp(8));
+    page.setLineSpacing(dp(containsArabic?7:3),containsArabic?1.2f:1.12f);
+    LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(0,-2,1);
+    if(i==1)lp.leftMargin=dp(8);
+    columns.addView(page,lp);
+   }
+   body.addView(columns);
+  }
   else{
    LinearLayout readingRows=new LinearLayout(this);readingRows.setOrientation(1);
    readingRows.setPadding(readingSide,dp(8),readingSide,dp(12));
