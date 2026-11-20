@@ -1336,7 +1336,24 @@ public class MainActivity extends Activity {
      out.write(backupBytes);
      out.flush();
     }
-    Toast.makeText(this,"Backup berjaya disimpan",Toast.LENGTH_LONG).show();
+    // Verify the saved document can be reopened and its bytes match the exported snapshot.
+    java.security.MessageDigest verifier=java.security.MessageDigest.getInstance("SHA-256");
+    java.security.MessageDigest expected=java.security.MessageDigest.getInstance("SHA-256");
+    expected.update(backupBytes);
+    int verifiedBytes=0;
+    try(java.io.InputStream check=getContentResolver().openInputStream(uri)){
+     if(check==null)throw new java.io.IOException("Fail sandaran tidak boleh dibaca semula");
+     byte[] chunk=new byte[8192];int count;
+     while((count=check.read(chunk))!=-1){
+      verifiedBytes+=count;
+      if(verifiedBytes>20*1024*1024)throw new java.io.IOException("Fail sandaran terlalu besar");
+      verifier.update(chunk,0,count);
+     }
+    }
+    if(verifiedBytes!=backupBytes.length||
+       !java.util.Arrays.equals(expected.digest(),verifier.digest()))
+     throw new java.io.IOException("Pengesahan fail sandaran gagal; sila buat sandaran semula");
+    Toast.makeText(this,"Backup berjaya disimpan dan disahkan",Toast.LENGTH_LONG).show();
    }catch(Exception e){Toast.makeText(this,"Backup gagal: "+e.getMessage(),Toast.LENGTH_LONG).show();}
   }else if(request==CONTENT_IMPORT){
    importContent(uri);
