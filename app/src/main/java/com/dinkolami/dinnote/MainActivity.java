@@ -1365,7 +1365,13 @@ public class MainActivity extends Activity {
   // Keep normal Android double-tap text selection while editing.
   // Never navigate away while EditText is handling touch/selection events.
   editor.setOnTouchListener(null);
-  if(key!=null)editor.setText(prefs.getString(key,""));TextWatcher titleWatcher=new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){save();}public void afterTextChanged(Editable e){}};titleEditor.addTextChangedListener(titleWatcher);TextWatcher bodyWatcher=new TextWatcher(){String before="";public void beforeTextChanged(CharSequence s,int st,int count,int after){before=s.toString();}public void onTextChanged(CharSequence s,int st,int beforeCount,int count){}public void afterTextChanged(Editable e){if(!restoring[0]&&!before.equals(e.toString())){
+  if(key!=null)editor.setText(prefs.getString(key,""));
+  // Match the reader's optional Arabic serif typeface in the editor as well.
+  // Without this, Arabic glyph widths and line wrapping differ after Selesai.
+  if(prefs.getBoolean("reader_arabic_clear_font",false)&&
+     java.util.regex.Pattern.compile("[\\u0600-\\u06FF]").matcher(editor.getText()).find())
+   editor.setTypeface(android.graphics.Typeface.create("serif",android.graphics.Typeface.NORMAL));
+  TextWatcher titleWatcher=new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){save();}public void afterTextChanged(Editable e){}};titleEditor.addTextChangedListener(titleWatcher);TextWatcher bodyWatcher=new TextWatcher(){String before="";public void beforeTextChanged(CharSequence s,int st,int count,int after){before=s.toString();}public void onTextChanged(CharSequence s,int st,int beforeCount,int count){}public void afterTextChanged(Editable e){if(!restoring[0]&&!before.equals(e.toString())){
    int cursor=editor.getSelectionStart();
    if(cursor>0&&cursor<=e.length()&&e.charAt(cursor-1)=='\n'){
     String prior=e.subSequence(0,cursor-1).toString();
