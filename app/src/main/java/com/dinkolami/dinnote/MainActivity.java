@@ -693,7 +693,23 @@ public class MainActivity extends Activity {
     readingPercent.setText(progress+"%");
    };
    scroll.getViewTreeObserver().addOnScrollChangedListener(updateReadingProgress::run);
-   scroll.post(updateReadingProgress);int rememberedScroll=prefs.getInt("reading_scroll_"+key,0);scroll.post(()->scroll.scrollTo(0,Math.max(0,rememberedScroll)));scroll.setOnTouchListener((v,e)->{if(e.getAction()==android.view.MotionEvent.ACTION_UP)scroll.postDelayed(()->prefs.edit().putInt("reading_scroll_"+key,scroll.getScrollY()).apply(),160);return false;});
+   scroll.post(()->{
+    int maxScroll=Math.max(0,scroll.getChildAt(0).getHeight()-scroll.getHeight());
+    int savedFraction=prefs.getInt("reading_progress_permille_"+key,-1);
+    int target=savedFraction>=0?Math.round(maxScroll*Math.max(0,Math.min(1000,savedFraction))/1000f):prefs.getInt("reading_scroll_"+key,0);
+    scroll.scrollTo(0,Math.max(0,Math.min(maxScroll,target)));
+    updateReadingProgress.run();
+   });
+   scroll.setOnTouchListener((v,e)->{
+    if(e.getAction()==android.view.MotionEvent.ACTION_UP||e.getAction()==android.view.MotionEvent.ACTION_CANCEL)
+     scroll.postDelayed(()->{
+      if(selected==null||!selected.equals(key)||scroll.getChildCount()==0)return;
+      int maxScroll=Math.max(0,scroll.getChildAt(0).getHeight()-scroll.getHeight());
+      int permille=maxScroll==0?0:Math.max(0,Math.min(1000,Math.round(scroll.getScrollY()*1000f/maxScroll)));
+      prefs.edit().putInt("reading_scroll_"+key,scroll.getScrollY()).putInt("reading_progress_permille_"+key,permille).apply();
+     },200);
+    return false;
+   });
   readerDetector=new android.view.GestureDetector(this,new android.view.GestureDetector.SimpleOnGestureListener(){
    @Override public boolean onDown(android.view.MotionEvent e){return true;}
    @Override public boolean onDoubleTap(android.view.MotionEvent e){bar.setVisibility(bar.getVisibility()==View.VISIBLE?View.GONE:View.VISIBLE);return true;}
