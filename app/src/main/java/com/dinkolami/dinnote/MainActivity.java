@@ -43,7 +43,7 @@ public class MainActivity extends Activity {
   root.setAlpha(0.94f);
   root.animate().alpha(1f).setDuration(140L).start();
   LinearLayout header=new LinearLayout(this);header.setGravity(Gravity.CENTER_VERTICAL);
-  header.setPadding(dp(8),dp(3),dp(8),dp(3));header.setBackgroundColor(0xfffdfefe);
+  header.setPadding(dp(8),dp(3),dp(8),dp(3));header.setBackgroundResource(R.drawable.dinnote_header_bg);
   ImageView menu=headerIcon("⌂",0xff9daeb9,"Halaman utama DinNote");header.addView(menu);
   menu.setOnClickListener(v->home());
   ImageView settingsMenu=headerIcon("☰",0xff9daeb9,"Menu DinNote dan Tetapan");header.addView(settingsMenu);
@@ -291,7 +291,7 @@ public class MainActivity extends Activity {
   scroll.setOverScrollMode(View.OVER_SCROLL_NEVER);scroll.setSmoothScrollingEnabled(true);
   root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
   LinearLayout page=new LinearLayout(this);page.setOrientation(1);
-  page.setPadding(dp(10),dp(6),dp(10),dp(12));android.graphics.drawable.BitmapDrawable homePattern=new android.graphics.drawable.BitmapDrawable(getResources(),android.graphics.BitmapFactory.decodeResource(getResources(),com.dinkolami.dinnote.R.drawable.dinnote_pattern));homePattern.setTileModeX(android.graphics.Shader.TileMode.REPEAT);homePattern.setTileModeY(android.graphics.Shader.TileMode.REPEAT);page.setBackground(homePattern);page.setTag("dinnote_home");scroll.addView(page);
+  page.setPadding(dp(10),dp(6),dp(10),dp(12));android.graphics.drawable.BitmapDrawable homePattern=new android.graphics.drawable.BitmapDrawable(getResources(),android.graphics.BitmapFactory.decodeResource(getResources(),com.dinkolami.dinnote.R.drawable.dinnote_pattern));homePattern.setTileModeX(android.graphics.Shader.TileMode.REPEAT);homePattern.setTileModeY(android.graphics.Shader.TileMode.REPEAT);page.setBackgroundResource(R.drawable.dinnote_content_bg);page.setTag("dinnote_home");scroll.addView(page);
   TextView recent=dashboardText("Baru dilihat  ▾",15,true);
   recent.setBackground(rounded(0xfffdfefe,0xffcdd6df,9));recent.setTextColor(0xff566a70);recent.setIncludeFontPadding(false);
   LinearLayout quickTools=new LinearLayout(this);quickTools.setOrientation(LinearLayout.HORIZONTAL);quickTools.setGravity(Gravity.CENTER_VERTICAL);
@@ -463,7 +463,7 @@ public class MainActivity extends Activity {
   add.setOnClickListener(v->{maktabah=false;edit(null);});
   applyTouchFeedback(add);applyTouchFeedback(recent);
   android.widget.ImageView mosqueFooter=new android.widget.ImageView(this);
-  mosqueFooter.setImageResource(com.dinkolami.dinnote.R.drawable.dinnote_mosque_footer);
+  mosqueFooter.setImageResource(com.dinkolami.dinnote.R.drawable.dinnote_footer_bg);
   mosqueFooter.setScaleType(android.widget.ImageView.ScaleType.FIT_XY);
   mosqueFooter.setContentDescription("Hiasan masjid hijau zamrud dan emas");
   LinearLayout.LayoutParams footerParams=new LinearLayout.LayoutParams(-1,dp(78));
