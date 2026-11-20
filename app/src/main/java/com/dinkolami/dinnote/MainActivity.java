@@ -485,17 +485,44 @@ public class MainActivity extends Activity {
 
  void showDashboardNotes(LinearLayout page,boolean important){View view=page.findViewWithTag("dashboard_notes");if(view instanceof LinearLayout)populateDashboardNotes((LinearLayout)view,important);}
  void populateDashboardNotes(LinearLayout target,boolean important){
-  target.removeAllViews();ArrayList<String> keys=new ArrayList<>();for(String k:prefs.getAll().keySet())if(k.startsWith("n_"))keys.add(k);Collections.sort(keys,Collections.reverseOrder());
+  target.removeAllViews();
+  ArrayList<String> keys=new ArrayList<>();
+  for(String k:prefs.getAll().keySet())
+   if(k.startsWith("n_")&&prefs.getAll().get(k) instanceof String&&!prefs.getBoolean("deleted_"+k,false))keys.add(k);
+  Collections.sort(keys,(a,b)->{
+   int byDate=Long.compare(prefs.getLong("updated_"+b,0L),prefs.getLong("updated_"+a,0L));
+   return byDate!=0?byDate:a.compareTo(b);
+  });
   int count=0;int[] colors={0xfff1f7ec,0xfffff5e5,0xffeaf4f8,0xfff9edf1};
-  for(String k:keys){if(important&&!prefs.getString("cat_"+k,"").equalsIgnoreCase("Penting"))continue;if(count>=5)break;
-   String title=prefs.getString("title_"+k,"").trim();String content=prefs.getString(k,"");if(title.isEmpty())title=content.isEmpty()?"Tanpa tajuk":content.split("\\n",2)[0];
-   LinearLayout card=dashboardCard();android.graphics.drawable.GradientDrawable bg=new android.graphics.drawable.GradientDrawable();bg.setColor(colors[count%colors.length]);bg.setCornerRadius(dp(14));card.setBackground(bg);
+  for(String k:keys){
+   if(important&&!prefs.getString("cat_"+k,"").equalsIgnoreCase("Penting"))continue;
+   if(count>=5)break;
+   String title=prefs.getString("title_"+k,"").trim();
+   String content=prefs.getString(k,"");
+   if(title.isEmpty())title=content.trim().isEmpty()?"Tanpa tajuk":content.split("\\n",2)[0].trim();
+   if(title.isEmpty())title="Tanpa tajuk";
+   LinearLayout card=dashboardCard();
+   android.graphics.drawable.GradientDrawable bg=new android.graphics.drawable.GradientDrawable();
+   bg.setColor(colors[count%colors.length]);bg.setCornerRadius(dp(14));card.setBackground(bg);
    LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);lp.bottomMargin=dp(10);target.addView(card,lp);
-   TextView heading=dashboardText("▤  "+title,16,true);card.addView(heading);
-   String preview=content.replace("\\n"," ");if(preview.length()>100)preview=preview.substring(0,100)+"…";TextView detail=dashboardText(preview,13,false);detail.setTextColor(0xff57635e);card.addView(detail);
+   TextView heading=dashboardText("▤  "+title,16,true);
+   heading.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
+   heading.setSingleLine(true);heading.setEllipsize(android.text.TextUtils.TruncateAt.END);
+   heading.setTooltipText(title);card.addView(heading);
+   String preview=cleanCardPreview(content);
+   if(preview.length()>100)preview=preview.substring(0,100)+"…";
+   TextView detail=dashboardText(preview,13,false);detail.setTextColor(0xff57635e);
+   detail.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
+   detail.setMaxLines(2);detail.setEllipsize(android.text.TextUtils.TruncateAt.END);
+   card.addView(detail);
+   card.setMinHeight(dp(48));applyTouchFeedback(card);
+   card.setContentDescription("Buka nota "+title);
    card.setOnClickListener(v->{maktabah=false;read(k);});count++;
   }
-  if(count==0)target.addView(dashboardText(important?"Tiada nota dalam kategori Penting.":"Belum ada nota. Tekan + untuk mencipta nota.",14,false));
+  if(count==0){
+   TextView empty=dashboardText(important?"Tiada nota dalam kategori Penting.":"Belum ada nota. Tekan + untuk mencipta nota.",14,false);
+   empty.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);target.addView(empty);
+  }
  }
 
  boolean matchesSearch(String content,String[] terms){String normalized=content.replaceAll("\\s+"," ").toLowerCase(java.util.Locale.ROOT);for(String term:terms)if(!normalized.contains(term))return false;return true;}
