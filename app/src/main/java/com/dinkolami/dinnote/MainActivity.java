@@ -420,7 +420,7 @@ public class MainActivity extends Activity {
    // Split at a word boundary for balanced side-by-side reading on unfolded devices.
    int middle=fullReadingText.length()/2;
    int split=fullReadingText.indexOf(' ',middle);
-   if(split<0)split=fullReadingText.indexOf('\\n',middle);
+   if(split<0)split=fullReadingText.indexOf('\n',middle);
    if(split<0)split=middle;
    LinearLayout columns=new LinearLayout(this);columns.setOrientation(LinearLayout.HORIZONTAL);
    columns.setPadding(dp(10),dp(8),dp(10),dp(12));
