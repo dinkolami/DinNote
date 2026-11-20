@@ -400,10 +400,10 @@ public class MainActivity extends Activity {
   final int theme=prefs.getInt("reader_theme",0);
   final int paper=theme==0?0xffffffff:theme==2?0xfff2f8f3:0xfffffcf4;
   final String heading=prefs.getString("title_"+key,"");
-  TextView headingView=text(heading,17);headingView.setGravity(Gravity.CENTER);headingView.setTypeface(null,android.graphics.Typeface.BOLD);headingView.setMaxLines(2);
+  TextView headingView=text(heading,17);headingView.setGravity(Gravity.RIGHT|Gravity.CENTER_VERTICAL);headingView.setTypeface(null,android.graphics.Typeface.BOLD);headingView.setMaxLines(2);
   headingView.setEllipsize(android.text.TextUtils.TruncateAt.END);
   headingView.setPadding(dp(16),dp(8),dp(16),dp(8));
-  headingView.setBackground(rounded(paper,0xffdde5e1,10));
+  headingView.setBackground(rounded(paper,0xffdde5e1,2));headingView.setElevation(0);
   LinearLayout.LayoutParams titleParams=new LinearLayout.LayoutParams(-1,-2);
   titleParams.setMargins(dp(10),dp(6),dp(10),dp(4));root.addView(headingView,titleParams);
   LinearLayout pageRow=new LinearLayout(this);pageRow.setOrientation(LinearLayout.HORIZONTAL);
@@ -431,7 +431,9 @@ public class MainActivity extends Activity {
   controlParams=new LinearLayout.LayoutParams(dp(34),dp(30));controlParams.rightMargin=dp(5);navigation.addView(focus,controlParams);
   navigation.addView(indicator,new LinearLayout.LayoutParams(0,dp(30),1));
   controlParams=new LinearLayout.LayoutParams(dp(34),dp(30));controlParams.leftMargin=dp(5);navigation.addView(next,controlParams);
-  root.addView(navigation);
+  LinearLayout.LayoutParams navigationParams=new LinearLayout.LayoutParams(-1,-2);
+  navigationParams.bottomMargin=dp(5); // Small gap above Android system navigation.
+  root.addView(navigation,navigationParams);
   Button jump=new Button(this); // Dialog action retained without a second navigation row.
   // Paginate after the view has been measured. Avoid repeated layout passes and
   // view-tree changes while Android is measuring the page content.
@@ -490,7 +492,7 @@ public class MainActivity extends Activity {
       page.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
       page.setLineSpacing(dp(1),1.04f);
       page.setPadding(dp(12),dp(10),dp(12),dp(10));
-      page.setBackground(rounded(paper,0xffdde5e1,10));
+      page.setBackground(rounded(paper,0xffdde5e1,2));page.setElevation(0);
       LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(0,-1,1);
       if(i>0)lp.leftMargin=dp(8);
       pageRow.addView(page,lp);
