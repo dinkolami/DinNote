@@ -1937,6 +1937,11 @@ public class MainActivity extends Activity {
    }else root.post(()->{if(editor==null&&selected==null&&sectionOpen)notesPage();});
    return;
   }
+  if(selected!=null&&!prefs.contains(selected)){
+   selected=null;readerScroll=null;
+   root.post(()->{if(editor==null){if(sectionOpen)notesPage();else home();}});
+   return;
+  }
   if(selected!=null&&prefs.contains(selected)){
    String key=selected;
    saveReaderPosition(key);
