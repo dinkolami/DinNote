@@ -840,7 +840,7 @@ public class MainActivity extends Activity {
    String line=raw.trim();
    if(line.length()<3||line.length()>110)continue;
    String lower=line.toLowerCase(java.util.Locale.ROOT);
-   if(lower.matches("^(bab|fasal|فصل|باب|chapter|section|juz|جزء)\\\\b.*")||line.startsWith("باب ")||line.startsWith("فصل ")){
+   if(lower.matches("^(bab|fasal|chapter|section|juz)\\s+.*")||line.startsWith("باب ")||line.startsWith("فصل ")||line.startsWith("جزء ")){
     headings.add(line);terms.add(line);
     if(headings.size()>=100)break;
    }
