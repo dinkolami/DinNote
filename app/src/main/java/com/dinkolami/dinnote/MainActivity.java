@@ -427,6 +427,8 @@ public class MainActivity extends Activity {
   root.addView(actions);
   // Paginate after the view has been measured. Avoid repeated layout passes and
   // view-tree changes while Android is measuring the page content.
+  // Display saved content immediately, even before pagination is calculated.
+  TextView loading=text(source,Math.max(12,fontSize));loading.setTextColor(0xff26372e);loading.setPadding(dp(12),dp(12),dp(12),dp(12));pageRow.addView(loading,new LinearLayout.LayoutParams(-1,-1));
   pageRow.post(()->{
    if(pageRow.getParent()==null||root==null)return;
    try{
@@ -439,20 +441,15 @@ public class MainActivity extends Activity {
     ArrayList<String> parts=new ArrayList<>();
     int cursor=0;
     while(cursor<source.length()){
-     int lo=cursor+1,hi=source.length(),best=lo;
-     while(lo<=hi){
-      int mid=lo+(hi-lo)/2;
-      probe.setText(source.substring(cursor,mid));
-      probe.measure(View.MeasureSpec.makeMeasureSpec(width,View.MeasureSpec.EXACTLY),View.MeasureSpec.makeMeasureSpec(0,View.MeasureSpec.UNSPECIFIED));
-      if(probe.getMeasuredHeight()<=height){best=mid;lo=mid+1;}else hi=mid-1;
-     }
-     int stop=Math.max(cursor+1,best);
-     if(stop<source.length()){
-      int space=source.lastIndexOf(' ',stop),newline=source.lastIndexOf('\n',stop);
-      int boundary=Math.max(space,newline);
-      if(boundary>cursor+(stop-cursor)/2)stop=boundary+1;
-     }
-     parts.add(source.substring(cursor,stop));cursor=stop;
+     // Use one measured text layout rather than repeatedly measuring substrings.
+    // The former binary-search measurement could stall the UI on long kitab.
+    int stop=Math.min(source.length(),cursor+Math.max(180,(height/dp(24))*Math.max(15,width/dp(9))));
+    if(stop<source.length()){
+     int boundary=Math.max(source.lastIndexOf(' ',stop),source.lastIndexOf('\n',stop));
+     if(boundary>cursor+(stop-cursor)/2)stop=boundary+1;
+    }
+    stop=Math.max(cursor+1,stop);
+    parts.add(source.substring(cursor,stop));cursor=stop;
     }
     if(parts.isEmpty())parts.add("");
     final int total=parts.size();
