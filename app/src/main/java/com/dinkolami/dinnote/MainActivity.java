@@ -1,7 +1,7 @@
 package com.dinkolami.dinnote;
 import android.app.*;import android.os.*;import android.graphics.Color;import android.view.*;import android.widget.*;import android.text.*;import android.content.*;import java.util.*;
 public class MainActivity extends Activity {
- LinearLayout root,items,compactSummary; ScrollView listScroll; int savedNotesScroll=0,savedBooksScroll=0; String lastOpenedCard=null; android.view.GestureDetector readerDetector; EditText editor,titleEditor; TextView saveIndicator; Spinner categoryPicker; String categoryFilter="Semua"; String sortMode="Terbaru"; String selected=null; boolean maktabah=false, sectionOpen=false; android.content.SharedPreferences prefs;
+ LinearLayout root,items,compactSummary; ScrollView listScroll,readerScroll; int savedNotesScroll=0,savedBooksScroll=0; String lastOpenedCard=null; android.view.GestureDetector readerDetector; EditText editor,titleEditor; TextView saveIndicator; Spinner categoryPicker; String categoryFilter="Semua"; String sortMode="Terbaru"; String selected=null; boolean maktabah=false, sectionOpen=false; android.content.SharedPreferences prefs;
  int green=Color.rgb(23,107,71), gold=Color.rgb(197,166,107); static final int BACKUP_CREATE=4201, BACKUP_OPEN=4202, CONTENT_IMPORT=4203;
  public void onCreate(Bundle b){super.onCreate(b);prefs=getSharedPreferences("notes",0);if(prefs.contains("security_pin_hash"))promptUnlock();else home();} // User content and categories are local; import them explicitly.}
  void applySystemBarInsets(LinearLayout view){
@@ -982,6 +982,7 @@ public class MainActivity extends Activity {
   if(window!=null)window.setLayout(Math.min(getResources().getDisplayMetrics().widthPixels-dp(32),dp(430)),-2);
  }
  void read(String key){
+  readerScroll=null;
   editor=null;titleEditor=null;saveIndicator=null;selected=key;prefs.edit().putLong("viewed_"+key,System.currentTimeMillis()).putString(key.startsWith("m_")?"reading_last_m":"reading_last_n",key).apply();cleanBase();
   LinearLayout bar=new LinearLayout(this);bar.setGravity(Gravity.CENTER_VERTICAL);bar.setPadding(dp(8),dp(3),dp(8),dp(3));bar.setBackground(rounded(0xfff8faf8,0xffe1e7e3,12));root.addView(bar);
   Button readerBack=action("‹",bar,()->returnFromReader());readerBack.setContentDescription(key.startsWith("m_")?"Kembali ke senarai kitab":"Kembali ke senarai nota");
@@ -1022,6 +1023,7 @@ public class MainActivity extends Activity {
   String heading=prefs.getString("title_"+key,"");
   TextView sectionLabel=text(key.startsWith("m_")?"▤  Maktabah":"✎  Nota",12);sectionLabel.setTextColor(0xff23714b);sectionLabel.setPadding(dp(24),dp(10),dp(24),dp(2));
   ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);scroll.setOverScrollMode(View.OVER_SCROLL_NEVER);
+  readerScroll=scroll;
   LinearLayout body=new LinearLayout(this);body.setOrientation(1);int readingTheme=prefs.getInt("reader_theme",0);int paperColor=readingTheme==0?0xffffffff:readingTheme==2?0xfff2f8f3:0xfffffcf4;body.setBackground(rounded(paperColor,0xffdde5e1,12));body.setPadding(dp(8),dp(6),dp(8),dp(8));body.setClipChildren(true);body.setClipToPadding(true);LinearLayout.LayoutParams readingFrame=new LinearLayout.LayoutParams(-1,-2);readingFrame.setMargins(dp(12),dp(8),dp(12),dp(12));scroll.addView(body,readingFrame);body.addView(sectionLabel);
   TextView title=text(heading,20);title.setMaxLines(3);title.setEllipsize(android.text.TextUtils.TruncateAt.END);title.setBackgroundColor(paperColor);title.setTextColor(green);title.setTypeface(null,android.graphics.Typeface.BOLD);title.setPadding(dp(24),dp(8),dp(24),dp(8));title.setGravity(Gravity.CENTER_VERTICAL|Gravity.START);title.setTextIsSelectable(true);title.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);title.setIncludeFontPadding(true);
   if(!heading.isEmpty())body.addView(title);
@@ -1864,12 +1866,21 @@ public class MainActivity extends Activity {
   }
   if(selected!=null&&prefs.contains(selected)){
    String key=selected;
+   saveReaderPosition(key);
    root.post(()->{if(editor==null&&key.equals(selected))read(key);});
   }
  }
  // Durable checkpoint when Android backgrounds the editor; protects recent autosaved text
  // if the process is later killed before asynchronous preference writes finish.
+ void saveReaderPosition(String key){
+  if(readerScroll==null||key==null||readerScroll.getChildCount()==0)return;
+  int max=Math.max(0,readerScroll.getChildAt(0).getHeight()-readerScroll.getHeight());
+  int y=Math.max(0,Math.min(max,readerScroll.getScrollY()));
+  int permille=max==0?0:Math.max(0,Math.min(1000,Math.round(y*1000f/max)));
+  prefs.edit().putInt("reading_scroll_"+key,y).putInt("reading_progress_permille_"+key,permille).apply();
+ }
  @Override protected void onPause(){
+  if(editor==null&&selected!=null)saveReaderPosition(selected);
   if(editor!=null){
    save();
    if(!prefs.edit().commit()){
