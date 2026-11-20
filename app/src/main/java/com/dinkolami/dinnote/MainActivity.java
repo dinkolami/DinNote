@@ -920,6 +920,13 @@ public class MainActivity extends Activity {
    labels[n+1]=labels[n];icons[n+1]=icons[n];descriptions[n+1]=descriptions[n];
    labels[n]="Indeks Kitab";icons[n]="☷";descriptions[n]="Senarai bab dan fasal yang dikesan";
   }
+  if(book){
+   int n=labels.length;
+   labels=java.util.Arrays.copyOf(labels,n+1);icons=java.util.Arrays.copyOf(icons,n+1);descriptions=java.util.Arrays.copyOf(descriptions,n+1);
+   labels[n]=labels[n-1];icons[n]=icons[n-1];descriptions[n]=descriptions[n-1];
+   labels[n-1]="Arab–Melayu bersebelahan";icons[n-1]="▥";
+   descriptions[n-1]="Baris Arab || Melayu pada skrin terbuka";
+  }
   int beforePdf=labels.length;
   labels=java.util.Arrays.copyOf(labels,beforePdf+1);icons=java.util.Arrays.copyOf(icons,beforePdf+1);descriptions=java.util.Arrays.copyOf(descriptions,beforePdf+1);
   labels[beforePdf]=labels[beforePdf-1];icons[beforePdf]=icons[beforePdf-1];descriptions[beforePdf]=descriptions[beforePdf-1];
@@ -960,7 +967,12 @@ public class MainActivity extends Activity {
     else if(compact&&option==6){boolean now=prefs.getBoolean("reader_two_columns",true);prefs.edit().putBoolean("reader_two_columns",!now).apply();read(key);}
     else if(book&&option==(compact?7:5))showBookMarginNote(key);
     else if(book&&option==(compact?8:6))showBookIndex(key);
-    else if(option==(book?(compact?9:7):(compact?7:5)))printReaderAsPdf(key);
+    else if(book&&option==(compact?9:7)){
+     boolean next=!prefs.getBoolean("reader_bilingual_columns",false);
+     prefs.edit().putBoolean("reader_bilingual_columns",next).apply();
+     Toast.makeText(this,next?"Paparan Arab–Melayu diaktifkan":"Paparan Arab–Melayu dimatikan",Toast.LENGTH_SHORT).show();read(key);
+    }
+    else if(option==(book?(compact?10:8):(compact?7:5)))printReaderAsPdf(key);
     else confirmDelete(key);
    });
   }
@@ -1023,8 +1035,32 @@ public class MainActivity extends Activity {
   boolean hasLists=false;
   for(String line:displayLines)if(line.trim().equals("---")){hasLists=true;break;}
   for(String line:displayLines)if(line.matches("^\\s*(?:\\d+\\.\\s+|[•☐☑✓]\\s+).*")){hasLists=true;break;}
+  // Optional aligned bilingual reading. Each paired line uses Arabic || Malay.
+  boolean bilingualReading=key.startsWith("m_")&&getResources().getConfiguration().screenWidthDp>=500
+   &&prefs.getBoolean("reader_bilingual_columns",false)&&fullReadingText.contains(" || ");
+  if(bilingualReading){
+   LinearLayout bilingual=new LinearLayout(this);bilingual.setOrientation(LinearLayout.VERTICAL);
+   for(String line:displayLines){
+    int divider=line.indexOf(" || ");
+    if(divider<0){TextView plain=text(line,readingSizes[fontLevel]);plain.setTextColor(0xff26372e);bilingual.addView(plain);continue;}
+    LinearLayout pair=new LinearLayout(this);pair.setOrientation(LinearLayout.HORIZONTAL);
+    TextView arabic=text(line.substring(0,divider),readingSizes[fontLevel]);
+    arabic.setTextDirection(View.TEXT_DIRECTION_RTL);arabic.setGravity(Gravity.RIGHT|Gravity.TOP);
+    arabic.setTextIsSelectable(true);arabic.setPadding(dp(8),dp(6),dp(8),dp(6));
+    TextView malay=text(line.substring(divider+4),readingSizes[fontLevel]);
+    malay.setTextDirection(View.TEXT_DIRECTION_LTR);malay.setGravity(Gravity.LEFT|Gravity.TOP);
+    malay.setTextIsSelectable(true);malay.setPadding(dp(8),dp(6),dp(8),dp(6));
+    pair.addView(arabic,new LinearLayout.LayoutParams(0,-2,1));
+    View rule=new View(this);rule.setBackgroundColor(0xffc5a66b);
+    pair.addView(rule,new LinearLayout.LayoutParams(dp(1),-1));
+    pair.addView(malay,new LinearLayout.LayoutParams(0,-2,1));
+    bilingual.addView(pair);
+   }
+   body.addView(bilingual);
+  }
   boolean twoColumnReading=getResources().getConfiguration().screenWidthDp>=500&&prefs.getBoolean("reader_two_columns",true)&&fullReadingText.length()>=100;
-  if(!twoColumnReading&&!hasLists)body.addView(content,new LinearLayout.LayoutParams(-1,-2));
+  if(bilingualReading){}
+  else if(!twoColumnReading&&!hasLists)body.addView(content,new LinearLayout.LayoutParams(-1,-2));
   else if(twoColumnReading){
    // Split at a word boundary for balanced side-by-side reading on unfolded devices.
    int middle=fullReadingText.length()/2;
