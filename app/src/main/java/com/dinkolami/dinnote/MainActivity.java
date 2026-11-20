@@ -713,13 +713,15 @@ public class MainActivity extends Activity {
  android.text.SpannableStringBuilder formattedReadingText(String source){
   if(source==null)source="";
   android.text.SpannableStringBuilder out=new android.text.SpannableStringBuilder();
-  java.util.regex.Matcher m=java.util.regex.Pattern.compile("\\*\\*(.+?)\\*\\*",java.util.regex.Pattern.DOTALL).matcher(source);
+  // Match double-star bold before single-star italic, so the delimiters never overlap.
+  java.util.regex.Matcher m=java.util.regex.Pattern.compile("\\*\\*(.+?)\\*\\*|(?<!\\*)\\*(?!\\*)([^*\\r\\n]+?)\\*(?!\\*)",java.util.regex.Pattern.DOTALL).matcher(source);
   int previous=0;
   while(m.find()){
    out.append(source.substring(previous,m.start()));
    int from=out.length();
-   out.append(m.group(1));
-   out.setSpan(new android.text.style.StyleSpan(android.graphics.Typeface.BOLD),from,out.length(),android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+   boolean bold=m.group(1)!=null;
+   out.append(bold?m.group(1):m.group(2));
+   out.setSpan(new android.text.style.StyleSpan(bold?android.graphics.Typeface.BOLD:android.graphics.Typeface.ITALIC),from,out.length(),android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
    previous=m.end();
   }
   out.append(source.substring(previous));
