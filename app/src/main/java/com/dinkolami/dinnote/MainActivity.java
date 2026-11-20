@@ -448,8 +448,8 @@ public class MainActivity extends Activity {
     // Measure actual rendered lines, not an estimated character count.
     // Keep a small bottom reserve so the final line is never clipped.
     int width=Math.max(dp(80),(pageRow.getWidth()-dp(16)-(spread?dp(8):0))/(spread?2:1));
-    int textWidth=Math.max(dp(40),width-dp(24));
-    int usableHeight=Math.max(dp(40),pageRow.getHeight()-dp(20)-dp(22));
+    int textWidth=Math.max(dp(40),width-dp(32)); // Measure narrower than the actual page to avoid unexpected wraps.
+    int usableHeight=Math.max(dp(40),pageRow.getHeight()-dp(20)-dp(72)); // Reserve an extra full text line and font-descent safety margin.
     // Use identical line spacing in the measuring layout and visible pages.
     final boolean arabic=java.util.regex.Pattern.compile("[\\u0600-\\u06FF]").matcher(source).find();
     final int extraLine=arabic?dp(3):dp(1);
@@ -481,8 +481,9 @@ public class MainActivity extends Activity {
      int chars=lastLine>0?layout.getLineEnd(lastLine-1):Math.min(candidate.length(),1);
       // Reserve the last rendered line as a reading overlap on the next page.
       // Advance by at least one character so pagination always terminates.
-      int overlapStart=lastLine>1?layout.getLineStart(lastLine-1):0;
+      int overlapStart=lastLine>1?layout.getLineStart(lastLine-1):0; // Repeat only a completely measured line, never a clipped fragment.
      int stop=Math.min(source.length(),cursor+Math.max(1,chars));
+     // Do not append a partly visible line: the following page will render it in full.
      // Never split a surrogate pair, and preserve every character in order.
      if(stop<source.length()&&stop>cursor&&Character.isHighSurrogate(source.charAt(stop-1))&&Character.isLowSurrogate(source.charAt(stop)))stop--;
      if(stop<=cursor)stop=cursor+1;
