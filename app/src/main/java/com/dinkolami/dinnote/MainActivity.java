@@ -199,7 +199,7 @@ public class MainActivity extends Activity {
     }else if(which==1){
      new AlertDialog.Builder(this).setTitle("Saiz tulisan editor")
       .setSingleChoiceItems(new String[]{"Kecil","Biasa","Besar","Sangat besar"},
-       Math.max(0,Math.min(3,prefs.getInt("reader_font_level",0))),(d,choice)->{
+       Math.max(0,Math.min(3,prefs.getInt("reader_font_level",1))),(d,choice)->{
         prefs.edit().putInt("reader_font_level",choice).putInt("editor_font_level",choice).apply();
         d.dismiss();
         if(editor!=null)editor.setTextSize(new int[]{13,15,16,18}[choice]);
@@ -569,7 +569,7 @@ public class MainActivity extends Activity {
  void showPagedReader(String key){
   final String source=prefs.getString(key,"");
   final boolean spread=getResources().getConfiguration().screenWidthDp>=500&&prefs.getBoolean("reader_two_columns",true);
-  final int fontLevel=Math.max(0,Math.min(3,prefs.getInt("reader_font_level",0)));
+  final int fontLevel=Math.max(0,Math.min(3,prefs.getInt("reader_font_level",1)));
   final int fontSize=(key.startsWith("m_")?new int[]{13,15,16,18}:new int[]{13,15,16,18})[fontLevel];
   final int theme=prefs.getInt("reader_theme",0);
   final int paper=theme==0?0xffffffff:theme==2?0xfff2f8f3:0xfffffcf4;
@@ -798,7 +798,7 @@ public class MainActivity extends Activity {
   final AlertDialog[] popup=new AlertDialog[1];
   String[] headings={"SAIZ TULISAN","WARNA KERTAS","JARAK BARIS","TULISAN ARAB"};
   String[][] options={{"Kecil","Biasa","Besar","Sangat besar"},{"Putih","Ivory","Hijau lembut"},{"Biasa","Luas"},{"Biasa","Lebih jelas"}};
-  int font=Math.max(0,Math.min(3,prefs.getInt("reader_font_level",0)));
+  int font=Math.max(0,Math.min(3,prefs.getInt("reader_font_level",1)));
   int theme=Math.max(0,Math.min(2,prefs.getInt("reader_theme",1)));
   int[] selected={font,theme,prefs.getBoolean("reader_wide_spacing",false)?1:0,prefs.getBoolean("reader_arabic_clear_font",false)?1:0};
   for(int group=0;group<4;group++){
@@ -982,7 +982,7 @@ public class MainActivity extends Activity {
   if(window!=null)window.setLayout(Math.min(getResources().getDisplayMetrics().widthPixels-dp(32),dp(430)),-2);
  }
  void applySharedTextMetrics(android.widget.TextView view){
-  int level=Math.max(0,Math.min(3,prefs.getInt("reader_font_level",0)));
+  int level=Math.max(0,Math.min(3,prefs.getInt("reader_font_level",1)));
   view.setTextSize(new int[]{13,15,16,18}[level]);
   view.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
   view.setBreakStrategy(android.text.Layout.BREAK_STRATEGY_SIMPLE);
@@ -1044,7 +1044,7 @@ public class MainActivity extends Activity {
   TextView title=text(heading,20);title.setMaxLines(3);title.setEllipsize(android.text.TextUtils.TruncateAt.END);title.setBackgroundColor(paperColor);title.setTextColor(green);title.setTypeface(null,android.graphics.Typeface.BOLD);title.setPadding(dp(24),dp(8),dp(24),dp(8));title.setGravity(Gravity.CENTER_VERTICAL|Gravity.START);title.setTextIsSelectable(true);title.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);title.setIncludeFontPadding(true);
   if(!heading.isEmpty())body.addView(title);
   String readingCategory=prefs.getString("cat_"+key,"Tanpa kategori");String fullReadingText=prefs.getString(key,"");String firstReadingLine=fullReadingText.split("\\R",2)[0].trim();if(firstReadingLine.matches("(?i)^(bab|الفصل|باب)\\b.*")&&firstReadingLine.length()<110){TextView chapterLabel=text(firstReadingLine,16);chapterLabel.setTextColor(0xff176b47);chapterLabel.setTypeface(null,android.graphics.Typeface.BOLD);chapterLabel.setPadding(dp(20),dp(8),dp(20),dp(8));body.addView(chapterLabel);}TextView categoryLine=text("⌑  "+readingCategory,12);categoryLine.setTextColor(0xff52745e);categoryLine.setPadding(dp(24),0,dp(24),dp(8));categoryLine.setSingleLine(true);categoryLine.setEllipsize(android.text.TextUtils.TruncateAt.END);body.addView(categoryLine);View chapterRule=new View(this);chapterRule.setBackgroundColor(0xffdfe8df);LinearLayout.LayoutParams chapterRuleParams=new LinearLayout.LayoutParams(-1,dp(1));chapterRuleParams.setMargins(dp(20),dp(2),dp(20),dp(8));body.addView(chapterRule,chapterRuleParams);
-  int fontLevel=Math.max(0,Math.min(3,prefs.getInt("reader_font_level",0)));
+  int fontLevel=Math.max(0,Math.min(3,prefs.getInt("reader_font_level",1)));
   int[] readingSizes=new int[]{13,15,16,18}; // Match editor for both Nota and Maktabah.
   TextView content=text("",readingSizes[fontLevel]);content.setText(formattedReadingText(prefs.getString(key,"")));boolean containsArabic=java.util.regex.Pattern.compile("[\\u0600-\\u06FF]").matcher(fullReadingText).find();if(containsArabic){if(prefs.getBoolean("reader_arabic_clear_font",false))content.setTypeface(android.graphics.Typeface.create("serif",android.graphics.Typeface.NORMAL));}
   content.setTextColor(0xff26372e);content.setGravity(Gravity.TOP);content.setBreakStrategy(android.text.Layout.BREAK_STRATEGY_SIMPLE);content.setHyphenationFrequency(android.text.Layout.HYPHENATION_FREQUENCY_NONE);content.setTextIsSelectable(true);content.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);int readingSide=dp(4); // 12dp frame + 8dp body + 4dp content = 24dp editor inset.
@@ -1320,7 +1320,7 @@ public class MainActivity extends Activity {
    choices.add(savedCat);
    categoryPicker.setAdapter(new ArrayAdapter<>(this,android.R.layout.simple_spinner_dropdown_item,choices));
   }
-  int pos=choices.indexOf(savedCat);categoryPicker.setSelection(pos<0?0:pos);root.addView(categoryPicker);titleEditor=new EditText(this);titleEditor.setSingleLine(true);titleEditor.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_NEXT);titleEditor.setTextSize(20);titleEditor.setHint(maktabah?"Tajuk kitab":"Tajuk nota");titleEditor.setContentDescription(maktabah?"Tajuk kitab":"Tajuk nota");titleEditor.setPadding(dp(24),dp(12),dp(24),dp(12));titleEditor.setBackground(rounded(0xfffffdf7,0xffd8c68a,12));titleEditor.setTextColor(0xff154f36);titleEditor.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);root.addView(titleEditor);if(key!=null)titleEditor.setText(prefs.getString("title_"+key,""));editor=new EditText(this);editor.setGravity(Gravity.TOP);editor.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);editor.setBreakStrategy(android.text.Layout.BREAK_STRATEGY_SIMPLE);editor.setHyphenationFrequency(android.text.Layout.HYPHENATION_FREQUENCY_NONE);editor.setTextSize(new int[]{13,15,16,18}[Math.max(0,Math.min(3,prefs.getInt("reader_font_level",0)))]);editor.setTextColor(0xff30343b);editor.setPadding(dp(24),dp(10),dp(24),dp(12));editor.setLineSpacing(prefs.getBoolean("reader_wide_spacing",false)?dp(5):dp(1),prefs.getBoolean("reader_wide_spacing",false)?1.15f:1.0f);editor.setIncludeFontPadding(true);applySharedTextMetrics(editor);editor.setHint(maktabah?"Tulis kandungan kitab di sini…":"Tulis nota di sini…");editor.setContentDescription(maktabah?"Kandungan kitab":"Kandungan nota");editor.setBackground(rounded(0xfffffefb,0xffb8d5c2,12));editor.setOnFocusChangeListener((v,focused)->editor.setBackground(rounded(0xfffffefb,focused?0xff168254:0xffb8d5c2,12)));editor.setInputType(android.text.InputType.TYPE_CLASS_TEXT|android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE|android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);LinearLayout formatBar=new LinearLayout(this);
+  int pos=choices.indexOf(savedCat);categoryPicker.setSelection(pos<0?0:pos);root.addView(categoryPicker);titleEditor=new EditText(this);titleEditor.setSingleLine(true);titleEditor.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_NEXT);titleEditor.setTextSize(20);titleEditor.setHint(maktabah?"Tajuk kitab":"Tajuk nota");titleEditor.setContentDescription(maktabah?"Tajuk kitab":"Tajuk nota");titleEditor.setPadding(dp(24),dp(12),dp(24),dp(12));titleEditor.setBackground(rounded(0xfffffdf7,0xffd8c68a,12));titleEditor.setTextColor(0xff154f36);titleEditor.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);root.addView(titleEditor);if(key!=null)titleEditor.setText(prefs.getString("title_"+key,""));editor=new EditText(this);editor.setGravity(Gravity.TOP);editor.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);editor.setBreakStrategy(android.text.Layout.BREAK_STRATEGY_SIMPLE);editor.setHyphenationFrequency(android.text.Layout.HYPHENATION_FREQUENCY_NONE);editor.setTextSize(new int[]{13,15,16,18}[Math.max(0,Math.min(3,prefs.getInt("reader_font_level",1)))]);editor.setTextColor(0xff30343b);editor.setPadding(dp(24),dp(10),dp(24),dp(12));editor.setLineSpacing(prefs.getBoolean("reader_wide_spacing",false)?dp(5):dp(1),prefs.getBoolean("reader_wide_spacing",false)?1.15f:1.0f);editor.setIncludeFontPadding(true);applySharedTextMetrics(editor);editor.setHint(maktabah?"Tulis kandungan kitab di sini…":"Tulis nota di sini…");editor.setContentDescription(maktabah?"Kandungan kitab":"Kandungan nota");editor.setBackground(rounded(0xfffffefb,0xffb8d5c2,12));editor.setOnFocusChangeListener((v,focused)->editor.setBackground(rounded(0xfffffefb,focused?0xff168254:0xffb8d5c2,12)));editor.setInputType(android.text.InputType.TYPE_CLASS_TEXT|android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE|android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);LinearLayout formatBar=new LinearLayout(this);
   formatBar.setGravity(Gravity.CENTER_VERTICAL);
   formatBar.setPadding(dp(5),dp(2),dp(5),dp(2));
   formatBar.setHorizontalScrollBarEnabled(false);
