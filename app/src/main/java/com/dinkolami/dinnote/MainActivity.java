@@ -596,9 +596,10 @@ public class MainActivity extends Activity {
    line.setCornerRadius(dp(1));
    View centralLine=new View(this);centralLine.setBackground(line);
    fixedDivider.addView(centralLine,new FrameLayout.LayoutParams(dp(2),-1,Gravity.CENTER));
-   TextView motif=text("❖",14);motif.setGravity(Gravity.CENTER);motif.setTextColor(0xffa78030);
-   motif.setBackground(rounded(0xfffffcf4,0xffc9a34f,14));
-   fixedDivider.addView(motif,new FrameLayout.LayoutParams(dp(22),dp(30),Gravity.CENTER));
+   android.widget.ImageView motif=new android.widget.ImageView(this);
+   motif.setImageResource(com.dinkolami.dinnote.R.drawable.reader_center_ornament);
+   motif.setScaleType(android.widget.ImageView.ScaleType.FIT_CENTER);
+   fixedDivider.addView(motif,new FrameLayout.LayoutParams(dp(28),dp(64),Gravity.CENTER));
    FrameLayout.LayoutParams dividerParams=new FrameLayout.LayoutParams(dp(24),-1,Gravity.CENTER_HORIZONTAL|Gravity.TOP);
    readingFrame.addView(fixedDivider,dividerParams);
   }
