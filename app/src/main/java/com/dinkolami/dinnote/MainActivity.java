@@ -448,7 +448,10 @@ public class MainActivity extends Activity {
   title.setTextColor(0xff225c42);title.setBackground(rounded(0xffe8f3e5,0xffd6e6d1,9));title.setPadding(dp(10),dp(8),dp(10),dp(8));title.setIncludeFontPadding(false);title.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);LinearLayout.LayoutParams titleParams=new LinearLayout.LayoutParams(-1,-2);titleParams.topMargin=dp(5);titleParams.bottomMargin=dp(5);target.addView(title,titleParams);
   if(keys.isEmpty()){
    TextView empty=dashboardText(pin?"Belum ada nota disemat":"Belum ada nota dikemaskini",13,false);
-   empty.setTextColor(0xff68756c);empty.setPadding(dp(10),dp(5),dp(10),dp(8));
+   empty.setTextColor(0xff68756c);empty.setPadding(dp(10),dp(6),dp(10),dp(8));
+   empty.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
+   empty.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);
+   empty.setIncludeFontPadding(false);
    empty.setContentDescription(pin?"Tiada nota disemat":"Tiada nota yang dikemaskini");
    target.addView(empty);return;
   }
