@@ -1939,7 +1939,7 @@ public class MainActivity extends Activity {
   }
   if(selected!=null&&!prefs.contains(selected)){
    selected=null;readerScroll=null;
-   root.post(()->{if(editor==null){if(sectionOpen)notesPage();else home();}});
+   root.post(()->{if(!isFinishing()&&!isDestroyed()&&editor==null){if(sectionOpen)notesPage();else home();}});
    return;
   }
   if(selected!=null&&prefs.contains(selected)){
