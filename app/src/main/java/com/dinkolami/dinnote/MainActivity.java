@@ -351,15 +351,15 @@ public class MainActivity extends Activity {
   recentNotes.setPadding(dp(10),dp(4),dp(10),dp(7));card.addView(recentNotes);
   ArrayList<String> keys=new ArrayList<>();
   for(String k:prefs.getAll().keySet())if((k.startsWith("n_")||k.startsWith("m_"))&&prefs.getLong("viewed_"+k,0L)>0L)keys.add(k);
-  Collections.sort(keys,(firstKey,secondKey)->Long.compare(prefs.getLong("viewed_"+secondKey,0L),prefs.getLong("viewed_"+firstKey,0L)));
+  Collections.sort(keys,(firstKey,secondKey)->{int order=Long.compare(prefs.getLong("viewed_"+secondKey,0L),prefs.getLong("viewed_"+firstKey,0L));return order!=0?order:firstKey.compareTo(secondKey);});
   if(keys.isEmpty()){
-   TextView create=dashboardText("＋  Cipta nota pertama",13,true);create.setGravity(Gravity.CENTER);create.setOnClickListener(v->{maktabah=false;edit(null);});recentNotes.addView(create);
+   TextView create=dashboardText("＋  Cipta nota pertama",13,true);create.setGravity(Gravity.CENTER);create.setMinHeight(dp(48));create.setContentDescription("Cipta nota baharu");applyTouchFeedback(create);create.setOnClickListener(v->{maktabah=false;edit(null);});recentNotes.addView(create);
    TextView emblem=dashboardText("☪\n▤",36,true);emblem.setTextColor(0xff176b47);
    emblem.setGravity(Gravity.CENTER);recentNotes.addView(emblem);
    TextView empty=dashboardText("Belum ada nota atau kitab dilihat",18,true);
-   empty.setGravity(Gravity.CENTER);empty.setTextColor(0xff225c42);empty.setPadding(dp(8),dp(8),dp(8),dp(4));recentNotes.addView(empty);
+   empty.setGravity(Gravity.CENTER);empty.setTextColor(0xff225c42);empty.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);empty.setPadding(dp(8),dp(8),dp(8),dp(4));recentNotes.addView(empty);
    TextView hint=dashboardText("Nota atau kitab yang dibuka akan muncul di sini.",14,false);
-   hint.setGravity(Gravity.CENTER);hint.setTextColor(0xff656d76);hint.setTextSize(13);hint.setPadding(dp(12),dp(6),dp(12),dp(12));recentNotes.addView(hint);
+   hint.setGravity(Gravity.CENTER);hint.setTextColor(0xff656d76);hint.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);hint.setTextSize(13);hint.setPadding(dp(12),dp(6),dp(12),dp(12));recentNotes.addView(hint);
   }else {
    // Two balanced columns of five on an unfolded Fold6; one column on narrow screens.
    boolean wide=getResources().getConfiguration().screenWidthDp>=500;
@@ -376,14 +376,14 @@ public class MainActivity extends Activity {
    for(int i=0;i<(wide?10:Math.min(5,keys.size()));i++){
     if(i>=keys.size()){
      TextView placeholder=dashboardText("＋  Ruang nota "+(i+1),13,false);
-     placeholder.setTextColor(0xff7a897f);placeholder.setGravity(Gravity.CENTER_VERTICAL);placeholder.setPadding(dp(10),0,dp(8),0);
+     placeholder.setTextColor(0xff7a897f);placeholder.setGravity(Gravity.CENTER_VERTICAL);placeholder.setSingleLine(true);placeholder.setEllipsize(android.text.TextUtils.TruncateAt.END);placeholder.setPadding(dp(10),0,dp(8),0);
      placeholder.setBackground(subtleNoteBorder(8));
      LinearLayout.LayoutParams emptyParams=new LinearLayout.LayoutParams(-1,dp(38));emptyParams.bottomMargin=dp(4);
      (i<5?left:right).addView(placeholder,emptyParams);
-     placeholder.setOnClickListener(v->{maktabah=false;edit(null);});
+     placeholder.setContentDescription("Cipta nota baharu di ruang "+(i+1));applyTouchFeedback(placeholder);placeholder.setOnClickListener(v->{maktabah=false;edit(null);});
      continue;
     }
-    String k=keys.get(i);String t=prefs.getString("title_"+k,"");
+    String k=keys.get(i);String t=prefs.getString("title_"+k,"").trim();
     if(t.trim().isEmpty())t="Tanpa tajuk";
     // Light emerald list: slightly larger titles, dates consistently aligned right.
     FrameLayout row=new FrameLayout(this);
@@ -394,7 +394,7 @@ public class MainActivity extends Activity {
     item.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);
     item.setPadding(dp(10),dp(8),dp(prefs.getLong("viewed_"+k,0L)>0L?88:10),dp(8));item.setIncludeFontPadding(false);
     item.setMinHeight(dp(48));
-    item.setTooltipText(t);
+    item.setTooltipText(t);item.setContentDescription(t);
     item.setSingleLine(true);item.setEllipsize(android.text.TextUtils.TruncateAt.END);
     row.addView(item,new FrameLayout.LayoutParams(-1,-2));
     item.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
@@ -440,7 +440,7 @@ public class MainActivity extends Activity {
     (field.equals("pinned_")?prefs.getBoolean(field+k,false):prefs.getLong(field+k,0L)>0))out.add(k);
   Collections.sort(out,(a,b)->{
    int comparison=field.equals("pinned_")?
-    prefs.getString("title_"+a,"").compareToIgnoreCase(prefs.getString("title_"+b,"")):
+    prefs.getString("title_"+a,"").trim().compareToIgnoreCase(prefs.getString("title_"+b,"").trim()):
     Long.compare(prefs.getLong(field+b,0),prefs.getLong(field+a,0));
    return comparison!=0?comparison:a.compareTo(b);
   });
