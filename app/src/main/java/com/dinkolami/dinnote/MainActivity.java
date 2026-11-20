@@ -429,7 +429,7 @@ public class MainActivity extends Activity {
  void dashboardSection(LinearLayout target,String heading,ArrayList<String> keys,boolean pin){
   // Compact, consistent GitHub-style outline icons and tighter vertical rhythm.
   TextView title=dashboardText((pin?"⌖  ":"◷  ")+(pin?"Nota disemat":"Terakhir dikemaskini"),15,true);
-  title.setTextColor(0xff176b47);title.setPadding(dp(8),dp(7),dp(8),dp(5));target.addView(title);
+  title.setTextColor(0xff225c42);title.setBackground(rounded(0xffe1f0df,0xffd2e4ce,8));title.setPadding(dp(10),dp(8),dp(10),dp(8));LinearLayout.LayoutParams titleParams=new LinearLayout.LayoutParams(-1,-2);titleParams.topMargin=dp(5);titleParams.bottomMargin=dp(5);target.addView(title,titleParams);
   if(keys.isEmpty()){
    TextView empty=dashboardText(pin?"Belum ada nota disemat":"Belum ada nota dikemaskini",13,false);
    empty.setTextColor(0xff68756c);empty.setPadding(dp(10),dp(5),dp(10),dp(8));
