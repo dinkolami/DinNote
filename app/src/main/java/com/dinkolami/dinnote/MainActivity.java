@@ -294,7 +294,7 @@ public class MainActivity extends Activity {
   LinearLayout.LayoutParams rp=new LinearLayout.LayoutParams(-2,dp(42));rp.rightMargin=dp(6);
   recent.setGravity(Gravity.CENTER_VERTICAL);recent.setPadding(dp(12),0,dp(12),0);
   quickTools.addView(recent,rp);
-  recent.setContentDescription("Pilih paparan: baru dilihat, semua nota atau Maktabah");recent.setFocusable(true);
+  recent.setContentDescription("Pilih paparan: baru dilihat, semua nota atau Maktabah");recent.setFocusable(true);applyTouchFeedback(recent);
   recent.setOnClickListener(v->new AlertDialog.Builder(this).setItems(new String[]{"Baru dilihat","Semua nota","Maktabah"},(d,i)->{if(i==2)openSection(true);else openSection(false);}).show());
   EditText search=new EditText(this);search.setSingleLine(true);search.setTextSize(14);
   search.setHint("Cari nota atau kitab");search.setContentDescription("Carian nota dan kitab");
@@ -335,7 +335,7 @@ public class MainActivity extends Activity {
    TextView resumeButton=dashboardText("✎  Sambung menulis  ›",15,true);
    resumeButton.setBackground(rounded(0xfff1f8f1,0xffd7bd79,8));resumeButton.setTextColor(0xff176b47);
    shortcuts.addView(resumeButton);
-   resumeButton.setOnClickListener(v->edit(resume));
+   resumeButton.setContentDescription("Sambung menulis nota terakhir");resumeButton.setFocusable(true);applyTouchFeedback(resumeButton);resumeButton.setOnClickListener(v->edit(resume));
   }
   LinearLayout recentNotes=new LinearLayout(this);recentNotes.setOrientation(1);
   recentNotes.setPadding(dp(10),dp(4),dp(10),dp(7));card.addView(recentNotes);
@@ -377,10 +377,10 @@ public class MainActivity extends Activity {
     if(t.trim().isEmpty())t="Tanpa tajuk";
     // Light emerald list: slightly larger titles, dates consistently aligned right.
     FrameLayout row=new FrameLayout(this);
-    row.setBackground(subtleNoteBorder(8));
+    row.setBackground(subtleNoteBorder(8));row.setMinimumHeight(dp(38));
     TextView item=dashboardText((k.startsWith("m_")?"▱  ":"▤  ")+t,14,false);
     item.setTextColor(0xff26352e);item.setGravity(Gravity.CENTER_VERTICAL);
-    item.setPadding(dp(10),dp(7),dp(88),dp(7));
+    item.setPadding(dp(10),dp(8),dp(88),dp(8));
     item.setSingleLine(true);item.setEllipsize(android.text.TextUtils.TruncateAt.END);
     row.addView(item,new FrameLayout.LayoutParams(-1,-2));
     long when=prefs.getLong("viewed_"+k,0L);
@@ -390,7 +390,7 @@ public class MainActivity extends Activity {
      date.setBackground(rounded(0xfff6f3e9,0xffead8ac,14));
      date.setPadding(dp(8),dp(3),dp(8),dp(3));
      FrameLayout.LayoutParams dateParams=new FrameLayout.LayoutParams(-2,-2,Gravity.RIGHT|Gravity.CENTER_VERTICAL);
-     dateParams.rightMargin=dp(8);row.addView(date,dateParams);
+     dateParams.rightMargin=dp(8);row.addView(date,dateParams);date.setContentDescription("Dilihat pada "+new java.text.SimpleDateFormat("dd MMMM",new java.util.Locale("ms","MY")).format(new java.util.Date(when)));
     }
     LinearLayout.LayoutParams itemParams=new LinearLayout.LayoutParams(-1,-2);
     itemParams.bottomMargin=dp(4);
