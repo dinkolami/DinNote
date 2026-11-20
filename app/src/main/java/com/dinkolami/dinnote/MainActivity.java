@@ -882,6 +882,29 @@ public class MainActivity extends Activity {
     Toast.makeText(this,ok?"Nota tepi disimpan":"Nota tepi gagal disimpan",Toast.LENGTH_SHORT).show();
    }).show();
  }
+ void printReaderAsPdf(String key){
+  String title=prefs.getString("title_"+key,"DinNote");
+  String content=prefs.getString(key,"");
+  String safeTitle=android.text.TextUtils.htmlEncode(title);
+  String safeBody=android.text.TextUtils.htmlEncode(content).replace("\\n","<br>");
+  String html="<!doctype html><html><head><meta charset='utf-8'><style>"+
+   "@page{margin:18mm}body{font-family:serif;color:#26372e;font-size:13pt;line-height:1.65;overflow-wrap:anywhere}"+
+   "h1{color:#176b47;font-size:19pt;border-bottom:1px solid #c5a66b;padding-bottom:8px}"+
+   "</style></head><body><h1>"+safeTitle+"</h1><div dir='auto'>"+safeBody+"</div></body></html>";
+  android.webkit.WebView web=new android.webkit.WebView(this);
+  web.getSettings().setDefaultTextEncodingName("UTF-8");
+  web.setWebViewClient(new android.webkit.WebViewClient(){
+   boolean started=false;
+   @Override public void onPageFinished(android.webkit.WebView view,String url){
+    if(started)return;started=true;
+    android.print.PrintManager manager=(android.print.PrintManager)getSystemService(PRINT_SERVICE);
+    if(manager==null){Toast.makeText(MainActivity.this,"Perkhidmatan cetak tidak tersedia",Toast.LENGTH_LONG).show();return;}
+    manager.print("DinNote - "+title,view.createPrintDocumentAdapter("DinNote"),
+     new android.print.PrintAttributes.Builder().setMediaSize(android.print.PrintAttributes.MediaSize.ISO_A4).build());
+   }
+  });
+  web.loadDataWithBaseURL(null,html,"text/html","UTF-8",null);
+ }
  void showReaderActions(String key,boolean compact){
   boolean book=key.startsWith("m_");
   String noun=book?"kitab":"nota";
@@ -897,6 +920,10 @@ public class MainActivity extends Activity {
    labels[n+1]=labels[n];icons[n+1]=icons[n];descriptions[n+1]=descriptions[n];
    labels[n]="Indeks Kitab";icons[n]="☷";descriptions[n]="Senarai bab dan fasal yang dikesan";
   }
+  int beforePdf=labels.length;
+  labels=java.util.Arrays.copyOf(labels,beforePdf+1);icons=java.util.Arrays.copyOf(icons,beforePdf+1);descriptions=java.util.Arrays.copyOf(descriptions,beforePdf+1);
+  labels[beforePdf]=labels[beforePdf-1];icons[beforePdf]=icons[beforePdf-1];descriptions[beforePdf]=descriptions[beforePdf-1];
+  labels[beforePdf-1]="Eksport PDF";icons[beforePdf-1]="▤";descriptions[beforePdf-1]="Cetak atau simpan sebagai PDF melalui Android";
   ScrollView scroll=new ScrollView(this);scroll.setFillViewport(false);
   LinearLayout panel=new LinearLayout(this);panel.setOrientation(LinearLayout.VERTICAL);
   panel.setPadding(dp(12),dp(8),dp(12),dp(10));scroll.addView(panel);
@@ -933,6 +960,7 @@ public class MainActivity extends Activity {
     else if(compact&&option==6){boolean now=prefs.getBoolean("reader_two_columns",true);prefs.edit().putBoolean("reader_two_columns",!now).apply();read(key);}
     else if(book&&option==(compact?7:5))showBookMarginNote(key);
     else if(book&&option==(compact?8:6))showBookIndex(key);
+    else if(option==(book?(compact?9:7):(compact?7:5)))printReaderAsPdf(key);
     else confirmDelete(key);
    });
   }
