@@ -1734,6 +1734,7 @@ public class MainActivity extends Activity {
      Object value=entry.getValue();
      if(value instanceof String||value instanceof Boolean||value instanceof Number)values.put(entry.getKey(),value);
     }
+    if(values.length()==0)throw new java.io.IOException("Tiada data untuk disandarkan");
     obj.put("data",values);
     // Integrity digest covers the canonical JSON representation of the stored values.
     obj.put("data_sha256",backupDigest(values));
