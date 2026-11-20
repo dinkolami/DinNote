@@ -569,17 +569,27 @@ public class MainActivity extends Activity {
     String term=field.getText().toString().trim();
     if(term.isEmpty())return;
     String source=prefs.getString(key,"");
-    java.util.Locale locale=java.util.Locale.ROOT;
-    String haystack=source.toLowerCase(locale),needle=term.toLowerCase(locale);
-    int count=0,index=0,first=-1;
-    while((index=haystack.indexOf(needle,index))>=0){if(first<0)first=index;count++;index+=Math.max(1,needle.length());}
-    if(count==0){Toast.makeText(this,"Tiada padanan",Toast.LENGTH_SHORT).show();return;}
-    int from=Math.max(0,first-65),to=Math.min(source.length(),first+term.length()+100);
-    String excerpt=source.substring(from,to);
-    new AlertDialog.Builder(this).setTitle(count+" padanan ditemui")
-     .setMessage((from>0?"…":"")+excerpt+(to<source.length()?"…":""))
-     .setPositiveButton("Tutup",null).show();
+    String haystack=source.toLowerCase(java.util.Locale.ROOT),needle=term.toLowerCase(java.util.Locale.ROOT);
+    java.util.ArrayList<Integer> matches=new java.util.ArrayList<>();
+    int index=0;
+    while((index=haystack.indexOf(needle,index))>=0){matches.add(index);index+=Math.max(1,needle.length());}
+    if(matches.isEmpty()){Toast.makeText(this,"Tiada padanan",Toast.LENGTH_SHORT).show();return;}
+    showReaderSearchResult(source,term,matches,0);
    }).setNegativeButton("Batal",null).show();
+ }
+ void showReaderSearchResult(String source,String term,java.util.ArrayList<Integer> matches,int selectedMatch){
+  int index=matches.get(selectedMatch),from=Math.max(0,index-90),to=Math.min(source.length(),index+term.length()+120);
+  String excerpt=(from>0?"…":"")+source.substring(from,to)+(to<source.length()?"…":"");
+  int prefix=from>0?1:0;
+  android.text.SpannableString marked=new android.text.SpannableString(excerpt);
+  int begin=index-from+prefix;
+  marked.setSpan(new android.text.style.BackgroundColorSpan(0xffffe6a0),begin,Math.min(marked.length(),begin+term.length()),android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+  marked.setSpan(new android.text.style.UnderlineSpan(),begin,Math.min(marked.length(),begin+term.length()),android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+  new AlertDialog.Builder(this).setTitle("Padanan "+(selectedMatch+1)+" / "+matches.size())
+   .setMessage(marked)
+   .setNegativeButton("Sebelumnya",(d,w)->showReaderSearchResult(source,term,matches,(selectedMatch+matches.size()-1)%matches.size()))
+   .setNeutralButton("Tutup",null)
+   .setPositiveButton("Seterusnya",(d,w)->showReaderSearchResult(source,term,matches,(selectedMatch+1)%matches.size())).show();
  }
  void copyReaderWithReference(String key){
   String title=prefs.getString("title_"+key,"Tanpa tajuk");
