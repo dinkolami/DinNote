@@ -1067,6 +1067,7 @@ public class MainActivity extends Activity {
  void finishEditingSafely(){
   if(editor==null)return;
   save();
+  saveHistoryVersion(false);
   final String finishedKey=selected;
   final EditText oldEditor=editor;
   final EditText oldTitle=titleEditor;
@@ -1203,7 +1204,8 @@ public class MainActivity extends Activity {
   editor.getText().replace(Math.min(start,end),Math.max(start,end),value);
   save();
  }
- void saveHistoryVersion(){
+ void saveHistoryVersion(){saveHistoryVersion(true);}
+ void saveHistoryVersion(boolean notify){
   if(editor==null)return;
   save();
   if(selected==null)return;
@@ -1218,7 +1220,7 @@ public class MainActivity extends Activity {
    if(versions.length()>0){
     org.json.JSONObject last=versions.getJSONObject(versions.length()-1);
     if(entry.getString("title").equals(last.optString("title"))&&entry.getString("body").equals(last.optString("body"))&&entry.getString("category").equals(last.optString("category"))){
-     Toast.makeText(this,"Versi ini sudah disimpan",Toast.LENGTH_SHORT).show();return;
+     if(notify)Toast.makeText(this,"Versi ini sudah disimpan",Toast.LENGTH_SHORT).show();return;
     }
    }
    org.json.JSONArray kept=new org.json.JSONArray();
@@ -1226,8 +1228,8 @@ public class MainActivity extends Activity {
    kept.put(entry);
    if(!prefs.edit().putString("history_"+selected,kept.toString()).commit())
     throw new java.io.IOException("Gagal menyimpan sejarah");
-   Toast.makeText(this,"Versi disimpan dalam sejarah",Toast.LENGTH_SHORT).show();
-  }catch(Exception e){Toast.makeText(this,"Sejarah gagal disimpan: "+e.getMessage(),Toast.LENGTH_LONG).show();}
+   if(notify)Toast.makeText(this,"Versi disimpan dalam sejarah",Toast.LENGTH_SHORT).show();
+  }catch(Exception e){android.util.Log.e("DinNote","Sejarah gagal disimpan",e);if(notify)Toast.makeText(this,"Sejarah gagal disimpan: "+e.getMessage(),Toast.LENGTH_LONG).show();}
  }
  void showHistoryVersions(){
   if(selected==null)return;
@@ -1249,6 +1251,7 @@ public class MainActivity extends Activity {
       .setMessage("Kandungan editor semasa akan digantikan. Simpan versi semasa dahulu jika mahu menyimpannya.")
       .setPositiveButton("Pulihkan",(a,b)->{
        if(editor==null||titleEditor==null)return;
+       saveHistoryVersion(false);
        titleEditor.setText(item.optString("title",""));
        editor.setText(item.optString("body",""));
        if(categoryPicker!=null){
