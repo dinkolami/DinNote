@@ -425,7 +425,7 @@ public class MainActivity extends Activity {
    control.setBackground(rounded(0xffeff8f0,0xffb8d9c2,9));
   }
   LinearLayout.LayoutParams controlParams;
-  controlParams=new LinearLayout.LayoutParams(dp(30),dp(28));controlParams.rightMargin=dp(5);navigation.addView(bookmark,controlParams);
+  // Bookmark remains in the upper reader toolbar; omit duplicate lower control.
   // Progress label sits on the lower reading-frame border, not in the toolbar.
   indicator.setTextColor(0xff356b50);
   indicator.setBackgroundColor(paper);
@@ -673,7 +673,7 @@ public class MainActivity extends Activity {
   else android.widget.Toast.makeText(this,"Gagal membuat salinan",android.widget.Toast.LENGTH_LONG).show();
  }
  void confirmDelete(String key){new AlertDialog.Builder(this).setMessage("Padam nota ini?").setPositiveButton("Padam",(d,w)->{android.content.SharedPreferences.Editor deletion=prefs.edit().remove(key).remove("title_"+key).remove("cat_"+key).remove("viewed_"+key).remove("updated_"+key).remove("pinned_"+key);if(key.contains("_sample_"))deletion.putBoolean("deleted_"+key,true);if(key.equals(prefs.getString("last_edited_key","")))deletion.remove("last_edited_key");deletion.apply();editor=null;titleEditor=null;categoryPicker=null;saveIndicator=null;selected=null;if(sectionOpen)notesPage();else home();}).setNegativeButton("Batal",null).show();}
- void edit(String key){if(key!=null){
+ void edit(String key){readerDetector=null;if(key!=null){
   if(!prefs.contains(key)){
    Toast.makeText(this,"Nota tidak ditemui atau telah dipadam",Toast.LENGTH_LONG).show();
    selected=null;editor=null;titleEditor=null;categoryPicker=null;
@@ -713,20 +713,9 @@ public class MainActivity extends Activity {
   Button fontButton=action("Aa",formatBar,()->new AlertDialog.Builder(this).setTitle("Saiz tulisan editor").setItems(new String[]{"Kecil","Biasa","Besar","Sangat besar"},(d,i)->{prefs.edit().putInt("editor_font_level",i).apply();if(editor!=null)editor.setTextSize(new int[]{13,15,18,22}[i]);}).show());
   fontButton.setContentDescription("Saiz tulisan editor");
   root.addView(editor,new LinearLayout.LayoutParams(-1,0,1));
-  // Double-tap the writing area to save and return to the reading screen.
-  android.view.GestureDetector editorDoubleTap=new android.view.GestureDetector(this,new android.view.GestureDetector.SimpleOnGestureListener(){
-   @Override public boolean onDoubleTap(android.view.MotionEvent event){
-    save();
-    if(selected!=null)read(selected);
-    else if(sectionOpen)notesPage();
-    else home();
-    return true;
-   }
-  });
-  editor.setOnTouchListener((view,event)->{
-   editorDoubleTap.onTouchEvent(event);
-   return false;
-  });
+  // Keep normal Android double-tap text selection while editing.
+  // Never navigate away while EditText is handling touch/selection events.
+  editor.setOnTouchListener(null);
   if(key!=null)editor.setText(prefs.getString(key,""));TextWatcher titleWatcher=new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){save();}public void afterTextChanged(Editable e){}};titleEditor.addTextChangedListener(titleWatcher);TextWatcher bodyWatcher=new TextWatcher(){String before="";public void beforeTextChanged(CharSequence s,int st,int count,int after){before=s.toString();}public void onTextChanged(CharSequence s,int st,int beforeCount,int count){}public void afterTextChanged(Editable e){if(!restoring[0]&&!before.equals(e.toString())){
    int cursor=editor.getSelectionStart();
    if(cursor>0&&cursor<=e.length()&&e.charAt(cursor-1)=='\n'){
