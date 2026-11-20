@@ -853,7 +853,16 @@ public class MainActivity extends Activity {
   new AlertDialog.Builder(this).setTitle("Indeks Kitab ("+headings.size()+")")
    .setItems(headings.toArray(new String[0]),(d,which)->{
     String target=terms.get(which);
-    searchInsideReader(key,target);
+    String source=prefs.getString(key,"");
+    String haystack=source.toLowerCase(java.util.Locale.ROOT);
+    String needle=target.toLowerCase(java.util.Locale.ROOT);
+    java.util.ArrayList<Integer> matches=new java.util.ArrayList<>();
+    int from=0;
+    while((from=haystack.indexOf(needle,from))>=0){
+     matches.add(from);from+=Math.max(1,needle.length());
+    }
+    if(matches.isEmpty())searchInsideReader(key,target);
+    else showReaderSearchResult(source,target,matches,0);
    }).setNegativeButton("Tutup",null).show();
  }
  void showBookMarginNote(String key){
