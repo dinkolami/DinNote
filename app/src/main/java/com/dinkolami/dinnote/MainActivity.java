@@ -421,7 +421,27 @@ public class MainActivity extends Activity {
  items.addView(countRow);
 }if(matches==0){TextView empty=text(keys.isEmpty()?(maktabah?"▤  Belum ada kitab\nTekan + Kitab baharu untuk bermula":"✎  Belum ada nota\nTekan + Nota baharu untuk mula mencatat"):"Tiada hasil carian yang sepadan",17);empty.setGravity(Gravity.CENTER);empty.setTextColor(0xff727985);empty.setPadding(dp(20),dp(56),dp(20),dp(56));items.addView(empty);if(keys.isEmpty()&&query.isEmpty()){empty.setContentDescription(maktabah?"Tambah kitab baharu":"Tambah nota baharu");applyTouchFeedback(empty);empty.setOnClickListener(v->edit(null));}else{empty.setText(query.isEmpty()?(maktabah?"Tiada kitab dalam kategori ini":"Tiada nota dalam kategori ini"):"Tiada hasil carian yang sepadan");}if(!query.isEmpty())empty.setText("Tiada hasil untuk: "+(filter.length()>60?filter.substring(0,60)+"…":filter));}boolean twoColumnList=getResources().getConfiguration().screenWidthDp>=600;
  LinearLayout cardRow=null;int visibleCards=0;
- for(String k:keys){String v=prefs.getString(k,"");String heading=prefs.getString("title_"+k,"");String shown=(heading.trim().isEmpty()?(v.trim().isEmpty()?"Tanpa tajuk":v.trim().split("\\R",2)[0]):heading.trim());shown=shown.replaceAll("\\s+"," ").trim();if(shown.length()>70)shown=shown.substring(0,70)+"…";if(shown.trim().isEmpty())shown="Tanpa tajuk";if(!matchesSearch(heading+" "+v+" "+prefs.getString("cat_"+k,"Tanpa kategori"),terms))continue;if(!categoryFilter.equals("Semua")&&!categoryFilter.equals(prefs.getString("cat_"+k,"Tanpa kategori")))continue;String preview=v.replaceAll("\\s+"," ").trim();if(preview.isEmpty())preview="Belum ada kandungan";String cat=prefs.getString("cat_"+k,"Tanpa kategori").trim();if(cat.isEmpty())cat="Tanpa kategori";long stamp=prefs.getLong("updated_"+k,0);String date=stamp>0?new java.text.SimpleDateFormat("dd/MM/yyyy",java.util.Locale.getDefault()).format(new java.util.Date(stamp)):"Belum dikemas kini";String previewText=preview.length()>80?preview.substring(0,80)+"…":preview;
+ // In unfolded mode show each group of ten as five cards per column.
+ ArrayList<String> visibleKeys=new ArrayList<>();
+ for(String candidate:keys){
+  String body=prefs.getString(candidate,"");
+  String heading=prefs.getString("title_"+candidate,"");
+  if(!matchesSearch(heading+" "+body+" "+prefs.getString("cat_"+candidate,"Tanpa kategori"),terms))continue;
+  if(!categoryFilter.equals("Semua")&&!categoryFilter.equals(prefs.getString("cat_"+candidate,"Tanpa kategori")))continue;
+  visibleKeys.add(candidate);
+ }
+ ArrayList<String> displayKeys=new ArrayList<>();
+ if(twoColumnList){
+  for(int start=0;start<visibleKeys.size();start+=10){
+   int groupSize=Math.min(10,visibleKeys.size()-start);
+   int leftCount=Math.min(5,groupSize);
+   for(int row=0;row<leftCount;row++){
+    displayKeys.add(visibleKeys.get(start+row));
+    if(row+leftCount<groupSize)displayKeys.add(visibleKeys.get(start+row+leftCount));
+   }
+  }
+ }else displayKeys.addAll(visibleKeys);
+ for(String k:displayKeys){String v=prefs.getString(k,"");String heading=prefs.getString("title_"+k,"");String shown=(heading.trim().isEmpty()?(v.trim().isEmpty()?"Tanpa tajuk":v.trim().split("\\R",2)[0]):heading.trim());shown=shown.replaceAll("\\s+"," ").trim();if(shown.length()>70)shown=shown.substring(0,70)+"…";if(shown.trim().isEmpty())shown="Tanpa tajuk";if(!matchesSearch(heading+" "+v+" "+prefs.getString("cat_"+k,"Tanpa kategori"),terms))continue;if(!categoryFilter.equals("Semua")&&!categoryFilter.equals(prefs.getString("cat_"+k,"Tanpa kategori")))continue;String preview=v.replaceAll("\\s+"," ").trim();if(preview.isEmpty())preview="Belum ada kandungan";String cat=prefs.getString("cat_"+k,"Tanpa kategori").trim();if(cat.isEmpty())cat="Tanpa kategori";long stamp=prefs.getLong("updated_"+k,0);String date=stamp>0?new java.text.SimpleDateFormat("dd/MM/yyyy",java.util.Locale.getDefault()).format(new java.util.Date(stamp)):"Belum dikemas kini";String previewText=preview.length()>80?preview.substring(0,80)+"…":preview;
  String cardTitle=(prefs.getBoolean("pinned_"+k,false)?"📌  ":"")+(maktabah?"▤  ":"✎  ")+shown;
  TextView t=text(cardTitle+"\n"+previewText+"\n"+cat+"   "+date,15);
  t.setTextDirection(android.view.View.TEXT_DIRECTION_FIRST_STRONG);
