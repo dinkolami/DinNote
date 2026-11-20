@@ -1410,7 +1410,23 @@ public class MainActivity extends Activity {
  void seedOne(String key,String[] defaults){if(prefs.contains(key))return;prefs.edit().putString(key,android.text.TextUtils.join("|",defaults)).apply();}
  ArrayList<String> categories(){String raw=prefs.getString(maktabah?"categories_m":"categories_n","");ArrayList<String> out=new ArrayList<>();for(String x:raw.split("\\|"))if(!x.trim().isEmpty())out.add(x.trim());return out;}
  void storeCategories(ArrayList<String> c){prefs.edit().putString(maktabah?"categories_m":"categories_n",android.text.TextUtils.join("|",c)).apply();}
- void manageCategories(){ArrayList<String> c=categories();String[] options=new String[c.size()+1];options[0]="+ Tambah kategori";for(int i=0;i<c.size();i++)options[i+1]=c.get(i);new AlertDialog.Builder(this).setTitle("Urus kategori").setItems(options,(d,which)->{if(which==0)categoryDialog(null);else categoryActions(c.get(which-1));}).setNegativeButton("Tutup",null).show();}
+ void manageCategories(){ArrayList<String> c=categories();String[] options=new String[c.size()+(maktabah?2:1)];options[0]="+ Tambah kategori";int offset=1;if(maktabah){options[1]="+ Tambah subkategori";offset=2;}for(int i=0;i<c.size();i++)options[i+offset]=c.get(i).replace(" / ","  ›  ");final int first=offset;new AlertDialog.Builder(this).setTitle(maktabah?"Urus kategori & subkategori Maktabah":"Urus kategori").setItems(options,(d,which)->{if(which==0)categoryDialog(null);else if(maktabah&&which==1)addBookSubcategory();else categoryActions(c.get(which-first));}).setNegativeButton("Tutup",null).show();}
+ void addBookSubcategory(){
+  ArrayList<String> all=categories(),parents=new ArrayList<>();
+  for(String name:all)if(!name.contains(" / "))parents.add(name);
+  if(parents.isEmpty()){new AlertDialog.Builder(this).setMessage("Cipta kategori utama terlebih dahulu.").setPositiveButton("Tambah kategori",(d,w)->categoryDialog(null)).setNegativeButton("Batal",null).show();return;}
+  new AlertDialog.Builder(this).setTitle("Pilih kategori utama").setItems(parents.toArray(new String[0]),(d,which)->{
+   String parent=parents.get(which);
+   EditText field=new EditText(this);field.setSingleLine(true);field.setHint("Nama subkategori");
+   new AlertDialog.Builder(this).setTitle("Subkategori dalam "+parent).setView(field).setPositiveButton("Simpan",(dialog,w)->{
+    String child=field.getText().toString().trim().replace("|","").replace("/","").trim();
+    if(child.isEmpty()||child.equals("Semua")||child.equals("Tanpa kategori")){Toast.makeText(this,"Nama subkategori tidak sah",Toast.LENGTH_SHORT).show();return;}
+    String full=parent+" / "+child;ArrayList<String> existing=categories();
+    if(existing.contains(full)){Toast.makeText(this,"Subkategori sudah wujud",Toast.LENGTH_SHORT).show();return;}
+    existing.add(full);storeCategories(existing);categoryFilter="Semua";openSection(true);
+   }).setNegativeButton("Batal",null).show();
+  }).setNegativeButton("Batal",null).show();
+ }
  void categoryActions(String old){new AlertDialog.Builder(this).setTitle(old).setItems(new String[]{"Ubah nama","Padam kategori"},(d,which)->{if(which==0)categoryDialog(old);else new AlertDialog.Builder(this).setMessage("Padam kategori? Nota tidak akan dipadam.").setPositiveButton("Padam",(a,b)->{ArrayList<String> c=categories();c.remove(old);storeCategories(c);for(String k:prefs.getAll().keySet())if(k.startsWith(maktabah?"m_":"n_")&&old.equals(prefs.getString("cat_"+k,"")))prefs.edit().putString("cat_"+k,"Tanpa kategori").apply();categoryFilter="Semua";openSection(maktabah);}).setNegativeButton("Batal",null).show();}).show();}
  void categoryDialog(String old){EditText field=new EditText(this);field.setSingleLine(true);field.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_DONE);field.setHint("Nama kategori");if(old!=null)field.setText(old);new AlertDialog.Builder(this).setTitle(old==null?"Kategori baharu":"Ubah nama kategori").setView(field).setPositiveButton("Simpan",(d,w)->{String name=field.getText().toString().trim().replace("|","");if(name.isEmpty()||name.equals("Semua")||name.equals("Tanpa kategori"))return;ArrayList<String> c=categories();if(c.contains(name)&&!name.equals(old))return;if(old!=null)c.remove(old);c.add(name);storeCategories(c);if(old!=null){for(String k:prefs.getAll().keySet())if(k.startsWith(maktabah?"m_":"n_")&&old.equals(prefs.getString("cat_"+k,"")))prefs.edit().putString("cat_"+k,name).apply();}categoryFilter="Semua";home();}).setNegativeButton("Batal",null).show();}
 
