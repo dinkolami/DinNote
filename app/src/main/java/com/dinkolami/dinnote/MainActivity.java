@@ -727,6 +727,50 @@ public class MainActivity extends Activity {
   out.append(source.substring(previous));
   return out;
  }
+ void showReaderSettings(String key){
+  ScrollView scroll=new ScrollView(this);
+  LinearLayout panel=new LinearLayout(this);panel.setOrientation(LinearLayout.VERTICAL);
+  panel.setPadding(dp(18),dp(8),dp(18),dp(12));scroll.addView(panel);
+  final AlertDialog[] popup=new AlertDialog[1];
+  String[] section={"TULISAN","LATAR BACAAN","JARAK BARIS","TEKS ARAB"};
+  String[][] choices={{"Saiz tulisan"},{"Putih","Ivory","Hijau lembut"},{"Biasa","Luas"},{"Biasa","Lebih jelas"}};
+  int font=prefs.getInt("reader_font_level",1),theme=prefs.getInt("reader_theme",1);
+  boolean wide=prefs.getBoolean("reader_wide_spacing",false),arabic=prefs.getBoolean("reader_arabic_clear_font",false);
+  String[] fontNames={"Kecil","Biasa","Besar","Sangat besar"};
+  for(int group=0;group<4;group++){
+   final int g=group;
+   TextView heading=text(section[group],12);heading.setTypeface(null,android.graphics.Typeface.BOLD);
+   heading.setTextColor(0xff176b47);heading.setPadding(dp(8),dp(group==0?10:18),dp(8),dp(8));panel.addView(heading);
+   LinearLayout area=new LinearLayout(this);area.setOrientation(LinearLayout.VERTICAL);
+   area.setBackground(rounded(0xfff8faf8,0xffdce5df,12));panel.addView(area);
+   if(group==0){
+    TextView row=text("Aa    Saiz tulisan                                      "+fontNames[Math.max(0,Math.min(3,font))],14);
+    row.setTextColor(0xff26372e);row.setPadding(dp(14),dp(15),dp(14),dp(15));area.addView(row);
+    row.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Saiz tulisan")
+     .setSingleChoiceItems(fontNames,Math.max(0,Math.min(3,font)),(d,which)->{
+      prefs.edit().putInt("reader_font_level",which).apply();d.dismiss();popup[0].dismiss();read(key);
+     }).setNegativeButton("Batal",null).show());
+   }else{
+    for(int index=0;index<choices[group].length;index++){
+     final int option=index;
+     boolean selectedOption=group==1?theme==index:group==2?wide==(index==1):arabic==(index==1);
+     TextView row=text((selectedOption?"✓   ":"     ")+choices[group][index],14);
+     row.setTextColor(selectedOption?0xff176b47:0xff26372e);
+     if(selectedOption)row.setTypeface(null,android.graphics.Typeface.BOLD);
+     row.setPadding(dp(14),dp(13),dp(14),dp(13));area.addView(row);
+     row.setOnClickListener(v->{
+      if(g==1)prefs.edit().putInt("reader_theme",option).apply();
+      else if(g==2)prefs.edit().putBoolean("reader_wide_spacing",option==1).apply();
+      else prefs.edit().putBoolean("reader_arabic_clear_font",option==1).apply();
+      popup[0].dismiss();read(key);
+     });
+    }
+   }
+  }
+  popup[0]=new AlertDialog.Builder(this).setTitle("Tetapan bacaan")
+   .setView(scroll).setNegativeButton("Tutup",null).create();
+  popup[0].show();
+ }
  void read(String key){
   editor=null;titleEditor=null;saveIndicator=null;selected=key;prefs.edit().putLong("viewed_"+key,System.currentTimeMillis()).putString(key.startsWith("m_")?"reading_last_m":"reading_last_n",key).apply();cleanBase();
   LinearLayout bar=new LinearLayout(this);bar.setGravity(Gravity.CENTER_VERTICAL);bar.setPadding(dp(8),dp(3),dp(8),dp(3));bar.setBackground(rounded(0xfff8faf8,0xffe1e7e3,12));root.addView(bar);
@@ -737,7 +781,7 @@ public class MainActivity extends Activity {
   cleanToggle.setContentDescription(cleanReading?"Paparkan semula toolbar bacaan":"Aktifkan mod bacaan bersih");
   if(!cleanReading){
   
-  Button readerFont=action("Aa",bar,()->{new AlertDialog.Builder(this).setTitle("Tetapan bacaan").setItems(new String[]{"Saiz tulisan","Latar Putih","Latar Ivory","Latar Hijau Lembut","Jarak baris: biasa","Jarak baris: luas","Font Arab: biasa","Font Arab: lebih jelas"},(dialog,choice)->{if(choice==0)new AlertDialog.Builder(this).setTitle("Saiz tulisan").setSingleChoiceItems(new String[]{"Kecil","Biasa","Besar","Sangat besar"},prefs.getInt("reader_font_level",1),(d,which)->{prefs.edit().putInt("reader_font_level",which).apply();d.dismiss();read(key);}).setNegativeButton("Batal",null).show();else if(choice<=3){prefs.edit().putInt("reader_theme",choice-1).apply();read(key);}else if(choice<=5){prefs.edit().putBoolean("reader_wide_spacing",choice==5).apply();read(key);}else{prefs.edit().putBoolean("reader_arabic_clear_font",choice==7).apply();read(key);}}).show();});readerFont.setContentDescription("Ubah saiz tulisan Nota dan Maktabah");
+  Button readerFont=action("Aa",bar,()->showReaderSettings(key));readerFont.setContentDescription("Ubah saiz tulisan Nota dan Maktabah");
   Button bookmarkButton=action("♧",bar,()->{int pos=prefs.getInt("reading_scroll_"+key,0);new AlertDialog.Builder(this).setTitle("Penanda bacaan").setMessage("Kedudukan terakhir: "+pos+" px").setPositiveButton("Simpan penanda",(d,w)->{prefs.edit().putInt("bookmark_scroll_"+key,prefs.getInt("reading_scroll_"+key,0)).apply();Toast.makeText(this,"Penanda disimpan",Toast.LENGTH_SHORT).show();}).setNeutralButton("Pergi ke penanda",(d,w)->{int target=prefs.getInt("bookmark_scroll_"+key,-1);if(target>=0){read(key);root.post(()->{ScrollView currentScroll=(ScrollView)root.getChildAt(root.getChildCount()-2);currentScroll.post(()->currentScroll.scrollTo(0,target));});}else Toast.makeText(this,"Tiada penanda",Toast.LENGTH_SHORT).show();}).setNegativeButton("Tutup",null).show();});bookmarkButton.setContentDescription("Penanda bacaan");Button readerEdit=action("✎",bar,()->edit(key));readerEdit.setContentDescription(key.startsWith("m_")?"Sunting kandungan kitab":"Sunting kandungan nota");
   boolean compactReaderToolbar=getResources().getConfiguration().screenWidthDp<500;
   if(!compactReaderToolbar){
