@@ -289,8 +289,10 @@ public class MainActivity extends Activity {
   TextView recent=dashboardText("Baru dilihat  ▾",15,true);
   recent.setBackground(rounded(0xfffffdf8,0xffd7bd79,8));recent.setTextColor(0xff176b47);
   LinearLayout quickTools=new LinearLayout(this);quickTools.setOrientation(LinearLayout.HORIZONTAL);quickTools.setGravity(Gravity.CENTER_VERTICAL);
-  LinearLayout.LayoutParams quickParams=new LinearLayout.LayoutParams(-1,-2);quickParams.bottomMargin=dp(4);
-  page.addView(quickTools,quickParams);
+  LinearLayout.LayoutParams quickParams=new LinearLayout.LayoutParams(-1,-2);quickParams.bottomMargin=dp(1);
+  quickTools.setPadding(dp(10),dp(4),dp(10),dp(5));quickTools.setBackgroundColor(0xfffffcf4);
+  // Keep dashboard search and view selector visible while the note list scrolls.
+  root.addView(quickTools,2,quickParams);
   LinearLayout.LayoutParams rp=new LinearLayout.LayoutParams(-2,dp(42));rp.rightMargin=dp(6);
   recent.setGravity(Gravity.CENTER_VERTICAL);recent.setPadding(dp(12),0,dp(12),0);
   quickTools.addView(recent,rp);
