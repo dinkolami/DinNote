@@ -438,9 +438,12 @@ public class MainActivity extends Activity {
   ArrayList<String> out=new ArrayList<>();
   for(String k:prefs.getAll().keySet())if((k.startsWith("n_")||(includeBooks&&k.startsWith("m_")))&&
     (field.equals("pinned_")?prefs.getBoolean(field+k,false):prefs.getLong(field+k,0L)>0))out.add(k);
-  Collections.sort(out,(a,b)->field.equals("pinned_")?
-   prefs.getString("title_"+a,"").compareToIgnoreCase(prefs.getString("title_"+b,"")):
-   Long.compare(prefs.getLong(field+b,0),prefs.getLong(field+a,0)));
+  Collections.sort(out,(a,b)->{
+   int comparison=field.equals("pinned_")?
+    prefs.getString("title_"+a,"").compareToIgnoreCase(prefs.getString("title_"+b,"")):
+    Long.compare(prefs.getLong(field+b,0),prefs.getLong(field+a,0));
+   return comparison!=0?comparison:a.compareTo(b);
+  });
   return out;
  }
  void dashboardSection(LinearLayout target,String heading,ArrayList<String> keys,boolean pin){
