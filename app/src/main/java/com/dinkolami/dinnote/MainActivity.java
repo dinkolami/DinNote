@@ -1979,9 +1979,20 @@ public class MainActivity extends Activity {
   if(editor!=null){
    // Keep the active editor and unsaved typing intact across fold/unfold.
    // Reflow text using Android's new width without recreating the editor.
-   editor.requestLayout();
-   editor.invalidate();
+   final EditText activeEditor=editor;
+   final int selectionStart=activeEditor.getSelectionStart();
+   final int selectionEnd=activeEditor.getSelectionEnd();
+   activeEditor.requestLayout();
+   activeEditor.invalidate();
    if(titleEditor!=null){titleEditor.requestLayout();titleEditor.invalidate();}
+   activeEditor.post(()->{
+    // Do not steal focus or move the cursor if the user has resumed typing.
+    if(editor==activeEditor&&activeEditor.getParent()!=null&&activeEditor.hasFocus()
+      &&activeEditor.getSelectionStart()==selectionStart&&activeEditor.getSelectionEnd()==selectionEnd){
+     int length=activeEditor.length();
+     if(selectionStart>=0&&selectionEnd>=0)activeEditor.setSelection(Math.min(selectionStart,length),Math.min(selectionEnd,length));
+    }
+   });
    return;
   }
   if(sectionOpen&&selected==null){
