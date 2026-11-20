@@ -1117,7 +1117,7 @@ public class MainActivity extends Activity {
     LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(0,-2,1);
     if(i==1)lp.leftMargin=dp(4);
     columns.addView(page,lp);
-    if(i==0){View islamicDivider=new View(this){android.graphics.Paint p=new android.graphics.Paint(3);protected void onDraw(android.graphics.Canvas c){super.onDraw(c);float x=getWidth()/2f,h=getHeight();p.setColor(0xff176b47);p.setStrokeWidth(dp(1));c.drawLine(x,0,x,h,p);p.setColor(0xffc5a66b);float y=h/2f,r=dp(7);android.graphics.Path star=new android.graphics.Path();for(int j=0;j<16;j++){double a=Math.PI*j/8-Math.PI/2;float rad=j%2==0?r:r*.52f;float px=x+(float)Math.cos(a)*rad,py=y+(float)Math.sin(a)*rad;if(j==0)star.moveTo(px,py);else star.lineTo(px,py);}star.close();c.drawPath(star,p);}};columns.addView(islamicDivider,new LinearLayout.LayoutParams(dp(18),-1));}
+    if(i==0){android.widget.ImageView islamicDivider=new android.widget.ImageView(this);islamicDivider.setImageResource(R.drawable.reader_center_ornament);islamicDivider.setScaleType(android.widget.ImageView.ScaleType.FIT_CENTER);islamicDivider.setPadding(dp(1),dp(8),dp(1),dp(8));columns.addView(islamicDivider,new LinearLayout.LayoutParams(dp(24),-1));}
    }
    body.addView(columns);
   }
