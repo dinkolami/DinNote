@@ -400,7 +400,7 @@ public class MainActivity extends Activity {
   final int theme=prefs.getInt("reader_theme",0);
   final int paper=theme==0?0xffffffff:theme==2?0xfff2f8f3:0xfffffcf4;
   final String heading=prefs.getString("title_"+key,"");
-  TextView headingView=text(heading,17);headingView.setGravity(Gravity.RIGHT|Gravity.CENTER_VERTICAL);headingView.setTypeface(null,android.graphics.Typeface.BOLD);headingView.setMaxLines(2);
+  TextView headingView=text(heading,17);headingView.setGravity(Gravity.CENTER);headingView.setTypeface(null,android.graphics.Typeface.BOLD);headingView.setMaxLines(2);
   headingView.setEllipsize(android.text.TextUtils.TruncateAt.END);
   headingView.setPadding(dp(16),dp(8),dp(16),dp(8));
   headingView.setBackground(rounded(paper,0xffdde5e1,2));headingView.setElevation(0);
@@ -446,7 +446,7 @@ public class MainActivity extends Activity {
     // Keep a small bottom reserve so the final line is never clipped.
     int width=Math.max(dp(80),(pageRow.getWidth()-dp(16)-(spread?dp(8):0))/(spread?2:1));
     int textWidth=Math.max(dp(40),width-dp(24));
-    int usableHeight=Math.max(dp(40),pageRow.getHeight()-dp(20)-dp(10));
+    int usableHeight=Math.max(dp(40),pageRow.getHeight()-dp(20)-dp(18));
     TextView probe=text("",fontSize);
     probe.setLineSpacing(dp(1),1.04f);
     probe.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
@@ -515,7 +515,9 @@ public class MainActivity extends Activity {
      }
      indicator.setText((position[0]+1)+(spread&&position[0]+1<total?"–"+(position[0]+2):"")+" / "+total+" · "+Math.min(100,Math.round((position[0]+(spread?2:1))*100f/total))+"%");
      prev.setEnabled(position[0]>0);next.setEnabled(position[0]+(spread?2:1)<total);
-     headingView.setVisibility(focused[0]?View.GONE:View.VISIBLE);
+     // Keep the measured reader height stable when toggling the title.
+     // GONE enlarged the pages after pagination and exposed a previously clipped line.
+     headingView.setVisibility(focused[0]?View.INVISIBLE:View.VISIBLE);
      prefs.edit().putInt("reading_page_"+key,position[0]).apply();
     };
     prev.setOnClickListener(v->{position[0]=Math.max(0,position[0]-(spread?2:1));render[0].run();});
