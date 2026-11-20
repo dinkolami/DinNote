@@ -1424,7 +1424,9 @@ public class MainActivity extends Activity {
  boolean saveHistoryVersion(boolean notify){
   if(editor==null)return false;
   save();
-  if(selected==null)return false;
+  // An untouched new note has no persistent key or history to save.
+  // Allow Selesai to return safely without falsely reporting a storage failure.
+  if(selected==null)return true;
   try{
    org.json.JSONArray versions=new org.json.JSONArray(prefs.getString("history_"+selected,"[]"));
    org.json.JSONObject entry=new org.json.JSONObject();
