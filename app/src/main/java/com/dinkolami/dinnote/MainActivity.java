@@ -4,6 +4,11 @@ public class MainActivity extends Activity {
  LinearLayout root,items,compactSummary; ScrollView listScroll,readerScroll; int savedNotesScroll=0,savedBooksScroll=0; String lastOpenedCard=null; android.view.GestureDetector readerDetector; EditText editor,titleEditor; TextView saveIndicator; Spinner categoryPicker; String categoryFilter="Semua"; String sortMode="Terbaru"; String selected=null; boolean maktabah=false, sectionOpen=false; android.content.SharedPreferences prefs;
  int green=Color.rgb(23,107,71), gold=Color.rgb(197,166,107); static final int BACKUP_CREATE=4201, BACKUP_OPEN=4202, CONTENT_IMPORT=4203;
  public void onCreate(Bundle b){super.onCreate(b);prefs=getSharedPreferences("notes",0);if(!prefs.getBoolean("font_defaults_13_15_16_18_applied",false)){prefs.edit().putInt("reader_font_level",1).putInt("editor_font_level",1).putBoolean("font_defaults_13_15_16_18_applied",true).apply();}if(prefs.contains("security_pin_hash"))promptUnlock();else home();} // User content and categories are local; import them explicitly.}
+ @Override public void onConfigurationChanged(android.content.res.Configuration config){
+  super.onConfigurationChanged(config);
+  // Reflow the approved dashboard on Fold6 fold/unfold without resetting note data.
+  if(root!=null && root.findViewWithTag("dinnote_home")!=null)home();
+ }
  void applySystemBarInsets(LinearLayout view){
   // Keep Android's real clock, battery and network status bar visible.
   getWindow().clearFlags(android.view.WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -285,7 +290,7 @@ public class MainActivity extends Activity {
   scroll.setOverScrollMode(View.OVER_SCROLL_NEVER);scroll.setSmoothScrollingEnabled(true);
   root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
   LinearLayout page=new LinearLayout(this);page.setOrientation(1);
-  page.setPadding(dp(10),dp(6),dp(10),dp(12));page.setBackgroundColor(0xfffffcf4);scroll.addView(page);
+  page.setPadding(dp(10),dp(6),dp(10),dp(12));page.setBackgroundColor(0xfffffcf4);page.setTag("dinnote_home");scroll.addView(page);
   TextView recent=dashboardText("Baru dilihat  ▾",15,true);
   recent.setBackground(rounded(0xfffffdf8,0xffd7bd79,8));recent.setTextColor(0xff176b47);
   LinearLayout quickTools=new LinearLayout(this);quickTools.setOrientation(LinearLayout.HORIZONTAL);quickTools.setGravity(Gravity.CENTER_VERTICAL);
