@@ -1748,6 +1748,19 @@ public class MainActivity extends Activity {
     if(key.startsWith("m_")&&value instanceof String)books++;
    }
    if(notes+books==0)throw new java.io.IOException("Tiada nota atau kitab dalam sandaran");
+   // Validate essential types before presenting a restore confirmation.
+   java.util.Iterator<String> previewKeys=values.keys();
+   while(previewKeys.hasNext()){
+    String itemKey=previewKeys.next();
+    Object itemValue=values.get(itemKey);
+    if(itemValue==null||itemValue==org.json.JSONObject.NULL||
+       !(itemValue instanceof String||itemValue instanceof Boolean||itemValue instanceof Number))
+     throw new java.io.IOException("Jenis data sandaran tidak disokong");
+    if((itemKey.startsWith("title_n_")||itemKey.startsWith("title_m_")||
+        itemKey.startsWith("cat_n_")||itemKey.startsWith("cat_m_")||
+        itemKey.equals("categories_n")||itemKey.equals("categories_m"))&&!(itemValue instanceof String))
+     throw new java.io.IOException("Tajuk atau kategori dalam sandaran tidak sah");
+   }
    String filename="Fail sandaran DinNote";
    if(uri.getLastPathSegment()!=null)filename=uri.getLastPathSegment();
    LinearLayout panel=new LinearLayout(this);panel.setOrientation(LinearLayout.VERTICAL);panel.setPadding(dp(22),dp(12),dp(22),dp(12));
