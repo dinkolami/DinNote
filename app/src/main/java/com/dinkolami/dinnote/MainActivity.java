@@ -1884,6 +1884,9 @@ public class MainActivity extends Activity {
        (!(value instanceof Number)||((Number)value).doubleValue()%1!=0||
         ((Number)value).doubleValue()<0||((Number)value).doubleValue()>3))
      throw new java.io.IOException("Saiz font dalam sandaran tidak sah; data sedia ada tidak diubah");
+    if((key.equals("reader_two_columns")||key.equals("reader_wide_spacing")||
+        key.equals("reader_clean_mode")||key.equals("reader_swipe_mode"))&&!(value instanceof Boolean))
+     throw new java.io.IOException("Tetapan bacaan dalam sandaran tidak sah; data sedia ada tidak diubah");
     // Validate types of known settings to prevent runtime ClassCastException after restore.
     if((key.startsWith("updated_")||key.startsWith("viewed_"))&&
        (!(value instanceof Number)||((Number)value).doubleValue()%1!=0))
