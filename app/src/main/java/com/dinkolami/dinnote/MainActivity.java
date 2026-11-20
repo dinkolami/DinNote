@@ -1917,7 +1917,9 @@ public class MainActivity extends Activity {
     }
    }
    if(!tx.commit())throw new java.io.IOException("Gagal menyimpan data");
-   editor=null;selected=null;items=null;sectionOpen=false;
+   // Discard references to the old editor and reader after replacing all stored records.
+   readerScroll=null;readerDetector=null;editor=null;titleEditor=null;saveIndicator=null;categoryPicker=null;
+   selected=null;items=null;sectionOpen=false;
    home();
    Toast.makeText(this,"Data DinNote berjaya dipulihkan",Toast.LENGTH_LONG).show();
   }catch(Exception e){Toast.makeText(this,"Restore gagal: "+e.getMessage(),Toast.LENGTH_LONG).show();}
