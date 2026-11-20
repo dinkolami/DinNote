@@ -568,7 +568,8 @@ public class MainActivity extends Activity {
 
  void showPagedReader(String key){
   final String source=prefs.getString(key,"");
-  final boolean spread=getResources().getConfiguration().screenWidthDp>=500&&prefs.getBoolean("reader_two_columns",true);
+  final int availableWidthDp=Math.round(getResources().getDisplayMetrics().widthPixels/getResources().getDisplayMetrics().density);
+  final boolean spread=availableWidthDp>=500&&prefs.getBoolean("reader_two_columns",true);
   final int fontLevel=Math.max(0,Math.min(3,prefs.getInt("reader_font_level",1)));
   final int fontSize=(key.startsWith("m_")?new int[]{13,15,16,18}:new int[]{13,15,16,18})[fontLevel];
   final int theme=prefs.getInt("reader_theme",0);
