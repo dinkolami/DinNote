@@ -1117,9 +1117,46 @@ public class MainActivity extends Activity {
   }else if(request==CONTENT_IMPORT){
    importContent(uri);
   }else if(request==BACKUP_OPEN){
-   new AlertDialog.Builder(this).setTitle("Pulihkan DinNote?")
-    .setMessage("Data sedia ada akan digantikan dengan kandungan fail sandaran. Teruskan?")
-    .setNegativeButton("Batal",null).setPositiveButton("Pulihkan",(dialog,which)->restoreBackup(uri)).show();
+   previewRestoreBackup(uri);
+  }
+ }
+ void previewRestoreBackup(android.net.Uri uri){
+  try{
+   java.io.ByteArrayOutputStream buffer=new java.io.ByteArrayOutputStream();
+   try(java.io.InputStream in=getContentResolver().openInputStream(uri)){
+    if(in==null)throw new java.io.IOException("Fail tidak dapat dibaca");
+    byte[] chunk=new byte[8192];int n,total=0;
+    while((n=in.read(chunk))!=-1){total+=n;if(total>20*1024*1024)throw new java.io.IOException("Fail terlalu besar");buffer.write(chunk,0,n);}
+   }
+   org.json.JSONObject backup=new org.json.JSONObject(new String(buffer.toByteArray(),java.nio.charset.StandardCharsets.UTF_8));
+   if(!"DinNote-backup-v1".equals(backup.optString("format")))throw new java.io.IOException("Format sandaran tidak sah");
+   if(backup.has("app_package")&&(! (backup.opt("app_package") instanceof String)||!getPackageName().equals(backup.optString("app_package"))))
+    throw new java.io.IOException("Sandaran bukan daripada DinNote");
+   org.json.JSONObject values=backup.getJSONObject("data");
+   int notes=0,books=0;
+   java.util.Iterator<String> keys=values.keys();
+   while(keys.hasNext()){
+    String key=keys.next();
+    Object value=values.get(key);
+    if(key.startsWith("n_")&&value instanceof String)notes++;
+    if(key.startsWith("m_")&&value instanceof String)books++;
+   }
+   if(notes+books==0)throw new java.io.IOException("Tiada nota atau kitab dalam sandaran");
+   String filename="Fail sandaran DinNote";
+   if(uri.getLastPathSegment()!=null)filename=uri.getLastPathSegment();
+   LinearLayout panel=new LinearLayout(this);panel.setOrientation(LinearLayout.VERTICAL);panel.setPadding(dp(22),dp(12),dp(22),dp(12));
+   TextView title=text("✓  Fail sandaran dikenal pasti",17);title.setTypeface(null,android.graphics.Typeface.BOLD);title.setTextColor(0xff176b47);panel.addView(title);
+   TextView details=text(filename+"\\n\\n"+notes+" nota    •    "+books+" kitab\\n\\n✓ Format DinNote disokong\\n✓ Identiti aplikasi sepadan\\n✓ Kandungan asas ditemui",14);
+   details.setTextColor(0xff365a47);details.setPadding(dp(12),dp(12),dp(12),dp(12));details.setBackground(rounded(0xfff2f8f3,0xffdbe9de,12));panel.addView(details);
+   TextView warning=text("Perhatian: Pemulihan akan menggantikan semua data sedia ada. Pemeriksaan terperinci dibuat sekali lagi sebelum data diganti.",13);
+   warning.setTextColor(0xff75572d);warning.setPadding(dp(8),dp(16),dp(8),dp(8));panel.addView(warning);
+   new AlertDialog.Builder(this).setTitle("Pulihkan Data DinNote").setView(panel)
+    .setNegativeButton("Batal",null)
+    .setPositiveButton("Pulihkan Sekarang",(dialog,which)->restoreBackup(uri)).show();
+  }catch(Exception e){
+   new AlertDialog.Builder(this).setTitle("Sandaran tidak dapat dipulihkan")
+    .setMessage(e.getMessage()+"\\n\\nData sedia ada tidak diubah.")
+    .setPositiveButton("Tutup",null).show();
   }
  }
  void restoreBackup(android.net.Uri uri){
