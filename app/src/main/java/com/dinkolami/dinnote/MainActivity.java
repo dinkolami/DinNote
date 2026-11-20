@@ -679,6 +679,18 @@ public class MainActivity extends Activity {
     render[0]=()->{
      pageRow.removeAllViews();
      for(int i=0;i<(spread?2:1);i++){
+      if(i==1){
+       FrameLayout divider=new FrameLayout(this);
+       android.graphics.drawable.GradientDrawable dividerLine=new android.graphics.drawable.GradientDrawable(android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,new int[]{0xffd6b45d,0xff19734d,0xffd6b45d});
+       dividerLine.setCornerRadius(dp(1));
+       FrameLayout.LayoutParams lineParams=new FrameLayout.LayoutParams(dp(2),-1,Gravity.CENTER);
+       divider.addView(new View(this),new FrameLayout.LayoutParams(dp(1),-1,Gravity.CENTER));
+       View goldGreenLine=new View(this);goldGreenLine.setBackground(dividerLine);divider.addView(goldGreenLine,lineParams);
+       TextView ornament=text("◆",9);ornament.setTextColor(0xffbd9441);ornament.setGravity(Gravity.CENTER);
+       ornament.setBackground(rounded(0xfffffcf4,0xffd6b45d,12));
+       divider.addView(ornament,new FrameLayout.LayoutParams(dp(12),dp(20),Gravity.CENTER));
+       pageRow.addView(divider,new LinearLayout.LayoutParams(dp(12),-1));
+      }
       int pageNumber=position[0]+i;
       TextView page=text(pageNumber<total?parts.get(pageNumber):"",fontSize);
        if(pageNumber<total && repeatedPrefixLengths.get(pageNumber)>0){
