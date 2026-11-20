@@ -409,22 +409,30 @@ public class MainActivity extends Activity {
   LinearLayout pageRow=new LinearLayout(this);pageRow.setOrientation(LinearLayout.HORIZONTAL);
   pageRow.setPadding(dp(8),dp(1),dp(8),dp(1));
   root.addView(pageRow,new LinearLayout.LayoutParams(-1,0,1));
+  // Compact single-row reader controls: previous, bookmark, focus, progress, next.
   LinearLayout navigation=new LinearLayout(this);navigation.setGravity(Gravity.CENTER_VERTICAL);
-  Button prev=new Button(this);prev.setText("‹");prev.setContentDescription("Halaman sebelumnya");
-  Button next=new Button(this);next.setText("›");next.setContentDescription("Halaman seterusnya");
-  TextView indicator=text("",10);indicator.setGravity(Gravity.CENTER);indicator.setPadding(0,0,0,0);
-  navigation.addView(prev,new LinearLayout.LayoutParams(dp(34),dp(26)));
-  navigation.addView(indicator,new LinearLayout.LayoutParams(0,dp(26),1));
-  navigation.addView(next,new LinearLayout.LayoutParams(dp(34),dp(26)));
+  navigation.setPadding(dp(8),dp(1),dp(8),dp(1));
+  Button prev=new Button(this);prev.setText("←");prev.setContentDescription("Halaman sebelumnya");
+  Button next=new Button(this);next.setText("→");next.setContentDescription("Halaman seterusnya");
+  Button bookmark=new Button(this);bookmark.setText("♧");bookmark.setContentDescription("Simpan penanda halaman; tekan lama untuk pergi ke penanda");
+  Button focus=new Button(this);focus.setText("◎");focus.setContentDescription("Mod fokus");
+  TextView indicator=text("",11);indicator.setGravity(Gravity.CENTER);indicator.setPadding(dp(2),0,dp(2),0);
+  indicator.setContentDescription("Kemajuan bacaan; tekan untuk pergi ke halaman");
+  for(Button control:new Button[]{prev,bookmark,focus,next}){
+   control.setAllCaps(false);control.setTextSize(16);
+   control.setMinWidth(0);control.setMinimumWidth(0);control.setMinHeight(0);control.setMinimumHeight(0);
+   control.setPadding(0,0,0,0);
+   control.setTextColor(0xff176b47);
+   control.setBackground(rounded(0xffeff8f0,0xffb8d9c2,9));
+  }
+  LinearLayout.LayoutParams controlParams;
+  controlParams=new LinearLayout.LayoutParams(dp(34),dp(30));controlParams.rightMargin=dp(5);navigation.addView(prev,controlParams);
+  controlParams=new LinearLayout.LayoutParams(dp(34),dp(30));controlParams.rightMargin=dp(5);navigation.addView(bookmark,controlParams);
+  controlParams=new LinearLayout.LayoutParams(dp(34),dp(30));controlParams.rightMargin=dp(5);navigation.addView(focus,controlParams);
+  navigation.addView(indicator,new LinearLayout.LayoutParams(0,dp(30),1));
+  controlParams=new LinearLayout.LayoutParams(dp(34),dp(30));controlParams.leftMargin=dp(5);navigation.addView(next,controlParams);
   root.addView(navigation);
-  LinearLayout actions=new LinearLayout(this);actions.setGravity(Gravity.CENTER);
-  Button bookmark=new Button(this);bookmark.setText("♧");
-  Button jump=new Button(this);jump.setText("Halaman");
-  Button focus=new Button(this);focus.setText("Fokus");
-  actions.addView(bookmark,new LinearLayout.LayoutParams(0,dp(34),1));
-  actions.addView(jump,new LinearLayout.LayoutParams(0,dp(34),1));
-  actions.addView(focus,new LinearLayout.LayoutParams(0,dp(34),1));
-  root.addView(actions);
+  Button jump=new Button(this); // Dialog action retained without a second navigation row.
   // Paginate after the view has been measured. Avoid repeated layout passes and
   // view-tree changes while Android is measuring the page content.
   // Display saved content immediately, even before pagination is calculated.
@@ -502,7 +510,9 @@ public class MainActivity extends Activity {
       catch(NumberFormatException ignored){}
      }).setNeutralButton("Penanda",(d,w)->{position[0]=Math.max(0,Math.min(total-1,prefs.getInt("bookmark_page_"+key,0)));if(spread)position[0]=position[0]/2*2;render[0].run();}).setNegativeButton("Batal",null).show();
     });
-    focus.setOnClickListener(v->{focused[0]=!focused[0];focus.setText(focused[0]?"Tamat fokus":"Fokus");render[0].run();});
+    indicator.setOnClickListener(v->jump.performClick());
+    bookmark.setOnLongClickListener(v->{position[0]=Math.max(0,Math.min(total-1,prefs.getInt("bookmark_page_"+key,0)));if(spread)position[0]=position[0]/2*2;render[0].run();return true;});
+    focus.setOnClickListener(v->{focused[0]=!focused[0];focus.setContentDescription(focused[0]?"Tamat mod fokus":"Mod fokus");focus.setText(focused[0]?"◉":"◎");render[0].run();});
     render[0].run();
    }catch(Exception error){
     android.util.Log.e("DinNote","Paged reader error",error);
