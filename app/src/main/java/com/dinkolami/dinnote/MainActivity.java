@@ -1386,7 +1386,15 @@ public class MainActivity extends Activity {
      restoring[0]=false;
     }
    }
-   undoHistory.addLast(before);if(undoHistory.size()>100)undoHistory.removeFirst();redoHistory.clear();historyButtons[0].setAlpha(1f);historyButtons[1].setAlpha(0.35f);}save();}};editor.addTextChangedListener(bodyWatcher);categoryPicker.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener(){public void onNothingSelected(android.widget.AdapterView<?> p){}public void onItemSelected(android.widget.AdapterView<?> p,View v,int position,long id){save();}});}
+   undoHistory.addLast(before);if(undoHistory.size()>100)undoHistory.removeFirst();redoHistory.clear();historyButtons[0].setAlpha(1f);historyButtons[1].setAlpha(0.35f);}
+   // Recheck Arabic when text is typed or pasted into an initially Rumi-only note.
+   // Typeface updates do not modify Editable content or its autosave state.
+   if(editor!=null&&prefs.getBoolean("reader_arabic_clear_font",false)){
+    boolean arabic=java.util.regex.Pattern.compile("[\\u0600-\\u06FF]").matcher(e).find();
+    android.graphics.Typeface desired=android.graphics.Typeface.create(arabic?"serif":"sans-serif",android.graphics.Typeface.NORMAL);
+    if(!desired.equals(editor.getTypeface()))editor.setTypeface(desired);
+   }
+   save();}};editor.addTextChangedListener(bodyWatcher);categoryPicker.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener(){public void onNothingSelected(android.widget.AdapterView<?> p){}public void onItemSelected(android.widget.AdapterView<?> p,View v,int position,long id){save();}});}
 
  void insertNumberedList(){
   if(editor==null)return;
