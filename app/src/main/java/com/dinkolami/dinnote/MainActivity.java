@@ -45,7 +45,7 @@ public class MainActivity extends Activity {
   menu.setOnClickListener(v->home());
   ImageView settingsMenu=headerIcon("☰",0xff102b25,"Menu DinNote dan Tetapan");header.addView(settingsMenu);
   settingsMenu.setOnClickListener(v->showMainMenu());
-  ImageView logo=new ImageView(this);logo.setImageBitmap(transparentHeaderLogo());logo.setScaleType(ImageView.ScaleType.FIT_CENTER);logo.setContentDescription("Logo DinNote");logo.setClickable(true);logo.setPadding(dp(3),dp(3),dp(3),dp(3));logo.setBackground(rounded(0xfffffdf7,0xffc5a85d,24));
+  ImageView logo=new ImageView(this);logo.setImageBitmap(transparentHeaderLogo());logo.setScaleType(ImageView.ScaleType.FIT_CENTER);logo.setContentDescription("Logo DinNote");logo.setClickable(true);logo.setPadding(dp(3),dp(3),dp(3),dp(3));logo.setBackground(rounded(0xfffffdf7,0xffb89543,50));
   LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(dp(34),dp(34));lp.leftMargin=dp(6);lp.rightMargin=dp(5);header.addView(logo,lp);
   logo.setOnClickListener(v->home());
   TextView name=text("DinNote",16);name.setTypeface(android.graphics.Typeface.create("serif",android.graphics.Typeface.ITALIC));name.setTextColor(0xff075033);
