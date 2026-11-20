@@ -1036,7 +1036,7 @@ public class MainActivity extends Activity {
   while(iterator.hasNext())keys.add(iterator.next());
   java.util.Collections.sort(keys);
   StringBuilder canonical=new StringBuilder();
-  for(String key:keys)canonical.append(org.json.JSONObject.quote(key)).append(':').append(org.json.JSONObject.valueToString(values.get(key))).append(';');
+  for(String key:keys){org.json.JSONArray pair=new org.json.JSONArray();pair.put(key);pair.put(values.get(key));canonical.append(pair.toString()).append(';');}
   return sha256Hex(canonical.toString());
  }
  String sha256Hex(String value) throws java.security.NoSuchAlgorithmException{
