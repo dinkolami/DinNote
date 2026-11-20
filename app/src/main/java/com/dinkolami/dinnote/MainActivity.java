@@ -412,13 +412,10 @@ public class MainActivity extends Activity {
   // Compact single-row reader controls: previous, bookmark, focus, progress, next.
   LinearLayout navigation=new LinearLayout(this);navigation.setGravity(Gravity.CENTER_VERTICAL);
   navigation.setPadding(dp(8),dp(1),dp(8),dp(1));
-  Button prev=new Button(this);prev.setText("←");prev.setContentDescription("Halaman sebelumnya");
-  Button next=new Button(this);next.setText("→");next.setContentDescription("Halaman seterusnya");
   Button bookmark=new Button(this);bookmark.setText("♧");bookmark.setContentDescription("Simpan penanda halaman; tekan lama untuk pergi ke penanda");
-  Button focus=new Button(this);focus.setText("◎");focus.setContentDescription("Mod fokus");
   TextView indicator=text("",11);indicator.setGravity(Gravity.CENTER);indicator.setPadding(dp(2),0,dp(2),0);
   indicator.setContentDescription("Kemajuan bacaan; tekan untuk pergi ke halaman");
-  for(Button control:new Button[]{prev,bookmark,focus,next}){
+  for(Button control:new Button[]{bookmark}){
    control.setAllCaps(false);control.setTextSize(16);
    control.setMinWidth(0);control.setMinimumWidth(0);control.setMinHeight(0);control.setMinimumHeight(0);
    control.setPadding(0,0,0,0);
@@ -426,11 +423,8 @@ public class MainActivity extends Activity {
    control.setBackground(rounded(0xffeff8f0,0xffb8d9c2,9));
   }
   LinearLayout.LayoutParams controlParams;
-  controlParams=new LinearLayout.LayoutParams(dp(34),dp(30));controlParams.rightMargin=dp(5);navigation.addView(prev,controlParams);
   controlParams=new LinearLayout.LayoutParams(dp(34),dp(30));controlParams.rightMargin=dp(5);navigation.addView(bookmark,controlParams);
-  controlParams=new LinearLayout.LayoutParams(dp(34),dp(30));controlParams.rightMargin=dp(5);navigation.addView(focus,controlParams);
   navigation.addView(indicator,new LinearLayout.LayoutParams(0,dp(30),1));
-  controlParams=new LinearLayout.LayoutParams(dp(34),dp(30));controlParams.leftMargin=dp(5);navigation.addView(next,controlParams);
   LinearLayout.LayoutParams navigationParams=new LinearLayout.LayoutParams(-1,-2);
   navigationParams.bottomMargin=dp(5); // Small gap above Android system navigation.
   root.addView(navigation,navigationParams);
@@ -481,7 +475,6 @@ public class MainActivity extends Activity {
     final int total=parts.size();
     final int[] position={Math.min(total-1,Math.max(0,prefs.getInt("reading_page_"+key,0)))};
     if(spread)position[0]=position[0]/2*2;
-    final boolean[] focused={false};
     final Runnable[] render={null};
     render[0]=()->{
      pageRow.removeAllViews();
@@ -514,14 +507,8 @@ public class MainActivity extends Activity {
       });
      }
      indicator.setText((position[0]+1)+(spread&&position[0]+1<total?"–"+(position[0]+2):"")+" / "+total+" · "+Math.min(100,Math.round((position[0]+(spread?2:1))*100f/total))+"%");
-     prev.setEnabled(position[0]>0);next.setEnabled(position[0]+(spread?2:1)<total);
-     // Keep the measured reader height stable when toggling the title.
-     // GONE enlarged the pages after pagination and exposed a previously clipped line.
-     headingView.setVisibility(focused[0]?View.INVISIBLE:View.VISIBLE);
      prefs.edit().putInt("reading_page_"+key,position[0]).apply();
     };
-    prev.setOnClickListener(v->{position[0]=Math.max(0,position[0]-(spread?2:1));render[0].run();});
-    next.setOnClickListener(v->{position[0]=Math.min(total-1,position[0]+(spread?2:1));if(spread)position[0]=position[0]/2*2;render[0].run();});
     bookmark.setOnClickListener(v->{prefs.edit().putInt("bookmark_page_"+key,position[0]).apply();Toast.makeText(this,"Penanda disimpan",Toast.LENGTH_SHORT).show();});
     jump.setOnClickListener(v->{
      EditText field=new EditText(this);field.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);field.setHint("1 – "+total);
@@ -532,7 +519,6 @@ public class MainActivity extends Activity {
     });
     indicator.setOnClickListener(v->jump.performClick());
     bookmark.setOnLongClickListener(v->{position[0]=Math.max(0,Math.min(total-1,prefs.getInt("bookmark_page_"+key,0)));if(spread)position[0]=position[0]/2*2;render[0].run();return true;});
-    focus.setOnClickListener(v->{focused[0]=!focused[0];focus.setContentDescription(focused[0]?"Tamat mod fokus":"Mod fokus");focus.setText(focused[0]?"◉":"◎");render[0].run();});
     render[0].run();
    }catch(Exception error){
     android.util.Log.e("DinNote","Paged reader error",error);
@@ -549,7 +535,7 @@ public class MainActivity extends Activity {
   TextView spacer=text("",12);bar.addView(spacer,new LinearLayout.LayoutParams(0,1,1));
   Button readerFont=action("Aa",bar,()->{new AlertDialog.Builder(this).setTitle("Tetapan bacaan").setItems(new String[]{"Saiz tulisan","Latar Putih","Latar Ivory","Latar Hijau Lembut","Jarak baris: biasa","Jarak baris: luas"},(dialog,choice)->{if(choice==0)new AlertDialog.Builder(this).setTitle("Saiz tulisan").setSingleChoiceItems(new String[]{"Kecil","Biasa","Besar","Sangat besar"},prefs.getInt("reader_font_level",1),(d,which)->{prefs.edit().putInt("reader_font_level",which).apply();d.dismiss();read(key);}).setNegativeButton("Batal",null).show();else if(choice<=3){prefs.edit().putInt("reader_theme",choice-1).apply();read(key);}else{prefs.edit().putBoolean("reader_wide_spacing",choice==5).apply();read(key);}}).show();});readerFont.setContentDescription("Ubah saiz tulisan Nota dan Maktabah");
   Button bookmarkButton=action("♧",bar,()->{int pos=prefs.getInt("reading_scroll_"+key,0);new AlertDialog.Builder(this).setTitle("Penanda bacaan").setMessage("Kedudukan terakhir: "+pos+" px").setPositiveButton("Simpan penanda",(d,w)->{prefs.edit().putInt("bookmark_scroll_"+key,prefs.getInt("reading_scroll_"+key,0)).apply();Toast.makeText(this,"Penanda disimpan",Toast.LENGTH_SHORT).show();}).setNeutralButton("Pergi ke penanda",(d,w)->{int target=prefs.getInt("bookmark_scroll_"+key,-1);if(target>=0){read(key);root.post(()->{ScrollView currentScroll=(ScrollView)root.getChildAt(root.getChildCount()-2);currentScroll.post(()->currentScroll.scrollTo(0,target));});}else Toast.makeText(this,"Tiada penanda",Toast.LENGTH_SHORT).show();}).setNegativeButton("Tutup",null).show();});bookmarkButton.setContentDescription("Penanda bacaan");Button readerEdit=action("✎ Edit",bar,()->edit(key));readerEdit.setContentDescription(key.startsWith("m_")?"Sunting kandungan kitab":"Sunting kandungan nota");
-  Button layoutButton=action("▥",bar,()->{boolean now=prefs.getBoolean("reader_two_columns",getResources().getConfiguration().screenWidthDp>=600);prefs.edit().putBoolean("reader_two_columns",!now).apply();read(key);});layoutButton.setContentDescription("Tukar paparan satu atau dua kolum");layoutButton.setTextColor(0xff176b47); Button chaptersButton=action("☷",bar,()->{String[] lines=prefs.getString(key,"").split("\\R");ArrayList<String> chapters=new ArrayList<>();ArrayList<Integer> offsets=new ArrayList<>();int offset=0;for(String line:lines){String trimmed=line.trim();if((trimmed.matches("(?i)^(bab|fasal|chapter)\\s+.*")||trimmed.startsWith("باب ")||trimmed.startsWith("فصل "))&&trimmed.length()<120){chapters.add(trimmed);offsets.add(offset);}offset+=line.length()+1;}if(chapters.isEmpty()){Toast.makeText(this,"Tiada tajuk bab dikenal pasti",Toast.LENGTH_SHORT).show();return;}new AlertDialog.Builder(this).setTitle("Isi kandungan").setItems(chapters.toArray(new String[0]),(d,i)->{int target=offsets.get(i);read(key);root.post(()->{ScrollView currentScroll=(ScrollView)root.getChildAt(root.getChildCount()-2);TextView currentText=(TextView)((LinearLayout)currentScroll.getChildAt(0)).getChildAt(((LinearLayout)currentScroll.getChildAt(0)).getChildCount()-2);android.text.Layout layout=currentText.getLayout();if(layout!=null){int line=layout.getLineForOffset(Math.min(target,currentText.length()));currentScroll.scrollTo(0,currentText.getTop()+layout.getLineTop(line));}});}).show();});chaptersButton.setContentDescription("Isi kandungan bab");Button readerOptions=action("⋮",bar,()->new AlertDialog.Builder(this).setItems(new String[]{"Edit","Semat / Buka sematan","Duplikasi","Padam"},(d,i)->{if(i==0)edit(key);else if(i==1){boolean pinned=prefs.getBoolean("pinned_"+key,false);prefs.edit().putBoolean("pinned_"+key,!pinned).apply();android.widget.Toast.makeText(this,pinned?"Sematan dibuang":"Nota disemat",android.widget.Toast.LENGTH_SHORT).show();read(key);}else if(i==2)duplicateNote(key);else confirmDelete(key);}).show());readerOptions.setContentDescription(key.startsWith("m_")?"Menu tindakan kitab":"Menu tindakan nota");
+  Button layoutButton=action("▥",bar,()->{boolean now=prefs.getBoolean("reader_two_columns",getResources().getConfiguration().screenWidthDp>=600);prefs.edit().putBoolean("reader_two_columns",!now).apply();read(key);});layoutButton.setContentDescription("Tukar paparan satu atau dua kolum");layoutButton.setTextColor(0xff176b47); Button readerOptions=action("⋮",bar,()->new AlertDialog.Builder(this).setItems(new String[]{"Edit","Semat / Buka sematan","Duplikasi","Padam"},(d,i)->{if(i==0)edit(key);else if(i==1){boolean pinned=prefs.getBoolean("pinned_"+key,false);prefs.edit().putBoolean("pinned_"+key,!pinned).apply();android.widget.Toast.makeText(this,pinned?"Sematan dibuang":"Nota disemat",android.widget.Toast.LENGTH_SHORT).show();read(key);}else if(i==2)duplicateNote(key);else confirmDelete(key);}).show());readerOptions.setContentDescription(key.startsWith("m_")?"Menu tindakan kitab":"Menu tindakan nota");
   // Page-by-page reader for long Nota and Maktabah content.
   if(prefs.getString(key,"").length()>=100){
    try{showPagedReader(key);return;}
