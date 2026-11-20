@@ -1269,6 +1269,8 @@ public class MainActivity extends Activity {
  void finishEditingSafely(){
   if(editor==null)return;
   save();
+  // Include the latest history snapshot in the same durable flush as the note.
+  saveHistoryVersion(false);
   // Persist queued autosave writes before leaving the editor.
   // If storage fails, retain the editor instead of presenting an unsaved reader.
   if(!prefs.edit().commit()){
@@ -1277,7 +1279,6 @@ public class MainActivity extends Activity {
    Toast.makeText(this,"Simpanan gagal. Cuba tekan Selesai sekali lagi.",Toast.LENGTH_LONG).show();
    return;
   }
-  saveHistoryVersion(false);
   final String finishedKey=selected;
   final EditText oldEditor=editor;
   final EditText oldTitle=titleEditor;
