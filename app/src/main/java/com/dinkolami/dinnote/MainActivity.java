@@ -1967,7 +1967,10 @@ public class MainActivity extends Activity {
    for(int i=0;i<root.getChildCount();i++)if(root.getChildAt(i) instanceof ScrollView){
     final ScrollView newScroll=(ScrollView)root.getChildAt(i);
     newScroll.post(()->{
-     if(newScroll.getChildCount()>0){int range=Math.max(0,newScroll.getChildAt(0).getHeight()-newScroll.getHeight());newScroll.scrollTo(0,Math.round(restoreFraction*range));}
+     if(!isFinishing()&&!isDestroyed()&&newScroll.getParent()!=null&&newScroll.getChildCount()>0){
+      int range=Math.max(0,newScroll.getChildAt(0).getHeight()-newScroll.getHeight());
+      newScroll.scrollTo(0,Math.round(restoreFraction*range));
+     }
     });
     break;
    }
