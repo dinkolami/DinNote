@@ -710,6 +710,21 @@ public class MainActivity extends Activity {
   android.content.ClipboardManager clipboard=(android.content.ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
   if(clipboard!=null){clipboard.setPrimaryClip(android.content.ClipData.newPlainText(title,output));Toast.makeText(this,"Teks dan tajuk disalin",Toast.LENGTH_SHORT).show();}
  }
+ android.text.SpannableStringBuilder formattedReadingText(String source){
+  if(source==null)source="";
+  android.text.SpannableStringBuilder out=new android.text.SpannableStringBuilder();
+  java.util.regex.Matcher m=java.util.regex.Pattern.compile("\\*\\*(.+?)\\*\\*",java.util.regex.Pattern.DOTALL).matcher(source);
+  int previous=0;
+  while(m.find()){
+   out.append(source.substring(previous,m.start()));
+   int from=out.length();
+   out.append(m.group(1));
+   out.setSpan(new android.text.style.StyleSpan(android.graphics.Typeface.BOLD),from,out.length(),android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+   previous=m.end();
+  }
+  out.append(source.substring(previous));
+  return out;
+ }
  void read(String key){
   editor=null;titleEditor=null;saveIndicator=null;selected=key;prefs.edit().putLong("viewed_"+key,System.currentTimeMillis()).putString(key.startsWith("m_")?"reading_last_m":"reading_last_n",key).apply();cleanBase();
   LinearLayout bar=new LinearLayout(this);bar.setGravity(Gravity.CENTER_VERTICAL);bar.setPadding(dp(8),dp(3),dp(8),dp(3));bar.setBackground(rounded(0xfff8faf8,0xffe1e7e3,12));root.addView(bar);
@@ -757,7 +772,7 @@ public class MainActivity extends Activity {
   String readingCategory=prefs.getString("cat_"+key,"Tanpa kategori");String fullReadingText=prefs.getString(key,"");String firstReadingLine=fullReadingText.split("\\R",2)[0].trim();if(firstReadingLine.matches("(?i)^(bab|الفصل|باب)\\b.*")&&firstReadingLine.length()<110){TextView chapterLabel=text(firstReadingLine,16);chapterLabel.setTextColor(0xff176b47);chapterLabel.setTypeface(null,android.graphics.Typeface.BOLD);chapterLabel.setPadding(dp(20),dp(8),dp(20),dp(8));body.addView(chapterLabel);}TextView categoryLine=text("⌑  "+readingCategory,12);categoryLine.setTextColor(0xff52745e);categoryLine.setPadding(dp(24),0,dp(24),dp(8));categoryLine.setSingleLine(true);categoryLine.setEllipsize(android.text.TextUtils.TruncateAt.END);body.addView(categoryLine);View chapterRule=new View(this);chapterRule.setBackgroundColor(0xffdfe8df);LinearLayout.LayoutParams chapterRuleParams=new LinearLayout.LayoutParams(-1,dp(1));chapterRuleParams.setMargins(dp(20),dp(2),dp(20),dp(8));body.addView(chapterRule,chapterRuleParams);
   int fontLevel=Math.max(0,Math.min(3,prefs.getInt("reader_font_level",1)));
   int[] readingSizes=key.startsWith("m_")?new int[]{15,18,21,25}:new int[]{13,15,18,22};
-  TextView content=text(prefs.getString(key,""),readingSizes[fontLevel]);boolean containsArabic=java.util.regex.Pattern.compile("[\\u0600-\\u06FF]").matcher(fullReadingText).find();if(containsArabic){content.setLineSpacing(dp(7),1.2f);if(prefs.getBoolean("reader_arabic_clear_font",false))content.setTypeface(android.graphics.Typeface.create("serif",android.graphics.Typeface.NORMAL));}
+  TextView content=text("",readingSizes[fontLevel]);content.setText(formattedReadingText(prefs.getString(key,"")));boolean containsArabic=java.util.regex.Pattern.compile("[\\u0600-\\u06FF]").matcher(fullReadingText).find();if(containsArabic){content.setLineSpacing(dp(7),1.2f);if(prefs.getBoolean("reader_arabic_clear_font",false))content.setTypeface(android.graphics.Typeface.create("serif",android.graphics.Typeface.NORMAL));}
   content.setTextColor(0xff26372e);content.setGravity(Gravity.TOP);content.setBreakStrategy(android.text.Layout.BREAK_STRATEGY_HIGH_QUALITY);content.setTextIsSelectable(true);content.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);int readingSide=dp(12);content.setPadding(readingSide,dp(10),readingSide,dp(12));if(prefs.getBoolean("reader_wide_spacing",false))content.setLineSpacing(dp(9),1.3f);else if(!containsArabic)content.setLineSpacing(dp(3),1.12f);content.setIncludeFontPadding(true);
   // Display list rows with subtle mint dividers; preserve the original stored text.
   String[] displayLines=fullReadingText.split("\\n",-1);
@@ -777,7 +792,7 @@ public class MainActivity extends Activity {
    // Preserve every original character, including newlines and whitespace at the split.
     String[] halves={fullReadingText.substring(0,split),fullReadingText.substring(split)};
    for(int i=0;i<2;i++){
-    TextView page=text(halves[i],readingSizes[fontLevel]);page.setTextColor(0xff26372e);
+    TextView page=text("",readingSizes[fontLevel]);page.setText(formattedReadingText(halves[i]));page.setTextColor(0xff26372e);
     page.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);page.setTextIsSelectable(true);
     page.setGravity(Gravity.TOP);page.setPadding(dp(10),dp(8),dp(10),dp(8));
     page.setLineSpacing(dp(containsArabic?7:3),containsArabic?1.2f:1.12f);
@@ -815,7 +830,7 @@ public class MainActivity extends Activity {
      markerView.setTextColor(0xff167c42);
      markerView.setBackground(rounded(0xffe4f7e8,0xffc8e9d0,16));
      itemRow.addView(markerView,new LinearLayout.LayoutParams(dp(30),dp(30)));
-     TextView valueView=text(value,readingSizes[fontLevel]);valueView.setTextColor(0xff26372e);
+     TextView valueView=text("",readingSizes[fontLevel]);valueView.setText(formattedReadingText(value));valueView.setTextColor(0xff26372e);
      valueView.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);valueView.setTextIsSelectable(true);
      valueView.setPadding(dp(10),0,dp(4),0);valueView.setLineSpacing(dp(4),1.12f);
      itemRow.addView(valueView,new LinearLayout.LayoutParams(0,-2,1));
@@ -823,7 +838,7 @@ public class MainActivity extends Activity {
      View fineDivider=new View(this);fineDivider.setBackgroundColor(0xffc5e7cb);
      readingRows.addView(fineDivider,new LinearLayout.LayoutParams(-1,dp(1)));
     }else{
-     TextView paragraph=text(line.isEmpty()?" ":line,readingSizes[fontLevel]);
+     TextView paragraph=text("",readingSizes[fontLevel]);paragraph.setText(formattedReadingText(line.isEmpty()?" ":line));
      paragraph.setTextColor(0xff26372e);paragraph.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
      paragraph.setTextIsSelectable(true);paragraph.setPadding(dp(4),dp(4),dp(4),dp(4));
      paragraph.setLineSpacing(dp(5),1.12f);readingRows.addView(paragraph);
