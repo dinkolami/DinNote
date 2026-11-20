@@ -400,9 +400,9 @@ public class MainActivity extends Activity {
   final int theme=prefs.getInt("reader_theme",0);
   final int paper=theme==0?0xffffffff:theme==2?0xfff2f8f3:0xfffffcf4;
   final String heading=prefs.getString("title_"+key,"");
-  TextView headingView=text(heading,15);headingView.setSingleLine(true);
+  TextView headingView=text(heading,17);headingView.setGravity(Gravity.CENTER);headingView.setTypeface(null,android.graphics.Typeface.BOLD);headingView.setMaxLines(2);
   headingView.setEllipsize(android.text.TextUtils.TruncateAt.END);
-  headingView.setPadding(dp(16),dp(6),dp(16),dp(6));
+  headingView.setPadding(dp(16),dp(8),dp(16),dp(8));
   headingView.setBackground(rounded(paper,0xffdde5e1,10));
   LinearLayout.LayoutParams titleParams=new LinearLayout.LayoutParams(-1,-2);
   titleParams.setMargins(dp(10),dp(6),dp(10),dp(4));root.addView(headingView,titleParams);
@@ -436,7 +436,7 @@ public class MainActivity extends Activity {
     int height=Math.max(dp(100),pageRow.getHeight()-dp(12));
     TextView probe=text("",fontSize);
     probe.setPadding(dp(12),dp(10),dp(12),dp(10));
-    probe.setLineSpacing(dp(3),1.15f);
+    probe.setLineSpacing(dp(1),1.04f);
     probe.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
     ArrayList<String> parts=new ArrayList<>();
     int cursor=0;
@@ -464,7 +464,7 @@ public class MainActivity extends Activity {
       TextView page=text(pageNumber<total?parts.get(pageNumber):"",fontSize);
       page.setTextColor(0xff26372e);page.setGravity(Gravity.TOP);
       page.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
-      page.setLineSpacing(dp(3),1.15f);
+      page.setLineSpacing(dp(1),1.04f);
       page.setPadding(dp(12),dp(10),dp(12),dp(10));
       page.setBackground(rounded(paper,0xffdde5e1,10));
       LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(0,-1,1);
