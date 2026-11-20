@@ -323,16 +323,22 @@ public class MainActivity extends Activity {
   count.setGravity(Gravity.CENTER);count.setTextColor(0xff566a70);count.setBackgroundColor(0xfffdfefe);count.setPadding(dp(8),dp(9),dp(8),dp(9));card.addView(count);
   View divider=new View(this);divider.setBackgroundColor(0xffe8d8b0);
   card.addView(divider,new LinearLayout.LayoutParams(-1,dp(1)));
+  int noteCount=0,bookCount=0;
+  for(String postingKey:prefs.getAll().keySet()){
+   if(!(prefs.getAll().get(postingKey) instanceof String)||prefs.getBoolean("deleted_"+postingKey,false))continue;
+   if(postingKey.startsWith("n_"))noteCount++;
+   else if(postingKey.startsWith("m_"))bookCount++;
+  }
   LinearLayout tiles=new LinearLayout(this);tiles.setPadding(dp(8),dp(7),dp(8),dp(7));card.addView(tiles);
-  TextView note=dashboardText("Nota",18,true);
-  TextView book=dashboardText("Maktabah",18,true);
+  TextView note=dashboardText("✎  Nota\\n"+noteCount+" Topik",18,true);
+  TextView book=dashboardText("▤  Maktabah\\n"+bookCount+" Topik",18,true);
   note.setGravity(Gravity.CENTER);book.setGravity(Gravity.CENTER);note.setFocusable(true);book.setFocusable(true);note.setTextColor(0xff566a70);book.setTextColor(0xff566a70);
   note.setBackground(rounded(0xfff3f6f8,0xffd0d8df,11));
   book.setBackground(rounded(0xfff3f6f8,0xffd0d8df,11));
   LinearLayout.LayoutParams a=new LinearLayout.LayoutParams(0,dp(78),1);a.rightMargin=dp(4);
   LinearLayout.LayoutParams b=new LinearLayout.LayoutParams(0,dp(78),1);b.leftMargin=dp(4);
   tiles.addView(note,a);tiles.addView(book,b);
-  note.setContentDescription("Buka senarai Nota");book.setContentDescription("Buka Maktabah");
+  note.setContentDescription("Buka senarai Nota, "+noteCount+" topik");book.setContentDescription("Buka Maktabah, "+bookCount+" topik");
   note.setOnClickListener(v->openSection(false));book.setOnClickListener(v->openSection(true));
   applyTouchFeedback(note);applyTouchFeedback(book);
   // Compact GitHub-style shortcuts, without changing the approved header.
