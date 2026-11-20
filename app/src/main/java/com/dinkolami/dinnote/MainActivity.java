@@ -438,7 +438,8 @@ public class MainActivity extends Activity {
   ArrayList<String> out=new ArrayList<>();
   for(String k:prefs.getAll().keySet())if((k.startsWith("n_")||(includeBooks&&k.startsWith("m_")))&&
     (field.equals("pinned_")?prefs.getBoolean(field+k,false):prefs.getLong(field+k,0L)>0))out.add(k);
-  Collections.sort(out,(a,b)->field.equals("pinned_")?a.compareTo(b):
+  Collections.sort(out,(a,b)->field.equals("pinned_")?
+   prefs.getString("title_"+a,"").compareToIgnoreCase(prefs.getString("title_"+b,"")):
    Long.compare(prefs.getLong(field+b,0),prefs.getLong(field+a,0)));
   return out;
  }
