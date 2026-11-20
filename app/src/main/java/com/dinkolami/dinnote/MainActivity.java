@@ -470,14 +470,30 @@ public class MainActivity extends Activity {
  }else displayKeys.addAll(visibleKeys);
  for(String k:displayKeys){String v=prefs.getString(k,"");String heading=prefs.getString("title_"+k,"");String shown=(heading.trim().isEmpty()?(v.trim().isEmpty()?"Tanpa tajuk":v.trim().split("\\R",2)[0]):heading.trim());shown=shown.replaceAll("\\s+"," ").trim();if(shown.length()>70)shown=shown.substring(0,70)+"…";if(shown.trim().isEmpty())shown="Tanpa tajuk";if(!matchesSearch(heading+" "+v+" "+prefs.getString("cat_"+k,"Tanpa kategori"),terms))continue;if(!categoryFilter.equals("Semua")&&!categoryFilter.equals(prefs.getString("cat_"+k,"Tanpa kategori")))continue;String preview=cleanCardPreview(v);if(preview.isEmpty())preview="Belum ada kandungan";String cat=prefs.getString("cat_"+k,"Tanpa kategori").trim();if(cat.isEmpty())cat="Tanpa kategori";long stamp=prefs.getLong("updated_"+k,0);String date=stamp>0?new java.text.SimpleDateFormat("dd/MM/yyyy",java.util.Locale.getDefault()).format(new java.util.Date(stamp)):"Belum dikemas kini";String previewText=preview.length()>80?preview.substring(0,80)+"…":preview;
  String cardTitle=(prefs.getBoolean("pinned_"+k,false)?"📌  ":"")+(maktabah?"▤  ":"✎  ")+shown;
- TextView t=text(cardTitle+"\n"+previewText+"\n"+cat+"   "+date,15);
- t.setTextDirection(android.view.View.TEXT_DIRECTION_FIRST_STRONG);
- t.setLayoutDirection(android.view.View.LAYOUT_DIRECTION_LTR);int headingEnd=t.getText().toString().indexOf("\n");if(headingEnd>0){android.text.SpannableString boldHeading=new android.text.SpannableString(t.getText());boldHeading.setSpan(new android.text.style.StyleSpan(android.graphics.Typeface.BOLD),0,headingEnd,android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);t.setText(boldHeading);}t.setMaxLines(3);t.setMinLines(twoColumnList?3:0);t.setEllipsize(android.text.TextUtils.TruncateAt.END);t.setTextColor(0xff30343b);t.setGravity(Gravity.CENTER_VERTICAL);t.setLineSpacing(dp(3),1.05f);t.setBackground(rounded(k.equals(lastOpenedCard)?0xfff2faf5:0xffffffff,k.equals(lastOpenedCard)?0xffb7d8c2:0xffe1e5e3,16));t.setElevation(dp(1));t.setPadding(dp(twoColumnList?12:16),dp(12),dp(twoColumnList?12:16),dp(12));LinearLayout.LayoutParams noteCardParams=new LinearLayout.LayoutParams(twoColumnList?0:-1,-2,twoColumnList?1f:0f);noteCardParams.setMargins(dp(twoColumnList?4:12),dp(4),dp(twoColumnList?4:12),dp(4));t.setContentDescription((prefs.getBoolean("pinned_"+k,false)?"Disemat. ":"")+(maktabah?"Buka kitab: ":"Buka nota: ")+shown+", kategori "+cat+", "+date);applyTouchFeedback(t);t.setFocusable(true);
+ LinearLayout card=new LinearLayout(this);card.setOrientation(LinearLayout.VERTICAL);
+ card.setBackground(rounded(k.equals(lastOpenedCard)?0xfff2faf5:0xffffffff,k.equals(lastOpenedCard)?0xffb7d8c2:0xffe1e5e3,16));
+ card.setElevation(dp(1));card.setPadding(dp(twoColumnList?12:16),dp(12),dp(twoColumnList?12:16),dp(12));
+ TextView headingView=text(cardTitle,15);headingView.setTypeface(null,android.graphics.Typeface.BOLD);
+ headingView.setSingleLine(true);headingView.setEllipsize(android.text.TextUtils.TruncateAt.END);headingView.setTextColor(0xff30343b);
+ card.addView(headingView,new LinearLayout.LayoutParams(-1,-2));
+ TextView previewView=text(previewText,15);previewView.setTextColor(0xff30343b);
+ previewView.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);previewView.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
+ previewView.setMaxLines(2);previewView.setMinLines(twoColumnList?2:1);previewView.setEllipsize(android.text.TextUtils.TruncateAt.END);
+ previewView.setLineSpacing(dp(3),1.05f);card.addView(previewView,new LinearLayout.LayoutParams(-1,-2));
+ LinearLayout meta=new LinearLayout(this);meta.setGravity(Gravity.CENTER_VERTICAL);
+ TextView categoryView=text(cat,12);categoryView.setTextColor(0xff687078);categoryView.setSingleLine(true);
+ categoryView.setEllipsize(android.text.TextUtils.TruncateAt.END);
+ meta.addView(categoryView,new LinearLayout.LayoutParams(0,-2,1f));
+ TextView dateView=text(date,12);dateView.setTextColor(0xff687078);dateView.setGravity(Gravity.END);
+ dateView.setSingleLine(true);dateView.setEllipsize(android.text.TextUtils.TruncateAt.END);
+ meta.addView(dateView,new LinearLayout.LayoutParams(-2,-2));
+ card.addView(meta,new LinearLayout.LayoutParams(-1,-2));
+ LinearLayout.LayoutParams noteCardParams=new LinearLayout.LayoutParams(twoColumnList?0:-1,-2,twoColumnList?1f:0f);noteCardParams.setMargins(dp(twoColumnList?4:12),dp(4),dp(twoColumnList?4:12),dp(4));card.setContentDescription((prefs.getBoolean("pinned_"+k,false)?"Disemat. ":"")+(maktabah?"Buka kitab: ":"Buka nota: ")+shown+", kategori "+cat+", "+date);applyTouchFeedback(card);card.setFocusable(true);
  if(twoColumnList){
   if(visibleCards%2==0){cardRow=new LinearLayout(this);cardRow.setOrientation(LinearLayout.HORIZONTAL);cardRow.setPadding(dp(8),0,dp(8),0);items.addView(cardRow,new LinearLayout.LayoutParams(-1,-2));}
-  cardRow.addView(t,noteCardParams);
- }else items.addView(t,noteCardParams);
- visibleCards++;View line=new View(this);line.setBackgroundColor(0xffe5e9e5);--matches;t.setOnClickListener(w->{
+  cardRow.addView(card,noteCardParams);
+ }else items.addView(card,noteCardParams);
+ visibleCards++;View line=new View(this);line.setBackgroundColor(0xffe5e9e5);--matches;card.setOnClickListener(w->{
   if(listScroll!=null){if(maktabah)savedBooksScroll=listScroll.getScrollY();else savedNotesScroll=listScroll.getScrollY();}
   lastOpenedCard=k;read(k);
  });}}
