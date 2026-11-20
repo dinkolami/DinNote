@@ -408,7 +408,9 @@ public class MainActivity extends Activity {
   titleParams.setMargins(dp(10),dp(6),dp(10),dp(4));root.addView(headingView,titleParams);
   LinearLayout pageRow=new LinearLayout(this);pageRow.setOrientation(LinearLayout.HORIZONTAL);
   pageRow.setPadding(dp(8),dp(1),dp(8),dp(1));
-  root.addView(pageRow,new LinearLayout.LayoutParams(-1,0,1));
+  FrameLayout readingFrame=new FrameLayout(this);
+  root.addView(readingFrame,new LinearLayout.LayoutParams(-1,0,1));
+  readingFrame.addView(pageRow,new FrameLayout.LayoutParams(-1,-1));
   // Compact single-row reader controls: previous, bookmark, focus, progress, next.
   LinearLayout navigation=new LinearLayout(this);navigation.setGravity(Gravity.CENTER_VERTICAL);
   navigation.setPadding(dp(8),dp(1),dp(8),dp(1));
@@ -424,7 +426,14 @@ public class MainActivity extends Activity {
   }
   LinearLayout.LayoutParams controlParams;
   controlParams=new LinearLayout.LayoutParams(dp(34),dp(30));controlParams.rightMargin=dp(5);navigation.addView(bookmark,controlParams);
-  navigation.addView(indicator,new LinearLayout.LayoutParams(0,dp(30),1));
+  // Progress label sits on the lower reading-frame border, not in the toolbar.
+  indicator.setTextColor(0xff356b50);
+  indicator.setBackgroundColor(paper);
+  indicator.setPadding(dp(9),0,dp(9),0);
+  FrameLayout.LayoutParams progressParams=new FrameLayout.LayoutParams(-2,dp(22),Gravity.BOTTOM|Gravity.CENTER_HORIZONTAL);
+  progressParams.bottomMargin=0;
+  readingFrame.addView(indicator,progressParams);
+  indicator.bringToFront();
   LinearLayout.LayoutParams navigationParams=new LinearLayout.LayoutParams(-1,-2);
   navigationParams.bottomMargin=dp(5); // Small gap above Android system navigation.
   root.addView(navigation,navigationParams);
