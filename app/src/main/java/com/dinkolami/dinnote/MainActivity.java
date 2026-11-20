@@ -830,12 +830,35 @@ public class MainActivity extends Activity {
    .setView(scroll).setNegativeButton("Tutup",null).create();
   popup[0].show();
  }
+ void showBookMarginNote(String key){
+  if(!key.startsWith("m_"))return;
+  EditText input=new EditText(this);
+  input.setMinLines(4);input.setGravity(Gravity.TOP);
+  input.setHint("Catatan peribadi untuk kitab ini");
+  input.setText(prefs.getString("margin_note_"+key,""));
+  LinearLayout wrapper=new LinearLayout(this);
+  wrapper.setPadding(dp(20),dp(8),dp(20),dp(4));
+  wrapper.addView(input,new LinearLayout.LayoutParams(-1,-2));
+  new AlertDialog.Builder(this).setTitle("Nota Tepi Kitab")
+   .setMessage("Catatan disimpan berasingan dan tidak mengubah teks asal kitab.")
+   .setView(wrapper).setNegativeButton("Batal",null)
+   .setPositiveButton("Simpan",(d,w)->{
+    boolean ok=prefs.edit().putString("margin_note_"+key,input.getText().toString()).commit();
+    Toast.makeText(this,ok?"Nota tepi disimpan":"Nota tepi gagal disimpan",Toast.LENGTH_SHORT).show();
+   }).show();
+ }
  void showReaderActions(String key,boolean compact){
   boolean book=key.startsWith("m_");
   String noun=book?"kitab":"nota";
   String[] labels=compact?new String[]{"Edit","Semat / Buka sematan","Duplikasi","Cari dalam teks","Salin teks dan rujukan","Mod swipe halaman","Tukar satu / dua kolum","Padam"}:new String[]{"Edit","Semat / Buka sematan","Duplikasi","Cari dalam teks","Salin teks dan rujukan","Padam"};
   String[] icons=compact?new String[]{"✎","♧","▢","⌕","▤","⇆","▥","⌫"}:new String[]{"✎","♧","▢","⌕","▤","⌫"};
   String[] descriptions=compact?new String[]{"Sunting kandungan","Kekalkan di bahagian atas","Buat salinan "+noun,"Cari perkataan","Salin kandungan dan rujukan","Ubah cara menukar halaman","Pilih susunan bacaan","Padam "+noun+" ini"}:new String[]{"Sunting kandungan","Kekalkan di bahagian atas","Buat salinan "+noun,"Cari perkataan","Salin kandungan dan rujukan","Padam "+noun+" ini"};
+  if(book){
+   int n=labels.length;
+   labels=java.util.Arrays.copyOf(labels,n+1);icons=java.util.Arrays.copyOf(icons,n+1);descriptions=java.util.Arrays.copyOf(descriptions,n+1);
+   labels[n]=labels[n-1];icons[n]=icons[n-1];descriptions[n]=descriptions[n-1];
+   labels[n-1]="Nota Tepi Kitab";icons[n-1]="✎";descriptions[n-1]="Catatan peribadi tanpa mengubah teks kitab";
+  }
   ScrollView scroll=new ScrollView(this);scroll.setFillViewport(false);
   LinearLayout panel=new LinearLayout(this);panel.setOrientation(LinearLayout.VERTICAL);
   panel.setPadding(dp(12),dp(8),dp(12),dp(10));scroll.addView(panel);
@@ -870,6 +893,7 @@ public class MainActivity extends Activity {
     else if(option==4)copyReaderWithReference(key);
     else if(compact&&option==5){boolean next=!prefs.getBoolean("reader_swipe_mode",false);prefs.edit().putBoolean("reader_swipe_mode",next).apply();read(key);}
     else if(compact&&option==6){boolean now=prefs.getBoolean("reader_two_columns",true);prefs.edit().putBoolean("reader_two_columns",!now).apply();read(key);}
+    else if(book&&option==(compact?8:6))showBookMarginNote(key);
     else confirmDelete(key);
    });
   }
