@@ -992,6 +992,12 @@ public class MainActivity extends Activity {
   view.setIncludeFontPadding(true);
  }
  void read(String key){
+  if(key==null||!prefs.contains(key)){
+   selected=null;readerScroll=null;editor=null;titleEditor=null;
+   Toast.makeText(this,"Nota atau kitab tidak ditemui",Toast.LENGTH_LONG).show();
+   if(sectionOpen)notesPage();else home();
+   return;
+  }
   readerScroll=null;
   editor=null;titleEditor=null;saveIndicator=null;selected=key;prefs.edit().putLong("viewed_"+key,System.currentTimeMillis()).putString(key.startsWith("m_")?"reading_last_m":"reading_last_n",key).apply();cleanBase();
   LinearLayout bar=new LinearLayout(this);bar.setGravity(Gravity.CENTER_VERTICAL);bar.setPadding(dp(8),dp(3),dp(8),dp(3));bar.setBackground(rounded(0xfff8faf8,0xffe1e7e3,12));root.addView(bar);
