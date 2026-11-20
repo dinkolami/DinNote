@@ -1849,6 +1849,7 @@ public class MainActivity extends Activity {
    if(backup.has("data_sha256")&&!backupDigest(values).equalsIgnoreCase(backup.getString("data_sha256")))
     throw new java.io.IOException("Integriti fail sandaran gagal; data sedia ada tidak diubah");
    if(values.length()==0)throw new java.io.IOException("Sandaran kosong; data sedia ada tidak diubah");
+   if(values.length()>100000)throw new java.io.IOException("Terlalu banyak rekod sandaran; data sedia ada tidak diubah");
    // Reject unrelated JSON before clearing the existing DinNote preferences.
    boolean recognized=false;
    java.util.Iterator<String> backupKeys=values.keys();
