@@ -291,7 +291,7 @@ public class MainActivity extends Activity {
   scroll.setOverScrollMode(View.OVER_SCROLL_NEVER);scroll.setSmoothScrollingEnabled(true);
   root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
   LinearLayout page=new LinearLayout(this);page.setOrientation(1);
-  page.setPadding(dp(10),dp(6),dp(10),dp(12));page.setBackgroundColor(0xfffffefd);page.setTag("dinnote_home");scroll.addView(page);
+  page.setPadding(dp(10),dp(6),dp(10),dp(12));android.graphics.drawable.BitmapDrawable homePattern=new android.graphics.drawable.BitmapDrawable(getResources(),android.graphics.BitmapFactory.decodeResource(getResources(),com.dinkolami.dinnote.R.drawable.dinnote_pattern));homePattern.setTileModeX(android.graphics.Shader.TileMode.REPEAT);homePattern.setTileModeY(android.graphics.Shader.TileMode.REPEAT);page.setBackground(homePattern);page.setTag("dinnote_home");scroll.addView(page);
   TextView recent=dashboardText("Baru dilihat  ▾",15,true);
   recent.setBackground(rounded(0xfffdfefe,0xffcdd6df,9));recent.setTextColor(0xff566a70);recent.setIncludeFontPadding(false);
   LinearLayout quickTools=new LinearLayout(this);quickTools.setOrientation(LinearLayout.HORIZONTAL);quickTools.setGravity(Gravity.CENTER_VERTICAL);
