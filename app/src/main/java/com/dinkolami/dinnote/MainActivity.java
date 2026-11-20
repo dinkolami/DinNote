@@ -1518,6 +1518,22 @@ public class MainActivity extends Activity {
    root.post(()->{if(editor==null&&key.equals(selected))read(key);});
   }
  }
- @Override protected void onPause(){if(editor!=null)save();super.onPause();}
+ // Durable checkpoint when Android backgrounds the editor; protects recent autosaved text
+ // if the process is later killed before asynchronous preference writes finish.
+ @Override protected void onPause(){
+  if(editor!=null){
+   save();
+   if(!prefs.edit().commit()){
+    android.util.Log.e("DinNote","Failed to flush editor data on pause");
+    if(saveIndicator!=null)saveIndicator.setText("⚠ Simpan gagal");
+   }
+  }
+  super.onPause();
+ }
+ @Override protected void onStop(){
+  if(editor!=null&&!prefs.edit().commit())
+   android.util.Log.e("DinNote","Failed to flush editor data on stop");
+  super.onStop();
+ }
  public void onBackPressed(){if(editor!=null){finishEditingSafely();}else if(selected!=null){returnFromReader();}else if(sectionOpen){home();}else super.onBackPressed();}
 }
