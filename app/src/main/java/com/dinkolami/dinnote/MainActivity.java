@@ -1482,7 +1482,36 @@ public class MainActivity extends Activity {
   }).setNegativeButton("Batal",null).show();
  }
  void categoryActions(String old){new AlertDialog.Builder(this).setTitle(old).setItems(new String[]{"Ubah nama","Padam kategori"},(d,which)->{if(which==0)categoryDialog(old);else new AlertDialog.Builder(this).setMessage("Padam kategori? Nota tidak akan dipadam.").setPositiveButton("Padam",(a,b)->{ArrayList<String> c=categories();c.remove(old);storeCategories(c);for(String k:prefs.getAll().keySet())if(k.startsWith(maktabah?"m_":"n_")&&old.equals(prefs.getString("cat_"+k,"")))prefs.edit().putString("cat_"+k,"Tanpa kategori").apply();categoryFilter="Semua";openSection(maktabah);}).setNegativeButton("Batal",null).show();}).show();}
- void categoryDialog(String old){EditText field=new EditText(this);field.setSingleLine(true);field.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_DONE);field.setHint("Nama kategori");if(old!=null)field.setText(old);new AlertDialog.Builder(this).setTitle(old==null?"Kategori baharu":"Ubah nama kategori").setView(field).setPositiveButton("Simpan",(d,w)->{String name=field.getText().toString().trim().replace("|","");if(name.isEmpty()||name.equals("Semua")||name.equals("Tanpa kategori"))return;ArrayList<String> c=categories();if(c.contains(name)&&!name.equals(old))return;if(old!=null)c.remove(old);c.add(name);storeCategories(c);if(old!=null){for(String k:prefs.getAll().keySet())if(k.startsWith(maktabah?"m_":"n_")&&old.equals(prefs.getString("cat_"+k,"")))prefs.edit().putString("cat_"+k,name).apply();}categoryFilter="Semua";home();}).setNegativeButton("Batal",null).show();}
+ void categoryDialog(String old){
+  EditText field=new EditText(this);field.setSingleLine(true);
+  field.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_DONE);
+  field.setHint("Nama kategori");if(old!=null)field.setText(old);
+  new AlertDialog.Builder(this).setTitle(old==null?"Kategori baharu":"Ubah nama kategori")
+   .setView(field).setPositiveButton("Simpan",(d,w)->{
+    String name=field.getText().toString().trim().replace("|","");
+    if(name.isEmpty()||name.equals("Semua")||name.equals("Tanpa kategori"))return;
+    ArrayList<String> c=categories();
+    if(c.contains(name)&&!name.equals(old))return;
+    if(old!=null&&!old.equals(name)){
+     ArrayList<String> updated=new ArrayList<>();
+     for(String cat:c){
+      String next=cat.equals(old)?name:(maktabah&&cat.startsWith(old+" / ")?name+cat.substring(old.length()):cat);
+      if(updated.contains(next)){Toast.makeText(this,"Nama kategori bertindih",Toast.LENGTH_LONG).show();return;}
+      updated.add(next);
+     }
+     c=updated;
+     android.content.SharedPreferences.Editor changes=prefs.edit();
+     for(String k:prefs.getAll().keySet()){
+      if(!k.startsWith(maktabah?"m_":"n_"))continue;
+      String cat=prefs.getString("cat_"+k,"");
+      if(cat.equals(old))changes.putString("cat_"+k,name);
+      else if(maktabah&&cat.startsWith(old+" / "))changes.putString("cat_"+k,name+cat.substring(old.length()));
+     }
+     if(!changes.commit()){Toast.makeText(this,"Gagal mengemas kini kategori",Toast.LENGTH_LONG).show();return;}
+    }else if(old==null)c.add(name);
+    storeCategories(c);categoryFilter="Semua";openSection(maktabah);
+   }).setNegativeButton("Batal",null).show();
+ }
 
  String backupDigest(org.json.JSONObject values) throws Exception{
   java.util.ArrayList<String> keys=new java.util.ArrayList<>();
