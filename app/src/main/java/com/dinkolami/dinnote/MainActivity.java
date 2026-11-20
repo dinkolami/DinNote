@@ -1002,7 +1002,7 @@ public class MainActivity extends Activity {
   }
   readerScroll=null;
   editor=null;titleEditor=null;saveIndicator=null;selected=key;prefs.edit().putLong("viewed_"+key,System.currentTimeMillis()).putString(key.startsWith("m_")?"reading_last_m":"reading_last_n",key).apply();cleanBase();
-  LinearLayout bar=new LinearLayout(this);bar.setGravity(Gravity.CENTER_VERTICAL);bar.setPadding(dp(8),dp(3),dp(8),dp(3));bar.setBackground(rounded(0xfff8faf8,0xffe1e7e3,12));root.addView(bar);
+  LinearLayout bar=new LinearLayout(this);bar.setGravity(Gravity.CENTER_VERTICAL);bar.setPadding(dp(8),dp(3),dp(8),dp(3));bar.setBackground(rounded(0xfff8faf8,0xffe1e7e3,12));bar.setTag("reader_toolbar");root.addView(bar);
   Button readerBack=action("‹",bar,()->returnFromReader());readerBack.setContentDescription(key.startsWith("m_")?"Kembali ke senarai kitab":"Kembali ke senarai nota");
   TextView spacer=text("",12);bar.addView(spacer,new LinearLayout.LayoutParams(0,1,1));
   boolean cleanReading=prefs.getBoolean("reader_clean_mode",false);
