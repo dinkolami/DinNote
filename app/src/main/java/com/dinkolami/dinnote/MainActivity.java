@@ -1301,7 +1301,7 @@ public class MainActivity extends Activity {
   readerDetector=null;
   // Let the keyboard and selection controller finish their current event.
   oldEditor.postDelayed(()->{
-   if(editor!=oldEditor)return;
+   if(isFinishing()||isDestroyed()||editor!=oldEditor)return;
    editor=null;titleEditor=null;saveIndicator=null;categoryPicker=null;
    if(finishedKey!=null){prefs.edit().putBoolean("reader_safe_scroll_"+finishedKey,true).apply();read(finishedKey);}
    else if(sectionOpen)notesPage();else home();
