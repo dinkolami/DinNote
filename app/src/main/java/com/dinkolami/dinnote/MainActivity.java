@@ -465,6 +465,7 @@ public class MainActivity extends Activity {
    ep.bottomMargin=dp(5);target.addView(entry,ep);applyTouchFeedback(entry);
    entry.setFocusable(true);
    entry.setContentDescription("Buka "+(key.startsWith("m_")?"kitab ":"nota ")+(label.isEmpty()?"Tanpa tajuk":label));entry.setTooltipText(label.isEmpty()?"Tanpa tajuk":label);
+   entry.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);
    entry.setOnClickListener(v->{maktabah=key.startsWith("m_");read(key);});
   }
  }
