@@ -339,9 +339,11 @@ public class MainActivity extends Activity {
   settings.setBackground(rounded(0xff07533b,0xffb99a57,12));
   page.addView(settings,new LinearLayout.LayoutParams(-1,dp(50)));
   settings.setOnClickListener(v->showMainMenu());
-  TextView footer=dashboardText("❖  ✦  ❖",18,false);
-  footer.setGravity(Gravity.CENTER);footer.setTextColor(0xffc9a34f);
-  LinearLayout.LayoutParams footerParams=new LinearLayout.LayoutParams(-1,dp(50));
+  ImageView footer=new ImageView(this);
+  footer.setImageResource(R.drawable.frontpage_emerald_gold_ornament);
+  footer.setScaleType(ImageView.ScaleType.FIT_CENTER);
+  footer.setContentDescription("Hiasan Islamik Emerald Gold");
+  LinearLayout.LayoutParams footerParams=new LinearLayout.LayoutParams(-1,dp(66));
   footerParams.topMargin=dp(20);page.addView(footer,footerParams);
  }
  void showHomeSearchResults(String query){
