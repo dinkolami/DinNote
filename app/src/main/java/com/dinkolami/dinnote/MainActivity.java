@@ -586,6 +586,22 @@ public class MainActivity extends Activity {
   FrameLayout readingFrame=new FrameLayout(this);
   root.addView(readingFrame,new LinearLayout.LayoutParams(-1,0,1));
   readingFrame.addView(pageRow,new FrameLayout.LayoutParams(-1,-1));
+  // The divider belongs to the fixed reading frame, never to the changing page views.
+  if(spread){
+   FrameLayout fixedDivider=new FrameLayout(this);
+   fixedDivider.setClickable(false);
+   android.graphics.drawable.GradientDrawable line=new android.graphics.drawable.GradientDrawable(
+    android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
+    new int[]{0xffd9bd78,0xff237c56,0xffc9a34f,0xff237c56,0xffd9bd78});
+   line.setCornerRadius(dp(1));
+   View centralLine=new View(this);centralLine.setBackground(line);
+   fixedDivider.addView(centralLine,new FrameLayout.LayoutParams(dp(2),-1,Gravity.CENTER));
+   TextView motif=text("❖",14);motif.setGravity(Gravity.CENTER);motif.setTextColor(0xffa78030);
+   motif.setBackground(rounded(0xfffffcf4,0xffc9a34f,14));
+   fixedDivider.addView(motif,new FrameLayout.LayoutParams(dp(22),dp(30),Gravity.CENTER));
+   FrameLayout.LayoutParams dividerParams=new FrameLayout.LayoutParams(dp(24),-1,Gravity.CENTER_HORIZONTAL|Gravity.TOP);
+   readingFrame.addView(fixedDivider,dividerParams);
+  }
   // Minimal reader controls: bookmark and progress only; swipe changes pages.
   LinearLayout navigation=new LinearLayout(this);navigation.setGravity(Gravity.CENTER_VERTICAL);
   navigation.setPadding(dp(8),dp(1),dp(8),dp(1));
@@ -679,18 +695,6 @@ public class MainActivity extends Activity {
     render[0]=()->{
      pageRow.removeAllViews();
      for(int i=0;i<(spread?2:1);i++){
-      if(i==1){
-       FrameLayout divider=new FrameLayout(this);
-       android.graphics.drawable.GradientDrawable dividerLine=new android.graphics.drawable.GradientDrawable(android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,new int[]{0xffd6b45d,0xff19734d,0xffd6b45d});
-       dividerLine.setCornerRadius(dp(1));
-       FrameLayout.LayoutParams lineParams=new FrameLayout.LayoutParams(dp(2),-1,Gravity.CENTER);
-       divider.addView(new View(this),new FrameLayout.LayoutParams(dp(1),-1,Gravity.CENTER));
-       View goldGreenLine=new View(this);goldGreenLine.setBackground(dividerLine);divider.addView(goldGreenLine,lineParams);
-       TextView ornament=text("◆",9);ornament.setTextColor(0xffbd9441);ornament.setGravity(Gravity.CENTER);
-       ornament.setBackground(rounded(0xfffffcf4,0xffd6b45d,12));
-       divider.addView(ornament,new FrameLayout.LayoutParams(dp(12),dp(20),Gravity.CENTER));
-       pageRow.addView(divider,new LinearLayout.LayoutParams(dp(12),-1));
-      }
       int pageNumber=position[0]+i;
       TextView page=text(pageNumber<total?parts.get(pageNumber):"",fontSize);
        if(pageNumber<total && repeatedPrefixLengths.get(pageNumber)>0){
