@@ -440,24 +440,40 @@ public class MainActivity extends Activity {
   pageRow.post(()->{
    if(pageRow.getParent()==null||root==null)return;
    try{
-    int width=Math.max(dp(120),(pageRow.getWidth()-dp(22))/(spread?2:1));
-    int height=Math.max(dp(100),pageRow.getHeight()-dp(12));
+    // Measure actual rendered lines, not an estimated character count.
+    // Keep a small bottom reserve so the final line is never clipped.
+    int width=Math.max(dp(80),(pageRow.getWidth()-dp(16)-(spread?dp(8):0))/(spread?2:1));
+    int textWidth=Math.max(dp(40),width-dp(24));
+    int usableHeight=Math.max(dp(40),pageRow.getHeight()-dp(20)-dp(10));
     TextView probe=text("",fontSize);
-    probe.setPadding(dp(12),dp(10),dp(12),dp(10));
     probe.setLineSpacing(dp(1),1.04f);
     probe.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
+    android.text.TextPaint paint=probe.getPaint();
     ArrayList<String> parts=new ArrayList<>();
     int cursor=0;
     while(cursor<source.length()){
-     // Use one measured text layout rather than repeatedly measuring substrings.
-    // The former binary-search measurement could stall the UI on long kitab.
-    int stop=Math.min(source.length(),cursor+Math.max(180,(height/dp(24))*Math.max(15,width/dp(9))));
-    if(stop<source.length()){
-     int boundary=Math.max(source.lastIndexOf(' ',stop),source.lastIndexOf('\n',stop));
-     if(boundary>cursor+(stop-cursor)/2)stop=boundary+1;
-    }
-    stop=Math.max(cursor+1,stop);
-    parts.add(source.substring(cursor,stop));cursor=stop;
+     // Limit the candidate for speed; a full page cannot contain this many
+     // characters at the configured text size.
+     int candidateEnd=Math.min(source.length(),cursor+6000);
+     CharSequence candidate=source.subSequence(cursor,candidateEnd);
+     android.text.StaticLayout layout=android.text.StaticLayout.Builder
+      .obtain(candidate,0,candidate.length(),paint,textWidth)
+      .setAlignment(android.text.Layout.Alignment.ALIGN_NORMAL)
+      .setTextDirection(android.text.TextDirectionHeuristics.FIRSTSTRONG_LTR)
+      .setLineSpacing(dp(1),1.04f)
+      .setIncludePad(true).build();
+     int lastLine=0;
+     for(int line=0;line<layout.getLineCount();line++){
+      if(layout.getLineBottom(line)>usableHeight)break;
+      lastLine=line+1;
+     }
+     int chars=lastLine>0?layout.getLineEnd(lastLine-1):Math.min(candidate.length(),1);
+     int stop=Math.min(source.length(),cursor+Math.max(1,chars));
+     // Never split a surrogate pair, and preserve every character in order.
+     if(stop<source.length()&&stop>cursor&&Character.isHighSurrogate(source.charAt(stop-1))&&Character.isLowSurrogate(source.charAt(stop)))stop--;
+     if(stop<=cursor)stop=cursor+1;
+     parts.add(source.substring(cursor,stop));
+     cursor=stop;
     }
     if(parts.isEmpty())parts.add("");
     final int total=parts.size();
