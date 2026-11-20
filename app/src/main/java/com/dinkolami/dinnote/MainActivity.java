@@ -462,6 +462,12 @@ public class MainActivity extends Activity {
   add.setContentDescription("Cipta nota baharu");add.setFocusable(true);
   add.setOnClickListener(v->{maktabah=false;edit(null);});
   applyTouchFeedback(add);applyTouchFeedback(recent);
+  android.widget.ImageView mosqueFooter=new android.widget.ImageView(this);
+  mosqueFooter.setImageResource(com.dinkolami.dinnote.R.drawable.dinnote_mosque_footer);
+  mosqueFooter.setScaleType(android.widget.ImageView.ScaleType.FIT_XY);
+  mosqueFooter.setContentDescription("Hiasan masjid hijau zamrud dan emas");
+  LinearLayout.LayoutParams footerParams=new LinearLayout.LayoutParams(-1,dp(78));
+  footerParams.topMargin=dp(10);page.addView(mosqueFooter,footerParams);
  }
  void showHomeSearchResults(String query){
   int hits=0;String first="";
