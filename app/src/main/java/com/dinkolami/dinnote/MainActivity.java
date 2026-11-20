@@ -397,6 +397,23 @@ public class MainActivity extends Activity {
  }
 
  boolean matchesSearch(String content,String[] terms){String normalized=content.replaceAll("\\s+"," ").toLowerCase(java.util.Locale.ROOT);for(String term:terms)if(!normalized.contains(term))return false;return true;}
+ String cleanCardPreview(String raw){
+  if(raw==null)return "";
+  // Some imported samples contain escaped newline sequences rather than line breaks.
+  String cleaned=raw.replace("\\r\\n"," ").replace("\\n"," ").replace("\\r"," ").replace("\\t"," ");
+  cleaned=cleaned.replaceAll("\\s+"," ").trim();
+  // Wrap Arabic runs individually to preserve natural RTL order within Malay sentences.
+  java.util.regex.Matcher matcher=java.util.regex.Pattern.compile("[\\p{InArabic}\\u064B-\\u065F\\u0670\\s]+").matcher(cleaned);
+  StringBuffer result=new StringBuffer();
+  android.text.BidiFormatter formatter=android.text.BidiFormatter.getInstance(false);
+  while(matcher.find()){
+   String run=matcher.group();
+   if(!run.matches(".*[\\p{InArabic}].*"))continue;
+   matcher.appendReplacement(result,java.util.regex.Matcher.quoteReplacement(formatter.unicodeWrap(run.trim(),android.text.TextDirectionHeuristics.RTL)));
+  }
+  matcher.appendTail(result);
+  return result.toString();
+ }
  void list(String filter){filter=filter.trim();String query=filter.replaceAll("\\s+"," ").toLowerCase(java.util.Locale.ROOT);String[] terms=query.isEmpty()?new String[0]:query.split(" ");items.removeAllViews();ArrayList<String> keys=new ArrayList<>();for(String k:prefs.getAll().keySet())if(k.startsWith(maktabah?"m_":"n_")&&prefs.getAll().get(k) instanceof String)keys.add(k);Collections.sort(keys,(a,b)->{
    boolean pinA=prefs.getBoolean("pinned_"+a,false),pinB=prefs.getBoolean("pinned_"+b,false);
    if(pinA!=pinB)return pinA?-1:1;
@@ -441,7 +458,7 @@ public class MainActivity extends Activity {
    }
   }
  }else displayKeys.addAll(visibleKeys);
- for(String k:displayKeys){String v=prefs.getString(k,"");String heading=prefs.getString("title_"+k,"");String shown=(heading.trim().isEmpty()?(v.trim().isEmpty()?"Tanpa tajuk":v.trim().split("\\R",2)[0]):heading.trim());shown=shown.replaceAll("\\s+"," ").trim();if(shown.length()>70)shown=shown.substring(0,70)+"…";if(shown.trim().isEmpty())shown="Tanpa tajuk";if(!matchesSearch(heading+" "+v+" "+prefs.getString("cat_"+k,"Tanpa kategori"),terms))continue;if(!categoryFilter.equals("Semua")&&!categoryFilter.equals(prefs.getString("cat_"+k,"Tanpa kategori")))continue;String preview=v.replaceAll("\\s+"," ").trim();if(preview.isEmpty())preview="Belum ada kandungan";String cat=prefs.getString("cat_"+k,"Tanpa kategori").trim();if(cat.isEmpty())cat="Tanpa kategori";long stamp=prefs.getLong("updated_"+k,0);String date=stamp>0?new java.text.SimpleDateFormat("dd/MM/yyyy",java.util.Locale.getDefault()).format(new java.util.Date(stamp)):"Belum dikemas kini";String previewText=preview.length()>80?preview.substring(0,80)+"…":preview;
+ for(String k:displayKeys){String v=prefs.getString(k,"");String heading=prefs.getString("title_"+k,"");String shown=(heading.trim().isEmpty()?(v.trim().isEmpty()?"Tanpa tajuk":v.trim().split("\\R",2)[0]):heading.trim());shown=shown.replaceAll("\\s+"," ").trim();if(shown.length()>70)shown=shown.substring(0,70)+"…";if(shown.trim().isEmpty())shown="Tanpa tajuk";if(!matchesSearch(heading+" "+v+" "+prefs.getString("cat_"+k,"Tanpa kategori"),terms))continue;if(!categoryFilter.equals("Semua")&&!categoryFilter.equals(prefs.getString("cat_"+k,"Tanpa kategori")))continue;String preview=cleanCardPreview(v);if(preview.isEmpty())preview="Belum ada kandungan";String cat=prefs.getString("cat_"+k,"Tanpa kategori").trim();if(cat.isEmpty())cat="Tanpa kategori";long stamp=prefs.getLong("updated_"+k,0);String date=stamp>0?new java.text.SimpleDateFormat("dd/MM/yyyy",java.util.Locale.getDefault()).format(new java.util.Date(stamp)):"Belum dikemas kini";String previewText=preview.length()>80?preview.substring(0,80)+"…":preview;
  String cardTitle=(prefs.getBoolean("pinned_"+k,false)?"📌  ":"")+(maktabah?"▤  ":"✎  ")+shown;
  TextView t=text(cardTitle+"\n"+previewText+"\n"+cat+"   "+date,15);
  t.setTextDirection(android.view.View.TEXT_DIRECTION_FIRST_STRONG);
