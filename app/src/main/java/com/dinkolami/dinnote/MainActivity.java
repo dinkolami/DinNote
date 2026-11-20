@@ -1854,7 +1854,14 @@ public class MainActivity extends Activity {
  }
  @Override public void onConfigurationChanged(android.content.res.Configuration newConfig){
   super.onConfigurationChanged(newConfig);
-  if(editor!=null)return; // Preserve in-progress editing and autosave.
+  if(editor!=null){
+   // Keep the active editor and unsaved typing intact across fold/unfold.
+   // Reflow text using Android's new width without recreating the editor.
+   editor.requestLayout();
+   editor.invalidate();
+   if(titleEditor!=null){titleEditor.requestLayout();titleEditor.invalidate();}
+   return;
+  }
   if(sectionOpen&&selected==null){
    if(listScroll!=null){
     int y=listScroll.getScrollY();
