@@ -330,8 +330,8 @@ public class MainActivity extends Activity {
    else if(postingKey.startsWith("m_"))bookCount++;
   }
   LinearLayout tiles=new LinearLayout(this);tiles.setPadding(dp(8),dp(7),dp(8),dp(7));card.addView(tiles);
-  TextView note=dashboardText("✎  Nota\\n"+noteCount+" Topik",18,true);
-  TextView book=dashboardText("▤  Maktabah\\n"+bookCount+" Topik",18,true);
+  TextView note=dashboardText("✎  Nota\n"+noteCount+" Topik",18,true);
+  TextView book=dashboardText("▤  Maktabah\n"+bookCount+" Topik",18,true);
   note.setGravity(Gravity.CENTER);book.setGravity(Gravity.CENTER);note.setFocusable(true);book.setFocusable(true);note.setTextColor(0xff566a70);book.setTextColor(0xff566a70);
   note.setBackground(rounded(0xfff3f6f8,0xffd0d8df,11));
   book.setBackground(rounded(0xfff3f6f8,0xffd0d8df,11));
