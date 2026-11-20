@@ -23,6 +23,26 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.12'
+      - name: Guard installed-app identity and data migration
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib, re, sys
+          gradle = pathlib.Path("app/build.gradle.kts").read_text()
+          manifest = pathlib.Path("app/src/main/AndroidManifest.xml").read_text()
+          app_id = re.search(r'applicationId\s*=\s*"([^"]+)"', gradle)
+          version = re.search(r'versionCode\s*=\s*(\d+)', gradle)
+          if not app_id or app_id.group(1) != "com.dinkolami.dinnote.fresh":
+              sys.exit("ERROR: applicationId changed. This can strand installed user data.")
+          if not version or int(version.group(1)) < 2:
+              sys.exit("ERROR: versionCode regressed; upgrades may be rejected.")
+          if 'android:allowBackup="false"' in manifest:
+              sys.exit("ERROR: Android backup was disabled unexpectedly.")
+          print("Identity retained; versionCode floor and backup policy checked.")
+          PY
+          echo "### Migration safety (static check)" >> "$GITHUB_STEP_SUMMARY"
+          echo "Package ID unchanged; versionCode >= 2; backup policy not disabled. This does not prove in-place upgrades or signing compatibility on a phone." >> "$GITHUB_STEP_SUMMARY"
       - name: Ensure optional OCR remains removed
         shell: bash
         run: |
