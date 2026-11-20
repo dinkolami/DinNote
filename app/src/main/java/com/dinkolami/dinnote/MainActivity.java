@@ -1379,7 +1379,7 @@ public class MainActivity extends Activity {
     String previousLine=prior.substring(start);
     java.util.regex.Matcher numbered=java.util.regex.Pattern.compile("^\\s*(\\d+)\\.\\s*(.*)$").matcher(previousLine);
     if(numbered.matches()){
-     int next=1;try{next=Integer.parseInt(numbered.group(1))+1;}catch(NumberFormatException ignored){}
+     int next=1;try{int current=Integer.parseInt(numbered.group(1));next=current<Integer.MAX_VALUE?current+1:1;}catch(NumberFormatException ignored){}
      restoring[0]=true;
      if(numbered.group(2).trim().isEmpty()){e.delete(start,cursor);editor.setSelection(start);}
      else{String prefix=next+". ";e.insert(cursor,prefix);editor.setSelection(cursor+prefix.length());}
