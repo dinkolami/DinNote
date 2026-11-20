@@ -477,12 +477,19 @@ public class MainActivity extends Activity {
       lastLine=line+1;
      }
      int chars=lastLine>0?layout.getLineEnd(lastLine-1):Math.min(candidate.length(),1);
+      // Reserve the last rendered line as a reading overlap on the next page.
+      // Advance by at least one character so pagination always terminates.
+      int overlapStart=lastLine>1?layout.getLineStart(lastLine-1):0;
      int stop=Math.min(source.length(),cursor+Math.max(1,chars));
      // Never split a surrogate pair, and preserve every character in order.
      if(stop<source.length()&&stop>cursor&&Character.isHighSurrogate(source.charAt(stop-1))&&Character.isLowSurrogate(source.charAt(stop)))stop--;
      if(stop<=cursor)stop=cursor+1;
      parts.add(source.substring(cursor,stop));
      cursor=stop;
+      if(lastLine>1 && overlapStart>0 && cursor<source.length()){
+       int nextCursor=cursor-(chars-overlapStart);
+       if(nextCursor>cursor-chars && nextCursor<cursor)cursor=nextCursor;
+      }
     }
     if(parts.isEmpty())parts.add("");
     final int total=parts.size();
@@ -548,9 +555,9 @@ public class MainActivity extends Activity {
   TextView spacer=text("",12);bar.addView(spacer,new LinearLayout.LayoutParams(0,1,1));
   Button readerFont=action("Aa",bar,()->{new AlertDialog.Builder(this).setTitle("Tetapan bacaan").setItems(new String[]{"Saiz tulisan","Latar Putih","Latar Ivory","Latar Hijau Lembut","Jarak baris: biasa","Jarak baris: luas"},(dialog,choice)->{if(choice==0)new AlertDialog.Builder(this).setTitle("Saiz tulisan").setSingleChoiceItems(new String[]{"Kecil","Biasa","Besar","Sangat besar"},prefs.getInt("reader_font_level",1),(d,which)->{prefs.edit().putInt("reader_font_level",which).apply();d.dismiss();read(key);}).setNegativeButton("Batal",null).show();else if(choice<=3){prefs.edit().putInt("reader_theme",choice-1).apply();read(key);}else{prefs.edit().putBoolean("reader_wide_spacing",choice==5).apply();read(key);}}).show();});readerFont.setContentDescription("Ubah saiz tulisan Nota dan Maktabah");
   Button bookmarkButton=action("♧",bar,()->{int pos=prefs.getInt("reading_scroll_"+key,0);new AlertDialog.Builder(this).setTitle("Penanda bacaan").setMessage("Kedudukan terakhir: "+pos+" px").setPositiveButton("Simpan penanda",(d,w)->{prefs.edit().putInt("bookmark_scroll_"+key,prefs.getInt("reading_scroll_"+key,0)).apply();Toast.makeText(this,"Penanda disimpan",Toast.LENGTH_SHORT).show();}).setNeutralButton("Pergi ke penanda",(d,w)->{int target=prefs.getInt("bookmark_scroll_"+key,-1);if(target>=0){read(key);root.post(()->{ScrollView currentScroll=(ScrollView)root.getChildAt(root.getChildCount()-2);currentScroll.post(()->currentScroll.scrollTo(0,target));});}else Toast.makeText(this,"Tiada penanda",Toast.LENGTH_SHORT).show();}).setNegativeButton("Tutup",null).show();});bookmarkButton.setContentDescription("Penanda bacaan");Button readerEdit=action("✎ Edit",bar,()->edit(key));readerEdit.setContentDescription(key.startsWith("m_")?"Sunting kandungan kitab":"Sunting kandungan nota");
-  Button layoutButton=action("▥",bar,()->{boolean now=prefs.getBoolean("reader_two_columns",getResources().getConfiguration().screenWidthDp>=600);prefs.edit().putBoolean("reader_two_columns",!now).apply();read(key);});layoutButton.setContentDescription("Tukar paparan satu atau dua kolum");layoutButton.setTextColor(0xff176b47); Button readerOptions=action("⋮",bar,()->new AlertDialog.Builder(this).setItems(new String[]{"Edit","Semat / Buka sematan","Duplikasi","Padam"},(d,i)->{if(i==0)edit(key);else if(i==1){boolean pinned=prefs.getBoolean("pinned_"+key,false);prefs.edit().putBoolean("pinned_"+key,!pinned).apply();android.widget.Toast.makeText(this,pinned?"Sematan dibuang":"Nota disemat",android.widget.Toast.LENGTH_SHORT).show();read(key);}else if(i==2)duplicateNote(key);else confirmDelete(key);}).show());readerOptions.setContentDescription(key.startsWith("m_")?"Menu tindakan kitab":"Menu tindakan nota");
+  Button swipeMode=action(prefs.getBoolean("reader_swipe_mode",false)?"⇆ ✓":"⇆",bar,()->{boolean next=!prefs.getBoolean("reader_swipe_mode",false);prefs.edit().putBoolean("reader_swipe_mode",next).apply();read(key);});swipeMode.setContentDescription("Mod swipe halaman untuk skrin terbuka; ulang baris akhir halaman sebelumnya"); Button layoutButton=action("▥",bar,()->{boolean now=prefs.getBoolean("reader_two_columns",getResources().getConfiguration().screenWidthDp>=600);prefs.edit().putBoolean("reader_two_columns",!now).apply();read(key);});layoutButton.setContentDescription("Tukar paparan satu atau dua kolum");layoutButton.setTextColor(0xff176b47); Button readerOptions=action("⋮",bar,()->new AlertDialog.Builder(this).setItems(new String[]{"Edit","Semat / Buka sematan","Duplikasi","Padam"},(d,i)->{if(i==0)edit(key);else if(i==1){boolean pinned=prefs.getBoolean("pinned_"+key,false);prefs.edit().putBoolean("pinned_"+key,!pinned).apply();android.widget.Toast.makeText(this,pinned?"Sematan dibuang":"Nota disemat",android.widget.Toast.LENGTH_SHORT).show();read(key);}else if(i==2)duplicateNote(key);else confirmDelete(key);}).show());readerOptions.setContentDescription(key.startsWith("m_")?"Menu tindakan kitab":"Menu tindakan nota");
   // Page-by-page reader for long Nota and Maktabah content.
-  if(false && prefs.getString(key,"").length()>=100&&!prefs.getBoolean("reader_safe_scroll_"+key,false)){ // Temporarily disable clipped fixed-height pagination; use lossless scroll reader.
+  if(prefs.getString(key,"").length()>=100 && getResources().getConfiguration().screenWidthDp>=500 && prefs.getBoolean("reader_swipe_mode",false)){ // Optional unfolded swipe reader.
    try{showPagedReader(key);return;}
    catch(RuntimeException problem){
     android.util.Log.e("DinNote","Paged reader failed; using safe scrolling",problem);
