@@ -390,7 +390,8 @@ public class MainActivity extends Activity {
     row.setBackground(subtleNoteBorder(9));row.setMinimumHeight(dp(48));
     TextView item=dashboardText((k.startsWith("m_")?"▱  ":"▤  ")+t,14,false);
     item.setTextColor(0xff26352e);item.setGravity(Gravity.CENTER_VERTICAL);
-    item.setPadding(dp(10),dp(8),dp(88),dp(8));item.setIncludeFontPadding(false);
+    item.setPadding(dp(10),dp(8),dp(prefs.getLong("viewed_"+k,0L)>0L?88:10),dp(8));item.setIncludeFontPadding(false);
+    item.setTooltipText(t);
     item.setSingleLine(true);item.setEllipsize(android.text.TextUtils.TruncateAt.END);
     row.addView(item,new FrameLayout.LayoutParams(-1,-2));
     long when=prefs.getLong("viewed_"+k,0L);
@@ -407,6 +408,7 @@ public class MainActivity extends Activity {
     if(wide)(i<5?left:right).addView(row,itemParams);else recentNotes.addView(row,itemParams);
     applyTouchFeedback(row);row.setFocusable(true);
     row.setContentDescription("Buka "+(k.startsWith("m_")?"kitab ":"nota ")+t);
+    row.setTooltipText(t);
     row.setOnClickListener(v->{maktabah=k.startsWith("m_");read(k);});
    }
   }
