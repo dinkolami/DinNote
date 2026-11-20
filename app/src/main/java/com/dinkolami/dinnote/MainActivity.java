@@ -330,11 +330,21 @@ public class MainActivity extends Activity {
    else if(postingKey.startsWith("m_"))bookCount++;
   }
   LinearLayout tiles=new LinearLayout(this);tiles.setPadding(dp(8),dp(7),dp(8),dp(7));card.addView(tiles);
-  TextView note=dashboardText("✎  Nota\n"+noteCount+" Topik",18,true);
-  TextView book=dashboardText("▤  Maktabah\n"+bookCount+" Topik",18,true);
-  note.setGravity(Gravity.CENTER);book.setGravity(Gravity.CENTER);note.setFocusable(true);book.setFocusable(true);note.setTextColor(0xff566a70);book.setTextColor(0xff566a70);
-  note.setBackground(rounded(0xfff3f6f8,0xffd0d8df,11));
-  book.setBackground(rounded(0xfff3f6f8,0xffd0d8df,11));
+  LinearLayout note=new LinearLayout(this);note.setOrientation(LinearLayout.HORIZONTAL);note.setGravity(Gravity.CENTER_VERTICAL);
+  LinearLayout book=new LinearLayout(this);book.setOrientation(LinearLayout.HORIZONTAL);book.setGravity(Gravity.CENTER_VERTICAL);
+  android.widget.ImageView noteIcon=new android.widget.ImageView(this);noteIcon.setImageResource(com.dinkolami.dinnote.R.drawable.dinnote_note);
+  android.widget.ImageView bookIcon=new android.widget.ImageView(this);bookIcon.setImageResource(com.dinkolami.dinnote.R.drawable.dinnote_book);
+  LinearLayout.LayoutParams iconParams=new LinearLayout.LayoutParams(dp(62),dp(62));iconParams.leftMargin=dp(9);iconParams.rightMargin=dp(5);
+  note.addView(noteIcon,iconParams);
+  LinearLayout.LayoutParams bookIconParams=new LinearLayout.LayoutParams(dp(62),dp(62));bookIconParams.leftMargin=dp(9);bookIconParams.rightMargin=dp(5);
+  book.addView(bookIcon,bookIconParams);
+  TextView noteLabel=dashboardText("Nota\n"+noteCount+" Topik",18,true);noteLabel.setGravity(Gravity.CENTER);
+  TextView bookLabel=dashboardText("Maktabah\n"+bookCount+" Topik",18,true);bookLabel.setGravity(Gravity.CENTER);
+  note.addView(noteLabel,new LinearLayout.LayoutParams(0,-2,1));
+  book.addView(bookLabel,new LinearLayout.LayoutParams(0,-2,1));
+  note.setFocusable(true);book.setFocusable(true);noteLabel.setTextColor(0xff174a37);bookLabel.setTextColor(0xff174a37);
+  note.setBackground(rounded(0xfff5f6ef,0xffcba24c,11));
+  book.setBackground(rounded(0xfff5f6ef,0xffcba24c,11));
   LinearLayout.LayoutParams a=new LinearLayout.LayoutParams(0,dp(78),1);a.rightMargin=dp(4);
   LinearLayout.LayoutParams b=new LinearLayout.LayoutParams(0,dp(78),1);b.leftMargin=dp(4);
   tiles.addView(note,a);tiles.addView(book,b);
