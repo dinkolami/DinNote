@@ -767,6 +767,54 @@ public class MainActivity extends Activity {
    .setView(scroll).setNegativeButton("Tutup",null).create();
   popup[0].show();
  }
+ void showReaderActions(String key,boolean compact){
+  boolean book=key.startsWith("m_");
+  String noun=book?"kitab":"nota";
+  String[] labels=compact?new String[]{"Edit","Semat / Buka sematan","Duplikasi","Cari dalam teks","Salin teks dan rujukan","Mod swipe halaman","Tukar satu / dua kolum","Padam"}:new String[]{"Edit","Semat / Buka sematan","Duplikasi","Cari dalam teks","Salin teks dan rujukan","Padam"};
+  String[] icons=compact?new String[]{"✎","♧","▢","⌕","▤","⇆","▥","⌫"}:new String[]{"✎","♧","▢","⌕","▤","⌫"};
+  String[] descriptions=compact?new String[]{"Sunting kandungan","Kekalkan di bahagian atas","Buat salinan "+noun,"Cari perkataan","Salin kandungan dan rujukan","Ubah cara menukar halaman","Pilih susunan bacaan","Padam "+noun+" ini"}:new String[]{"Sunting kandungan","Kekalkan di bahagian atas","Buat salinan "+noun,"Cari perkataan","Salin kandungan dan rujukan","Padam "+noun+" ini"};
+  ScrollView scroll=new ScrollView(this);scroll.setFillViewport(false);
+  LinearLayout panel=new LinearLayout(this);panel.setOrientation(LinearLayout.VERTICAL);
+  panel.setPadding(dp(12),dp(8),dp(12),dp(10));scroll.addView(panel);
+  TextView header=text(book?"▤  Tindakan Maktabah":"▤  Tindakan Nota",18);
+  header.setTypeface(null,android.graphics.Typeface.BOLD);header.setTextColor(0xff176b47);
+  header.setPadding(dp(12),dp(10),dp(12),dp(14));panel.addView(header);
+  final AlertDialog[] dialog=new AlertDialog[1];
+  for(int i=0;i<labels.length;i++){
+   final int option=i;boolean danger=i==labels.length-1;
+   LinearLayout row=new LinearLayout(this);row.setGravity(Gravity.CENTER_VERTICAL);
+   row.setPadding(dp(12),dp(7),dp(12),dp(7));
+   row.setBackground(rounded(danger?0xfffff1f0:0xfff9fbf9,danger?0xfff1d4d2:0xffe2eae4,10));
+   LinearLayout.LayoutParams rowParams=new LinearLayout.LayoutParams(-1,dp(62));
+   rowParams.bottomMargin=dp(5);panel.addView(row,rowParams);
+   TextView symbol=text(icons[i],21);symbol.setGravity(Gravity.CENTER);
+   symbol.setTextColor(danger?0xffa42e2e:0xff176b47);
+   symbol.setBackground(rounded(danger?0xffffdfdc:0xffe2f1e7,danger?0xffffdfdc:0xffe2f1e7,9));
+   row.addView(symbol,new LinearLayout.LayoutParams(dp(42),dp(42)));
+   LinearLayout words=new LinearLayout(this);words.setOrientation(LinearLayout.VERTICAL);
+   words.setPadding(dp(12),0,dp(4),0);row.addView(words,new LinearLayout.LayoutParams(0,-2,1));
+   TextView label=text(labels[i],14);label.setTypeface(null,android.graphics.Typeface.BOLD);
+   label.setTextColor(danger?0xffa42e2e:0xff25372d);words.addView(label);
+   TextView detail=text(descriptions[i],11);detail.setTextColor(danger?0xffa65a56:0xff68766d);words.addView(detail);
+   TextView arrow=text("›",22);arrow.setTextColor(danger?0xffa42e2e:0xff176b47);row.addView(arrow);
+   applyTouchFeedback(row);
+   row.setOnClickListener(v->{
+    dialog[0].dismiss();
+    if(option==0)edit(key);
+    else if(option==1){boolean pinned=prefs.getBoolean("pinned_"+key,false);prefs.edit().putBoolean("pinned_"+key,!pinned).apply();Toast.makeText(this,pinned?"Sematan dibuang":"Disemat",Toast.LENGTH_SHORT).show();read(key);}
+    else if(option==2)duplicateNote(key);
+    else if(option==3)searchInsideReader(key);
+    else if(option==4)copyReaderWithReference(key);
+    else if(compact&&option==5){boolean next=!prefs.getBoolean("reader_swipe_mode",false);prefs.edit().putBoolean("reader_swipe_mode",next).apply();read(key);}
+    else if(compact&&option==6){boolean now=prefs.getBoolean("reader_two_columns",true);prefs.edit().putBoolean("reader_two_columns",!now).apply();read(key);}
+    else confirmDelete(key);
+   });
+  }
+  dialog[0]=new AlertDialog.Builder(this).setView(scroll).setNegativeButton("Tutup",null).create();
+  dialog[0].show();
+  android.view.Window window=dialog[0].getWindow();
+  if(window!=null)window.setLayout(Math.min(getResources().getDisplayMetrics().widthPixels-dp(32),dp(430)),-2);
+ }
  void read(String key){
   editor=null;titleEditor=null;saveIndicator=null;selected=key;prefs.edit().putLong("viewed_"+key,System.currentTimeMillis()).putString(key.startsWith("m_")?"reading_last_m":"reading_last_n",key).apply();cleanBase();
   LinearLayout bar=new LinearLayout(this);bar.setGravity(Gravity.CENTER_VERTICAL);bar.setPadding(dp(8),dp(3),dp(8),dp(3));bar.setBackground(rounded(0xfff8faf8,0xffe1e7e3,12));root.addView(bar);
@@ -792,7 +840,7 @@ public class MainActivity extends Activity {
   }
   }
   if(!compactReaderToolbar){
-  Button layoutButton=action("▥",bar,()->{boolean now=prefs.getBoolean("reader_two_columns",getResources().getConfiguration().screenWidthDp>=600);prefs.edit().putBoolean("reader_two_columns",!now).apply();read(key);});layoutButton.setContentDescription("Tukar paparan satu atau dua kolum");layoutButton.setTextColor(0xff176b47); Button readerOptions=action("⋮",bar,()->new AlertDialog.Builder(this).setItems(compactReaderToolbar?new String[]{"Edit","Semat / Buka sematan","Duplikasi","Padam","Cari dalam teks","Salin teks dan rujukan","Mod swipe halaman","Tukar satu / dua kolum"}:new String[]{"Edit","Semat / Buka sematan","Duplikasi","Padam","Cari dalam teks","Salin teks dan rujukan"},(d,i)->{if(i==0)edit(key);else if(i==1){boolean pinned=prefs.getBoolean("pinned_"+key,false);prefs.edit().putBoolean("pinned_"+key,!pinned).apply();android.widget.Toast.makeText(this,pinned?"Sematan dibuang":"Nota disemat",android.widget.Toast.LENGTH_SHORT).show();read(key);}else if(i==2)duplicateNote(key);else if(i==3)confirmDelete(key);else if(i==4)searchInsideReader(key);else if(i==5)copyReaderWithReference(key);else if(i==6){boolean next=!prefs.getBoolean("reader_swipe_mode",false);prefs.edit().putBoolean("reader_swipe_mode",next).apply();read(key);}else if(i==7){boolean now=prefs.getBoolean("reader_two_columns",true);prefs.edit().putBoolean("reader_two_columns",!now).apply();read(key);}}).show());readerOptions.setContentDescription(key.startsWith("m_")?"Menu tindakan kitab":"Menu tindakan nota");
+  Button layoutButton=action("▥",bar,()->{boolean now=prefs.getBoolean("reader_two_columns",getResources().getConfiguration().screenWidthDp>=600);prefs.edit().putBoolean("reader_two_columns",!now).apply();read(key);});layoutButton.setContentDescription("Tukar paparan satu atau dua kolum");layoutButton.setTextColor(0xff176b47); Button readerOptions=action("⋮",bar,()->showReaderActions(key,compactReaderToolbar));readerOptions.setContentDescription(key.startsWith("m_")?"Menu tindakan kitab":"Menu tindakan nota");
   }
   }
   // Page-by-page reader for long Nota and Maktabah content.
