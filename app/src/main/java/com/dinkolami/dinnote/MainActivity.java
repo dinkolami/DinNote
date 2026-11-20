@@ -401,7 +401,7 @@ public class MainActivity extends Activity {
     long when=prefs.getLong("viewed_"+k,0L);
     if(when>0L){
      TextView date=dashboardText(new java.text.SimpleDateFormat("dd MMM",new java.util.Locale("ms","MY")).format(new java.util.Date(when)),12,false);
-     date.setTextColor(0xff35644a);date.setGravity(Gravity.CENTER);date.setSingleLine(true);
+     date.setTextColor(0xff35644a);date.setGravity(Gravity.CENTER);date.setSingleLine(true);date.setTextDirection(View.TEXT_DIRECTION_LTR);
      date.setBackground(rounded(0xfffaf7ee,0xffe8d9b6,14));date.setIncludeFontPadding(false);date.setMaxLines(1);date.setEllipsize(android.text.TextUtils.TruncateAt.END);
      date.setPadding(dp(7),dp(3),dp(7),dp(3));
      FrameLayout.LayoutParams dateParams=new FrameLayout.LayoutParams(-2,-2,Gravity.RIGHT|Gravity.CENTER_VERTICAL);
