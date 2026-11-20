@@ -464,6 +464,10 @@ public class MainActivity extends Activity {
   }
   for(int i=0;i<Math.min(5,keys.size());i++){
    String key=keys.get(i),label=prefs.getString("title_"+key,"").trim();
+   if(label.isEmpty()){
+    String body=prefs.getString(key,"").trim();
+    if(!body.isEmpty())label=body.split("\\n",2)[0].trim();
+   }
    TextView entry=dashboardText((key.startsWith("m_")?"▱  ":"▤  ")+(label.isEmpty()?"Tanpa tajuk":label),14,false);
    entry.setTextColor(0xff26352e);entry.setGravity(Gravity.CENTER_VERTICAL);
    entry.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
