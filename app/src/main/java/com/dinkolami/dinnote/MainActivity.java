@@ -384,7 +384,7 @@ public class MainActivity extends Activity {
     if(t.trim().isEmpty())t="Tanpa tajuk";
     // Light emerald list: slightly larger titles, dates consistently aligned right.
     FrameLayout row=new FrameLayout(this);
-    row.setBackground(subtleNoteBorder(9));row.setMinimumHeight(dp(40));
+    row.setBackground(subtleNoteBorder(9));row.setMinimumHeight(dp(48));
     TextView item=dashboardText((k.startsWith("m_")?"▱  ":"▤  ")+t,14,false);
     item.setTextColor(0xff26352e);item.setGravity(Gravity.CENTER_VERTICAL);
     item.setPadding(dp(10),dp(8),dp(88),dp(8));item.setIncludeFontPadding(false);
@@ -449,7 +449,7 @@ public class MainActivity extends Activity {
    entry.setTextColor(0xff26352e);entry.setGravity(Gravity.CENTER_VERTICAL);
    entry.setSingleLine(true);entry.setEllipsize(android.text.TextUtils.TruncateAt.END);
    entry.setPadding(dp(10),dp(7),dp(10),dp(7));entry.setIncludeFontPadding(false);
-   entry.setBackground(subtleNoteBorder(9));entry.setMinHeight(dp(40));
+   entry.setBackground(subtleNoteBorder(9));entry.setMinHeight(dp(48));
    LinearLayout.LayoutParams ep=new LinearLayout.LayoutParams(-1,-2);
    ep.bottomMargin=dp(5);target.addView(entry,ep);applyTouchFeedback(entry);
    entry.setFocusable(true);
