@@ -401,14 +401,15 @@ public class MainActivity extends Activity {
   final int paper=theme==0?0xffffffff:theme==2?0xfff2f8f3:0xfffffcf4;
   final LinearLayout pages=new LinearLayout(this);pages.setOrientation(LinearLayout.HORIZONTAL);
   pages.setPadding(dp(8),dp(8),dp(8),dp(8));
-  final TextView counter=text("",12);counter.setGravity(Gravity.CENTER);
+  final TextView counter=text("",12);counter.setGravity(Gravity.CENTER);counter.setTextColor(0xff176b47);
   final LinearLayout controls=new LinearLayout(this);controls.setGravity(Gravity.CENTER_VERTICAL);
   Button previous=new Button(this);previous.setText("‹");previous.setContentDescription("Halaman sebelumnya");
   Button next=new Button(this);next.setText("›");next.setContentDescription("Halaman seterusnya");
   controls.addView(previous,new LinearLayout.LayoutParams(dp(54),-2));
   controls.addView(counter,new LinearLayout.LayoutParams(0,-2,1));
   controls.addView(next,new LinearLayout.LayoutParams(dp(54),-2));
-  root.addView(pages,new LinearLayout.LayoutParams(-1,0,1));root.addView(controls);
+  TextView bookTitle=text(heading,14);bookTitle.setGravity(Gravity.CENTER);bookTitle.setTypeface(null,android.graphics.Typeface.BOLD);bookTitle.setPadding(dp(8),dp(4),dp(8),dp(4));
+  root.addView(bookTitle);root.addView(pages,new LinearLayout.LayoutParams(-1,0,1));root.addView(controls);
   pages.post(()->{
    int availableWidth=Math.max(dp(160),pages.getWidth()-dp(24));
    int pageWidth=spread?(availableWidth-dp(12))/2:availableWidth;
@@ -437,8 +438,18 @@ public class MainActivity extends Activity {
    }
    if(chunks.isEmpty())chunks.add("");
    final int total=chunks.size();
+   final TextView progress=text("",11);progress.setGravity(Gravity.CENTER);progress.setPadding(dp(6),0,dp(6),dp(3));root.addView(progress);
+   final LinearLayout extras=new LinearLayout(this);extras.setGravity(Gravity.CENTER);
+   Button bookmark=new Button(this);bookmark.setAllCaps(false);bookmark.setText("♧ Simpan");
+   Button jump=new Button(this);jump.setAllCaps(false);jump.setText("Halaman");
+   Button focus=new Button(this);focus.setAllCaps(false);focus.setText("Fokus");
+   extras.addView(bookmark,new LinearLayout.LayoutParams(0,-2,1));
+   extras.addView(jump,new LinearLayout.LayoutParams(0,-2,1));
+   extras.addView(focus,new LinearLayout.LayoutParams(0,-2,1));
+   root.addView(extras);
    final int[] index={Math.min(Math.max(0,prefs.getInt("reading_page_"+key,0)),total-1)};
    if(spread)index[0]=(index[0]/2)*2;
+   final boolean[] focused={false};
    final Runnable render=()->{
     pages.removeAllViews();
     int first=index[0],count=spread?2:1;
@@ -446,20 +457,36 @@ public class MainActivity extends Activity {
      int n=first+j;
      TextView page=text(n<total?chunks.get(n):"",fontSize);
      page.setTextColor(0xff26372e);page.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
-     page.setGravity(Gravity.TOP);page.setTextIsSelectable(true);
+     page.setGravity(Gravity.TOP);page.setTextIsSelectable(false);
      page.setLineSpacing(dp(3),1.15f);page.setPadding(dp(12),dp(12),dp(12),dp(12));
      page.setBackground(rounded(paper,0xffdde5e1,10));
      LinearLayout.LayoutParams params=new LinearLayout.LayoutParams(0,-1,1);
      if(j>0)params.leftMargin=dp(12);
      pages.addView(page,params);
+     if(j==0&&spread){
+      View divider=new View(this);divider.setBackgroundColor(0xffc5a66b);
+      pages.addView(divider,new LinearLayout.LayoutParams(dp(1),-1));
+     }
     }
-    counter.setText((first+1)+(spread&&first+1<total?"–"+(first+2):"")+" / "+total+"  •  "+heading);
+    counter.setText((first+1)+(spread&&first+1<total?"–"+(first+2):"")+" / "+total);
+    progress.setText("Bacaan "+Math.min(100,Math.round((first+(spread?2:1))*100f/total))+"%");
+    bookTitle.setVisibility(focused[0]?View.GONE:View.VISIBLE);
+    extras.setVisibility(focused[0]?View.GONE:View.VISIBLE);
     previous.setEnabled(first>0);next.setEnabled(first+(spread?2:1)<total);
     prefs.edit().putInt("reading_page_"+key,first).apply();
    };
+   bookmark.setOnClickListener(v->{prefs.edit().putInt("bookmark_page_"+key,index[0]).apply();Toast.makeText(this,"Penanda halaman disimpan",Toast.LENGTH_SHORT).show();});
+   jump.setOnClickListener(v->{
+    EditText field=new EditText(this);field.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);field.setHint("1 – "+total);
+    new AlertDialog.Builder(this).setTitle("Pergi ke halaman").setView(field).setPositiveButton("Pergi",(d,w)->{
+     try{int target=Integer.parseInt(field.getText().toString())-1;if(target<0||target>=total){Toast.makeText(this,"Nombor halaman tidak sah",Toast.LENGTH_SHORT).show();return;}index[0]=spread?(target/2)*2:target;render.run();}
+     catch(NumberFormatException ex){Toast.makeText(this,"Masukkan nombor halaman",Toast.LENGTH_SHORT).show();}
+    }).setNeutralButton("Penanda",(d,w)->{index[0]=Math.max(0,Math.min(total-1,prefs.getInt("bookmark_page_"+key,0)));if(spread)index[0]=(index[0]/2)*2;render.run();}).setNegativeButton("Batal",null).show();
+   });
+   focus.setOnClickListener(v->{focused[0]=!focused[0];focus.setText(focused[0]?"Tamat fokus":"Fokus");render.run();});
    previous.setOnClickListener(v->{index[0]=Math.max(0,index[0]-(spread?2:1));render.run();});
    next.setOnClickListener(v->{index[0]=Math.min(total-1,index[0]+(spread?2:1));render.run();});
-   pages.setOnTouchListener(new View.OnTouchListener(){
+   final View.OnTouchListener swipeListener=new View.OnTouchListener(){
     float startX,startY;
     public boolean onTouch(View v,android.view.MotionEvent e){
      if(e.getAction()==android.view.MotionEvent.ACTION_DOWN){startX=e.getX();startY=e.getY();return true;}
@@ -475,6 +502,12 @@ public class MainActivity extends Activity {
      }
      return true;
     }
+   };
+   pages.setOnTouchListener(swipeListener);
+   // Children normally consume touch events: attach swipe navigation to each page.
+   pages.setOnHierarchyChangeListener(new ViewGroup.OnHierarchyChangeListener(){
+    public void onChildViewAdded(View parent,View child){if(child instanceof TextView)child.setOnTouchListener(swipeListener);}
+    public void onChildViewRemoved(View parent,View child){}
    });
    render.run();
   });
