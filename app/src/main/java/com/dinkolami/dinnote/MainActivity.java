@@ -986,6 +986,7 @@ public class MainActivity extends Activity {
   int level=Math.max(0,Math.min(3,prefs.getInt("reader_font_level",1)));
   view.setTextSize(new int[]{13,15,16,18}[level]);
   view.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
+  view.setTextAlignment(View.TEXT_ALIGNMENT_GRAVITY);
   view.setBreakStrategy(android.text.Layout.BREAK_STRATEGY_SIMPLE);
   view.setHyphenationFrequency(android.text.Layout.HYPHENATION_FREQUENCY_NONE);
   view.setLineSpacing(prefs.getBoolean("reader_wide_spacing",false)?dp(5):dp(1),
