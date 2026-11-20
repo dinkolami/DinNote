@@ -301,7 +301,7 @@ public class MainActivity extends Activity {
   search.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);
   search.setInputType(android.text.InputType.TYPE_CLASS_TEXT);
   search.setPadding(dp(12),dp(6),dp(12),dp(6));
-  search.setBackground(rounded(Color.WHITE,0xffe5e7eb,8));
+  search.setBackground(rounded(0xffffffff,0xffd7bd79,8));
   LinearLayout.LayoutParams sp=new LinearLayout.LayoutParams(0,dp(42),1);
   quickTools.addView(search,sp);
   search.addTextChangedListener(new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){String q=s.toString().trim();if(!q.isEmpty())showHomeSearchResults(q);}public void afterTextChanged(Editable e){}});
@@ -310,13 +310,13 @@ public class MainActivity extends Activity {
   card.setBackground(rounded(0xfffffdf8,0xffc9a34f,8));
   LinearLayout.LayoutParams cp=new LinearLayout.LayoutParams(-1,-2);page.addView(card,cp);
   TextView count=dashboardText("Nota dan Maktabah",15,true);
-  count.setGravity(Gravity.CENTER);count.setTextColor(0xff123b2b);count.setBackgroundColor(Color.WHITE);card.addView(count);
-  View divider=new View(this);divider.setBackgroundColor(0xffe5e7eb);
+  count.setGravity(Gravity.CENTER);count.setTextColor(0xff176b47);count.setBackgroundColor(0xfffffdf8);card.addView(count);
+  View divider=new View(this);divider.setBackgroundColor(0xffe8d8b0);
   card.addView(divider,new LinearLayout.LayoutParams(-1,dp(1)));
   LinearLayout tiles=new LinearLayout(this);tiles.setPadding(dp(8),dp(5),dp(8),dp(4));card.addView(tiles);
   TextView note=dashboardText("▤\nNota",14,true);
   TextView book=dashboardText("▱\nMaktabah",14,true);
-  note.setGravity(Gravity.CENTER);book.setGravity(Gravity.CENTER);note.setFocusable(true);book.setFocusable(true);
+  note.setGravity(Gravity.CENTER);book.setGravity(Gravity.CENTER);note.setFocusable(true);book.setFocusable(true);note.setTextColor(0xff176b47);book.setTextColor(0xff176b47);
   note.setBackground(rounded(0xffedf8ef,0xffc9a34f,10));
   book.setBackground(rounded(0xffedf8ef,0xffc9a34f,10));
   LinearLayout.LayoutParams a=new LinearLayout.LayoutParams(0,dp(78),1);a.rightMargin=dp(4);
@@ -338,7 +338,7 @@ public class MainActivity extends Activity {
    resumeButton.setOnClickListener(v->edit(resume));
   }
   LinearLayout recentNotes=new LinearLayout(this);recentNotes.setOrientation(1);
-  recentNotes.setPadding(dp(12),dp(2),dp(12),dp(5));card.addView(recentNotes);
+  recentNotes.setPadding(dp(10),dp(2),dp(10),dp(5));card.addView(recentNotes);
   ArrayList<String> keys=new ArrayList<>();
   for(String k:prefs.getAll().keySet())if((k.startsWith("n_")||k.startsWith("m_"))&&prefs.getLong("viewed_"+k,0L)>0L)keys.add(k);
   Collections.sort(keys,(firstKey,secondKey)->Long.compare(prefs.getLong("viewed_"+secondKey,0L),prefs.getLong("viewed_"+firstKey,0L)));
@@ -387,7 +387,7 @@ public class MainActivity extends Activity {
     if(when>0L){
      TextView date=dashboardText(new java.text.SimpleDateFormat("dd MMM",new java.util.Locale("ms","MY")).format(new java.util.Date(when)),12,false);
      date.setTextColor(0xff35644a);date.setGravity(Gravity.CENTER);
-     date.setBackground(rounded(0xffeaf7eb,0xffeaf7eb,14));
+     date.setBackground(rounded(0xfff6f3e9,0xffead8ac,14));
      date.setPadding(dp(8),dp(3),dp(8),dp(3));
      FrameLayout.LayoutParams dateParams=new FrameLayout.LayoutParams(-2,-2,Gravity.RIGHT|Gravity.CENTER_VERTICAL);
      dateParams.rightMargin=dp(8);row.addView(date,dateParams);
@@ -401,7 +401,7 @@ public class MainActivity extends Activity {
    }
   }
   TextView add=dashboardText("＋  Nota baharu",15,true);add.setGravity(Gravity.CENTER);
-  add.setBackground(silverGradient(8));
+  add.setBackground(rounded(0xfff1f8f1,0xffc9a34f,8));add.setTextColor(0xff176b47);
   add.setPadding(dp(12),dp(8),dp(12),dp(8));
   LinearLayout.LayoutParams ap=new LinearLayout.LayoutParams(-1,-2);
   ap.topMargin=dp(3);page.addView(add,ap);
