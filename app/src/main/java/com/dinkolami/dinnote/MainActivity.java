@@ -496,10 +496,10 @@ public class MainActivity extends Activity {
    entry.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
    entry.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);
    entry.setSingleLine(true);entry.setEllipsize(android.text.TextUtils.TruncateAt.END);
-   entry.setPadding(dp(10),dp(folded?4:7),dp(10),dp(folded?4:7));entry.setIncludeFontPadding(false);
-   entry.setBackground(subtleNoteBorder(9));entry.setMinHeight(dp(folded?42:48));
+   entry.setPadding(dp(10),dp(folded?3:7),dp(10),dp(folded?3:7));entry.setIncludeFontPadding(false);
+   entry.setBackground(subtleNoteBorder(9));entry.setMinHeight(dp(folded?38:48));
    LinearLayout.LayoutParams ep=new LinearLayout.LayoutParams(-1,-2);
-   ep.bottomMargin=dp(folded?4:5);target.addView(entry,ep);applyTouchFeedback(entry);
+   ep.bottomMargin=dp(folded?3:5);target.addView(entry,ep);applyTouchFeedback(entry);
    entry.setFocusable(true);
    entry.setContentDescription("Buka "+(key.startsWith("m_")?"kitab ":"nota ")+(label.isEmpty()?"Tanpa tajuk":label));entry.setTooltipText(label.isEmpty()?"Tanpa tajuk":label);
    entry.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);
