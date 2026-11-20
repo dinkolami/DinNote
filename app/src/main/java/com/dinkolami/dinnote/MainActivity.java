@@ -617,7 +617,7 @@ public class MainActivity extends Activity {
   // Display saved content immediately, even before pagination is calculated.
   TextView loading=text(source,Math.max(12,fontSize));loading.setTextColor(0xff26372e);loading.setPadding(dp(12),dp(12),dp(12),dp(12));pageRow.addView(loading,new LinearLayout.LayoutParams(-1,-1));
   pageRow.post(()->{
-   if(pageRow.getParent()==null||root==null||!key.equals(selected)||!pageRow.isAttachedToWindow())return;
+   if(isFinishing()||isDestroyed()||pageRow.getParent()==null||root==null||!key.equals(selected)||!pageRow.isAttachedToWindow())return;
    try{
     // Measure actual rendered lines, not an estimated character count.
     // Keep a small bottom reserve so the final line is never clipped.
