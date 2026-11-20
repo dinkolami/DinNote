@@ -971,6 +971,14 @@ public class MainActivity extends Activity {
    Toast.makeText(this,"Data DinNote berjaya dipulihkan",Toast.LENGTH_LONG).show();
   }catch(Exception e){Toast.makeText(this,"Restore gagal: "+e.getMessage(),Toast.LENGTH_LONG).show();}
  }
+ @Override public void onConfigurationChanged(android.content.res.Configuration newConfig){
+  super.onConfigurationChanged(newConfig);
+  if(editor!=null)return; // Preserve in-progress editing and autosave.
+  if(selected!=null&&prefs.contains(selected)){
+   String key=selected;
+   root.post(()->{if(editor==null&&key.equals(selected))read(key);});
+  }
+ }
  @Override protected void onPause(){if(editor!=null)save();super.onPause();}
  public void onBackPressed(){if(editor!=null){save();String key=selected;editor=null;if(key!=null)read(key);else home();}else if(selected!=null){returnFromReader();}else if(sectionOpen){home();}else super.onBackPressed();}
 }
