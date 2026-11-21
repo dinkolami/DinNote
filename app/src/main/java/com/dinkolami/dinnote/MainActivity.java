@@ -1106,10 +1106,9 @@ public class MainActivity extends Activity {
   }
   readerScroll=null;
   editor=null;titleEditor=null;saveIndicator=null;selected=key;prefs.edit().putLong("viewed_"+key,System.currentTimeMillis()).putString(key.startsWith("m_")?"reading_last_m":"reading_last_n",key).apply();cleanBase();
-  LinearLayout bar=new LinearLayout(this);bar.setGravity(Gravity.CENTER_VERTICAL);bar.setPadding(dp(6),dp(2),dp(6),dp(2));bar.setBackgroundColor(android.graphics.Color.TRANSPARENT);bar.setTag("reader_toolbar");
-  TextView toolbarSpace=text("",12);bar.addView(toolbarSpace,new LinearLayout.LayoutParams(0,1,1));
+  LinearLayout bar=new LinearLayout(this);bar.setGravity(Gravity.CENTER_VERTICAL);bar.setPadding(dp(8),dp(3),dp(8),dp(3));bar.setBackground(rounded(0xfffffefd,0xffb8c2ca,12));bar.setTag("reader_toolbar");root.addView(bar);
   Button readerBack=action("‹",bar,()->returnFromReader());readerBack.setContentDescription(key.startsWith("m_")?"Kembali ke senarai kitab":"Kembali ke senarai nota");
-  
+  TextView spacer=text("",12);bar.addView(spacer,new LinearLayout.LayoutParams(0,1,1));
   boolean cleanReading=prefs.getBoolean("reader_clean_mode",false);
   Button cleanToggle=action(cleanReading?"▣":"▢",bar,()->{prefs.edit().putBoolean("reader_clean_mode",!cleanReading).apply();read(key);});
   cleanToggle.setContentDescription(cleanReading?"Paparkan semula toolbar bacaan":"Aktifkan mod bacaan bersih");
@@ -1155,7 +1154,7 @@ public class MainActivity extends Activity {
   LinearLayout.LayoutParams readingFrame=new LinearLayout.LayoutParams(-1,-2);
   readingFrame.setMargins(dp(12),dp(8),dp(12),dp(12));scroll.addView(body,readingFrame);
   LinearLayout metaRow=new LinearLayout(this);metaRow.setOrientation(LinearLayout.HORIZONTAL);
-  metaRow.setGravity(Gravity.START);metaRow.setPadding(dp(6),dp(1),dp(6),dp(1));
+  metaRow.setGravity(Gravity.CENTER_VERTICAL);metaRow.setPadding(dp(16),dp(4),dp(16),dp(4));
   TextView sectionLabel=text(key.startsWith("m_")?"▤  Maktabah":"✎  Nota",12);
   sectionLabel.setTextColor(0xff5b7077);sectionLabel.setSingleLine(true);
   sectionLabel.setIncludeFontPadding(false);
@@ -1167,15 +1166,13 @@ public class MainActivity extends Activity {
   categoryLine.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_END);
   categoryLine.setIncludeFontPadding(false);
   metaRow.addView(categoryLine,new LinearLayout.LayoutParams(0,-2,1));
-  LinearLayout.LayoutParams metaParams=new LinearLayout.LayoutParams(-1,-2);
-  metaParams.topMargin=dp(52); // Reserve space inside the single posting card for fixed controls.
-  body.addView(metaRow,metaParams);
+  body.addView(metaRow,new LinearLayout.LayoutParams(-1,-2));
   TextView title=text(heading,20);title.setMaxLines(3);
   title.setEllipsize(android.text.TextUtils.TruncateAt.END);
   title.setBackground(rounded(0xfffffefd,0xffb8c2ca,12));
   title.setTextColor(0xff4d6068);title.setTypeface(null,android.graphics.Typeface.BOLD);
   title.setPadding(dp(24),dp(8),dp(24),dp(8));
-  title.setGravity(Gravity.CENTER);title.setTextIsSelectable(true);
+  title.setGravity(Gravity.CENTER_VERTICAL|Gravity.START);title.setTextIsSelectable(true);
   title.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);title.setIncludeFontPadding(true);
   if(!heading.isEmpty())body.addView(title);
   String firstReadingLine=fullReadingText.split("\\R",2)[0].trim();
@@ -1290,20 +1287,7 @@ public class MainActivity extends Activity {
   wordCounter.setTextColor(0xff687078);
   wordCounter.setPadding(dp(20),dp(8),dp(20),dp(20));
   body.addView(wordCounter);
-  // Fixed reader controls: overlay the posting frame, never inside the scrolling body.
-  FrameLayout readerFrame=new FrameLayout(this);
-  readerFrame.setBackgroundColor(android.graphics.Color.TRANSPARENT); // Only the original posting card has a background and border.
-  readerFrame.setClipChildren(false);
-  readerFrame.setClipToPadding(false);
-  scroll.setPadding(0,0,0,0);
-  scroll.setClipToPadding(false);
-  readerFrame.addView(scroll,new FrameLayout.LayoutParams(-1,-1));
-  FrameLayout.LayoutParams fixedBarParams=new FrameLayout.LayoutParams(-2,-2,Gravity.TOP|Gravity.RIGHT);
-  fixedBarParams.setMargins(dp(4),0,dp(8),0);
-  // Keep controls fixed at the top-right, centered across the posting border.
-  bar.setTranslationY(0);
-  readerFrame.addView(bar,fixedBarParams);
-  root.addView(readerFrame,new LinearLayout.LayoutParams(-1,0,1));
+  root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
    // Compact reading progress indicator shared by Nota and Maktabah.
    FrameLayout progressFrame=new FrameLayout(this);
    progressFrame.setBackgroundColor(0xfff8faf8);
