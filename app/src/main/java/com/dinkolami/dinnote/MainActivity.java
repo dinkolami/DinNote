@@ -550,7 +550,7 @@ public class MainActivity extends Activity {
    entry.setSingleLine(true);entry.setEllipsize(android.text.TextUtils.TruncateAt.END);
    entry.setIncludeFontPadding(false);entry.setPadding(0,0,0,0);entry.setMinWidth(0);
    LinearLayout line=new LinearLayout(this);line.setOrientation(LinearLayout.HORIZONTAL);line.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);line.setGravity(Gravity.CENTER_VERTICAL);
-   line.setPadding(dp(7),dp(folded?3:7),dp(7),dp(folded?3:7));line.setBackground(dashboardTileSurface(!pin));line.setElevation(dp(1));line.setMinimumHeight(dp(folded?38:48));
+   line.setPadding(dp(7),dp(folded?3:7),dp(7),dp(folded?3:7));line.setBackground(subtleNoteBorder(9));line.setMinimumHeight(dp(folded?38:48));
    line.addView(entry,new LinearLayout.LayoutParams(0,-2,1));
    Object rawStamp=prefs.getAll().get("updated_"+key);
    long stamp=rawStamp instanceof Number?((Number)rawStamp).longValue():0L;
@@ -560,7 +560,10 @@ public class MainActivity extends Activity {
     String date=cal.get(java.util.Calendar.DAY_OF_MONTH)+" "+months[cal.get(java.util.Calendar.MONTH)];
     if(!pin)date+=" · "+new java.text.SimpleDateFormat("HHmm",java.util.Locale.ROOT).format(new java.util.Date(stamp));
     TextView time=dashboardText(date,10,false);time.setTextColor(0xff68756c);time.setSingleLine(true);time.setTextDirection(View.TEXT_DIRECTION_LTR);time.setIncludeFontPadding(false);time.setGravity(Gravity.RIGHT|Gravity.CENTER_VERTICAL);time.setPadding(dp(5),0,0,0);
-    line.addView(time,new LinearLayout.LayoutParams(-2,-2));
+    time.setBackground(rounded(pin?0xffd0e0d5:0xffe0e5e1,pin?0xffcbdcd0:0xffd7ded9,8));
+    time.setTextColor(0xff52725e);time.setGravity(Gravity.CENTER);time.setPadding(dp(5),0,dp(5),0);
+    LinearLayout.LayoutParams dateParams=new LinearLayout.LayoutParams(-2,dp(24));dateParams.leftMargin=dp(4);
+    line.addView(time,dateParams);
    }
    LinearLayout.LayoutParams ep=new LinearLayout.LayoutParams(-1,-2);ep.bottomMargin=dp(folded?3:5);target.addView(line,ep);applyTouchFeedback(line);
    line.setFocusable(true);line.setContentDescription("Buka "+(key.startsWith("m_")?"kitab ":"nota ")+(label.isEmpty()?"Tanpa tajuk":label));line.setTooltipText(label.isEmpty()?"Tanpa tajuk":label);
