@@ -560,8 +560,8 @@ public class MainActivity extends Activity {
     String date=cal.get(java.util.Calendar.DAY_OF_MONTH)+" "+months[cal.get(java.util.Calendar.MONTH)];
     if(!pin)date+=" · "+new java.text.SimpleDateFormat("HHmm",java.util.Locale.ROOT).format(new java.util.Date(stamp));
     TextView time=dashboardText(date,10,false);time.setTextColor(0xff68756c);time.setSingleLine(true);time.setTextDirection(View.TEXT_DIRECTION_LTR);time.setIncludeFontPadding(false);time.setGravity(Gravity.RIGHT|Gravity.CENTER_VERTICAL);time.setPadding(dp(5),0,0,0);
-    time.setBackground(rounded(pin?0xffd0e0d5:0xffe0e5e1,pin?0xffcbdcd0:0xffd7ded9,8));
-    time.setTextColor(0xff52725e);time.setGravity(Gravity.CENTER);time.setPadding(dp(5),0,dp(5),0);
+    time.setBackground(rounded(0xffc3ead8,0xff79b79b,8));
+    time.setTextColor(0xff174d37);time.setTypeface(android.graphics.Typeface.create("sans-serif-medium",android.graphics.Typeface.NORMAL));time.setGravity(Gravity.CENTER);time.setPadding(dp(5),0,dp(5),0);
     LinearLayout.LayoutParams dateParams=new LinearLayout.LayoutParams(-2,dp(24));dateParams.leftMargin=dp(4);
     line.addView(time,dateParams);
    }
