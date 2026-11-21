@@ -1290,16 +1290,16 @@ public class MainActivity extends Activity {
   body.addView(wordCounter);
   // Fixed reader controls: overlay the posting frame, never inside the scrolling body.
   FrameLayout readerFrame=new FrameLayout(this);
-  readerFrame.setBackground(rounded(0xfffffefd,0xffb8c2ca,12));
+  readerFrame.setBackgroundColor(0xfffffefd); // No duplicate outer posting border.
   readerFrame.setClipChildren(false);
   readerFrame.setClipToPadding(false);
-  scroll.setPadding(0,dp(48),0,0);
+  scroll.setPadding(0,dp(36),0,0);
   scroll.setClipToPadding(false);
   readerFrame.addView(scroll,new FrameLayout.LayoutParams(-1,-1));
   FrameLayout.LayoutParams fixedBarParams=new FrameLayout.LayoutParams(-2,-2,Gravity.TOP|Gravity.RIGHT);
   fixedBarParams.setMargins(dp(4),0,dp(8),0);
   // Keep controls fixed at the top-right, centered across the posting border.
-  bar.setTranslationY(-dp(18));
+  bar.setTranslationY(0);
   readerFrame.addView(bar,fixedBarParams);
   root.addView(readerFrame,new LinearLayout.LayoutParams(-1,0,1));
    // Compact reading progress indicator shared by Nota and Maktabah.
