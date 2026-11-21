@@ -357,38 +357,30 @@ public class MainActivity extends Activity {
    else if(postingKey.startsWith("m_"))bookCount++;
   }
   LinearLayout tiles=new LinearLayout(this);tiles.setPadding(dp(8),dp(3),dp(8),dp(5));card.addView(tiles);
-  // Place topic counts beside the section names, not on a clipped third line.
-  TextView note=dashboardText("✎\nNota  ·  "+noteCount+" topik",12,true);
-  TextView book=dashboardText("▤\nMaktabah  ·  "+bookCount+" topik",12,true);
-  android.text.SpannableString noteLabel=new android.text.SpannableString(note.getText());
-  android.text.SpannableString bookLabel=new android.text.SpannableString(book.getText());
-  int noteStart=noteLabel.toString().indexOf("  ·  ");
-  int bookStart=bookLabel.toString().indexOf("  ·  ");
-  noteLabel.setSpan(new android.text.style.RelativeSizeSpan(0.84f),noteStart,noteLabel.length(),33);
-  bookLabel.setSpan(new android.text.style.RelativeSizeSpan(0.84f),bookStart,bookLabel.length(),33);
-  noteLabel.setSpan(new android.text.style.ForegroundColorSpan(0xff997b3e),noteStart,noteLabel.length(),33);
-  bookLabel.setSpan(new android.text.style.ForegroundColorSpan(0xff997b3e),bookStart,bookLabel.length(),33);
-  note.setText(noteLabel);book.setText(bookLabel);
-  // Two lines fit comfortably inside the compact tiles.
-  note.setIncludeFontPadding(false);book.setIncludeFontPadding(false);
-  note.setLineSpacing(0f,1f);book.setLineSpacing(0f,1f);
-  note.setPadding(dp(3),dp(3),dp(3),dp(3));
-  book.setPadding(dp(3),dp(3),dp(3),dp(3));
-  note.setGravity(Gravity.CENTER);book.setGravity(Gravity.CENTER);note.setFocusable(true);book.setFocusable(true);note.setTextColor(0xff566a70);book.setTextColor(0xff566a70);
-  note.setBackground(rounded(0xffe9f8ed,0xffa6cdb7,14));note.setElevation(dp(2));
-  // Pearl inset finish: a hairline outline and gentle top-to-bottom shading.
-  android.graphics.drawable.GradientDrawable bookInset=new android.graphics.drawable.GradientDrawable(
-    android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
-    new int[]{0xfff0f2f3,0xfff9faf9,0xffffffff});
-  bookInset.setCornerRadius(dp(14));
-  bookInset.setStroke(Math.max(1,Math.round(getResources().getDisplayMetrics().density*0.6f)),0xffcbd2d5);
-  book.setBackground(bookInset);book.setElevation(dp(1));
-  LinearLayout.LayoutParams a=new LinearLayout.LayoutParams(0,dp(66),1);a.rightMargin=dp(4);
-  LinearLayout.LayoutParams b=new LinearLayout.LayoutParams(0,dp(66),1);b.leftMargin=dp(4);
-  tiles.addView(note,a);tiles.addView(book,b);
-  note.setContentDescription("Buka senarai Nota, "+noteCount+" topik");book.setContentDescription("Buka Maktabah, "+bookCount+" topik");
-  note.setOnClickListener(v->openSection(false));book.setOnClickListener(v->openSection(true));
-  applyTouchFeedback(note);applyTouchFeedback(book);
+  for(int j=0;j<2;j++){
+   final boolean isBook=j==1;
+   LinearLayout tile=new LinearLayout(this);tile.setGravity(Gravity.CENTER_VERTICAL);
+   tile.setPadding(dp(8),0,dp(8),0);
+   android.graphics.drawable.GradientDrawable surface=new android.graphics.drawable.GradientDrawable(
+     android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
+     isBook?new int[]{0xffffffff,0xffe9edeb}:new int[]{0xfffafffb,0xffddece2});
+   surface.setCornerRadius(dp(12));surface.setStroke(Math.max(1,Math.round(getResources().getDisplayMetrics().density*0.6f)),isBook?0xffd2d9d5:0xffc3d3c8);
+   tile.setBackground(surface);tile.setElevation(dp(1));
+   TextView symbol=dashboardText(isBook?"▤":"✎",20,false);
+   symbol.setTextColor(0xff528069);symbol.setPadding(0,0,dp(5),0);tile.addView(symbol);
+   TextView label=dashboardText(isBook?"Maktabah":"Nota",12,true);
+   label.setTextColor(0xff365c48);label.setSingleLine(true);label.setPadding(0,0,0,0);
+   tile.addView(label,new LinearLayout.LayoutParams(0,-2,1));
+   TextView count=dashboardText(String.valueOf(isBook?bookCount:noteCount),14,true);
+   count.setTextColor(0xff52725e);count.setGravity(Gravity.CENTER);count.setPadding(dp(5),0,dp(5),0);
+   count.setBackground(rounded(isBook?0xffe0e5e1:0xffd0e0d5,isBook?0xffd7ded9:0xffcbdcd0,8));
+   tile.addView(count,new LinearLayout.LayoutParams(-2,dp(24)));
+   LinearLayout.LayoutParams tp=new LinearLayout.LayoutParams(0,dp(54),1);
+   if(isBook)tp.leftMargin=dp(4);else tp.rightMargin=dp(4);
+   tiles.addView(tile,tp);tile.setFocusable(true);
+   tile.setContentDescription((isBook?"Maktabah, ":"Nota, ")+(isBook?bookCount:noteCount)+" topik");
+   tile.setOnClickListener(v->openSection(isBook));applyTouchFeedback(tile);
+  }
   // Compact GitHub-style shortcuts, without changing the approved header.
   LinearLayout shortcuts=new LinearLayout(this);shortcuts.setOrientation(1);
   shortcuts.setPadding(dp(2),dp(2),dp(2),dp(1));page.addView(shortcuts);
