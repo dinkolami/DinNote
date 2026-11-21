@@ -1642,21 +1642,24 @@ public class MainActivity extends Activity {
   }
   final Runnable refreshFormatting=()->{
    if(editor==null)return;
-   int cursor=Math.max(0,editor.getSelectionStart());
-   String body=editor.getText().toString();
-   String prefix=body.substring(0,Math.min(cursor,body.length()));
-   boolean boldActive=(prefix.split(java.util.regex.Pattern.quote("**"),-1).length%2)==0;
-   boolean italicActive=(prefix.replace("**","").length()-prefix.replace("**","").replace("*","").length())%2==1;
-   boldButton.setBackground(rounded(boldActive?0xff516970:0xfffbfdfb,boldActive?0xffadbcc5:0xffd2dbe2,10));
-   boldButton.setTextColor(boldActive?Color.WHITE:0xff566a70);
-   italicButton.setBackground(rounded(italicActive?0xff516970:0xfffbfdfb,italicActive?0xffadbcc5:0xffd2dbe2,10));
-   italicButton.setTextColor(italicActive?Color.WHITE:0xff566a70);
+   int a=Math.min(editor.getSelectionStart(),editor.getSelectionEnd()),b=Math.max(editor.getSelectionStart(),editor.getSelectionEnd());
+   int mask=a<0?0:richMask(editor.getText(),a,b);
+   Button[] buttons={boldButton,italicButton,underlineButton};
+   for(int i=0;i<buttons.length;i++){
+    boolean active=(mask&(1<<i))!=0;
+    buttons[i].setBackground(rounded(active?0xff176b47:0xfffbfdfb,active?0xffb8d5c2:0xffd2dbe2,10));
+    buttons[i].setTextColor(active?Color.WHITE:0xff566a70);
+    buttons[i].setSelected(active);
+   }
   };
   formatRefresh[0]=refreshFormatting;
+  boldButton.setOnClickListener(v->{applyLiveStyle(1);refreshFormatting.run();});
+  italicButton.setOnClickListener(v->{applyLiveStyle(2);refreshFormatting.run();});
+  underlineButton.setOnClickListener(v->{applyLiveStyle(4);refreshFormatting.run();});
   editor.setOnClickListener(v->refreshFormatting.run());
   Button toolsButton=action("⌕",formatBar,()->new AlertDialog.Builder(this).setTitle("Alat penyuntingan")
    .setItems(new String[]{"Cari dan ganti","Buang format terpilih","Preset format"},(d,i)->{
-    if(i==0)showEditorFindReplace();else if(i==1)clearSelectedFormatting();else showEditorFormatPresets();
+    if(i==0)showEditorFindReplace();else if(i==1){clearSelectedFormatting();refreshFormatting.run();}else showEditorFormatPresets();
    }).show());
   toolsButton.setContentDescription("Alat penyuntingan tambahan");
 
