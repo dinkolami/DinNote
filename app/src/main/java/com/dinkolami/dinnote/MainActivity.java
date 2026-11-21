@@ -1317,7 +1317,7 @@ public class MainActivity extends Activity {
   content.setPadding(readingSide,dp(10),readingSide,dp(12));if(prefs.getBoolean("reader_wide_spacing",false))content.setLineSpacing(dp(5),1.15f);else content.setLineSpacing(dp(1),1.0f);content.setIncludeFontPadding(true);applySharedTextMetrics(content);
   // Display list rows with subtle mint dividers; preserve the original stored text.
   String[] displayLines=fullReadingText.split("\\n",-1);
-  boolean hasBoxes=fullReadingText.matches("(?s).*---KOTAK(?:DALIL|HIKMAH|CATATAN|FIRMAN|SABDA)---.*");
+  boolean hasBoxes=fullReadingText.matches("(?s).*---KOTAK(?:DALIL|HIKMAH|CATATAN|FIRMAN|SABDA|SAHABAT|TABII|ULAMA)---.*");
   boolean hasLists=hasBoxes;
   for(String line:displayLines)if(line.trim().matches("---(?:FLOWER|GEOMETRIC|CLASSIC)?---|---")){hasLists=true;break;}
   for(String line:displayLines)if(line.matches("^\\s*(?:\\d+\\.\\s+|[•☐☑✓]\\s+).*")){hasLists=true;break;}
@@ -1434,7 +1434,7 @@ public class MainActivity extends Activity {
    }
   }
   String readingText=prefs.getString(key,"").trim();
-  String countable=normalizeStructuralMarkers(readingText).replaceAll("(?m)^---(?:KOTAK(?:DALIL|HIKMAH|CATATAN|FIRMAN|SABDA|TAMAT)|FLOWER|GEOMETRIC|CLASSIC)---[ \\t]*$","").replaceAll("</?[biu]>","").trim();
+  String countable=normalizeStructuralMarkers(readingText).replaceAll("(?m)^---(?:KOTAK(?:DALIL|HIKMAH|CATATAN|FIRMAN|SABDA|SAHABAT|TABII|ULAMA|TAMAT)|FLOWER|GEOMETRIC|CLASSIC)---[ \\t]*$","").replaceAll("</?[biu]>","").trim();
   int wordCount=0;java.util.regex.Matcher words=java.util.regex.Pattern.compile("[\\p{L}\\p{N}][\\p{L}\\p{M}\\p{N}]*").matcher(countable);while(words.find())wordCount++;
   long readingUpdated=prefs.getLong("updated_"+key,0L);String updatedLabel=readingUpdated>0?new java.text.SimpleDateFormat("dd/MM/yyyy",java.util.Locale.getDefault()).format(new java.util.Date(readingUpdated)):"—";TextView wordCounter=text(wordCount+" perkataan  ·  Dikemas kini "+updatedLabel,12);
   wordCounter.setTextColor(0xff687078);
@@ -1645,7 +1645,7 @@ public class MainActivity extends Activity {
   editor.setOnTouchListener((v,event)->{if(event.getActionMasked()==android.view.MotionEvent.ACTION_DOWN){boxTouchOffset[0]=((EditText)v).getOffsetForPosition(event.getX(),event.getY());}return false;});
   editor.setOnLongClickListener(v->{
    int offset=boxTouchOffset[0];if(offset<0||editor!=v)return false;
-   java.util.regex.Matcher headers=java.util.regex.Pattern.compile("(?m)^---KOTAK(?:DALIL|HIKMAH|CATATAN|FIRMAN|SABDA)---$").matcher(editor.getText());
+   java.util.regex.Matcher headers=java.util.regex.Pattern.compile("(?m)^---KOTAK(?:DALIL|HIKMAH|CATATAN|FIRMAN|SABDA|SAHABAT|TABII|ULAMA)---$").matcher(editor.getText());
    while(headers.find()){if(offset>=headers.start()&&offset<=headers.end()){editor.setSelection(headers.end());return manageCurrentBox();}}
    return false;
   });
@@ -1819,7 +1819,7 @@ public class MainActivity extends Activity {
   for(BoxMarkerSpan span:e.getSpans(0,e.length(),BoxMarkerSpan.class))e.removeSpan(span);
   for(BoxBodySpan span:e.getSpans(0,e.length(),BoxBodySpan.class))e.removeSpan(span);
   for(BoxInsetSpan span:e.getSpans(0,e.length(),BoxInsetSpan.class))e.removeSpan(span);
-  java.util.regex.Matcher m=java.util.regex.Pattern.compile("(?m)^---KOTAK(DALIL|HIKMAH|CATATAN|FIRMAN|SABDA|TAMAT)---$").matcher(e.toString());
+  java.util.regex.Matcher m=java.util.regex.Pattern.compile("(?m)^---KOTAK(DALIL|HIKMAH|CATATAN|FIRMAN|SABDA|SAHABAT|TABII|ULAMA|TAMAT)---$").matcher(e.toString());
   int body=-1,bg=0,ink=0,first=-1;
   while(m.find()){
    String kind=m.group(1);
@@ -1827,10 +1827,10 @@ public class MainActivity extends Activity {
     if(first>=0){e.setSpan(new BoxBodySpan(bg,ink,first,m.end()),first,m.end(),33);if(body<m.start())e.setSpan(new BoxInsetSpan(),body,m.start(),33);}
     e.setSpan(new BoxMarkerSpan("",ink,bg),m.start(),m.end(),33);body=-1;first=-1;continue;
    }
-   boolean gold=kind.equals("SABDA"),gray=kind.equals("CATATAN"),wisdom=kind.equals("HIKMAH"),dalil=kind.equals("DALIL");
-   bg=gold?0xfffaf5e8:gray?0xfffcf0f2:wisdom?0xfff5eff9:dalil?0xffedf4fa:0xffedf5ee;
-   ink=gold?0xff96783e:gray?0xff946176:wisdom?0xff79549b:dalil?0xff426e96:0xff176b47;
-   String title=kind.equals("FIRMAN")?"Firman Allah SWT:":kind.equals("SABDA")?"Sabda Nabi SAW:":dalil?"Dalil":wisdom?"Kalam Hikmah":"Catatan Penting";
+   boolean gold=kind.equals("SABDA"),gray=kind.equals("CATATAN"),wisdom=kind.equals("HIKMAH"),dalil=kind.equals("DALIL"),sahabat=kind.equals("SAHABAT"),tabii=kind.equals("TABII"),ulama=kind.equals("ULAMA");
+   bg=sahabat?0xfff1f6ec:tabii?0xfff1f4fa:ulama?0xfffaf1ed:gold?0xfffaf5e8:gray?0xfffcf0f2:wisdom?0xfff5eff9:dalil?0xffedf4fa:0xffedf5ee;
+   ink=sahabat?0xff607d42:tabii?0xff536f9b:ulama?0xff9b654b:gold?0xff96783e:gray?0xff946176:wisdom?0xff79549b:dalil?0xff426e96:0xff176b47;
+   String title=kind.equals("FIRMAN")?"Firman Allah SWT:":kind.equals("SABDA")?"Sabda Nabi SAW:":dalil?"Dalil":wisdom?"Kalam Hikmah":sahabat?"Kata Sahabat Rdh.":tabii?"Kata Tabi\u0027in Rhm.":ulama?"Kata Ulama\u0027 Rhm.":"Catatan Penting";
    first=m.start();e.setSpan(new BoxMarkerSpan(title,ink,bg),m.start(),m.end(),33);body=Math.min(e.length(),m.end()+1);
   }
  }
@@ -1953,14 +1953,14 @@ public class MainActivity extends Activity {
   String[] lines=source.split("\\n",-1);
   for(int i=0;i<lines.length;i++){
    String plain=lines[i].replaceAll("</?[biu]>|\\*","").trim();
-   if(plain.matches("---(?:KOTAK(?:DALIL|HIKMAH|CATATAN|FIRMAN|SABDA|TAMAT)|FLOWER|GEOMETRIC|CLASSIC)---"))lines[i]=plain;
+   if(plain.matches("---(?:KOTAK(?:DALIL|HIKMAH|CATATAN|FIRMAN|SABDA|SAHABAT|TABII|ULAMA|TAMAT)|FLOWER|GEOMETRIC|CLASSIC)---"))lines[i]=plain;
   }
   return android.text.TextUtils.join("\n",lines);
  }
  String repairBoxStructure(String source){
   StringBuilder out=new StringBuilder();boolean open=false;
   for(String line:source.split("\\n",-1)){
-   if(line.matches("---KOTAK(?:DALIL|HIKMAH|CATATAN|FIRMAN|SABDA)---")){
+   if(line.matches("---KOTAK(?:DALIL|HIKMAH|CATATAN|FIRMAN|SABDA|SAHABAT|TABII|ULAMA)---")){
     if(open)out.append("---KOTAKTAMAT---\n");open=true;
    }else if(line.equals("---KOTAKTAMAT---")){
     if(!open)continue;open=false;
@@ -1973,7 +1973,7 @@ public class MainActivity extends Activity {
  }
  void renderBoxReading(LinearLayout body,String source,int fontSize){
   source=repairBoxStructure(normalizeStructuralMarkers(source));
-  java.util.regex.Matcher m=java.util.regex.Pattern.compile("(?ms)^---KOTAK(DALIL|HIKMAH|CATATAN|FIRMAN|SABDA)---[ \\t]*\\n(.*?)^---KOTAKTAMAT---[ \\t]*(?:\\n|$)").matcher(source);
+  java.util.regex.Matcher m=java.util.regex.Pattern.compile("(?ms)^---KOTAK(DALIL|HIKMAH|CATATAN|FIRMAN|SABDA|SAHABAT|TABII|ULAMA)---[ \\t]*\\n(.*?)^---KOTAKTAMAT---[ \\t]*(?:\\n|$)").matcher(source);
   int previous=0;
   while(m.find()){
    addBoxParagraph(body,source.substring(previous,m.start()),fontSize);
@@ -1986,11 +1986,11 @@ public class MainActivity extends Activity {
      for(int n=0;n<3;n++){float d=dp(7+n*5);android.graphics.Path path=new android.graphics.Path();path.moveTo(right-d-dp(6),top);path.lineTo(right-d,top+dp(3));path.lineTo(right-d,top+dp(6));path.lineTo(right-dp(3),top+d);path.lineTo(right,top+d+dp(5));c.drawPath(path,p);}
     }
    };panel.setOrientation(LinearLayout.VERTICAL);
-   int bg=type.equals("FIRMAN")?0xffedf5ee:type.equals("SABDA")?0xfffaf5e8:type.equals("DALIL")?0xffedf4fa:type.equals("HIKMAH")?0xfff5eff9:0xfffcf0f2;
-   int border=type.equals("FIRMAN")?0xffa5c3aa:type.equals("SABDA")?0xffd6c7a4:type.equals("DALIL")?0xff8eb4d2:type.equals("HIKMAH")?0xffbca5d0:0xffd7a0b2;
+   int bg=type.equals("FIRMAN")?0xffedf5ee:type.equals("SABDA")?0xfffaf5e8:type.equals("DALIL")?0xffedf4fa:type.equals("HIKMAH")?0xfff5eff9:type.equals("SAHABAT")?0xfff1f6ec:type.equals("TABII")?0xfff1f4fa:type.equals("ULAMA")?0xfffaf1ed:0xfffcf0f2;
+   int border=type.equals("FIRMAN")?0xffa5c3aa:type.equals("SABDA")?0xffd6c7a4:type.equals("DALIL")?0xff8eb4d2:type.equals("HIKMAH")?0xffbca5d0:type.equals("SAHABAT")?0xffb6c9a3:type.equals("TABII")?0xffb0bfd9:type.equals("ULAMA")?0xffd6b7a5:0xffd7a0b2;
    panel.setBackground(rounded(bg,border,8));panel.setPadding(dp(10),dp(3),dp(10),dp(5));
-   TextView label=text(type.equals("FIRMAN")?"Firman Allah SWT:":type.equals("SABDA")?"Sabda Nabi SAW:":type.equals("DALIL")?"⚖  Dalil":type.equals("HIKMAH")?"✒  Kalam Hikmah":"◎  Catatan Penting",13);
-   label.setTextColor(type.equals("FIRMAN")?0xff176b47:type.equals("SABDA")?0xff96783e:type.equals("DALIL")?0xff426e96:type.equals("HIKMAH")?0xff79549b:0xff946176);
+   TextView label=text(type.equals("FIRMAN")?"Firman Allah SWT:":type.equals("SABDA")?"Sabda Nabi SAW:":type.equals("DALIL")?"⚖  Dalil":type.equals("HIKMAH")?"✒  Kalam Hikmah":type.equals("SAHABAT")?"✦  Kata Sahabat Rdh.":type.equals("TABII")?"❖  Kata Tabi\u0027in Rhm.":type.equals("ULAMA")?"✧  Kata Ulama\u0027 Rhm.":"◎  Catatan Penting",13);
+   label.setTextColor(type.equals("FIRMAN")?0xff176b47:type.equals("SABDA")?0xff96783e:type.equals("DALIL")?0xff426e96:type.equals("HIKMAH")?0xff79549b:type.equals("SAHABAT")?0xff607d42:type.equals("TABII")?0xff536f9b:type.equals("ULAMA")?0xff9b654b:0xff946176);
    label.setTypeface(null,android.graphics.Typeface.BOLD);label.setIncludeFontPadding(false);
    label.setPadding(dp(6),dp(2),dp(8),dp(2));
    label.setBackground(rounded(bg,border,16));
@@ -2037,16 +2037,16 @@ public class MainActivity extends Activity {
   if(editor==null)return false;
   final EditText target=editor;
   int cursor=target.getSelectionStart();
-  java.util.regex.Matcher boxes=java.util.regex.Pattern.compile("(?ms)^---KOTAK(DALIL|HIKMAH|CATATAN|FIRMAN|SABDA)---\\n(.*?)\\n^---KOTAKTAMAT---").matcher(target.getText().toString());
+  java.util.regex.Matcher boxes=java.util.regex.Pattern.compile("(?ms)^---KOTAK(DALIL|HIKMAH|CATATAN|FIRMAN|SABDA|SAHABAT|TABII|ULAMA)---\\n(.*?)\\n^---KOTAKTAMAT---").matcher(target.getText().toString());
   java.util.ArrayList<Integer> positions=new java.util.ArrayList<>();java.util.ArrayList<String> labels=new java.util.ArrayList<>();
   while(boxes.find()){
-   positions.add(boxes.start());labels.add(boxes.group(1).replace("HIKMAH","Kalam Hikmah").replace("CATATAN","Catatan Penting").replace("FIRMAN","Firman Allah SWT").replace("SABDA","Sabda Nabi SAW").replace("DALIL","Dalil"));
+   positions.add(boxes.start());labels.add(boxes.group(1).replace("HIKMAH","Kalam Hikmah").replace("CATATAN","Catatan Penting").replace("FIRMAN","Firman Allah SWT").replace("SABDA","Sabda Nabi SAW").replace("DALIL","Dalil").replace("SAHABAT","Kata Sahabat Rdh.").replace("TABII","Kata Tabi\u0027in Rhm.").replace("ULAMA","Kata Ulama\u0027 Rhm."));
    if(choose)continue;
    if(cursor<boxes.start()||cursor>boxes.end())continue;
    final int start=boxes.start(),end=boxes.end(),headEnd=boxes.end(1),bodyStart=boxes.start(2),bodyEnd=boxes.end(2);
    final String original=boxes.group();
-   final String[] types={"DALIL","HIKMAH","CATATAN","FIRMAN","SABDA"};
-   final String[] names={"Dalil","Kalam Hikmah","Catatan Penting","Firman Allah SWT:","Sabda Nabi SAW:"};
+   final String[] types={"DALIL","HIKMAH","CATATAN","FIRMAN","SABDA","SAHABAT","TABII","ULAMA"};
+   final String[] names={"Dalil","Kalam Hikmah","Catatan Penting","Firman Allah SWT:","Sabda Nabi SAW:","Kata Sahabat Rdh.","Kata Tabi\u0027in Rhm.","Kata Ulama\u0027 Rhm."};
    new AlertDialog.Builder(this).setTitle("Urus kotak").setItems(new String[]{"Tukar jenis kotak","Buang border, kekalkan teks","Gandakan kotak","Tambah kotak di atas","Tambah kotak di bawah"},(d,choice)->{
     if(editor!=target||end>target.length()||!target.getText().subSequence(start,end).toString().equals(original))return;
     if(choice==1){android.text.Editable e=target.getText();android.text.SpannableString inner=new android.text.SpannableString(e.subSequence(bodyStart,bodyEnd));e.replace(start,end,inner);target.setSelection(start+inner.length());return;}
@@ -2066,17 +2066,17 @@ public class MainActivity extends Activity {
   if(manageCurrentBox())return;
   final int a=Math.max(0,Math.min(editor.getSelectionStart(),editor.getSelectionEnd()));
   final int b=Math.max(a,Math.max(editor.getSelectionStart(),editor.getSelectionEnd()));
-  final String[] types={"DALIL","HIKMAH","CATATAN","FIRMAN","SABDA"};
+  final String[] types={"DALIL","HIKMAH","CATATAN","FIRMAN","SABDA","SAHABAT","TABII","ULAMA"};
   new AlertDialog.Builder(this).setTitle("Kotak teks")
-   .setItems(new String[]{"Dalil","Kalam Hikmah","Catatan Penting","Firman Allah SWT:","Sabda Nabi SAW:","Buang kotak terpilih","Urus kotak sedia ada"},(d,i)->{
-    if(i==6){manageCurrentBox(true);return;}
+   .setItems(new String[]{"Dalil","Kalam Hikmah","Catatan Penting","Firman Allah SWT:","Sabda Nabi SAW:","Kata Sahabat Rdh.","Kata Tabi\u0027in Rhm.","Kata Ulama\u0027 Rhm.","Buang kotak terpilih","Urus kotak sedia ada"},(d,i)->{
+    if(i==9){manageCurrentBox(true);return;}
     if(editor==null||b>editor.length())return;
     String chosen=editor.getText().subSequence(a,b).toString();
-    if(i==5){editor.getText().replace(a,b,chosen.replaceAll("(?m)^---KOTAK(?:DALIL|HIKMAH|CATATAN|FIRMAN|SABDA|TAMAT)---\\n?",""));return;}
+    if(i==8){editor.getText().replace(a,b,chosen.replaceAll("(?m)^---KOTAK(?:DALIL|HIKMAH|CATATAN|FIRMAN|SABDA|SAHABAT|TABII|ULAMA|TAMAT)---\\n?",""));return;}
     String prefix="\n---KOTAK"+types[i]+"---\n";
     int insertA=a,insertB=b;
     String existing=editor.getText().toString();
-    java.util.regex.Matcher boxes=java.util.regex.Pattern.compile("(?ms)^---KOTAK(?:DALIL|HIKMAH|CATATAN|FIRMAN|SABDA)---\\n.*?^---KOTAKTAMAT---").matcher(existing);
+    java.util.regex.Matcher boxes=java.util.regex.Pattern.compile("(?ms)^---KOTAK(?:DALIL|HIKMAH|CATATAN|FIRMAN|SABDA|SAHABAT|TABII|ULAMA)---\\n.*?^---KOTAKTAMAT---").matcher(existing);
     while(boxes.find()){if(a>=boxes.start()&&a<boxes.end()){insertA=insertB=boxes.end();chosen="";break;}}
     if(chosen.contains("---KOTAK")){insertA=insertB=b;chosen="";}
     editor.getText().replace(insertA,insertB,prefix+chosen+"\n---KOTAKTAMAT---\n");
