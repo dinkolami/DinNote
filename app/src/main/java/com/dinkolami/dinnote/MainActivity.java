@@ -1841,8 +1841,23 @@ public class MainActivity extends Activity {
   addBoxParagraph(body,source.substring(previous),fontSize);
  }
  void addBoxParagraph(LinearLayout body,String value,int fontSize){
-  if(value.trim().isEmpty())return;
-  TextView t=text("",fontSize);t.setText(formattedReadingText(value.trim()));applySharedTextMetrics(t);t.setTextColor(0xff303c43);t.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);t.setTextIsSelectable(true);t.setPadding(dp(8),dp(1),dp(8),dp(1));body.addView(t);
+  java.util.regex.Matcher ornaments=java.util.regex.Pattern.compile("(?m)^[ \\t]*\\*{0,2}---(FLOWER|GEOMETRIC|CLASSIC)---\\*{0,2}[ \\t]*$").matcher(value);
+  int start=0;
+  while(ornaments.find()){
+   addPlainBoxParagraph(body,value.substring(start,ornaments.start()),fontSize);
+   LinearLayout row=new LinearLayout(this);row.setGravity(Gravity.CENTER_VERTICAL);row.setPadding(dp(12),dp(2),dp(12),dp(2));
+   View left=new View(this);left.setBackgroundColor(0xff176b47);row.addView(left,new LinearLayout.LayoutParams(0,dp(1),1));
+   TextView symbol=text(ornaments.group(1).equals("FLOWER")?"✿":ornaments.group(1).equals("GEOMETRIC")?"❖":"❧",19);
+   symbol.setGravity(Gravity.CENTER);symbol.setSingleLine(true);symbol.setTextColor(0xff176b47);row.addView(symbol,new LinearLayout.LayoutParams(dp(42),-2));
+   View right=new View(this);right.setBackgroundColor(0xff176b47);row.addView(right,new LinearLayout.LayoutParams(0,dp(1),1));body.addView(row);
+   start=ornaments.end();
+  }
+  addPlainBoxParagraph(body,value.substring(start),fontSize);
+ }
+ void addPlainBoxParagraph(LinearLayout body,String value,int fontSize){
+  value=value.replaceAll("(?m)^[ \\t]*\\*{1,2}[ \\t]*$","").trim();
+  if(value.isEmpty())return;
+  TextView t=text("",fontSize);t.setText(formattedReadingText(value));applySharedTextMetrics(t);t.setTextColor(0xff303c43);t.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);t.setTextIsSelectable(true);t.setPadding(dp(8),dp(1),dp(8),dp(1));body.addView(t);
  }
  void showTextBoxPicker(){
   if(editor==null)return;
