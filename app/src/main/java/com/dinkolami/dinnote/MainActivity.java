@@ -1250,6 +1250,9 @@ public class MainActivity extends Activity {
   view.setIncludeFontPadding(true);
  }
  void read(String key){
+  // Use the actual DinNote window width: Fold6 split-screen may be narrower than the display.
+  int windowWidthPx=root!=null&&root.getWidth()>0?root.getWidth():getWindow().getDecorView().getWidth();
+  final int availableReaderWidthDp=windowWidthPx>0?Math.round(windowWidthPx/getResources().getDisplayMetrics().density):getResources().getConfiguration().screenWidthDp;
   if(key==null||!prefs.contains(key)){
    selected=null;readerScroll=null;editor=null;titleEditor=null;
    Toast.makeText(this,"Nota atau kitab tidak ditemui",Toast.LENGTH_LONG).show();
@@ -1268,12 +1271,12 @@ public class MainActivity extends Activity {
   
   Button readerFont=action("Aa",bar,()->showReaderSettings(key));readerFont.setContentDescription("Ubah saiz tulisan Nota dan Maktabah");
   Button bookmarkButton=action("♧",bar,()->{int pos=prefs.getInt("reading_scroll_"+key,0);new AlertDialog.Builder(this).setTitle("Penanda bacaan").setMessage("Kedudukan terakhir: "+pos+" px").setPositiveButton("Simpan penanda",(d,w)->{prefs.edit().putInt("bookmark_scroll_"+key,prefs.getInt("reading_scroll_"+key,0)).apply();Toast.makeText(this,"Penanda disimpan",Toast.LENGTH_SHORT).show();}).setNeutralButton("Pergi ke penanda",(d,w)->{int target=prefs.getInt("bookmark_scroll_"+key,-1);if(target>=0){read(key);root.post(()->{ScrollView currentScroll=(ScrollView)root.getChildAt(root.getChildCount()-2);currentScroll.post(()->currentScroll.scrollTo(0,target));});}else Toast.makeText(this,"Tiada penanda",Toast.LENGTH_SHORT).show();}).setNegativeButton("Tutup",null).show();});bookmarkButton.setContentDescription("Penanda bacaan");Button readerEdit=action("✎",bar,()->edit(key));readerEdit.setContentDescription(key.startsWith("m_")?"Sunting kandungan kitab":"Sunting kandungan nota");
-  boolean compactReaderToolbar=getResources().getConfiguration().screenWidthDp<500;
+  boolean compactReaderToolbar=availableReaderWidthDp<500;
   if(compactReaderToolbar){bookmarkButton.setText("⋮");bookmarkButton.setContentDescription("Menu tindakan Nota dan Maktabah, termasuk Salin Semua Teks");bookmarkButton.setOnClickListener(v->showReaderActions(key,true));bookmarkButton.setOnLongClickListener(v->{new AlertDialog.Builder(this).setTitle("Penanda bacaan").setItems(new String[]{"Simpan penanda","Pergi ke penanda"},(d,which)->{if(which==0){prefs.edit().putInt("bookmark_scroll_"+key,prefs.getInt("reading_scroll_"+key,0)).apply();Toast.makeText(this,"Penanda disimpan",Toast.LENGTH_SHORT).show();}else{int target=prefs.getInt("bookmark_scroll_"+key,-1);if(target>=0&&readerScroll!=null)readerScroll.post(()->readerScroll.scrollTo(0,target));else Toast.makeText(this,"Tiada penanda",Toast.LENGTH_SHORT).show();}}).show();return true;});}
 
   if(!compactReaderToolbar){
   Button swipeMode=action(prefs.getBoolean("reader_swipe_mode",false)?"⇆ ✓":"⇆",bar,()->{boolean next=!prefs.getBoolean("reader_swipe_mode",false);prefs.edit().putBoolean("reader_swipe_mode",next).apply();read(key);});swipeMode.setContentDescription("Mod swipe halaman untuk skrin terbuka; ulang baris akhir halaman sebelumnya");
-  if(getResources().getConfiguration().screenWidthDp>=500){
+  if(availableReaderWidthDp>=500){
    Button verticalScroll=action(prefs.getBoolean("reader_swipe_mode",false)?"↕":"↕ ✓",bar,()->{
     prefs.edit().putBoolean("reader_swipe_mode",false).apply();
     read(key);
@@ -1283,11 +1286,11 @@ public class MainActivity extends Activity {
   }
   }
   if(!compactReaderToolbar){
-  Button layoutButton=action("▥",bar,()->{boolean now=prefs.getBoolean("reader_two_columns",getResources().getConfiguration().screenWidthDp>=600);prefs.edit().putBoolean("reader_two_columns",!now).apply();read(key);});layoutButton.setContentDescription("Tukar paparan satu atau dua kolum");layoutButton.setTextColor(0xff566a70); Button readerOptions=action("⋮",bar,()->showReaderActions(key,compactReaderToolbar));readerOptions.setContentDescription(key.startsWith("m_")?"Menu tindakan kitab":"Menu tindakan nota");
+  Button layoutButton=action("▥",bar,()->{boolean now=prefs.getBoolean("reader_two_columns",availableReaderWidthDp>=600);prefs.edit().putBoolean("reader_two_columns",!now).apply();read(key);});layoutButton.setContentDescription("Tukar paparan satu atau dua kolum");layoutButton.setTextColor(0xff566a70); Button readerOptions=action("⋮",bar,()->showReaderActions(key,compactReaderToolbar));readerOptions.setContentDescription(key.startsWith("m_")?"Menu tindakan kitab":"Menu tindakan nota");
   }
   }
   // Page-by-page reader for long Nota and Maktabah content.
-  if(prefs.getString(key,"").length()>=100 && getResources().getConfiguration().screenWidthDp>=500 && prefs.getBoolean("reader_swipe_mode",false)){ // Optional unfolded swipe reader.
+  if(prefs.getString(key,"").length()>=100 && availableReaderWidthDp>=500 && prefs.getBoolean("reader_swipe_mode",false)){ // Optional unfolded swipe reader.
    try{showPagedReader(key);return;}
    catch(RuntimeException problem){
     android.util.Log.e("DinNote","Paged reader failed; using safe scrolling",problem);
@@ -1347,7 +1350,7 @@ public class MainActivity extends Activity {
   for(String line:displayLines)if(line.trim().matches("---(?:FLOWER|GEOMETRIC|CLASSIC)?---|---")){hasLists=true;break;}
   for(String line:displayLines)if(line.matches("^\\s*(?:\\d+\\.\\s+|[•☐☑✓]\\s+).*")){hasLists=true;break;}
   // Optional aligned bilingual reading. Each paired line uses Arabic || Malay.
-  boolean bilingualReading=key.startsWith("m_")&&getResources().getConfiguration().screenWidthDp>=500
+  boolean bilingualReading=key.startsWith("m_")&&availableReaderWidthDp>=500
    &&prefs.getBoolean("reader_bilingual_columns",false)&&fullReadingText.contains(" || ");
   if(bilingualReading){
    LinearLayout bilingual=new LinearLayout(this);bilingual.setOrientation(LinearLayout.VERTICAL);
@@ -1369,7 +1372,7 @@ public class MainActivity extends Activity {
    }
    body.addView(bilingual);
   }
-  boolean twoColumnReading=getResources().getConfiguration().screenWidthDp>=500&&prefs.getBoolean("reader_two_columns",true)&&fullReadingText.length()>=100;
+  boolean twoColumnReading=availableReaderWidthDp>=500&&prefs.getBoolean("reader_two_columns",true)&&fullReadingText.length()>=100;
   if(hasBoxes){
    if(bilingualReading){body.removeViewAt(body.getChildCount()-1);}
    renderBoxReading(body,fullReadingText,readingSizes[fontLevel]);
