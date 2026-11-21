@@ -291,7 +291,27 @@ public class MainActivity extends Activity {
   scroll.setOverScrollMode(View.OVER_SCROLL_NEVER);scroll.setSmoothScrollingEnabled(true);
   root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
   LinearLayout page=new LinearLayout(this);page.setOrientation(1);
-  page.setPadding(dp(10),dp(6),dp(10),dp(12));page.setBackgroundColor(0xfffffefd);page.setTag("dinnote_home");scroll.addView(page);
+  page.setPadding(dp(10),dp(6),dp(10),dp(12));page.setBackgroundColor(0xfffffefd);page.setTag("dinnote_home");
+  // Keep the natural content height available, but fit a *small* overflow on one screen.
+  FrameLayout homeFitFrame=new FrameLayout(this);
+  homeFitFrame.setClipChildren(false);homeFitFrame.setClipToPadding(false);
+  scroll.addView(homeFitFrame,new ScrollView.LayoutParams(-1,-2));
+  homeFitFrame.addView(page,new FrameLayout.LayoutParams(-1,-2));
+  final boolean[] fittingHome={false};
+  homeFitFrame.getViewTreeObserver().addOnGlobalLayoutListener(()->{
+   if(fittingHome[0]||scroll.getHeight()<=0||page.getHeight()<=0)return;
+   int natural=page.getHeight(),available=scroll.getHeight();
+   float ratio=(float)available/natural;
+   // Fit only if the overflow is at most 7%; otherwise retain natural size and scrolling.
+   float fit=ratio<1f&&ratio>=0.93f?ratio:1f;
+   int desiredHeight=fit<1f?available:natural;
+   if(Math.abs(page.getScaleY()-fit)<0.002f&&homeFitFrame.getLayoutParams().height==desiredHeight)return;
+   fittingHome[0]=true;
+   page.setPivotY(0f);page.setScaleY(fit);
+   android.view.ViewGroup.LayoutParams frameParams=homeFitFrame.getLayoutParams();
+   frameParams.height=desiredHeight;homeFitFrame.setLayoutParams(frameParams);
+   fittingHome[0]=false;
+  });
   TextView recent=dashboardText("Baru dilihat  ▾",15,true);
   recent.setBackground(rounded(0xfffdfefe,0xffcdd6df,9));recent.setTextColor(0xff566a70);recent.setIncludeFontPadding(false);
   LinearLayout quickTools=new LinearLayout(this);quickTools.setOrientation(LinearLayout.HORIZONTAL);quickTools.setGravity(Gravity.CENTER_VERTICAL);
