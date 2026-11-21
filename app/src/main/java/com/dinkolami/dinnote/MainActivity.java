@@ -1335,13 +1335,13 @@ public class MainActivity extends Activity {
   String readingCategory=prefs.getString("cat_"+key,"Tanpa kategori");
   if(readingCategory.trim().isEmpty())readingCategory="Tanpa kategori";
   String fullReadingText=prefs.getString(key,"");
-  ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);scroll.setOverScrollMode(View.OVER_SCROLL_NEVER);
+  ScrollView scroll=new ScrollView(this);scroll.setFillViewport(false);scroll.setOverScrollMode(View.OVER_SCROLL_NEVER);
   readerScroll=scroll;
   LinearLayout body=new LinearLayout(this);body.setOrientation(1);
   int paperColor=0xfffffefd;body.setBackground(rounded(paperColor,0xffb8c2ca,12));
   body.setPadding(dp(8),dp(6),dp(8),dp(8));body.setClipChildren(true);body.setClipToPadding(true);
   LinearLayout.LayoutParams readingFrame=new LinearLayout.LayoutParams(-1,-2);
-  readingFrame.setMargins(dp(4),dp(8),dp(4),dp(12));scroll.addView(body,readingFrame);
+  readingFrame.setMargins(dp(4),dp(4),dp(4),dp(2));scroll.addView(body,readingFrame);
   LinearLayout metaRow=new LinearLayout(this);metaRow.setOrientation(LinearLayout.HORIZONTAL);
   metaRow.setGravity(Gravity.CENTER_VERTICAL);metaRow.setPadding(dp(16),dp(4),dp(16),dp(4));
   TextView sectionLabel=text(key.startsWith("m_")?"▤  Maktabah":"✎  Nota",12);
@@ -1498,7 +1498,7 @@ public class MainActivity extends Activity {
   int wordCount=0;java.util.regex.Matcher words=java.util.regex.Pattern.compile("[\\p{L}\\p{N}][\\p{L}\\p{M}\\p{N}]*").matcher(countable);while(words.find())wordCount++;
   long readingUpdated=prefs.getLong("updated_"+key,0L);String updatedLabel=readingUpdated>0?new java.text.SimpleDateFormat("dd/MM/yyyy",java.util.Locale.getDefault()).format(new java.util.Date(readingUpdated)):"—";TextView wordCounter=text(wordCount+" perkataan  ·  Dikemas kini "+updatedLabel,12);
   wordCounter.setTextColor(0xff687078);
-  wordCounter.setPadding(dp(20),dp(8),dp(20),dp(20));
+  wordCounter.setPadding(dp(20),dp(6),dp(20),dp(6));
   body.addView(wordCounter);
   root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
    // Compact reading progress indicator shared by Nota and Maktabah.
