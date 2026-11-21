@@ -961,12 +961,14 @@ public class MainActivity extends Activity {
    .setPositiveButton("Seterusnya",(d,w)->showReaderSearchResult(source,term,matches,(selectedMatch+1)%matches.size())).show();
  }
  void copyReaderWithReference(String key){
-  String title=prefs.getString("title_"+key,"Tanpa tajuk");
-  String category=prefs.getString("cat_"+key,"");
-  String content=prefs.getString(key,"");
-  String output=title+(category.isEmpty()?"":" — "+category)+"\n\n"+content+"\n\nSumber: DinNote";
+  String source=prefs.getString(key,"");
+  String clean=source.replaceAll("(?m)^---KOTAK(?:DALIL|HIKMAH|CATATAN|FIRMAN|SABDA|SAHABAT|TABII|ULAMA|TAMAT)---[ \\t]*(?:\\r?\\n)?","");
+  clean=clean.replaceAll("(?m)^---(?:FLOWER|GEOMETRIC|CLASSIC)---[ \\t]*$","").trim();
   android.content.ClipboardManager clipboard=(android.content.ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
-  if(clipboard!=null){clipboard.setPrimaryClip(android.content.ClipData.newPlainText(title,output));Toast.makeText(this,"Teks dan tajuk disalin",Toast.LENGTH_SHORT).show();}
+  if(clipboard!=null){
+   clipboard.setPrimaryClip(android.content.ClipData.newPlainText("DinNote",clean));
+   Toast.makeText(this,"Semua kandungan disalin tanpa tajuk kotak",Toast.LENGTH_SHORT).show();
+  }
  }
  android.text.SpannableStringBuilder formattedReadingText(String source){
   android.text.SpannableStringBuilder out=new android.text.SpannableStringBuilder(source==null?"":source);
@@ -1142,9 +1144,9 @@ public class MainActivity extends Activity {
  void showReaderActions(String key,boolean compact){
   boolean book=key.startsWith("m_");
   String noun=book?"kitab":"nota";
-  String[] labels=compact?new String[]{"Edit","Semat / Buka sematan","Duplikasi","Cari dalam teks","Salin teks dan rujukan","Mod swipe halaman","Tukar satu / dua kolum","Padam"}:new String[]{"Edit","Semat / Buka sematan","Duplikasi","Cari dalam teks","Salin teks dan rujukan","Padam"};
+  String[] labels=compact?new String[]{"Edit","Semat / Buka sematan","Duplikasi","Cari dalam teks","Salin semua teks","Mod swipe halaman","Tukar satu / dua kolum","Padam"}:new String[]{"Edit","Semat / Buka sematan","Duplikasi","Cari dalam teks","Salin semua teks","Padam"};
   String[] icons=compact?new String[]{"✎","♧","▢","⌕","▤","⇆","▥","⌫"}:new String[]{"✎","♧","▢","⌕","▤","⌫"};
-  String[] descriptions=compact?new String[]{"Sunting kandungan","Kekalkan di bahagian atas","Buat salinan "+noun,"Cari perkataan","Salin kandungan dan rujukan","Ubah cara menukar halaman","Pilih susunan bacaan","Padam "+noun+" ini"}:new String[]{"Sunting kandungan","Kekalkan di bahagian atas","Buat salinan "+noun,"Cari perkataan","Salin kandungan dan rujukan","Padam "+noun+" ini"};
+  String[] descriptions=compact?new String[]{"Sunting kandungan","Kekalkan di bahagian atas","Buat salinan "+noun,"Cari perkataan","Salin kandungan semua kotak tanpa tajuk hiasan","Ubah cara menukar halaman","Pilih susunan bacaan","Padam "+noun+" ini"}:new String[]{"Sunting kandungan","Kekalkan di bahagian atas","Buat salinan "+noun,"Cari perkataan","Salin kandungan semua kotak tanpa tajuk hiasan","Padam "+noun+" ini"};
   if(book){
    int n=labels.length;
    labels=java.util.Arrays.copyOf(labels,n+1);icons=java.util.Arrays.copyOf(icons,n+1);descriptions=java.util.Arrays.copyOf(descriptions,n+1);
