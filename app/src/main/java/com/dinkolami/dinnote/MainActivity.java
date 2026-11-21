@@ -496,8 +496,21 @@ public class MainActivity extends Activity {
   if(!prefs.contains(key)||prefs.getBoolean("deleted_"+key,false))return;
   boolean pinned=prefs.getBoolean("pinned_"+key,false);
   String label=prefs.getString("title_"+key,"").trim();
+  String[] options={"Edit",pinned?"Buka sematan":"Semat","Duplikasi","Alih ke Tong Sampah"};
+  int[] icons={android.R.drawable.ic_menu_edit,android.R.drawable.ic_menu_agenda,android.R.drawable.ic_menu_add,android.R.drawable.ic_menu_delete};
+  android.widget.ArrayAdapter<String> adapter=new android.widget.ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,options){
+   @Override public View getView(int position,View convertView,android.view.ViewGroup parent){
+    TextView row=(TextView)super.getView(position,convertView,parent);
+    android.graphics.drawable.Drawable icon=getResources().getDrawable(icons[position],getTheme()).mutate();
+    icon.setTint(position==3?0xffb64545:0xff398264);
+    icon.setBounds(0,0,dp(22),dp(22));
+    row.setCompoundDrawablesRelative(icon,null,null,null);
+    row.setCompoundDrawablePadding(dp(14));row.setPadding(dp(20),dp(10),dp(16),dp(10));
+    return row;
+   }
+  };
   new AlertDialog.Builder(this).setTitle(label.isEmpty()?"Tanpa tajuk":label)
-   .setItems(new String[]{"Edit",pinned?"Buka sematan":"Semat","Duplikasi","Alih ke Tong Sampah"},(d,i)->{
+   .setAdapter(adapter,(d,i)->{
     maktabah=key.startsWith("m_");
     if(i==0)edit(key);
     else if(i==1){prefs.edit().putBoolean("pinned_"+key,!pinned).apply();home();}
