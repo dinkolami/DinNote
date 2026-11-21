@@ -1297,7 +1297,9 @@ public class MainActivity extends Activity {
   scroll.setClipToPadding(false);
   readerFrame.addView(scroll,new FrameLayout.LayoutParams(-1,-1));
   FrameLayout.LayoutParams fixedBarParams=new FrameLayout.LayoutParams(-2,-2,Gravity.TOP|Gravity.RIGHT);
-  fixedBarParams.setMargins(dp(4),dp(2),dp(8),0);
+  fixedBarParams.setMargins(dp(4),0,dp(8),0);
+  // Keep controls fixed at the top-right, centered across the posting border.
+  bar.setTranslationY(-dp(18));
   readerFrame.addView(bar,fixedBarParams);
   root.addView(readerFrame,new LinearLayout.LayoutParams(-1,0,1));
    // Compact reading progress indicator shared by Nota and Maktabah.
