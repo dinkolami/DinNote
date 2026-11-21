@@ -1530,6 +1530,12 @@ public class MainActivity extends Activity {
      markerView.setPadding(0,0,0,0);
      markerView.setSingleLine(true);
      markerView.setTextColor(0xff176b47);
+     // Arabic-Indic digits sit optically low in some Android fonts.
+     // Centre the glyph within the two rings without changing the 17sp size.
+     if(arabicHeading&&isNumber){
+      markerView.setTypeface(android.graphics.Typeface.create("serif",android.graphics.Typeface.NORMAL));
+      markerView.setTranslationY(-dp(1));
+     }
      android.graphics.drawable.GradientDrawable medal=new android.graphics.drawable.GradientDrawable();
      medal.setShape(android.graphics.drawable.GradientDrawable.OVAL);
      medal.setColor(0xfffcf8ed);
