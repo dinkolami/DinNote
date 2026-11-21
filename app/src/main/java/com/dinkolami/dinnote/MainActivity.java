@@ -43,17 +43,31 @@ public class MainActivity extends Activity {
   root.setAlpha(0.94f);
   root.animate().alpha(1f).setDuration(140L).start();
   LinearLayout header=new LinearLayout(this);header.setGravity(Gravity.CENTER_VERTICAL);
-  header.setPadding(dp(8),dp(3),dp(8),dp(3));header.setBackground(aspectFillBackground(R.drawable.dinnote_header_bg));
+  header.setPadding(dp(8),dp(3),dp(8),dp(3));header.setBackgroundColor(0xfffffdf4);
   ImageView menu=headerIcon("⌂",0xff9daeb9,"Halaman utama DinNote");header.addView(menu);
   menu.setOnClickListener(v->home());
   ImageView settingsMenu=headerIcon("☰",0xff9daeb9,"Menu DinNote dan Tetapan");header.addView(settingsMenu);
   settingsMenu.setOnClickListener(v->showMainMenu());
-  // Header artwork already includes the DinNote logo and wordmark.
-  // Do not draw a second logo or text over the approved PNG.
-  View brandSpace=new View(this);
-  brandSpace.setContentDescription("DinNote, kembali ke halaman utama");
-  brandSpace.setOnClickListener(v->home());
-  header.addView(brandSpace,new LinearLayout.LayoutParams(0,dp(40),1));
+  // Keep branding as independent elements so it cannot stretch or overlap on Fold screens.
+  ImageView brandLogo=new ImageView(this);
+  brandLogo.setImageResource(R.drawable.dinnote_header_logo);
+  brandLogo.setScaleType(ImageView.ScaleType.FIT_CENTER);
+  brandLogo.setContentDescription("Logo DinNote");
+  LinearLayout.LayoutParams brandLogoParams=new LinearLayout.LayoutParams(dp(38),dp(38));
+  brandLogoParams.leftMargin=dp(8);brandLogoParams.rightMargin=dp(6);
+  header.addView(brandLogo,brandLogoParams);
+  brandLogo.setOnClickListener(v->home());
+  TextView brandName=new TextView(this);
+  brandName.setText("DinNote");
+  brandName.setTextSize(21);
+  brandName.setTypeface(android.graphics.Typeface.create("serif",android.graphics.Typeface.BOLD_ITALIC));
+  brandName.setTextColor(0xff075033);
+  brandName.setSingleLine(true);
+  brandName.setGravity(Gravity.CENTER_VERTICAL);
+  brandName.setEllipsize(android.text.TextUtils.TruncateAt.END);
+  brandName.setContentDescription("DinNote, kembali ke halaman utama");
+  header.addView(brandName,new LinearLayout.LayoutParams(0,dp(40),1));
+  brandName.setOnClickListener(v->home());
   ImageView inbox=headerIcon("▣",0xff9daeb9,"Buka nota");header.addView(inbox);
   inbox.setOnClickListener(v->openSection(false));
   ImageView bell=headerIcon("♧",0xff9daeb9,"Peringatan nota");header.addView(bell);
