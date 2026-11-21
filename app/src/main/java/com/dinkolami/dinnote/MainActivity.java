@@ -333,8 +333,8 @@ public class MainActivity extends Activity {
   TextView note=dashboardText("✎  Nota\n"+noteCount+" Topik",18,true);
   TextView book=dashboardText("▤  Maktabah\n"+bookCount+" Topik",18,true);
   note.setGravity(Gravity.CENTER);book.setGravity(Gravity.CENTER);note.setFocusable(true);book.setFocusable(true);note.setTextColor(0xff566a70);book.setTextColor(0xff566a70);
-  note.setBackground(rounded(0xfff3f6f8,0xffd0d8df,11));
-  book.setBackground(rounded(0xfff3f6f8,0xffd0d8df,11));
+  note.setBackground(rounded(0xfffffefd,0xffb8c2ca,12));
+  book.setBackground(rounded(0xfffffefd,0xffb8c2ca,12));
   LinearLayout.LayoutParams a=new LinearLayout.LayoutParams(0,dp(78),1);a.rightMargin=dp(4);
   LinearLayout.LayoutParams b=new LinearLayout.LayoutParams(0,dp(78),1);b.leftMargin=dp(4);
   tiles.addView(note,a);tiles.addView(book,b);
