@@ -747,6 +747,18 @@ public class MainActivity extends Activity {
    if(width<=0)return;
    int previous=lastWidth[0];lastWidth[0]=width;
    // Split-screen resizing may change window width without folding or recreating Activity.
+   if(previous>0&&Math.abs(width-previous)>=dp(16)&&editor!=null){
+    // Reflow the active editor in place when the split-screen divider moves.
+    // Avoid rebuilding the editor: that would disrupt cursor, undo and autosave.
+    final EditText activeEditor=editor;
+    activeRoot.post(()->{
+     if(root==activeRoot&&editor==activeEditor&&activeEditor.getParent()!=null){
+      activeEditor.requestLayout();
+      activeEditor.invalidate();
+      if(titleEditor!=null){titleEditor.requestLayout();titleEditor.invalidate();}
+     }
+    });
+   }
    if(previous>0&&Math.abs(width-previous)>=dp(16)&&editor==null&&selected!=null){
     final String readingKey=selected;
     activeRoot.post(()->{
