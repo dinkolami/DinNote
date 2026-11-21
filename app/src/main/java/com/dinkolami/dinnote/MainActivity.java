@@ -333,10 +333,10 @@ public class MainActivity extends Activity {
   TextView note=dashboardText("✎  Nota\n"+noteCount+" Topik",18,true);
   TextView book=dashboardText("▤  Maktabah\n"+bookCount+" Topik",18,true);
   note.setGravity(Gravity.CENTER);book.setGravity(Gravity.CENTER);note.setFocusable(true);book.setFocusable(true);note.setTextColor(0xff566a70);book.setTextColor(0xff566a70);
-  note.setBackground(rounded(0xfffffefd,0xffb8c2ca,12));
-  book.setBackground(rounded(0xfffffefd,0xffb8c2ca,12));
-  LinearLayout.LayoutParams a=new LinearLayout.LayoutParams(0,dp(78),1);a.rightMargin=dp(4);
-  LinearLayout.LayoutParams b=new LinearLayout.LayoutParams(0,dp(78),1);b.leftMargin=dp(4);
+  note.setBackground(rounded(0xffe9f8ed,0xffa6cdb7,14));note.setElevation(dp(2));
+  book.setBackground(rounded(0xfffffefd,0xffb8c2ca,14));book.setElevation(dp(2));
+  LinearLayout.LayoutParams a=new LinearLayout.LayoutParams(0,dp(66),1);a.rightMargin=dp(4);
+  LinearLayout.LayoutParams b=new LinearLayout.LayoutParams(0,dp(66),1);b.leftMargin=dp(4);
   tiles.addView(note,a);tiles.addView(book,b);
   note.setContentDescription("Buka senarai Nota, "+noteCount+" topik");book.setContentDescription("Buka Maktabah, "+bookCount+" topik");
   note.setOnClickListener(v->openSection(false));book.setOnClickListener(v->openSection(true));
@@ -625,7 +625,7 @@ public class MainActivity extends Activity {
  String cardTitle=(prefs.getBoolean("pinned_"+k,false)?"📌  ":"")+(maktabah?"▤  ":"✎  ")+shown;
  LinearLayout card=new LinearLayout(this);card.setOrientation(LinearLayout.VERTICAL);
  card.setBackground(rounded(k.equals(lastOpenedCard)?0xfff2faf5:0xffffffff,k.equals(lastOpenedCard)?0xffb7d8c2:0xffe1e5e3,16));
- card.setElevation(dp(1));card.setPadding(dp(twoColumnList?12:16),dp(12),dp(twoColumnList?12:16),dp(12));
+ card.setElevation(dp(1));card.setPadding(dp(twoColumnList?12:16),dp(7),dp(twoColumnList?12:16),dp(7));
  TextView headingView=text(cardTitle,15);headingView.setTypeface(null,android.graphics.Typeface.BOLD);
  headingView.setSingleLine(true);headingView.setEllipsize(android.text.TextUtils.TruncateAt.END);headingView.setTextColor(0xff30343b);
  card.addView(headingView,new LinearLayout.LayoutParams(-1,-2));
@@ -652,7 +652,7 @@ public class MainActivity extends Activity {
  });}}
 
  void cleanBase(){readerDetector=null;root=new LinearLayout(this);root.setOrientation(1);root.setBackgroundColor(Color.WHITE);setContentView(root);applySystemBarInsets(root);}
- Button action(String label,LinearLayout bar,Runnable callback){Button b=new Button(this);b.setText(label);b.setAllCaps(false);b.setTextSize(13);b.setMinWidth(0);b.setMinimumWidth(0);b.setMinHeight(0);b.setMinimumHeight(0);b.setPadding(dp(12),dp(8),dp(12),dp(8));b.setBackground(rounded(0xfff6f8fa,0xffe1e7e3,12));LinearLayout.LayoutParams buttonParams=new LinearLayout.LayoutParams(-2,dp(42));buttonParams.setMargins(dp(3),dp(5),dp(3),dp(5));bar.addView(b,buttonParams);if("reader_toolbar".equals(bar.getTag())){android.graphics.drawable.GradientDrawable emerald=new android.graphics.drawable.GradientDrawable(android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,new int[]{0xffffffff,0xffedf7f0});emerald.setCornerRadius(dp(13));emerald.setStroke(dp(1),0xffb6cdbd);b.setBackground(emerald);b.setTextColor(0xff566a70);b.setElevation(dp(2));b.setTypeface(android.graphics.Typeface.DEFAULT,android.graphics.Typeface.BOLD);}b.setOnClickListener(v->callback.run());return b;}
+ Button action(String label,LinearLayout bar,Runnable callback){Button b=new Button(this);b.setText(label);b.setAllCaps(false);b.setTextSize(13);b.setMinWidth(0);b.setMinimumWidth(0);b.setMinHeight(0);b.setMinimumHeight(0);b.setPadding(dp(12),dp(8),dp(12),dp(8));b.setBackground(rounded(0xfff6f8fa,0xffe1e7e3,12));LinearLayout.LayoutParams buttonParams=new LinearLayout.LayoutParams(-2,dp("reader_toolbar".equals(bar.getTag())?34:42));buttonParams.setMargins(dp(3),dp("reader_toolbar".equals(bar.getTag())?3:5),dp(3),dp("reader_toolbar".equals(bar.getTag())?3:5));bar.addView(b,buttonParams);if("reader_toolbar".equals(bar.getTag())){android.graphics.drawable.GradientDrawable emerald=new android.graphics.drawable.GradientDrawable(android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,new int[]{0xffffffff,0xffedf7f0});emerald.setCornerRadius(dp(13));emerald.setStroke(dp(1),0xffb6cdbd);b.setBackground(emerald);b.setTextColor(0xff566a70);b.setElevation(dp(2));b.setTypeface(android.graphics.Typeface.DEFAULT,android.graphics.Typeface.BOLD);}b.setOnClickListener(v->callback.run());return b;}
  void returnFromReader(){selected=null;if(sectionOpen)notesPage();else home();}
 
 
@@ -1106,7 +1106,7 @@ public class MainActivity extends Activity {
   }
   readerScroll=null;
   editor=null;titleEditor=null;saveIndicator=null;selected=key;prefs.edit().putLong("viewed_"+key,System.currentTimeMillis()).putString(key.startsWith("m_")?"reading_last_m":"reading_last_n",key).apply();cleanBase();
-  LinearLayout bar=new LinearLayout(this);bar.setGravity(Gravity.CENTER_VERTICAL);bar.setPadding(dp(8),dp(3),dp(8),dp(3));bar.setBackground(rounded(0xfffffefd,0xffb8c2ca,12));bar.setTag("reader_toolbar");root.addView(bar);
+  LinearLayout bar=new LinearLayout(this);bar.setGravity(Gravity.CENTER_VERTICAL);bar.setPadding(dp(8),dp(2),dp(8),dp(2));bar.setBackground(rounded(0xfffffefd,0xffb8c2ca,12));bar.setTag("reader_toolbar");root.addView(bar);
   Button readerBack=action("‹",bar,()->returnFromReader());readerBack.setContentDescription(key.startsWith("m_")?"Kembali ke senarai kitab":"Kembali ke senarai nota");
   TextView spacer=text("",12);bar.addView(spacer,new LinearLayout.LayoutParams(0,1,1));
   boolean cleanReading=prefs.getBoolean("reader_clean_mode",false);
