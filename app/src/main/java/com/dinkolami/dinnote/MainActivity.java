@@ -1359,9 +1359,15 @@ public class MainActivity extends Activity {
    LinearLayout columns=new LinearLayout(this);columns.setOrientation(LinearLayout.HORIZONTAL);
    columns.setPadding(dp(4),dp(8),dp(4),dp(12));
    // Preserve every original character, including newlines and whitespace at the split.
-    String[] halves={fullReadingText.substring(0,split),fullReadingText.substring(split)};
+    android.text.SpannableStringBuilder formatted=formattedReadingText(fullReadingText);
+    int visibleMiddle=formatted.length()/2;
+    int visibleSplit=formatted.toString().indexOf('\n',visibleMiddle);
+    if(visibleSplit<0)visibleSplit=formatted.toString().indexOf(' ',visibleMiddle);
+    if(visibleSplit<0)visibleSplit=visibleMiddle;
+    if(visibleSplit>0&&visibleSplit<formatted.length()&&Character.isLowSurrogate(formatted.charAt(visibleSplit)))visibleSplit--;
+    CharSequence[] halves={formatted.subSequence(0,visibleSplit),formatted.subSequence(visibleSplit,formatted.length())};
    for(int i=0;i<2;i++){
-    TextView page=text("",readingSizes[fontLevel]);page.setText(formattedReadingText(halves[i]));page.setTextColor(0xff303c43);
+    TextView page=text("",readingSizes[fontLevel]);page.setText(halves[i]);applySharedTextMetrics(page);page.setTextColor(0xff303c43);
     page.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);page.setTextIsSelectable(true);
     page.setGravity(Gravity.TOP);page.setPadding(dp(10),dp(8),dp(10),dp(8));
     page.setLineSpacing(prefs.getBoolean("reader_wide_spacing",false)?dp(5):dp(1),prefs.getBoolean("reader_wide_spacing",false)?1.15f:1.0f);
@@ -1411,7 +1417,7 @@ public class MainActivity extends Activity {
      markerView.setTextColor(0xff167c42);
      markerView.setBackground(rounded(0xffe4f7e8,0xffc8e9d0,16));
      itemRow.addView(markerView,new LinearLayout.LayoutParams(dp(30),dp(30)));
-     TextView valueView=text("",readingSizes[fontLevel]);valueView.setText(formattedReadingText(value));valueView.setTextColor(0xff303c43);
+     TextView valueView=text("",readingSizes[fontLevel]);valueView.setText(formattedReadingText(value));applySharedTextMetrics(valueView);valueView.setTextColor(0xff303c43);
      valueView.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);valueView.setTextIsSelectable(true);
      valueView.setPadding(dp(10),0,dp(4),0);valueView.setLineSpacing(prefs.getBoolean("reader_wide_spacing",false)?dp(5):dp(1),prefs.getBoolean("reader_wide_spacing",false)?1.15f:1.0f);
      itemRow.addView(valueView,new LinearLayout.LayoutParams(0,-2,1));
@@ -1419,7 +1425,7 @@ public class MainActivity extends Activity {
      View fineDivider=new View(this);fineDivider.setBackgroundColor(0xffc5e7cb);
      readingRows.addView(fineDivider,new LinearLayout.LayoutParams(-1,dp(1)));
     }else{
-     TextView paragraph=text("",readingSizes[fontLevel]);paragraph.setText(formattedReadingText(line.isEmpty()?" ":line));
+     TextView paragraph=text("",readingSizes[fontLevel]);paragraph.setText(formattedReadingText(line.isEmpty()?" ":line));applySharedTextMetrics(paragraph);
      paragraph.setTextColor(0xff303c43);paragraph.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
      paragraph.setTextIsSelectable(true);paragraph.setPadding(dp(4),dp(4),dp(4),dp(4));
      paragraph.setLineSpacing(prefs.getBoolean("reader_wide_spacing",false)?dp(5):dp(1),prefs.getBoolean("reader_wide_spacing",false)?1.15f:1.0f);readingRows.addView(paragraph);
@@ -1827,7 +1833,7 @@ public class MainActivity extends Activity {
    panel.setBackground(rounded(bg,border,8));panel.setPadding(dp(10),dp(5),dp(10),dp(5));
    TextView label=text(type.equals("DALIL")?"Dalil":type.equals("HIKMAH")?"Kalam Hikmah":"Catatan Penting",11);
    label.setTextColor(0xff557663);panel.addView(label);
-   TextView value=text("",fontSize);value.setText(formattedReadingText(m.group(2).trim()));value.setTextColor(0xff303c43);
+   TextView value=text("",fontSize);value.setText(formattedReadingText(m.group(2).trim()));applySharedTextMetrics(value);value.setTextColor(0xff303c43);
    value.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);value.setTextIsSelectable(true);value.setGravity(type.equals("CATATAN")?Gravity.START:Gravity.CENTER_HORIZONTAL);panel.addView(value);
    LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);lp.setMargins(dp(8),dp(3),dp(8),dp(3));body.addView(panel,lp);
    previous=m.end();
@@ -1836,7 +1842,7 @@ public class MainActivity extends Activity {
  }
  void addBoxParagraph(LinearLayout body,String value,int fontSize){
   if(value.trim().isEmpty())return;
-  TextView t=text("",fontSize);t.setText(formattedReadingText(value.trim()));t.setTextColor(0xff303c43);t.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);t.setTextIsSelectable(true);t.setPadding(dp(8),dp(3),dp(8),dp(3));body.addView(t);
+  TextView t=text("",fontSize);t.setText(formattedReadingText(value.trim()));applySharedTextMetrics(t);t.setTextColor(0xff303c43);t.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);t.setTextIsSelectable(true);t.setPadding(dp(8),dp(3),dp(8),dp(3));body.addView(t);
  }
  void showTextBoxPicker(){
   if(editor==null)return;
