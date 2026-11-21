@@ -1500,7 +1500,7 @@ public class MainActivity extends Activity {
      readingRows.addView(ornament);
     }else if(isNumber||isMarked){
      LinearLayout itemRow=new LinearLayout(this);itemRow.setOrientation(LinearLayout.HORIZONTAL);
-     itemRow.setGravity(Gravity.TOP|Gravity.CENTER_VERTICAL);itemRow.setPadding(dp(6),dp(8),dp(6),dp(8));
+     itemRow.setGravity(Gravity.CENTER_VERTICAL);itemRow.setPadding(dp(6),dp(5),dp(6),dp(5));
      String marker=isNumber?numbered.group(1):marked.group(1);
      String value=isNumber?numbered.group(2):marked.group(2);
      boolean arabicHeading=java.util.regex.Pattern.compile("[\\u0600-\\u06FF]").matcher(value).find();
@@ -1538,8 +1538,8 @@ public class MainActivity extends Activity {
      FrameLayout.LayoutParams innerCircleParams=new FrameLayout.LayoutParams(-1,-1,Gravity.CENTER);
      innerCircleParams.setMargins(dp(2),dp(2),dp(2),dp(2));
      medallion.addView(markerView,innerCircleParams);
-     LinearLayout.LayoutParams medalParams=new LinearLayout.LayoutParams(dp(29),dp(29));
-     if(arabicHeading)medalParams.leftMargin=dp(8);else medalParams.rightMargin=dp(8);
+     LinearLayout.LayoutParams medalParams=new LinearLayout.LayoutParams(dp(27),dp(27));
+     if(arabicHeading)medalParams.leftMargin=dp(3);else medalParams.rightMargin=dp(3);
      if(!arabicHeading)itemRow.addView(medallion,medalParams);
      TextView valueView=text("",readingSizes[fontLevel]);valueView.setText(formattedReadingText(value));applySharedTextMetrics(valueView);valueView.setTextColor(0xff303c43);
      valueView.setTextDirection(arabicHeading?View.TEXT_DIRECTION_RTL:View.TEXT_DIRECTION_FIRST_STRONG);valueView.setTextIsSelectable(true);
