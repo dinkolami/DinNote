@@ -1750,6 +1750,7 @@ public class MainActivity extends Activity {
     android.graphics.Typeface desired=android.graphics.Typeface.create(arabic?"serif":"sans-serif",android.graphics.Typeface.NORMAL);
     if(!desired.equals(editor.getTypeface()))editor.setTypeface(desired);
    }
+   if(!restoring[0]&&repairTypedBoxMarkers(e))return;
    refreshEditorBoxes(e);save();final EditText active=editor;if(active!=null)active.post(()->revealEditorCursor(active));}};editor.addTextChangedListener(bodyWatcher);refreshEditorBoxes(editor.getText());editor.addOnLayoutChangeListener((v,l,t,rr,bb,ol,ot,orr,ob)->{if(rr-l!=orr-ol&&v==editor)refreshEditorBoxes(editor.getText());});categoryPicker.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener(){public void onNothingSelected(android.widget.AdapterView<?> p){}public void onItemSelected(android.widget.AdapterView<?> p,View v,int position,long id){save();}});}
 
  
@@ -1818,6 +1819,23 @@ public class MainActivity extends Activity {
    if(mid-gap>x)c.drawLine(x,cy,mid-gap,cy,q);if(mid+gap<x+width())c.drawLine(mid+gap,cy,x+width(),cy,q);
    c.drawText(symbol,mid,cy-(q.ascent()+q.descent())/2,q);
   }
+ }
+ // Keep user text out of structural marker lines: a broken marker would expose raw tags.
+ boolean repairTypedBoxMarkers(android.text.Editable e){
+  java.util.regex.Matcher m=java.util.regex.Pattern.compile("(?m)^(---KOTAK(?:DALIL|HIKMAH|CATATAN|FIRMAN|SABDA|SAHABAT|TABII|ULAMA|TAMAT)---)([^\\r\\n]+)").matcher(e.toString());
+  if(!m.find())return false;
+  int oldCursor=editor.getSelectionStart();
+  int insertAt=m.start(2);
+  String suffix=m.group(2);
+  restoring[0]=true;
+  try{
+   e.replace(insertAt,m.end(2),"\\n"+suffix);
+   int newCursor=oldCursor>=insertAt?oldCursor+1:oldCursor;
+   editor.setSelection(Math.max(0,Math.min(newCursor,e.length())));
+  }finally{restoring[0]=false;}
+  refreshEditorBoxes(e);save();
+  editor.post(()->revealEditorCursor(editor));
+  return true;
  }
  void refreshEditorBoxes(android.text.Editable e){
   for(EditorDividerSpan span:e.getSpans(0,e.length(),EditorDividerSpan.class))e.removeSpan(span);
