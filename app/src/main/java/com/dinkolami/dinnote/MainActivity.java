@@ -1563,7 +1563,56 @@ public class MainActivity extends Activity {
      valueView.setLineSpacing(prefs.getBoolean("reader_wide_spacing",false)?dp(5):dp(1),prefs.getBoolean("reader_wide_spacing",false)?1.15f:1.0f);
      itemRow.addView(valueView,new LinearLayout.LayoutParams(0,-2,1));
      if(arabicHeading)itemRow.addView(medallion,medalParams);
-     readingRows.addView(itemRow);
+     // Expandable commentary stored separately from the source note.
+     if(isNumber){
+      final String commentaryKey="syarahan_"+key+"_"+rowIndex;
+      LinearLayout commentaryPanel=new LinearLayout(this);
+      commentaryPanel.setOrientation(LinearLayout.VERTICAL);
+      commentaryPanel.setPadding(dp(10),dp(6),dp(10),dp(8));
+      commentaryPanel.setBackground(rounded(0xfff8faf5,0xffd9e4d6,10));
+      TextView commentaryLabel=text("Syarahan / Huraian",13);
+      commentaryLabel.setTextColor(0xff176b47);
+      commentaryLabel.setPadding(dp(4),0,dp(4),dp(5));
+      commentaryPanel.addView(commentaryLabel);
+      EditText commentaryEditor=new EditText(this);
+      commentaryEditor.setText(prefs.getString(commentaryKey,""));
+      commentaryEditor.setHint("Tulis syarahan di sini…");
+      commentaryEditor.setTextSize(15);
+      commentaryEditor.setTextColor(0xff303c43);
+      commentaryEditor.setMinLines(2);
+      commentaryEditor.setInputType(android.text.InputType.TYPE_CLASS_TEXT|android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE|android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
+      commentaryEditor.setGravity(Gravity.TOP|Gravity.START);
+      commentaryEditor.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
+      commentaryEditor.addTextChangedListener(new TextWatcher(){
+       public void beforeTextChanged(CharSequence t,int st,int count,int after){}
+       public void onTextChanged(CharSequence t,int st,int before,int count){
+        prefs.edit().putString(commentaryKey,t.toString()).apply();
+       }
+       public void afterTextChanged(Editable e){}
+      });
+      commentaryPanel.addView(commentaryEditor,new LinearLayout.LayoutParams(-1,-2));
+      LinearLayout.LayoutParams commentaryParams=new LinearLayout.LayoutParams(-1,-2);
+      commentaryParams.setMargins(dp(5),dp(2),dp(5),dp(5));
+      commentaryPanel.setVisibility(View.GONE);
+      TextView expandButton=text("⌄",17);
+      expandButton.setGravity(Gravity.CENTER);
+      expandButton.setPadding(0,0,0,0);
+      expandButton.setTextColor(0xff176b47);
+      expandButton.setContentDescription("Buka atau tutup syarahan");
+      LinearLayout.LayoutParams expandParams=new LinearLayout.LayoutParams(dp(22),dp(25));
+      if(arabicHeading)itemRow.addView(expandButton,0,expandParams);
+      else itemRow.addView(expandButton,expandParams);
+      View.OnClickListener toggleCommentary=v->{
+       boolean opening=commentaryPanel.getVisibility()!=View.VISIBLE;
+       commentaryPanel.setVisibility(opening?View.VISIBLE:View.GONE);
+       expandButton.setText(opening?"⌃":"⌄");
+      };
+      expandButton.setOnClickListener(toggleCommentary);
+      medallion.setOnClickListener(toggleCommentary);
+      medallion.setContentDescription("Buka atau tutup syarahan nombor "+marker);
+      readingRows.addView(itemRow);
+      readingRows.addView(commentaryPanel,commentaryParams);
+     }else readingRows.addView(itemRow);
      View fineDivider=new View(this);fineDivider.setBackgroundColor(0xffc5e7cb);
      readingRows.addView(fineDivider,new LinearLayout.LayoutParams(-1,dp(1)));
     }else{
