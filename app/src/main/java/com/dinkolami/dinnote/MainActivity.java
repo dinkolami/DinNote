@@ -1686,7 +1686,7 @@ public class MainActivity extends Activity {
   // Keep normal Android double-tap text selection while editing.
   // Never navigate away while EditText is handling touch/selection events.
   editor.setOnTouchListener(null);
-  if(key!=null){int remembered=prefs.getInt("edit_cursor_"+key,0);editor.setText(formattedReadingText(prefs.getString(key,"")));editor.setSelection(Math.max(0,Math.min(remembered,editor.length())));}
+  if(key!=null){int remembered=prefs.getInt("edit_cursor_"+key,0);editor.setText(formattedReadingText(repairBoxStructure(normalizeStructuralMarkers(prefs.getString(key,"")))));editor.setSelection(Math.max(0,Math.min(remembered,editor.length())));}
   final EditText activeBody=editor;
   activeBody.post(()->revealEditorCursor(activeBody));
   // Match the reader's optional Arabic serif typeface in the editor as well.
@@ -1918,8 +1918,22 @@ public class MainActivity extends Activity {
   }
   return android.text.TextUtils.join("\n",lines);
  }
+ String repairBoxStructure(String source){
+  StringBuilder out=new StringBuilder();boolean open=false;
+  for(String line:source.split("\\n",-1)){
+   if(line.matches("---KOTAK(?:DALIL|HIKMAH|CATATAN|FIRMAN|SABDA)---")){
+    if(open)out.append("---KOTAKTAMAT---\n");open=true;
+   }else if(line.equals("---KOTAKTAMAT---")){
+    if(!open)continue;open=false;
+   }
+   out.append(line).append('\n');
+  }
+  if(open)out.append("---KOTAKTAMAT---\n");
+  if(out.length()>0)out.setLength(out.length()-1);
+  return out.toString();
+ }
  void renderBoxReading(LinearLayout body,String source,int fontSize){
-  source=normalizeStructuralMarkers(source);
+  source=repairBoxStructure(normalizeStructuralMarkers(source));
   java.util.regex.Matcher m=java.util.regex.Pattern.compile("(?ms)^---KOTAK(DALIL|HIKMAH|CATATAN|FIRMAN|SABDA)---[ \\t]*\\n(.*?)^---KOTAKTAMAT---[ \\t]*(?:\\n|$)").matcher(source);
   int previous=0;
   while(m.find()){
@@ -1991,8 +2005,13 @@ public class MainActivity extends Activity {
     String chosen=editor.getText().subSequence(a,b).toString();
     if(i==5){editor.getText().replace(a,b,chosen.replaceAll("(?m)^---KOTAK(?:DALIL|HIKMAH|CATATAN|FIRMAN|SABDA|TAMAT)---\\n?",""));return;}
     String prefix="\n---KOTAK"+types[i]+"---\n";
-    editor.getText().replace(a,b,prefix+chosen+"\n---KOTAKTAMAT---\n");
-    editor.setSelection(a+prefix.length(),a+prefix.length()+chosen.length());
+    int insertA=a,insertB=b;
+    String existing=editor.getText().toString();
+    java.util.regex.Matcher boxes=java.util.regex.Pattern.compile("(?ms)^---KOTAK(?:DALIL|HIKMAH|CATATAN|FIRMAN|SABDA)---\\n.*?^---KOTAKTAMAT---").matcher(existing);
+    while(boxes.find()){if(a>=boxes.start()&&a<boxes.end()){insertA=insertB=boxes.end();chosen="";break;}}
+    if(chosen.contains("---KOTAK")){insertA=insertB=b;chosen="";}
+    editor.getText().replace(insertA,insertB,prefix+chosen+"\n---KOTAKTAMAT---\n");
+    editor.setSelection(insertA+prefix.length(),insertA+prefix.length()+chosen.length());
    }).show();
  }
  void showDividerPicker(){
