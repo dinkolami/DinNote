@@ -354,7 +354,7 @@ public class MainActivity extends Activity {
   // Compact GitHub-style shortcuts, without changing the approved header.
   LinearLayout shortcuts=new LinearLayout(this);shortcuts.setOrientation(1);
   shortcuts.setPadding(dp(2),dp(2),dp(2),dp(1));page.addView(shortcuts);
-  if(homeWindowWidthDp()>=500){
+  if(homeWindowWidthDp()>=440){
    LinearLayout sectionColumns=new LinearLayout(this);
    sectionColumns.setOrientation(LinearLayout.HORIZONTAL);
    LinearLayout pinnedColumn=new LinearLayout(this);pinnedColumn.setOrientation(LinearLayout.VERTICAL);
@@ -394,7 +394,7 @@ public class MainActivity extends Activity {
    hint.setGravity(Gravity.CENTER);hint.setTextColor(0xff656d76);hint.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);hint.setTextSize(13);hint.setPadding(dp(12),dp(6),dp(12),dp(12));recentNotes.addView(hint);
   }else {
    // Two balanced columns of five on an unfolded Fold6; one column on narrow screens.
-   boolean wide=homeWindowWidthDp()>=500;
+   boolean wide=homeWindowWidthDp()>=440;
    LinearLayout columns=null,left=null,right=null;
    if(wide){
     columns=new LinearLayout(this);columns.setOrientation(LinearLayout.HORIZONTAL);
@@ -540,7 +540,7 @@ public class MainActivity extends Activity {
  }
  void dashboardSection(LinearLayout target,String heading,ArrayList<String> keys,boolean pin){
   // Keep folded rows compact; unfolded columns retain comfortable touch targets.
-  boolean folded=homeWindowWidthDp()<500;
+  boolean folded=homeWindowWidthDp()<440;
   boolean collapsed=prefs.getBoolean(pin?"home_pinned_collapsed":"home_updated_collapsed",false);
   TextView title=dashboardText((pin?"◆  ":"◷  ")+heading+"    "+Math.min(3,keys.size())+" Topik  "+(collapsed?"▸":"▾"),15,true);
   title.setTextColor(0xff365c48);
