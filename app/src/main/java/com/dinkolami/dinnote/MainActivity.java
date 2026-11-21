@@ -1480,6 +1480,15 @@ public class MainActivity extends Activity {
      while(after<displayLines.length&&displayLines[after].trim().isEmpty())after++;
      if((before>=0&&displayLines[before].trim().matches("---(?:FLOWER|GEOMETRIC|CLASSIC)?---"))||
         (after<displayLines.length&&displayLines[after].trim().matches("---(?:FLOWER|GEOMETRIC|CLASSIC)?---")))continue;
+     // Multiple source blank lines before a numbered heading should not create
+     // oversized gaps in reading mode. Preserve one small visual pause only.
+     if(after<displayLines.length&&displayLines[after].matches("^\\s*\\d+\\.\\s+.*$")){
+      if(rowIndex==before+1){
+       View headingGap=new View(this);
+       readingRows.addView(headingGap,new LinearLayout.LayoutParams(-1,dp(4)));
+      }
+      continue;
+     }
     }
     java.util.regex.Matcher numbered=java.util.regex.Pattern.compile("^\\s*(\\d+)\\.\\s+(.*)$").matcher(line);
     java.util.regex.Matcher marked=java.util.regex.Pattern.compile("^\\s*([•☐☑✓])\\s+(.*)$").matcher(line);
@@ -1500,7 +1509,7 @@ public class MainActivity extends Activity {
      readingRows.addView(ornament);
     }else if(isNumber||isMarked){
      LinearLayout itemRow=new LinearLayout(this);itemRow.setOrientation(LinearLayout.HORIZONTAL);
-     itemRow.setGravity(Gravity.CENTER_VERTICAL);itemRow.setPadding(dp(6),dp(5),dp(6),dp(5));
+     itemRow.setGravity(Gravity.CENTER_VERTICAL);itemRow.setPadding(dp(6),dp(2),dp(6),dp(2));
      String marker=isNumber?numbered.group(1):marked.group(1);
      String value=isNumber?numbered.group(2):marked.group(2);
      boolean arabicHeading=java.util.regex.Pattern.compile("[\\u0600-\\u06FF]").matcher(value).find();
@@ -1538,7 +1547,7 @@ public class MainActivity extends Activity {
      FrameLayout.LayoutParams innerCircleParams=new FrameLayout.LayoutParams(-1,-1,Gravity.CENTER);
      innerCircleParams.setMargins(dp(2),dp(2),dp(2),dp(2));
      medallion.addView(markerView,innerCircleParams);
-     LinearLayout.LayoutParams medalParams=new LinearLayout.LayoutParams(dp(27),dp(27));
+     LinearLayout.LayoutParams medalParams=new LinearLayout.LayoutParams(dp(25),dp(25));
      if(arabicHeading)medalParams.leftMargin=dp(3);else medalParams.rightMargin=dp(3);
      if(!arabicHeading)itemRow.addView(medallion,medalParams);
      TextView valueView=text("",readingSizes[fontLevel]);valueView.setText(formattedReadingText(value));applySharedTextMetrics(valueView);valueView.setTextColor(0xff303c43);
