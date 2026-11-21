@@ -300,6 +300,7 @@ public class MainActivity extends Activity {
   scroll.addView(homeFitFrame,new ScrollView.LayoutParams(-1,-2));
   homeFitFrame.addView(page,new FrameLayout.LayoutParams(-1,-2));
   final boolean[] homeFits={false};
+  final View[] homeFlexibleSpace={null};
   // Never intercept dashboard scrolling: in split-screen the visible height is smaller.
   // Android must be allowed to scroll all real content, including the bottom rows.
   scroll.getViewTreeObserver().addOnGlobalLayoutListener(()->{
@@ -309,6 +310,8 @@ public class MainActivity extends Activity {
    page.measure(View.MeasureSpec.makeMeasureSpec(width,View.MeasureSpec.EXACTLY),
      View.MeasureSpec.makeMeasureSpec(0,View.MeasureSpec.UNSPECIFIED));
    int natural=page.getMeasuredHeight();
+   // Subtract the previously allocated flexible gap to avoid layout oscillation.
+   if(homeFlexibleSpace[0]!=null)natural-=homeFlexibleSpace[0].getLayoutParams().height;
    if(natural<=0)return;
    float ratio=(float)available/natural;
    // Fit only when the dashboard genuinely fits; do not shrink or clip a tall
@@ -321,8 +324,14 @@ public class MainActivity extends Activity {
    // Fill surplus vertical space too: folded and unfolded dashboards
    // should end near the bottom rather than leaving a blank strip.
    // Bound the stretch to preserve readable labels and touch targets.
-   float fit=ratio>=minimumFit&&ratio<=1.25f?ratio:(ratio>1.25f?1.25f:1f);
-   int desired=Math.round(natural*fit);
+   float fit=ratio<1f&&ratio>=minimumFit?ratio:1f;
+   int extra=fit==1f?Math.max(0,available-natural):0;
+   extra=Math.min(extra,dp(260));
+   if(homeFlexibleSpace[0]!=null&&homeFlexibleSpace[0].getLayoutParams().height!=extra){
+    android.view.ViewGroup.LayoutParams gapParams=homeFlexibleSpace[0].getLayoutParams();
+    gapParams.height=extra;homeFlexibleSpace[0].setLayoutParams(gapParams);
+   }
+   int desired=Math.round((natural+extra)*fit);
    boolean fits=desired<=available;
    homeFits[0]=fits;
    // Clamp the wrapper to the actual visual content height; the ScrollView
@@ -410,6 +419,9 @@ public class MainActivity extends Activity {
    dashboardSection(shortcuts,"Nota disemat",dashboardKeys("pinned_",false),true);
    dashboardSection(shortcuts,"Terakhir dikemaskini",dashboardKeys("updated_",false),false);
   }
+  View flexibleSpace=new View(this);
+  shortcuts.addView(flexibleSpace,new LinearLayout.LayoutParams(-1,0));
+  homeFlexibleSpace[0]=flexibleSpace;
   String resume=prefs.getString("last_edited_key","");
   if(!resume.isEmpty()&&prefs.contains(resume)){
    TextView resumeButton=dashboardText("✎  Sambung menulis  ›",15,true);
@@ -506,7 +518,16 @@ public class MainActivity extends Activity {
   footer.setElevation(dp(3));
   root.addView(footer,new LinearLayout.LayoutParams(-1,-2));
   LinearLayout.LayoutParams ap=new LinearLayout.LayoutParams(-1,dp(42));
-  footer.addView(add,ap);
+  LinearLayout actions=new LinearLayout(this);actions.setOrientation(LinearLayout.HORIZONTAL);
+  footer.addView(actions,new LinearLayout.LayoutParams(-1,dp(42)));
+  LinearLayout.LayoutParams noteActionParams=new LinearLayout.LayoutParams(0,-1,1);noteActionParams.rightMargin=dp(4);
+  actions.addView(add,noteActionParams);
+  TextView addBook=dashboardText("＋  Kitab baharu",15,true);
+  addBook.setGravity(Gravity.CENTER);addBook.setTextColor(0xff365c48);
+  addBook.setBackground(rounded(0xffeef5ef,0xffc4d8c8,9));
+  LinearLayout.LayoutParams bookActionParams=new LinearLayout.LayoutParams(0,-1,1);bookActionParams.leftMargin=dp(4);
+  actions.addView(addBook,bookActionParams);
+  addBook.setContentDescription("Cipta kitab baharu");addBook.setOnClickListener(v->{maktabah=true;edit(null);});applyTouchFeedback(addBook);
   add.setContentDescription("Cipta nota baharu");add.setFocusable(true);
   add.setOnClickListener(v->{maktabah=false;edit(null);});
   applyTouchFeedback(add);applyTouchFeedback(recent);
@@ -570,9 +591,13 @@ public class MainActivity extends Activity {
  void dashboardSection(LinearLayout target,String heading,ArrayList<String> keys,boolean pin){
   // Keep folded rows compact; unfolded columns retain comfortable touch targets.
   boolean folded=getResources().getConfiguration().screenWidthDp<500;
-  TextView title=dashboardText((pin?"⌖  ":"◷  ")+heading+"    "+Math.min(pin?5:3,keys.size())+" Topik",15,true);
+  boolean collapsed=prefs.getBoolean(pin?"home_pinned_collapsed":"home_updated_collapsed",false);
+  TextView title=dashboardText((pin?"◆  ":"◷  ")+heading+"    "+Math.min(pin?5:3,keys.size())+" Topik  "+(collapsed?"▸":"▾"),15,true);
   title.setTextColor(0xff365c48);
-  title.setBackground(dashboardTileSurface(!pin));title.setElevation(dp(1));title.setPadding(dp(10),dp(folded?6:8),dp(10),dp(folded?6:8));title.setIncludeFontPadding(false);title.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);title.setSingleLine(true);title.setEllipsize(android.text.TextUtils.TruncateAt.END);title.setContentDescription(heading);title.setTooltipText(heading);title.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);LinearLayout.LayoutParams titleParams=new LinearLayout.LayoutParams(-1,-2);titleParams.topMargin=dp(5);titleParams.bottomMargin=dp(5);target.addView(title,titleParams);
+  title.setBackground(dashboardTileSurface(!pin));title.setElevation(dp(1));title.setPadding(dp(10),dp(folded?6:8),dp(10),dp(folded?6:8));title.setIncludeFontPadding(false);title.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);title.setSingleLine(true);title.setEllipsize(android.text.TextUtils.TruncateAt.END);title.setContentDescription(heading+", ketik untuk buka atau lipat");title.setTooltipText(heading);title.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);LinearLayout.LayoutParams titleParams=new LinearLayout.LayoutParams(-1,-2);titleParams.topMargin=dp(5);titleParams.bottomMargin=dp(5);target.addView(title,titleParams);
+  title.setFocusable(true);applyTouchFeedback(title);
+  title.setOnClickListener(v->{prefs.edit().putBoolean(pin?"home_pinned_collapsed":"home_updated_collapsed",!collapsed).apply();home();});
+  if(collapsed)return;
   if(keys.isEmpty()){
    TextView empty=dashboardText(pin?"Belum ada nota disemat":"Belum ada nota dikemaskini",13,false);
    empty.setTextColor(0xff68756c);empty.setPadding(dp(10),dp(6),dp(10),dp(8));
@@ -598,6 +623,7 @@ public class MainActivity extends Activity {
    entry.setIncludeFontPadding(false);entry.setPadding(0,0,0,0);entry.setMinWidth(0);
    LinearLayout line=new LinearLayout(this);line.setOrientation(LinearLayout.HORIZONTAL);line.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);line.setGravity(Gravity.CENTER_VERTICAL);
    line.setPadding(dp(7),dp(folded?3:7),dp(7),dp(folded?3:7));line.setBackground(subtleNoteBorder(9));line.setMinimumHeight(dp(folded?38:48));
+   if(pin){entry.setCompoundDrawablePadding(dp(5));entry.setTextColor(0xff8b6925);}
    line.addView(entry,new LinearLayout.LayoutParams(0,-2,1));
    Object rawStamp=prefs.getAll().get("updated_"+key);
    long stamp=rawStamp instanceof Number?((Number)rawStamp).longValue():0L;
