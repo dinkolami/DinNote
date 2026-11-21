@@ -440,13 +440,13 @@ public class MainActivity extends Activity {
     columns.addView(left,leftParams);columns.addView(right,rightParams);
     recentNotes.addView(columns,new LinearLayout.LayoutParams(-1,-2));
    }
-   for(int i=0;i<(wide?6:Math.min(3,keys.size()));i++){
+   for(int i=0;i<(wide?10:Math.min(5,keys.size()));i++){
     if(i>=keys.size()){
      TextView placeholder=dashboardText("＋  Ruang nota "+(i+1),13,false);
      placeholder.setTextColor(0xff7a897f);placeholder.setGravity(Gravity.CENTER_VERTICAL);placeholder.setSingleLine(true);placeholder.setEllipsize(android.text.TextUtils.TruncateAt.END);placeholder.setPadding(dp(10),0,dp(8),0);
      placeholder.setBackground(subtleNoteBorder(8));
      LinearLayout.LayoutParams emptyParams=new LinearLayout.LayoutParams(-1,dp(38));emptyParams.bottomMargin=dp(4);
-     (i<3?left:right).addView(placeholder,emptyParams);
+     (i<5?left:right).addView(placeholder,emptyParams);
      placeholder.setContentDescription("Cipta nota baharu di ruang "+(i+1));applyTouchFeedback(placeholder);placeholder.setOnClickListener(v->{maktabah=false;edit(null);});
      continue;
     }
@@ -476,7 +476,7 @@ public class MainActivity extends Activity {
     }
     LinearLayout.LayoutParams itemParams=new LinearLayout.LayoutParams(-1,-2);
     itemParams.bottomMargin=dp(5);
-    if(wide)(i<3?left:right).addView(row,itemParams);else recentNotes.addView(row,itemParams);
+    if(wide)(i<5?left:right).addView(row,itemParams);else recentNotes.addView(row,itemParams);
     applyTouchFeedback(row);row.setFocusable(true);
     row.setContentDescription("Buka "+(k.startsWith("m_")?"kitab ":"nota ")+t);
     row.setTooltipText(t);
