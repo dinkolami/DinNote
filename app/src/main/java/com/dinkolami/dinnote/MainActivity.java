@@ -519,7 +519,13 @@ public class MainActivity extends Activity {
   // Keep folded rows compact; unfolded columns retain comfortable touch targets.
   boolean folded=getResources().getConfiguration().screenWidthDp<500;
   TextView title=dashboardText((pin?"⌖  ":"◷  ")+heading+"    "+Math.min(3,keys.size())+" Topik",15,true);
-  title.setTextColor(0xff4e6269);title.setBackground(rounded(0xffeef2f5,0xffdce4ea,9));title.setPadding(dp(10),dp(folded?6:8),dp(10),dp(folded?6:8));title.setIncludeFontPadding(false);title.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);title.setSingleLine(true);title.setEllipsize(android.text.TextUtils.TruncateAt.END);title.setContentDescription(heading);title.setTooltipText(heading);title.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);LinearLayout.LayoutParams titleParams=new LinearLayout.LayoutParams(-1,-2);titleParams.topMargin=dp(5);titleParams.bottomMargin=dp(5);target.addView(title,titleParams);
+  title.setTextColor(0xff365c48);
+  android.graphics.drawable.GradientDrawable sectionSurface=new android.graphics.drawable.GradientDrawable(
+    android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
+    pin?new int[]{0xfffafffb,0xffddece2}:new int[]{0xffffffff,0xffe9edeb});
+  sectionSurface.setCornerRadius(dp(12));
+  sectionSurface.setStroke(Math.max(1,Math.round(getResources().getDisplayMetrics().density*0.6f)),pin?0xffc3d3c8:0xffd2d9d5);
+  title.setBackground(sectionSurface);title.setElevation(dp(1));title.setPadding(dp(10),dp(folded?6:8),dp(10),dp(folded?6:8));title.setIncludeFontPadding(false);title.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);title.setSingleLine(true);title.setEllipsize(android.text.TextUtils.TruncateAt.END);title.setContentDescription(heading);title.setTooltipText(heading);title.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);LinearLayout.LayoutParams titleParams=new LinearLayout.LayoutParams(-1,-2);titleParams.topMargin=dp(5);titleParams.bottomMargin=dp(5);target.addView(title,titleParams);
   if(keys.isEmpty()){
    TextView empty=dashboardText(pin?"Belum ada nota disemat":"Belum ada nota dikemaskini",13,false);
    empty.setTextColor(0xff68756c);empty.setPadding(dp(10),dp(6),dp(10),dp(8));
