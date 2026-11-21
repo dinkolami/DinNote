@@ -474,10 +474,12 @@ public class MainActivity extends Activity {
     row.setTooltipText(t);
     View.OnClickListener openRecent=v->{maktabah=k.startsWith("m_");read(k);};
     row.setOnClickListener(openRecent);
+    row.setOnLongClickListener(v->{showDashboardActions(k);return true;});
     item.setOnClickListener(openRecent);
     for(int child=0;child<row.getChildCount();child++){
      View childView=row.getChildAt(child);
      childView.setOnClickListener(openRecent);
+     childView.setOnLongClickListener(v->{showDashboardActions(k);return true;});
     }
    }
   }
@@ -489,6 +491,19 @@ public class MainActivity extends Activity {
   add.setContentDescription("Cipta nota baharu");add.setFocusable(true);
   add.setOnClickListener(v->{maktabah=false;edit(null);});
   applyTouchFeedback(add);applyTouchFeedback(recent);
+ }
+ void showDashboardActions(String key){
+  if(!prefs.contains(key)||prefs.getBoolean("deleted_"+key,false))return;
+  boolean pinned=prefs.getBoolean("pinned_"+key,false);
+  String label=prefs.getString("title_"+key,"").trim();
+  new AlertDialog.Builder(this).setTitle(label.isEmpty()?"Tanpa tajuk":label)
+   .setItems(new String[]{"Edit",pinned?"Buka sematan":"Semat","Duplikasi","Alih ke Tong Sampah"},(d,i)->{
+    maktabah=key.startsWith("m_");
+    if(i==0)edit(key);
+    else if(i==1){prefs.edit().putBoolean("pinned_"+key,!pinned).apply();home();}
+    else if(i==2)duplicateNote(key);
+    else confirmDelete(key);
+   }).show();
  }
  void showHomeSearchResults(String query){
   int hits=0;String first="";
@@ -568,6 +583,7 @@ public class MainActivity extends Activity {
    LinearLayout.LayoutParams ep=new LinearLayout.LayoutParams(-1,-2);ep.bottomMargin=dp(folded?3:5);target.addView(line,ep);applyTouchFeedback(line);
    line.setFocusable(true);line.setContentDescription("Buka "+(key.startsWith("m_")?"kitab ":"nota ")+(label.isEmpty()?"Tanpa tajuk":label));line.setTooltipText(label.isEmpty()?"Tanpa tajuk":label);
    line.setOnClickListener(v->{maktabah=key.startsWith("m_");read(key);});
+   line.setOnLongClickListener(v->{showDashboardActions(key);return true;});
   }
  }
  android.graphics.drawable.GradientDrawable rounded(int fill,int stroke,int radius){
