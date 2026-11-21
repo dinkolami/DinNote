@@ -1434,7 +1434,8 @@ public class MainActivity extends Activity {
    }
   }
   String readingText=prefs.getString(key,"").trim();
-  int wordCount=readingText.isEmpty()?0:readingText.split("\\s+").length;
+  String countable=normalizeStructuralMarkers(readingText).replaceAll("(?m)^---(?:KOTAK(?:DALIL|HIKMAH|CATATAN|FIRMAN|SABDA|TAMAT)|FLOWER|GEOMETRIC|CLASSIC)---[ \\t]*$","").replaceAll("</?[biu]>","").trim();
+  int wordCount=0;java.util.regex.Matcher words=java.util.regex.Pattern.compile("[\\p{L}\\p{N}][\\p{L}\\p{M}\\p{N}]*").matcher(countable);while(words.find())wordCount++;
   long readingUpdated=prefs.getLong("updated_"+key,0L);String updatedLabel=readingUpdated>0?new java.text.SimpleDateFormat("dd/MM/yyyy",java.util.Locale.getDefault()).format(new java.util.Date(readingUpdated)):"—";TextView wordCounter=text(wordCount+" perkataan  ·  Dikemas kini "+updatedLabel,12);
   wordCounter.setTextColor(0xff687078);
   wordCounter.setPadding(dp(20),dp(8),dp(20),dp(20));
@@ -1946,7 +1947,8 @@ public class MainActivity extends Activity {
    TextView label=text(type.equals("FIRMAN")?"Firman Allah SWT:":type.equals("SABDA")?"Sabda Nabi SAW:":type.equals("DALIL")?"⚖  Dalil":type.equals("HIKMAH")?"✒  Kalam Hikmah":"◎  Catatan Penting",13);
    label.setTextColor(type.equals("FIRMAN")?0xff176b47:type.equals("SABDA")?0xff96783e:type.equals("DALIL")?0xff426e96:type.equals("HIKMAH")?0xff79549b:0xff946176);
    label.setTypeface(null,android.graphics.Typeface.BOLD);label.setIncludeFontPadding(false);
-   label.setPadding(0,0,0,dp(2));
+   label.setPadding(dp(6),dp(2),dp(8),dp(2));
+   label.setBackground(rounded(bg,border,16));
    if(type.equals("FIRMAN")||type.equals("SABDA")){
     final boolean book=type.equals("FIRMAN");
     final int ink=label.getCurrentTextColor();
@@ -1967,7 +1969,7 @@ public class MainActivity extends Activity {
      }
     };
     LinearLayout.LayoutParams iconParams=new LinearLayout.LayoutParams(dp(book?24:19),dp(book?24:19));iconParams.setMarginEnd(dp(4));heading.addView(symbol,iconParams);heading.addView(label);panel.addView(heading);
-   }else panel.addView(label);
+   }else panel.addView(label,new LinearLayout.LayoutParams(-2,-2));
    TextView value=text("",fontSize);value.setText(formattedReadingText(m.group(2).trim()));applySharedTextMetrics(value);value.setTextColor(0xff303c43);
    value.setPadding(0,0,0,0);value.setIncludeFontPadding(false);value.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);value.setTextIsSelectable(true);value.setGravity(type.equals("CATATAN")?Gravity.START:Gravity.CENTER_HORIZONTAL);panel.addView(value);
    LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);lp.setMargins(dp(8),dp(3),dp(8),dp(3));body.addView(panel,lp);
@@ -1980,10 +1982,10 @@ public class MainActivity extends Activity {
   int start=0;
   while(ornaments.find()){
    addPlainBoxParagraph(body,value.substring(start,ornaments.start()),fontSize);
-   LinearLayout row=new LinearLayout(this);row.setGravity(Gravity.CENTER_VERTICAL);row.setPadding(dp(12),dp(2),dp(12),dp(2));
+   LinearLayout row=new LinearLayout(this);row.setGravity(Gravity.CENTER_VERTICAL);row.setPadding(dp(12),0,dp(12),0);
    View left=new View(this);left.setBackgroundColor(0xff176b47);row.addView(left,new LinearLayout.LayoutParams(0,dp(1),1));
    TextView symbol=text(ornaments.group(1).equals("FLOWER")?"✿":ornaments.group(1).equals("GEOMETRIC")?"❖":"❧",19);
-   symbol.setGravity(Gravity.CENTER);symbol.setSingleLine(true);symbol.setTextColor(0xff176b47);row.addView(symbol,new LinearLayout.LayoutParams(dp(42),-2));
+   symbol.setGravity(Gravity.CENTER);symbol.setIncludeFontPadding(false);symbol.setSingleLine(true);symbol.setTextColor(0xff176b47);row.addView(symbol,new LinearLayout.LayoutParams(dp(42),-2));
    View right=new View(this);right.setBackgroundColor(0xff176b47);row.addView(right,new LinearLayout.LayoutParams(0,dp(1),1));body.addView(row);
    start=ornaments.end();
   }
