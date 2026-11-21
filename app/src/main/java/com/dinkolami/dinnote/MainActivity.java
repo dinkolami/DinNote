@@ -1663,12 +1663,60 @@ public class MainActivity extends Activity {
   String value=editor.getText().subSequence(a,b).toString().replace("**","").replace("*","").replace("<u>","").replace("</u>","");
   editor.getText().replace(a,b,value);editor.setSelection(a,a+value.length());
  }
+ org.json.JSONArray personalFormatPresets(){
+  try{return new org.json.JSONArray(prefs.getString("personal_format_presets","[]"));}catch(Exception e){return new org.json.JSONArray();}
+ }
  void showEditorFormatPresets(){
-  new AlertDialog.Builder(this).setTitle("Preset format")
-   .setItems(new String[]{"Tebal","Condong","Garis bawah","Tebal dan garis bawah"},(d,i)->{
-    String[] opening={"**","*","<u>","<u>**"},closing={"**","*","</u>","**</u>"};
-    wrapEditorSelection(opening[i],closing[i]);
-   }).show();
+  if(editor==null)return;
+  final String[] names={"Tajuk kitab","Dalil al-Quran","Kalam ulama","Fasal dan subtopik","Catatan penting","Tebal","Condong","Garis bawah"};
+  final org.json.JSONArray own=personalFormatPresets();
+  java.util.ArrayList<String> labels=new java.util.ArrayList<>(java.util.Arrays.asList(names));
+  for(int i=0;i<own.length();i++){org.json.JSONObject p=own.optJSONObject(i);labels.add(p==null?"Preset":p.optString("name","Preset"));}
+  labels.add("+ Cipta preset sendiri");labels.add("Urus preset sendiri");
+  new AlertDialog.Builder(this).setTitle("Preset Format 2.0").setItems(labels.toArray(new String[0]),(d,i)->{
+   if(i==labels.size()-2){editPersonalFormatPreset(-1);return;}
+   if(i==labels.size()-1){managePersonalFormatPresets();return;}
+   if(i<names.length){previewFormatPreset(names[i],i);return;}
+   org.json.JSONObject p=own.optJSONObject(i-names.length);if(p!=null)previewFormatPreset(p.optString("name"),p.optInt("style",0));
+  }).show();
+ }
+ void previewFormatPreset(String name,int style){
+  final int kind=Math.max(0,Math.min(7,style));
+  LinearLayout panel=new LinearLayout(this);panel.setOrientation(LinearLayout.VERTICAL);panel.setPadding(dp(20),dp(12),dp(20),dp(12));
+  TextView sample=text(kind==0?"كِتَابُ الطَّهَارَةِ":kind==1?"إِنَّ اللَّهَ مَعَ الصَّابِرِينَ":kind==2?"الْعِلْمُ نُورٌ":kind==3?"فَصْلٌ — Fasal Pertama":"Contoh tulisan",18);
+  sample.setTextColor(0xff176b47);sample.setGravity(kind<=2?Gravity.CENTER:Gravity.START);
+  sample.setTypeface(null,kind==6?android.graphics.Typeface.ITALIC:android.graphics.Typeface.BOLD);
+  if(kind==7)sample.setPaintFlags(sample.getPaintFlags()|android.graphics.Paint.UNDERLINE_TEXT_FLAG);
+  sample.setPadding(dp(12),dp(12),dp(12),dp(12));sample.setBackground(rounded(0xffeff6f0,0xffb8cdbd,10));panel.addView(sample);
+  new AlertDialog.Builder(this).setTitle(name).setView(panel).setPositiveButton("Gunakan",(d,w)->applyFormatPreset(kind)).setNegativeButton("Batal",null).show();
+ }
+ void applyFormatPreset(int kind){
+  if(editor==null)return;
+  if(kind==1||kind==2||kind==4){
+   String type=kind==1?"DALIL":kind==2?"HIKMAH":"CATATAN";
+   wrapEditorSelection("\n---KOTAK"+type+"---\n","\n---KOTAKTAMAT---\n");
+  }else if(kind==3)wrapEditorSelection("**","**\n---FLOWER---\n");
+  else if(kind==6)wrapEditorSelection("*","*");
+  else if(kind==7)wrapEditorSelection("<u>","</u>");
+  else wrapEditorSelection("**","**");
+ }
+ void editPersonalFormatPreset(int index){
+  org.json.JSONArray items=personalFormatPresets();org.json.JSONObject old=index<0?null:items.optJSONObject(index);
+  LinearLayout fields=new LinearLayout(this);fields.setOrientation(LinearLayout.VERTICAL);fields.setPadding(dp(20),dp(10),dp(20),dp(10));
+  EditText name=new EditText(this);name.setSingleLine(true);name.setHint("Nama preset");if(old!=null)name.setText(old.optString("name"));fields.addView(name);
+  Spinner styles=new Spinner(this);styles.setAdapter(new ArrayAdapter<>(this,android.R.layout.simple_spinner_dropdown_item,new String[]{"Tajuk kitab","Dalil al-Quran","Kalam ulama","Fasal dan subtopik","Catatan penting","Tebal","Condong","Garis bawah"}));if(old!=null)styles.setSelection(Math.max(0,Math.min(7,old.optInt("style"))));fields.addView(styles);
+  AlertDialog dialog=new AlertDialog.Builder(this).setTitle(index<0?"Cipta preset":"Edit preset").setView(fields).setPositiveButton("Simpan",null).setNegativeButton("Batal",null).create();
+  dialog.setOnShowListener(d->dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v->{
+   String label=name.getText().toString().trim();if(label.isEmpty()){name.setError("Masukkan nama");return;}
+   try{org.json.JSONObject p=new org.json.JSONObject();p.put("name",label);p.put("style",styles.getSelectedItemPosition());if(index<0)items.put(p);else items.put(index,p);prefs.edit().putString("personal_format_presets",items.toString()).apply();dialog.dismiss();showEditorFormatPresets();}catch(Exception e){Toast.makeText(this,"Preset tidak dapat disimpan",Toast.LENGTH_SHORT).show();}
+  }));dialog.show();
+ }
+ void managePersonalFormatPresets(){
+  org.json.JSONArray items=personalFormatPresets();if(items.length()==0){Toast.makeText(this,"Belum ada preset sendiri",Toast.LENGTH_SHORT).show();return;}
+  String[] names=new String[items.length()];for(int i=0;i<names.length;i++){org.json.JSONObject p=items.optJSONObject(i);names[i]=p==null?"Preset":p.optString("name");}
+  new AlertDialog.Builder(this).setTitle("Urus preset").setItems(names,(d,i)->new AlertDialog.Builder(this).setTitle(names[i]).setItems(new String[]{"Edit nama dan gaya","Padam"},(x,j)->{
+   if(j==0)editPersonalFormatPreset(i);else new AlertDialog.Builder(this).setMessage("Padam preset ini?").setNegativeButton("Batal",null).setPositiveButton("Padam",(y,z)->{items.remove(i);prefs.edit().putString("personal_format_presets",items.toString()).apply();}).show();
+  }).show()).show();
  }
  void showEditorFindReplace(){
   if(editor==null)return;
