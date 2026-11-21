@@ -551,7 +551,7 @@ public class MainActivity extends Activity {
    entry.setSingleLine(true);entry.setEllipsize(android.text.TextUtils.TruncateAt.END);
    entry.setIncludeFontPadding(false);entry.setPadding(0,0,0,0);entry.setMinWidth(0);
    LinearLayout line=new LinearLayout(this);line.setOrientation(LinearLayout.HORIZONTAL);line.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);line.setGravity(Gravity.CENTER_VERTICAL);
-   line.setPadding(dp(7),dp(folded?3:7),dp(7),dp(folded?3:7));line.setBackground(subtleNoteBorder(9));line.setMinHeight(dp(folded?38:48));
+   line.setPadding(dp(7),dp(folded?3:7),dp(7),dp(folded?3:7));line.setBackground(subtleNoteBorder(9));line.setMinimumHeight(dp(folded?38:48));
    line.addView(entry,new LinearLayout.LayoutParams(0,-2,1));
    Object rawStamp=prefs.getAll().get("updated_"+key);
    long stamp=rawStamp instanceof Number?((Number)rawStamp).longValue():0L;
