@@ -1641,7 +1641,15 @@ public class MainActivity extends Activity {
    }
    @Override protected void onSelectionChanged(int start,int end){super.onSelectionChanged(start,end);if(editor==this&&start>=0&&end>=0){persistEditorPosition();if(hasFocus())post(()->revealEditorCursor(this));if(formatRefresh[0]!=null)post(formatRefresh[0]);}}
    @Override protected void onSizeChanged(int w,int h,int oldw,int oldh){super.onSizeChanged(w,h,oldw,oldh);if(editor==this)post(()->revealEditorCursor(this));}
-  };editor.setGravity(Gravity.TOP);editor.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);editor.setBreakStrategy(android.text.Layout.BREAK_STRATEGY_SIMPLE);editor.setHyphenationFrequency(android.text.Layout.HYPHENATION_FREQUENCY_NONE);editor.setTextSize(new int[]{13,15,16,18}[Math.max(0,Math.min(3,prefs.getInt("reader_font_level",1)))]);editor.setTextColor(0xff30343b);editor.setCursorVisible(true);editor.setPadding(dp(24),dp(10),dp(24),dp(12));editor.setLineSpacing(prefs.getBoolean("reader_wide_spacing",false)?dp(5):dp(1),prefs.getBoolean("reader_wide_spacing",false)?1.15f:1.0f);editor.setIncludeFontPadding(true);applySharedTextMetrics(editor);editor.setHint(maktabah?"Tulis kandungan kitab di sini…":"Tulis nota di sini…");editor.setContentDescription(maktabah?"Kandungan kitab":"Kandungan nota");editor.setBackground(rounded(0xfffffefb,0xffb8d5c2,12));editor.setOnFocusChangeListener((v,focused)->editor.setBackground(rounded(0xfffffefb,focused?0xff168254:0xffb8d5c2,12)));editor.setInputType(android.text.InputType.TYPE_CLASS_TEXT|android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE|android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);LinearLayout formatBar=new LinearLayout(this);
+  };final int[] boxTouchOffset={-1};
+  editor.setOnTouchListener((v,event)->{if(event.getActionMasked()==android.view.MotionEvent.ACTION_DOWN){boxTouchOffset[0]=((EditText)v).getOffsetForPosition(event.getX(),event.getY());}return false;});
+  editor.setOnLongClickListener(v->{
+   int offset=boxTouchOffset[0];if(offset<0||editor!=v)return false;
+   java.util.regex.Matcher headers=java.util.regex.Pattern.compile("(?m)^---KOTAK(?:DALIL|HIKMAH|CATATAN|FIRMAN|SABDA)---$").matcher(editor.getText());
+   while(headers.find()){if(offset>=headers.start()&&offset<=headers.end()){editor.setSelection(headers.end());return manageCurrentBox();}}
+   return false;
+  });
+  editor.setGravity(Gravity.TOP);editor.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);editor.setBreakStrategy(android.text.Layout.BREAK_STRATEGY_SIMPLE);editor.setHyphenationFrequency(android.text.Layout.HYPHENATION_FREQUENCY_NONE);editor.setTextSize(new int[]{13,15,16,18}[Math.max(0,Math.min(3,prefs.getInt("reader_font_level",1)))]);editor.setTextColor(0xff30343b);editor.setCursorVisible(true);editor.setPadding(dp(24),dp(10),dp(24),dp(12));editor.setLineSpacing(prefs.getBoolean("reader_wide_spacing",false)?dp(5):dp(1),prefs.getBoolean("reader_wide_spacing",false)?1.15f:1.0f);editor.setIncludeFontPadding(true);applySharedTextMetrics(editor);editor.setHint(maktabah?"Tulis kandungan kitab di sini…":"Tulis nota di sini…");editor.setContentDescription(maktabah?"Kandungan kitab":"Kandungan nota");editor.setBackground(rounded(0xfffffefb,0xffb8d5c2,12));editor.setOnFocusChangeListener((v,focused)->editor.setBackground(rounded(0xfffffefb,focused?0xff168254:0xffb8d5c2,12)));editor.setInputType(android.text.InputType.TYPE_CLASS_TEXT|android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE|android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);LinearLayout formatBar=new LinearLayout(this);
   formatBar.setGravity(Gravity.CENTER_VERTICAL);
   formatBar.setPadding(dp(5),dp(2),dp(5),dp(2));
   formatBar.setHorizontalScrollBarEnabled(false);
@@ -2042,7 +2050,7 @@ public class MainActivity extends Activity {
     if(choice==2){android.text.SpannableStringBuilder duplicate=new android.text.SpannableStringBuilder("\n");duplicate.append(target.getText().subSequence(start,end));target.getText().insert(end,duplicate);target.setSelection(end+1);return;}
     new AlertDialog.Builder(this).setTitle("Pilih jenis kotak").setItems(names,(dialog,i)->{
      if(editor!=target||end>target.length()||!target.getText().subSequence(start,end).toString().equals(original))return;
-     if(choice==0){target.getText().replace(start,headEnd,"---KOTAK"+types[i]);target.setSelection(start+(" ---KOTAK"+types[i]+"---").length());}
+     if(choice==0){target.getText().replace(start,headEnd,"---KOTAK"+types[i]);target.setSelection(Math.min(target.length(),start+("---KOTAK"+types[i]+"---\n").length()));}
      else{int at=choice==3?start:end;String prefix="---KOTAK"+types[i]+"---\n";String block=prefix+"\n---KOTAKTAMAT---";target.getText().insert(at,choice==3?block+"\n":"\n"+block);target.setSelection(at+(choice==3?0:1)+prefix.length());}
     }).show();
    }).show();return true;
