@@ -497,8 +497,16 @@ public class MainActivity extends Activity {
   TextView add=dashboardText("＋  Nota baharu",15,true);add.setGravity(Gravity.CENTER);
   add.setBackground(rounded(0xfff5f7f9,0xffd0d8df,9));add.setTextColor(0xff566a70);
   add.setPadding(dp(12),dp(8),dp(12),dp(8));
-  LinearLayout.LayoutParams ap=new LinearLayout.LayoutParams(-1,-2);
-  ap.topMargin=dp(3);page.addView(add,ap);
+  // Fixed home footer: keep the primary action visible above Android navigation,
+  // independent of dashboard scrolling and window size.
+  LinearLayout footer=new LinearLayout(this);
+  footer.setOrientation(LinearLayout.VERTICAL);
+  footer.setPadding(dp(10),dp(5),dp(10),dp(7));
+  footer.setBackgroundColor(0xfffdfefe);
+  footer.setElevation(dp(3));
+  root.addView(footer,new LinearLayout.LayoutParams(-1,-2));
+  LinearLayout.LayoutParams ap=new LinearLayout.LayoutParams(-1,dp(42));
+  footer.addView(add,ap);
   add.setContentDescription("Cipta nota baharu");add.setFocusable(true);
   add.setOnClickListener(v->{maktabah=false;edit(null);});
   applyTouchFeedback(add);applyTouchFeedback(recent);
