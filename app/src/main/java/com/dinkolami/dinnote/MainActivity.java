@@ -1717,7 +1717,7 @@ public class MainActivity extends Activity {
     android.graphics.Typeface desired=android.graphics.Typeface.create(arabic?"serif":"sans-serif",android.graphics.Typeface.NORMAL);
     if(!desired.equals(editor.getTypeface()))editor.setTypeface(desired);
    }
-   refreshEditorBoxes(e);save();final EditText active=editor;if(active!=null)active.post(()->revealEditorCursor(active));}};editor.addTextChangedListener(bodyWatcher);refreshEditorBoxes(editor.getText());categoryPicker.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener(){public void onNothingSelected(android.widget.AdapterView<?> p){}public void onItemSelected(android.widget.AdapterView<?> p,View v,int position,long id){save();}});}
+   refreshEditorBoxes(e);save();final EditText active=editor;if(active!=null)active.post(()->revealEditorCursor(active));}};editor.addTextChangedListener(bodyWatcher);refreshEditorBoxes(editor.getText());editor.addOnLayoutChangeListener((v,l,t,rr,bb,ol,ot,orr,ob)->{if(rr-l!=orr-ol&&v==editor)refreshEditorBoxes(editor.getText());});categoryPicker.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener(){public void onNothingSelected(android.widget.AdapterView<?> p){}public void onItemSelected(android.widget.AdapterView<?> p,View v,int position,long id){save();}});}
 
  
  class BoxMarkerSpan extends android.text.style.ReplacementSpan {
@@ -1759,7 +1759,24 @@ public class MainActivity extends Activity {
  class BoxInsetSpan extends android.text.style.LeadingMarginSpan.Standard {
   BoxInsetSpan(){super(dp(9));}
  }
+ class EditorDividerSpan extends android.text.style.ReplacementSpan {
+  final String symbol;EditorDividerSpan(String kind){symbol=kind.equals("FLOWER")?"✿":kind.equals("GEOMETRIC")?"❖":"❧";}
+  int width(){return editor==null?dp(120):Math.max(dp(24),editor.getWidth()-editor.getCompoundPaddingLeft()-editor.getCompoundPaddingRight()-dp(22));}
+  @Override public int getSize(android.graphics.Paint p,CharSequence t,int a,int b,android.graphics.Paint.FontMetricsInt fm){
+   if(fm!=null){fm.ascent=-dp(15);fm.top=fm.ascent;fm.descent=dp(5);fm.bottom=fm.descent;}return width();
+  }
+  @Override public void draw(android.graphics.Canvas c,CharSequence t,int a,int b,float x,int top,int y,int bottom,android.graphics.Paint p){
+   android.graphics.Paint q=new android.graphics.Paint(p);q.setAntiAlias(true);q.setColor(0xff176b47);q.setStrokeWidth(dp(1));float mid=x+width()/2f,cy=(top+bottom)/2f;
+   q.setTypeface(android.graphics.Typeface.DEFAULT);q.setTextSize(dp(19));q.setTextAlign(android.graphics.Paint.Align.CENTER);float gap=q.measureText(symbol)/2+dp(8);
+   if(mid-gap>x)c.drawLine(x,cy,mid-gap,cy,q);if(mid+gap<x+width())c.drawLine(mid+gap,cy,x+width(),cy,q);
+   c.drawText(symbol,mid,cy-(q.ascent()+q.descent())/2,q);
+  }
+ }
  void refreshEditorBoxes(android.text.Editable e){
+  for(EditorDividerSpan span:e.getSpans(0,e.length(),EditorDividerSpan.class))e.removeSpan(span);
+  java.util.regex.Matcher div=java.util.regex.Pattern.compile("(?m)^---(FLOWER|GEOMETRIC|CLASSIC)---$").matcher(e.toString());
+  while(div.find())e.setSpan(new EditorDividerSpan(div.group(1)),div.start(),div.end(),33);
+
   for(BoxMarkerSpan span:e.getSpans(0,e.length(),BoxMarkerSpan.class))e.removeSpan(span);
   for(BoxBodySpan span:e.getSpans(0,e.length(),BoxBodySpan.class))e.removeSpan(span);
   for(BoxInsetSpan span:e.getSpans(0,e.length(),BoxInsetSpan.class))e.removeSpan(span);
