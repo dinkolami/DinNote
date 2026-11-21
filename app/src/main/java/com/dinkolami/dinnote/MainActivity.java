@@ -969,21 +969,52 @@ public class MainActivity extends Activity {
   if(clipboard!=null){clipboard.setPrimaryClip(android.content.ClipData.newPlainText(title,output));Toast.makeText(this,"Teks dan tajuk disalin",Toast.LENGTH_SHORT).show();}
  }
  android.text.SpannableStringBuilder formattedReadingText(String source){
-  if(source==null)source="";
-  android.text.SpannableStringBuilder out=new android.text.SpannableStringBuilder();
-  // Match double-star bold before single-star italic, so the delimiters never overlap.
-  java.util.regex.Matcher m=java.util.regex.Pattern.compile("\\*\\*(.+?)\\*\\*|(?<!\\*)\\*(?!\\*)([^*\\r\\n]+?)\\*(?!\\*)",java.util.regex.Pattern.DOTALL).matcher(source);
-  int previous=0;
-  while(m.find()){
-   out.append(source.substring(previous,m.start()));
-   int from=out.length();
-   boolean bold=m.group(1)!=null;
-   out.append(bold?m.group(1):m.group(2));
-   out.setSpan(new android.text.style.StyleSpan(bold?android.graphics.Typeface.BOLD:android.graphics.Typeface.ITALIC),from,out.length(),android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-   previous=m.end();
-  }
-  out.append(source.substring(previous));
-  return out;
+  android.text.SpannableStringBuilder out=new android.text.SpannableStringBuilder(source==null?"":source);
+  String[] patterns={"\\*\\*(.+?)\\*\\*","(?<!\\*)\\*(?!\\*)([^*]+?)\\*(?!\\*)","<u>(.*?)</u>"};
+  for(int k=0;k<patterns.length;k++){
+   java.util.regex.Matcher m=java.util.regex.Pattern.compile(patterns[k],java.util.regex.Pattern.DOTALL).matcher(out.toString());
+   java.util.ArrayList<int[]> ranges=new java.util.ArrayList<>();
+   while(m.find())ranges.add(new int[]{m.start(),m.start(1),m.end(1),m.end()});
+   for(int i=ranges.size()-1;i>=0;i--){
+    int[] p=ranges.get(i);out.delete(p[2],p[3]);out.delete(p[0],p[1]);int end=p[0]+p[2]-p[1];
+    if(end>p[0])out.setSpan(k==2?new android.text.style.UnderlineSpan():new android.text.style.StyleSpan(k==0?1:2),p[0],end,android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+   }
+  }return out;
+ }
+ int richMask(android.text.Spanned value,int a,int b){
+  int mask=0;
+  for(android.text.style.StyleSpan span:value.getSpans(a,b,android.text.style.StyleSpan.class))if(value.getSpanStart(span)<=a&&value.getSpanEnd(span)>=b)mask|=span.getStyle()&3;
+  for(android.text.style.UnderlineSpan span:value.getSpans(a,b,android.text.style.UnderlineSpan.class))if(value.getSpanStart(span)<=a&&value.getSpanEnd(span)>=b)mask|=4;
+  return mask;
+ }
+ String encodedEditorText(){
+  if(editor==null)return "";
+  android.text.Editable e=editor.getText();StringBuilder out=new StringBuilder();int i=0;
+  while(i<e.length()){
+   int mask=richMask(e,i,i+1),end=i+1;
+   while(end<e.length()&&richMask(e,end,end+1)==mask)end++;
+   if((mask&4)!=0)out.append("<u>");if((mask&1)!=0)out.append("**");if((mask&2)!=0)out.append("*");
+   out.append(e.subSequence(i,end));
+   if((mask&2)!=0)out.append("*");if((mask&1)!=0)out.append("**");if((mask&4)!=0)out.append("</u>");i=end;
+  }return out.toString();
+ }
+ void applyLiveStyle(int kind){
+  if(editor==null)return;int a=Math.min(editor.getSelectionStart(),editor.getSelectionEnd()),b=Math.max(editor.getSelectionStart(),editor.getSelectionEnd());
+  if(a<0)return;android.text.Editable e=editor.getText();
+  boolean remove=(richMask(e,a,b)&kind)!=0;
+  if(a==b){
+   if(kind==4)e.setSpan(new android.text.style.UnderlineSpan(),a,b,android.text.Spanned.SPAN_INCLUSIVE_INCLUSIVE);
+   else e.setSpan(new android.text.style.StyleSpan(kind),a,b,android.text.Spanned.SPAN_INCLUSIVE_INCLUSIVE);
+  }else{
+   if(remove){
+    for(android.text.style.CharacterStyle span:e.getSpans(a,b,android.text.style.CharacterStyle.class)){
+     boolean match=kind==4?span instanceof android.text.style.UnderlineSpan:span instanceof android.text.style.StyleSpan&&((android.text.style.StyleSpan)span).getStyle()==kind;
+     if(!match)continue;int x=e.getSpanStart(span),y=e.getSpanEnd(span);e.removeSpan(span);
+     if(x<a)e.setSpan(kind==4?new android.text.style.UnderlineSpan():new android.text.style.StyleSpan(kind),x,a,33);
+     if(y>b)e.setSpan(kind==4?new android.text.style.UnderlineSpan():new android.text.style.StyleSpan(kind),b,y,33);
+    }
+   }else e.setSpan(kind==4?new android.text.style.UnderlineSpan():new android.text.style.StyleSpan(kind),a,b,33);
+  }save();
  }
  void showReaderSettings(String key){
   ScrollView scroll=new ScrollView(this);
@@ -1623,7 +1654,7 @@ public class MainActivity extends Activity {
   // Keep normal Android double-tap text selection while editing.
   // Never navigate away while EditText is handling touch/selection events.
   editor.setOnTouchListener(null);
-  if(key!=null){int remembered=prefs.getInt("edit_cursor_"+key,0);editor.setText(prefs.getString(key,""));editor.setSelection(Math.max(0,Math.min(remembered,editor.length())));}
+  if(key!=null){int remembered=prefs.getInt("edit_cursor_"+key,0);editor.setText(formattedReadingText(prefs.getString(key,"")));editor.setSelection(Math.max(0,Math.min(remembered,editor.length())));}
   final EditText activeBody=editor;
   activeBody.post(()->revealEditorCursor(activeBody));
   // Match the reader's optional Arabic serif typeface in the editor as well.
@@ -1813,6 +1844,9 @@ public class MainActivity extends Activity {
  }
  void wrapEditorSelection(String before,String after){
   if(editor==null)return;
+  if(before.equals("**")&&after.equals("**")){applyLiveStyle(1);return;}
+  if(before.equals("*")&&after.equals("*")){applyLiveStyle(2);return;}
+  if(before.equals("<u>")&&after.equals("</u>")){applyLiveStyle(4);return;}
   int a=Math.max(0,Math.min(editor.getSelectionStart(),editor.getSelectionEnd()));
   int b=Math.max(0,Math.max(editor.getSelectionStart(),editor.getSelectionEnd()));
   String selectedText=editor.getText().subSequence(a,b).toString();
@@ -1842,7 +1876,7 @@ public class MainActivity extends Activity {
    org.json.JSONObject entry=new org.json.JSONObject();
    entry.put("time",System.currentTimeMillis());
    entry.put("title",titleEditor==null?"":titleEditor.getText().toString());
-   entry.put("body",editor.getText().toString());
+   entry.put("body",encodedEditorText());
    String category=categoryPicker==null||categoryPicker.getSelectedItem()==null?"Tanpa kategori":categoryPicker.getSelectedItem().toString();
    entry.put("category",category);
    if(versions.length()>0){
@@ -1903,8 +1937,8 @@ public class MainActivity extends Activity {
   prefs.edit().putInt("edit_cursor_"+selected,editor.getSelectionEnd()).apply();
  }
  static class EditorSnapshot{
- final String value;final int start,end;
- EditorSnapshot(EditText e){value=e.getText().toString();start=e.getSelectionStart();end=e.getSelectionEnd();}
+ final CharSequence value;final int start,end;
+ EditorSnapshot(EditText e){value=new android.text.SpannableString(e.getText());start=e.getSelectionStart();end=e.getSelectionEnd();}
  void restore(EditText e){e.setText(value);e.setSelection(Math.max(0,Math.min(start,e.length())),Math.max(0,Math.min(end,e.length())));}
  }
  void revealEditorCursor(EditText active){
@@ -1921,7 +1955,7 @@ public class MainActivity extends Activity {
  private static final java.util.concurrent.ExecutorService autosaveFlush=java.util.concurrent.Executors.newSingleThreadExecutor();
  void save(){
   if(editor==null)return;
-  String value=editor.getText().toString();
+  String value=encodedEditorText();
   String title=titleEditor==null?"":titleEditor.getText().toString();
   if(selected==null&&value.trim().isEmpty()&&title.trim().isEmpty())return;
   String category=categoryPicker==null||categoryPicker.getSelectedItem()==null?
@@ -1949,7 +1983,7 @@ public class MainActivity extends Activity {
    autosaveFlush.execute(()->{
     boolean ok=store.edit().commit();
     runOnUiThread(()->{
-     if(saveIndicator!=indicator||editor==null||!savedKey.equals(selected)||!savedValue.equals(editor.getText().toString())||!savedTitle.equals(titleEditor==null?"":titleEditor.getText().toString())||!savedCategory.equals(categoryPicker==null||categoryPicker.getSelectedItem()==null?"Tanpa kategori":categoryPicker.getSelectedItem().toString()))return;
+     if(saveIndicator!=indicator||editor==null||!savedKey.equals(selected)||!savedValue.equals(encodedEditorText())||!savedTitle.equals(titleEditor==null?"":titleEditor.getText().toString())||!savedCategory.equals(categoryPicker==null||categoryPicker.getSelectedItem()==null?"Tanpa kategori":categoryPicker.getSelectedItem().toString()))return;
      indicator.setText(ok?"✓ Disimpan":"⚠ Simpan gagal");
      indicator.setTextColor(ok?0xff246b43:0xffb64545);
     });
