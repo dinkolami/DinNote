@@ -43,31 +43,17 @@ public class MainActivity extends Activity {
   root.setAlpha(0.94f);
   root.animate().alpha(1f).setDuration(140L).start();
   LinearLayout header=new LinearLayout(this);header.setGravity(Gravity.CENTER_VERTICAL);
-  header.setPadding(dp(8),dp(3),dp(8),dp(3));header.setBackgroundColor(0xfffffdf4);
+  header.setPadding(dp(8),dp(3),dp(8),dp(3));header.setBackgroundColor(0xfffdfefe);
   ImageView menu=headerIcon("⌂",0xff9daeb9,"Halaman utama DinNote");header.addView(menu);
   menu.setOnClickListener(v->home());
   ImageView settingsMenu=headerIcon("☰",0xff9daeb9,"Menu DinNote dan Tetapan");header.addView(settingsMenu);
   settingsMenu.setOnClickListener(v->showMainMenu());
-  // Keep branding as independent elements so it cannot stretch or overlap on Fold screens.
-  ImageView brandLogo=new ImageView(this);
-  brandLogo.setImageResource(R.drawable.dinnote_header_logo);
-  brandLogo.setScaleType(ImageView.ScaleType.FIT_CENTER);
-  brandLogo.setContentDescription("Logo DinNote");
-  LinearLayout.LayoutParams brandLogoParams=new LinearLayout.LayoutParams(dp(38),dp(38));
-  brandLogoParams.leftMargin=dp(8);brandLogoParams.rightMargin=dp(6);
-  header.addView(brandLogo,brandLogoParams);
-  brandLogo.setOnClickListener(v->home());
-  TextView brandName=new TextView(this);
-  brandName.setText("DinNote");
-  brandName.setTextSize(21);
-  brandName.setTypeface(android.graphics.Typeface.create("serif",android.graphics.Typeface.BOLD_ITALIC));
-  brandName.setTextColor(0xff075033);
-  brandName.setSingleLine(true);
-  brandName.setGravity(Gravity.CENTER_VERTICAL);
-  brandName.setEllipsize(android.text.TextUtils.TruncateAt.END);
-  brandName.setContentDescription("DinNote, kembali ke halaman utama");
-  header.addView(brandName,new LinearLayout.LayoutParams(0,dp(40),1));
-  brandName.setOnClickListener(v->home());
+  ImageView logo=new ImageView(this);logo.setImageBitmap(transparentHeaderLogo());logo.setScaleType(ImageView.ScaleType.FIT_CENTER);logo.setContentDescription("Logo DinNote");logo.setClickable(true);logo.setPadding(dp(3),dp(3),dp(3),dp(3));logo.setBackground(rounded(0xfffdfefe,0xffb89543,50));logo.setClipToOutline(true);
+  LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(dp(34),dp(34));lp.leftMargin=dp(6);lp.rightMargin=dp(5);header.addView(logo,lp);
+  logo.setOnClickListener(v->home());
+  TextView name=text("DinNote",16);name.setTypeface(android.graphics.Typeface.create("serif",android.graphics.Typeface.ITALIC));name.setTextColor(0xff075033);
+  name.setGravity(Gravity.CENTER_VERTICAL);name.setPadding(dp(3),0,0,0);header.addView(name,new LinearLayout.LayoutParams(0,dp(40),1));
+  name.setOnClickListener(v->home());
   ImageView inbox=headerIcon("▣",0xff9daeb9,"Buka nota");header.addView(inbox);
   inbox.setOnClickListener(v->openSection(false));
   ImageView bell=headerIcon("♧",0xff9daeb9,"Peringatan nota");header.addView(bell);
@@ -77,25 +63,6 @@ public class MainActivity extends Activity {
   root.addView(header,new LinearLayout.LayoutParams(-1,dp(54)));
   View border=new View(this);border.setBackgroundColor(0xffd5bb72);
   root.addView(border,new LinearLayout.LayoutParams(-1,dp(1)));
- }
- // Preserve PNG proportions across folded and unfolded screens; crop excess instead of stretching.
- android.graphics.drawable.Drawable aspectFillBackground(int resourceId){
-  final android.graphics.Bitmap bitmap=android.graphics.BitmapFactory.decodeResource(getResources(),resourceId);
-  if(bitmap==null)return new android.graphics.drawable.ColorDrawable(Color.WHITE);
-  return new android.graphics.drawable.Drawable(){
-   final android.graphics.Paint paint=new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG|android.graphics.Paint.FILTER_BITMAP_FLAG);
-   public void draw(android.graphics.Canvas canvas){
-    android.graphics.Rect bounds=getBounds();if(bounds.width()<=0||bounds.height()<=0)return;
-    float scale=Math.max((float)bounds.width()/bitmap.getWidth(),(float)bounds.height()/bitmap.getHeight());
-    int sourceW=Math.max(1,Math.min(bitmap.getWidth(),Math.round(bounds.width()/scale)));
-    int sourceH=Math.max(1,Math.min(bitmap.getHeight(),Math.round(bounds.height()/scale)));
-    int left=(bitmap.getWidth()-sourceW)/2,top=(bitmap.getHeight()-sourceH)/2;
-    canvas.drawBitmap(bitmap,new android.graphics.Rect(left,top,left+sourceW,top+sourceH),bounds,paint);
-   }
-   public void setAlpha(int alpha){paint.setAlpha(alpha);invalidateSelf();}
-   public void setColorFilter(android.graphics.ColorFilter filter){paint.setColorFilter(filter);invalidateSelf();}
-   public int getOpacity(){return android.graphics.PixelFormat.OPAQUE;}
-  };
  }
  android.graphics.Bitmap transparentHeaderLogo(){
   android.graphics.Bitmap original=android.graphics.BitmapFactory.decodeResource(getResources(),R.drawable.dinnote_header_logo);
@@ -324,12 +291,12 @@ public class MainActivity extends Activity {
   scroll.setOverScrollMode(View.OVER_SCROLL_NEVER);scroll.setSmoothScrollingEnabled(true);
   root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
   LinearLayout page=new LinearLayout(this);page.setOrientation(1);
-  page.setPadding(dp(10),dp(6),dp(10),dp(12));android.graphics.drawable.BitmapDrawable homePattern=new android.graphics.drawable.BitmapDrawable(getResources(),android.graphics.BitmapFactory.decodeResource(getResources(),com.dinkolami.dinnote.R.drawable.dinnote_pattern));homePattern.setTileModeX(android.graphics.Shader.TileMode.REPEAT);homePattern.setTileModeY(android.graphics.Shader.TileMode.REPEAT);page.setBackground(aspectFillBackground(R.drawable.dinnote_content_bg));page.setTag("dinnote_home");scroll.addView(page);
+  page.setPadding(dp(10),dp(6),dp(10),dp(12));page.setBackgroundColor(0xfffffefd);page.setTag("dinnote_home");scroll.addView(page);
   TextView recent=dashboardText("Baru dilihat  ▾",15,true);
-  recent.setBackground(rounded(0xfffffdf5,0xff2a9062,11));recent.setTextColor(0xff075033);recent.setIncludeFontPadding(false);
+  recent.setBackground(rounded(0xfffdfefe,0xffcdd6df,9));recent.setTextColor(0xff566a70);recent.setIncludeFontPadding(false);
   LinearLayout quickTools=new LinearLayout(this);quickTools.setOrientation(LinearLayout.HORIZONTAL);quickTools.setGravity(Gravity.CENTER_VERTICAL);
   LinearLayout.LayoutParams quickParams=new LinearLayout.LayoutParams(-1,-2);quickParams.bottomMargin=dp(1);
-  quickTools.setPadding(dp(10),dp(4),dp(10),dp(6));quickTools.setBackgroundColor(0xfffffdf6);quickTools.setElevation(dp(1));
+  quickTools.setPadding(dp(10),dp(4),dp(10),dp(6));quickTools.setBackgroundColor(0xfffffefd);quickTools.setElevation(dp(1));
   // Keep dashboard search and view selector visible while the note list scrolls.
   root.addView(quickTools,2,quickParams);
   LinearLayout.LayoutParams rp=new LinearLayout.LayoutParams(-2,dp(42));rp.rightMargin=dp(6);
@@ -342,7 +309,7 @@ public class MainActivity extends Activity {
   search.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);
   search.setInputType(android.text.InputType.TYPE_CLASS_TEXT);
   search.setPadding(dp(12),dp(6),dp(12),dp(6));
-  search.setBackground(rounded(0xffffffff,0xff69ac89,11));
+  search.setBackground(rounded(0xffffffff,0xffcdd6df,9));
   LinearLayout.LayoutParams sp=new LinearLayout.LayoutParams(0,dp(42),1);
   quickTools.addView(search,sp);
   search.addTextChangedListener(new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){String q=s.toString().trim();if(!q.isEmpty())showHomeSearchResults(q);}public void afterTextChanged(Editable e){}});
@@ -363,21 +330,11 @@ public class MainActivity extends Activity {
    else if(postingKey.startsWith("m_"))bookCount++;
   }
   LinearLayout tiles=new LinearLayout(this);tiles.setPadding(dp(8),dp(7),dp(8),dp(7));card.addView(tiles);
-  LinearLayout note=new LinearLayout(this);note.setOrientation(LinearLayout.HORIZONTAL);note.setGravity(Gravity.CENTER_VERTICAL);
-  LinearLayout book=new LinearLayout(this);book.setOrientation(LinearLayout.HORIZONTAL);book.setGravity(Gravity.CENTER_VERTICAL);
-  android.widget.ImageView noteIcon=new android.widget.ImageView(this);noteIcon.setImageResource(com.dinkolami.dinnote.R.drawable.dinnote_note);
-  android.widget.ImageView bookIcon=new android.widget.ImageView(this);bookIcon.setImageResource(com.dinkolami.dinnote.R.drawable.dinnote_book);
-  LinearLayout.LayoutParams iconParams=new LinearLayout.LayoutParams(dp(62),dp(62));iconParams.leftMargin=dp(9);iconParams.rightMargin=dp(5);
-  note.addView(noteIcon,iconParams);
-  LinearLayout.LayoutParams bookIconParams=new LinearLayout.LayoutParams(dp(62),dp(62));bookIconParams.leftMargin=dp(9);bookIconParams.rightMargin=dp(5);
-  book.addView(bookIcon,bookIconParams);
-  TextView noteLabel=dashboardText("Nota\n"+noteCount+" Topik",18,true);noteLabel.setGravity(Gravity.CENTER);
-  TextView bookLabel=dashboardText("Maktabah\n"+bookCount+" Topik",18,true);bookLabel.setGravity(Gravity.CENTER);
-  note.addView(noteLabel,new LinearLayout.LayoutParams(0,-2,1));
-  book.addView(bookLabel,new LinearLayout.LayoutParams(0,-2,1));
-  note.setFocusable(true);book.setFocusable(true);noteLabel.setTextColor(0xff174a37);bookLabel.setTextColor(0xff174a37);
-  note.setBackground(rounded(0xfff5f6ef,0xffcba24c,11));
-  book.setBackground(rounded(0xfff5f6ef,0xffcba24c,11));
+  TextView note=dashboardText("✎  Nota\n"+noteCount+" Topik",18,true);
+  TextView book=dashboardText("▤  Maktabah\n"+bookCount+" Topik",18,true);
+  note.setGravity(Gravity.CENTER);book.setGravity(Gravity.CENTER);note.setFocusable(true);book.setFocusable(true);note.setTextColor(0xff566a70);book.setTextColor(0xff566a70);
+  note.setBackground(rounded(0xfff3f6f8,0xffd0d8df,11));
+  book.setBackground(rounded(0xfff3f6f8,0xffd0d8df,11));
   LinearLayout.LayoutParams a=new LinearLayout.LayoutParams(0,dp(78),1);a.rightMargin=dp(4);
   LinearLayout.LayoutParams b=new LinearLayout.LayoutParams(0,dp(78),1);b.leftMargin=dp(4);
   tiles.addView(note,a);tiles.addView(book,b);
@@ -408,7 +365,7 @@ public class MainActivity extends Activity {
   String resume=prefs.getString("last_edited_key","");
   if(!resume.isEmpty()&&prefs.contains(resume)){
    TextView resumeButton=dashboardText("✎  Sambung menulis  ›",15,true);
-   resumeButton.setBackground(rounded(0xfffffcf2,0xffd7bd79,11));resumeButton.setTextColor(0xff075033);
+   resumeButton.setBackground(rounded(0xfff5f7f9,0xffd7bd79,8));resumeButton.setTextColor(0xff566a70);
    shortcuts.addView(resumeButton);
    resumeButton.setContentDescription("Sambung menulis nota terakhir");resumeButton.setFocusable(true);applyTouchFeedback(resumeButton);resumeButton.setOnClickListener(v->edit(resume));
   }
@@ -488,19 +445,13 @@ public class MainActivity extends Activity {
    }
   }
   TextView add=dashboardText("＋  Nota baharu",15,true);add.setGravity(Gravity.CENTER);
-  add.setBackground(rounded(0xff087347,0xffd7bd79,13));add.setTextColor(Color.WHITE);
+  add.setBackground(rounded(0xfff5f7f9,0xffd0d8df,9));add.setTextColor(0xff566a70);
   add.setPadding(dp(12),dp(8),dp(12),dp(8));
   LinearLayout.LayoutParams ap=new LinearLayout.LayoutParams(-1,-2);
   ap.topMargin=dp(3);page.addView(add,ap);
   add.setContentDescription("Cipta nota baharu");add.setFocusable(true);
   add.setOnClickListener(v->{maktabah=false;edit(null);});
   applyTouchFeedback(add);applyTouchFeedback(recent);
-  android.widget.ImageView mosqueFooter=new android.widget.ImageView(this);
-  mosqueFooter.setImageResource(com.dinkolami.dinnote.R.drawable.dinnote_footer_bg);
-  mosqueFooter.setScaleType(android.widget.ImageView.ScaleType.FIT_CENTER);mosqueFooter.setAdjustViewBounds(true);
-  mosqueFooter.setContentDescription("Hiasan masjid hijau zamrud dan emas");
-  LinearLayout.LayoutParams footerParams=new LinearLayout.LayoutParams(-1,-2);
-  footerParams.topMargin=dp(10);page.addView(mosqueFooter,footerParams);
  }
  void showHomeSearchResults(String query){
   int hits=0;String first="";
@@ -528,7 +479,7 @@ public class MainActivity extends Activity {
   // Keep folded rows compact; unfolded columns retain comfortable touch targets.
   boolean folded=getResources().getConfiguration().screenWidthDp<500;
   TextView title=dashboardText((pin?"⌖  ":"◷  ")+heading+"    "+keys.size()+" Topik",15,true);
-  title.setTextColor(0xff075033);title.setBackground(rounded(0xffe6f3e7,0xff79b78b,11));title.setPadding(dp(10),dp(folded?6:8),dp(10),dp(folded?6:8));title.setIncludeFontPadding(false);title.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);title.setSingleLine(true);title.setEllipsize(android.text.TextUtils.TruncateAt.END);title.setContentDescription(heading);title.setTooltipText(heading);title.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);LinearLayout.LayoutParams titleParams=new LinearLayout.LayoutParams(-1,-2);titleParams.topMargin=dp(5);titleParams.bottomMargin=dp(5);target.addView(title,titleParams);
+  title.setTextColor(0xff4e6269);title.setBackground(rounded(0xffeef2f5,0xffdce4ea,9));title.setPadding(dp(10),dp(folded?6:8),dp(10),dp(folded?6:8));title.setIncludeFontPadding(false);title.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);title.setSingleLine(true);title.setEllipsize(android.text.TextUtils.TruncateAt.END);title.setContentDescription(heading);title.setTooltipText(heading);title.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);LinearLayout.LayoutParams titleParams=new LinearLayout.LayoutParams(-1,-2);titleParams.topMargin=dp(5);titleParams.bottomMargin=dp(5);target.addView(title,titleParams);
   if(keys.isEmpty()){
    TextView empty=dashboardText(pin?"Belum ada nota disemat":"Belum ada nota dikemaskini",13,false);
    empty.setTextColor(0xff68756c);empty.setPadding(dp(10),dp(6),dp(10),dp(8));
@@ -552,7 +503,7 @@ public class MainActivity extends Activity {
    entry.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);
    entry.setSingleLine(true);entry.setEllipsize(android.text.TextUtils.TruncateAt.END);
    entry.setPadding(dp(10),dp(folded?3:7),dp(10),dp(folded?3:7));entry.setIncludeFontPadding(false);
-   entry.setBackground(rounded(0xffffffff,0xffd5e3d7,11));entry.setMinHeight(dp(folded?38:48));
+   entry.setBackground(subtleNoteBorder(9));entry.setMinHeight(dp(folded?38:48));
    LinearLayout.LayoutParams ep=new LinearLayout.LayoutParams(-1,-2);
    ep.bottomMargin=dp(folded?3:5);target.addView(entry,ep);applyTouchFeedback(entry);
    entry.setFocusable(true);
