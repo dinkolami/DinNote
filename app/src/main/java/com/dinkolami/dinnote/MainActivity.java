@@ -1561,8 +1561,8 @@ public class MainActivity extends Activity {
    choices.add(savedCat);
    categoryPicker.setAdapter(new ArrayAdapter<>(this,android.R.layout.simple_spinner_dropdown_item,choices));
   }
-  int pos=choices.indexOf(savedCat);categoryPicker.setSelection(pos<0?0:pos);root.addView(categoryPicker);titleEditor=new EditText(this);titleEditor.setSingleLine(true);titleEditor.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_NEXT);titleEditor.setTextSize(20);titleEditor.setHint(maktabah?"Tajuk kitab":"Tajuk nota");titleEditor.setContentDescription(maktabah?"Tajuk kitab":"Tajuk nota");titleEditor.setPadding(dp(24),dp(12),dp(24),dp(12));titleEditor.setBackground(rounded(0xfffdfefe,0xffd8c68a,12));titleEditor.setTextColor(0xff154f36);titleEditor.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);LinearLayout.LayoutParams editTitleFrame=new LinearLayout.LayoutParams(-1,-2);editTitleFrame.setMargins(dp(4),0,dp(4),0);root.addView(titleEditor,editTitleFrame);if(key!=null)titleEditor.setText(prefs.getString("title_"+key,""));editor=new EditText(this){
-   @Override protected void onSelectionChanged(int start,int end){super.onSelectionChanged(start,end);if(editor==this&&start>=0&&end>=0){persistEditorPosition();if(hasFocus())post(()->revealEditorCursor(this));}}
+  int pos=choices.indexOf(savedCat);categoryPicker.setSelection(pos<0?0:pos);root.addView(categoryPicker);titleEditor=new EditText(this);titleEditor.setSingleLine(true);titleEditor.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_NEXT);titleEditor.setTextSize(20);titleEditor.setHint(maktabah?"Tajuk kitab":"Tajuk nota");titleEditor.setContentDescription(maktabah?"Tajuk kitab":"Tajuk nota");titleEditor.setPadding(dp(24),dp(12),dp(24),dp(12));titleEditor.setBackground(rounded(0xfffdfefe,0xffd8c68a,12));titleEditor.setTextColor(0xff154f36);titleEditor.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);LinearLayout.LayoutParams editTitleFrame=new LinearLayout.LayoutParams(-1,-2);editTitleFrame.setMargins(dp(4),0,dp(4),0);root.addView(titleEditor,editTitleFrame);if(key!=null)titleEditor.setText(prefs.getString("title_"+key,""));final Runnable[] formatRefresh={null};editor=new EditText(this){
+   @Override protected void onSelectionChanged(int start,int end){super.onSelectionChanged(start,end);if(editor==this&&start>=0&&end>=0){persistEditorPosition();if(hasFocus())post(()->revealEditorCursor(this));if(formatRefresh[0]!=null)post(formatRefresh[0]);}}
    @Override protected void onSizeChanged(int w,int h,int oldw,int oldh){super.onSizeChanged(w,h,oldw,oldh);if(editor==this)post(()->revealEditorCursor(this));}
   };editor.setGravity(Gravity.TOP);editor.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);editor.setBreakStrategy(android.text.Layout.BREAK_STRATEGY_SIMPLE);editor.setHyphenationFrequency(android.text.Layout.HYPHENATION_FREQUENCY_NONE);editor.setTextSize(new int[]{13,15,16,18}[Math.max(0,Math.min(3,prefs.getInt("reader_font_level",1)))]);editor.setTextColor(0xff30343b);editor.setPadding(dp(24),dp(10),dp(24),dp(12));editor.setLineSpacing(prefs.getBoolean("reader_wide_spacing",false)?dp(5):dp(1),prefs.getBoolean("reader_wide_spacing",false)?1.15f:1.0f);editor.setIncludeFontPadding(true);applySharedTextMetrics(editor);editor.setHint(maktabah?"Tulis kandungan kitab di sini…":"Tulis nota di sini…");editor.setContentDescription(maktabah?"Kandungan kitab":"Kandungan nota");editor.setBackground(rounded(0xfffffefb,0xffb8d5c2,12));editor.setOnFocusChangeListener((v,focused)->editor.setBackground(rounded(0xfffffefb,focused?0xff168254:0xffb8d5c2,12)));editor.setInputType(android.text.InputType.TYPE_CLASS_TEXT|android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE|android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);LinearLayout formatBar=new LinearLayout(this);
   formatBar.setGravity(Gravity.CENTER_VERTICAL);
@@ -1611,7 +1611,13 @@ public class MainActivity extends Activity {
    italicButton.setBackground(rounded(italicActive?0xff516970:0xfffbfdfb,italicActive?0xffadbcc5:0xffd2dbe2,10));
    italicButton.setTextColor(italicActive?Color.WHITE:0xff566a70);
   };
+  formatRefresh[0]=refreshFormatting;
   editor.setOnClickListener(v->refreshFormatting.run());
+  Button toolsButton=action("⌕",formatBar,()->new AlertDialog.Builder(this).setTitle("Alat penyuntingan")
+   .setItems(new String[]{"Cari dan ganti","Buang format terpilih","Preset format"},(d,i)->{
+    if(i==0)showEditorFindReplace();else if(i==1)clearSelectedFormatting();else showEditorFormatPresets();
+   }).show());
+  toolsButton.setContentDescription("Alat penyuntingan tambahan");
 
   LinearLayout.LayoutParams editBodyFrame=new LinearLayout.LayoutParams(-1,0,1);editBodyFrame.setMargins(dp(4),0,dp(4),0);root.addView(editor,editBodyFrame);
   // Keep normal Android double-tap text selection while editing.
@@ -1650,6 +1656,42 @@ public class MainActivity extends Activity {
    }
    save();final EditText active=editor;if(active!=null)active.post(()->revealEditorCursor(active));}};editor.addTextChangedListener(bodyWatcher);categoryPicker.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener(){public void onNothingSelected(android.widget.AdapterView<?> p){}public void onItemSelected(android.widget.AdapterView<?> p,View v,int position,long id){save();}});}
 
+ void clearSelectedFormatting(){
+  if(editor==null)return;
+  int a=Math.min(editor.getSelectionStart(),editor.getSelectionEnd()),b=Math.max(editor.getSelectionStart(),editor.getSelectionEnd());
+  if(a<0||a==b){Toast.makeText(this,"Pilih teks dahulu",Toast.LENGTH_SHORT).show();return;}
+  String value=editor.getText().subSequence(a,b).toString().replace("**","").replace("*","").replace("<u>","").replace("</u>","");
+  editor.getText().replace(a,b,value);editor.setSelection(a,a+value.length());
+ }
+ void showEditorFormatPresets(){
+  new AlertDialog.Builder(this).setTitle("Preset format")
+   .setItems(new String[]{"Tebal","Condong","Garis bawah","Tebal dan garis bawah"},(d,i)->{
+    String[] opening={"**","*","<u>","<u>**"},closing={"**","*","</u>","**</u>"};
+    wrapEditorSelection(opening[i],closing[i]);
+   }).show();
+ }
+ void showEditorFindReplace(){
+  if(editor==null)return;
+  final EditText active=editor;
+  LinearLayout fields=new LinearLayout(this);fields.setOrientation(LinearLayout.VERTICAL);fields.setPadding(dp(20),dp(8),dp(20),dp(8));
+  EditText query=new EditText(this);query.setSingleLine(true);query.setHint("Cari perkataan");fields.addView(query);
+  EditText replacement=new EditText(this);replacement.setSingleLine(true);replacement.setHint("Ganti dengan");fields.addView(replacement);
+  AlertDialog dialog=new AlertDialog.Builder(this).setTitle("Cari dan ganti").setView(fields)
+   .setPositiveButton("Ganti semua",null).setNeutralButton("Cari seterusnya",null).setNegativeButton("Tutup",null).create();
+  dialog.setOnShowListener(v->{
+   dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener(w->{
+    if(editor!=active)return;String q=query.getText().toString();if(q.isEmpty()){query.setError("Masukkan carian");return;}
+    String content=active.getText().toString();int at=content.indexOf(q,Math.max(0,active.getSelectionEnd()));if(at<0)at=content.indexOf(q);
+    if(at<0){query.setError("Tidak dijumpai");return;}active.setSelection(at,at+q.length());dialog.dismiss();active.requestFocus();revealEditorCursor(active);
+   });
+   dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(w->{
+    if(editor!=active)return;String q=query.getText().toString();if(q.isEmpty()){query.setError("Masukkan carian");return;}
+    String content=active.getText().toString();if(!content.contains(q)){query.setError("Tidak dijumpai");return;}
+    String result=content.replace(q,replacement.getText().toString());
+    active.getText().replace(0,active.length(),result);dialog.dismiss();
+   });
+  });dialog.show();
+ }
  void insertNumberedList(){
   if(editor==null)return;
   int cursor=Math.max(0,editor.getSelectionStart());
