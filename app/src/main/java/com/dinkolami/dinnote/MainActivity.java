@@ -1743,6 +1743,7 @@ public class MainActivity extends Activity {
   final int bg,ink,first,last;BoxBodySpan(int b,int i,int a,int z){bg=b;ink=i;first=a;last=z;}
   @Override public void drawBackground(android.graphics.Canvas c,android.graphics.Paint p,int left,int right,int top,int baseline,int bottom,CharSequence t,int start,int end,int line){
    boolean head=start<=first,tail=end>=last;
+   if(head)top+=dp(2);if(tail)bottom-=dp(2);if(bottom<=top)return;
    float l=left+dp(1),r=right-dp(1),rad=dp(8);
    float[] corners={head?rad:0,head?rad:0,head?rad:0,head?rad:0,tail?rad:0,tail?rad:0,tail?rad:0,tail?rad:0};
    android.graphics.Paint q=new android.graphics.Paint(p);q.setAntiAlias(true);q.setStyle(android.graphics.Paint.Style.FILL);q.setColor(bg);
@@ -1993,7 +1994,7 @@ public class MainActivity extends Activity {
    LinearLayout row=new LinearLayout(this);row.setGravity(Gravity.CENTER_VERTICAL);row.setPadding(dp(12),0,dp(12),0);
    View left=new View(this);left.setBackgroundColor(0xff176b47);row.addView(left,new LinearLayout.LayoutParams(0,dp(1),1));
    TextView symbol=text(ornaments.group(1).equals("FLOWER")?"✿":ornaments.group(1).equals("GEOMETRIC")?"❖":"❧",19);
-   symbol.setGravity(Gravity.CENTER);symbol.setIncludeFontPadding(false);symbol.setSingleLine(true);symbol.setTextColor(0xff176b47);row.addView(symbol,new LinearLayout.LayoutParams(dp(42),dp(24)));
+   symbol.setGravity(Gravity.CENTER);symbol.setIncludeFontPadding(false);symbol.setSingleLine(true);symbol.setTextColor(0xff176b47);symbol.setMinHeight(0);symbol.setMinimumHeight(0);symbol.setPadding(0,0,0,0);symbol.setLineSpacing(0,1f);row.addView(symbol,new LinearLayout.LayoutParams(dp(42),-2));
    View right=new View(this);right.setBackgroundColor(0xff176b47);row.addView(right,new LinearLayout.LayoutParams(0,dp(1),1));body.addView(row);
    start=ornaments.end();
   }
