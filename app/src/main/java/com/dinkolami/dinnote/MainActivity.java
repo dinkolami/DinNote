@@ -1853,10 +1853,31 @@ public class MainActivity extends Activity {
    int bg=type.equals("FIRMAN")?0xffedf5ee:type.equals("SABDA")?0xfffaf5e8:type.equals("DALIL")?0xffeff6f0:type.equals("HIKMAH")?0xfff8f4e9:0xfff0f3f4;
    int border=type.equals("FIRMAN")?0xffa5c3aa:type.equals("SABDA")?0xffd6c7a4:type.equals("DALIL")?0xffb8cdbd:type.equals("HIKMAH")?0xffd6c7a4:0xffced9da;
    panel.setBackground(rounded(bg,border,8));panel.setPadding(dp(10),dp(3),dp(10),dp(5));
-   TextView label=text(type.equals("FIRMAN")?"📖  Firman Allah SWT:":type.equals("SABDA")?"📚  Sabda Nabi SAW:":type.equals("DALIL")?"❖  Dalil":type.equals("HIKMAH")?"✦  Kalam Hikmah":"♧  Catatan Penting",13);
+   TextView label=text(type.equals("FIRMAN")?"Firman Allah SWT:":type.equals("SABDA")?"Sabda Nabi SAW:":type.equals("DALIL")?"❖  Dalil":type.equals("HIKMAH")?"✦  Kalam Hikmah":"♧  Catatan Penting",13);
    label.setTextColor(type.equals("FIRMAN")?0xff176b47:type.equals("SABDA")?0xff96783e:type.equals("DALIL")?0xff176b47:type.equals("HIKMAH")?0xff96783e:0xff516970);
    label.setTypeface(null,android.graphics.Typeface.BOLD);label.setIncludeFontPadding(false);
-   label.setPadding(0,0,0,dp(2));panel.addView(label);
+   label.setPadding(0,0,0,dp(2));
+   if(type.equals("FIRMAN")||type.equals("SABDA")){
+    final boolean book=type.equals("FIRMAN");
+    final int ink=label.getCurrentTextColor();
+    LinearLayout heading=new LinearLayout(this);heading.setGravity(Gravity.CENTER_VERTICAL);
+    View symbol=new View(this){
+     @Override protected void onDraw(android.graphics.Canvas canvas){
+      super.onDraw(canvas);canvas.save();canvas.scale(getWidth()/32f,getHeight()/32f);
+      android.graphics.Paint p=new android.graphics.Paint(3);p.setColor(ink);p.setStyle(android.graphics.Paint.Style.STROKE);p.setStrokeWidth(1.7f);p.setStrokeCap(android.graphics.Paint.Cap.ROUND);p.setStrokeJoin(android.graphics.Paint.Join.ROUND);
+      android.graphics.Path trace=new android.graphics.Path();
+      if(book){
+       trace.moveTo(16,8);trace.quadTo(9,3,2,6);trace.lineTo(2,25);trace.quadTo(9,22,16,27);trace.quadTo(23,22,30,25);trace.lineTo(30,6);trace.quadTo(23,3,16,8);trace.lineTo(16,27);
+       for(int y=10;y<=18;y+=4){trace.moveTo(5,y);trace.quadTo(10,y-1,13,y+2);trace.moveTo(19,y+2);trace.quadTo(23,y-1,27,y);}
+      }else{
+       trace.moveTo(7,4);trace.lineTo(25,4);trace.quadTo(29,4,29,8);trace.lineTo(29,21);trace.quadTo(29,25,25,25);trace.lineTo(13,25);trace.lineTo(13,29);trace.quadTo(9,28,7,25);trace.quadTo(3,25,3,21);trace.lineTo(3,8);trace.quadTo(3,4,7,4);trace.close();
+       trace.moveTo(8,11);trace.lineTo(24,11);trace.moveTo(8,15);trace.lineTo(24,15);trace.moveTo(8,19);trace.lineTo(19,19);
+      }
+      canvas.drawPath(trace,p);canvas.restore();
+     }
+    };
+    LinearLayout.LayoutParams iconParams=new LinearLayout.LayoutParams(dp(book?24:19),dp(book?24:19));iconParams.setMarginEnd(dp(4));heading.addView(symbol,iconParams);heading.addView(label);panel.addView(heading);
+   }else panel.addView(label);
    TextView value=text("",fontSize);value.setText(formattedReadingText(m.group(2).trim()));applySharedTextMetrics(value);value.setTextColor(0xff303c43);
    value.setPadding(0,0,0,0);value.setIncludeFontPadding(false);value.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);value.setTextIsSelectable(true);value.setGravity(type.equals("CATATAN")?Gravity.START:Gravity.CENTER_HORIZONTAL);panel.addView(value);
    LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);lp.setMargins(dp(8),dp(3),dp(8),dp(3));body.addView(panel,lp);
