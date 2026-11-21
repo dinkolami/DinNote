@@ -48,12 +48,12 @@ public class MainActivity extends Activity {
   menu.setOnClickListener(v->home());
   ImageView settingsMenu=headerIcon("☰",0xff9daeb9,"Menu DinNote dan Tetapan");header.addView(settingsMenu);
   settingsMenu.setOnClickListener(v->showMainMenu());
-  ImageView logo=new ImageView(this);logo.setImageBitmap(transparentHeaderLogo());logo.setScaleType(ImageView.ScaleType.FIT_CENTER);logo.setContentDescription("Logo DinNote");logo.setClickable(true);logo.setPadding(dp(3),dp(3),dp(3),dp(3));logo.setBackground(rounded(0xfffdfefe,0xffb89543,50));logo.setClipToOutline(true);
-  LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(dp(34),dp(34));lp.leftMargin=dp(6);lp.rightMargin=dp(5);header.addView(logo,lp);
-  logo.setOnClickListener(v->home());
-  TextView name=text("DinNote",16);name.setTypeface(android.graphics.Typeface.create("serif",android.graphics.Typeface.ITALIC));name.setTextColor(0xff075033);
-  name.setGravity(Gravity.CENTER_VERTICAL);name.setPadding(dp(3),0,0,0);header.addView(name,new LinearLayout.LayoutParams(0,dp(40),1));
-  name.setOnClickListener(v->home());
+  // Header artwork already includes the DinNote logo and wordmark.
+  // Do not draw a second logo or text over the approved PNG.
+  View brandSpace=new View(this);
+  brandSpace.setContentDescription("DinNote, kembali ke halaman utama");
+  brandSpace.setOnClickListener(v->home());
+  header.addView(brandSpace,new LinearLayout.LayoutParams(0,dp(40),1));
   ImageView inbox=headerIcon("▣",0xff9daeb9,"Buka nota");header.addView(inbox);
   inbox.setOnClickListener(v->openSection(false));
   ImageView bell=headerIcon("♧",0xff9daeb9,"Peringatan nota");header.addView(bell);
