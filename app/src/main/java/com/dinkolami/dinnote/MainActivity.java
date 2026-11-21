@@ -1730,9 +1730,9 @@ public class MainActivity extends Activity {
   }
   @Override public void draw(android.graphics.Canvas c,CharSequence t,int a,int b,float x,int top,int y,int bottom,android.graphics.Paint p){
    if(title.isEmpty())return;
-   android.graphics.Paint q=new android.graphics.Paint(p);q.setAntiAlias(true);q.setColor(ink);q.setAlpha(35);c.drawCircle(x+dp(13),(top+bottom)/2f,dp(10),q);
+   android.graphics.Paint q=new android.graphics.Paint(p);q.setAntiAlias(true);q.setColor(ink);q.setAlpha(22);c.drawRoundRect(x+dp(3),top+dp(2),x+getSize(p,t,a,b,null),bottom-dp(1),dp(12),dp(12),q);q.setAlpha(45);c.drawCircle(x+dp(13),(top+bottom)/2f,dp(10),q);
    q.setAlpha(255);q.setColor(ink);q.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);q.setTextSize(dp(13));
-   String mark=title.startsWith("Firman")?"▤":title.startsWith("Sabda")?"❞":title.startsWith("Kalam")?"✦":title.startsWith("Dalil")?"❖":"♧";
+   String mark=title.startsWith("Firman")?"📖":title.startsWith("Sabda")?"❞":title.startsWith("Kalam")?"✒":title.startsWith("Dalil")?"⚖":"◎";
    q.setTextAlign(android.graphics.Paint.Align.CENTER);c.drawText(mark,x+dp(13),(top+bottom)/2f-(q.ascent()+q.descent())/2,q);
    q.setTextAlign(android.graphics.Paint.Align.LEFT);c.drawText(title,x+dp(28),(top+bottom)/2f-(q.ascent()+q.descent())/2,q);
   }
@@ -1753,7 +1753,7 @@ public class MainActivity extends Activity {
    edge.lineTo(r,tail?bottom-rad:bottom);
    if(tail){edge.quadTo(r,bottom,r-rad,bottom);edge.lineTo(l+rad,bottom);edge.quadTo(l,bottom,l,bottom-rad);}
    c.drawPath(edge,q);
-   if(head){q.setAlpha(55);for(int j=0;j<3;j++){float d=dp(5+j*4);c.drawLine(r-d,top+dp(3),r-dp(3),top+d,q);}}
+   if(head){q.setAlpha(65);for(int j=0;j<3;j++){float d=dp(6+j*5);android.graphics.Path motif=new android.graphics.Path();motif.moveTo(r-d-dp(5),top+dp(2));motif.lineTo(r-d,top+dp(5));motif.lineTo(r-d,top+dp(8));motif.lineTo(r-dp(5),top+d);motif.lineTo(r-dp(2),top+d+dp(5));c.drawPath(motif,q);}}
   }
  }
  class BoxInsetSpan extends android.text.style.LeadingMarginSpan.Standard {
@@ -1909,11 +1909,11 @@ public class MainActivity extends Activity {
    addBoxParagraph(body,source.substring(previous,m.start()),fontSize);
    String type=m.group(1);
    LinearLayout panel=new LinearLayout(this);panel.setOrientation(LinearLayout.VERTICAL);
-   int bg=type.equals("FIRMAN")?0xffedf5ee:type.equals("SABDA")?0xfffaf5e8:type.equals("DALIL")?0xffeff6f0:type.equals("HIKMAH")?0xfff8f4e9:0xfff0f3f4;
-   int border=type.equals("FIRMAN")?0xffa5c3aa:type.equals("SABDA")?0xffd6c7a4:type.equals("DALIL")?0xffb8cdbd:type.equals("HIKMAH")?0xffd6c7a4:0xffced9da;
+   int bg=type.equals("FIRMAN")?0xffedf5ee:type.equals("SABDA")?0xfffaf5e8:type.equals("DALIL")?0xffedf4fa:type.equals("HIKMAH")?0xfff5eff9:0xfffcf0f2;
+   int border=type.equals("FIRMAN")?0xffa5c3aa:type.equals("SABDA")?0xffd6c7a4:type.equals("DALIL")?0xff8eb4d2:type.equals("HIKMAH")?0xffbca5d0:0xffd7a0b2;
    panel.setBackground(rounded(bg,border,8));panel.setPadding(dp(10),dp(3),dp(10),dp(5));
-   TextView label=text(type.equals("FIRMAN")?"Firman Allah SWT:":type.equals("SABDA")?"Sabda Nabi SAW:":type.equals("DALIL")?"❖  Dalil":type.equals("HIKMAH")?"✦  Kalam Hikmah":"♧  Catatan Penting",13);
-   label.setTextColor(type.equals("FIRMAN")?0xff176b47:type.equals("SABDA")?0xff96783e:type.equals("DALIL")?0xff176b47:type.equals("HIKMAH")?0xff96783e:0xff516970);
+   TextView label=text(type.equals("FIRMAN")?"Firman Allah SWT:":type.equals("SABDA")?"Sabda Nabi SAW:":type.equals("DALIL")?"⚖  Dalil":type.equals("HIKMAH")?"✒  Kalam Hikmah":"◎  Catatan Penting",13);
+   label.setTextColor(type.equals("FIRMAN")?0xff176b47:type.equals("SABDA")?0xff96783e:type.equals("DALIL")?0xff426e96:type.equals("HIKMAH")?0xff79549b:0xff946176);
    label.setTypeface(null,android.graphics.Typeface.BOLD);label.setIncludeFontPadding(false);
    label.setPadding(0,0,0,dp(2));
    if(type.equals("FIRMAN")||type.equals("SABDA")){
