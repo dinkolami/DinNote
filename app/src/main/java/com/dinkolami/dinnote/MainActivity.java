@@ -1003,6 +1003,16 @@ public class MainActivity extends Activity {
   if(a<0)return;android.text.Editable e=editor.getText();
   boolean remove=(richMask(e,a,b)&kind)!=0;
   if(a==b){
+   if(remove){
+    for(android.text.style.CharacterStyle span:e.getSpans(a,a,android.text.style.CharacterStyle.class)){
+     boolean match=kind==4?span instanceof android.text.style.UnderlineSpan:span instanceof android.text.style.StyleSpan&&((android.text.style.StyleSpan)span).getStyle()==kind;
+     if(!match)continue;
+     int x=e.getSpanStart(span),y=e.getSpanEnd(span);e.removeSpan(span);
+     if(x<a)e.setSpan(copyLiveStyle(span),x,a,33);
+     if(y>a)e.setSpan(copyLiveStyle(span),a,y,33);
+    }
+    save();return;
+   }
    if(kind==4)e.setSpan(new android.text.style.UnderlineSpan(),a,b,android.text.Spanned.SPAN_INCLUSIVE_INCLUSIVE);
    else e.setSpan(new android.text.style.StyleSpan(kind),a,b,android.text.Spanned.SPAN_INCLUSIVE_INCLUSIVE);
   }else{
@@ -1691,8 +1701,19 @@ public class MainActivity extends Activity {
   if(editor==null)return;
   int a=Math.min(editor.getSelectionStart(),editor.getSelectionEnd()),b=Math.max(editor.getSelectionStart(),editor.getSelectionEnd());
   if(a<0||a==b){Toast.makeText(this,"Pilih teks dahulu",Toast.LENGTH_SHORT).show();return;}
-  String value=editor.getText().subSequence(a,b).toString().replace("**","").replace("*","").replace("<u>","").replace("</u>","");
-  editor.getText().replace(a,b,value);editor.setSelection(a,a+value.length());
+  android.text.Editable e=editor.getText();
+  for(android.text.style.CharacterStyle span:e.getSpans(a,b,android.text.style.CharacterStyle.class)){
+   if(!(span instanceof android.text.style.StyleSpan)&&!(span instanceof android.text.style.UnderlineSpan))continue;
+   int x=e.getSpanStart(span),y=e.getSpanEnd(span);
+   if(x>=b||y<=a)continue;
+   e.removeSpan(span);
+   if(x<a)e.setSpan(copyLiveStyle(span),x,a,33);
+   if(y>b)e.setSpan(copyLiveStyle(span),b,y,33);
+  }
+  save();
+ }
+ android.text.style.CharacterStyle copyLiveStyle(android.text.style.CharacterStyle span){
+  return span instanceof android.text.style.UnderlineSpan?new android.text.style.UnderlineSpan():new android.text.style.StyleSpan(((android.text.style.StyleSpan)span).getStyle());
  }
  org.json.JSONArray personalFormatPresets(){
   try{return new org.json.JSONArray(prefs.getString("personal_format_presets","[]"));}catch(Exception e){return new org.json.JSONArray();}
