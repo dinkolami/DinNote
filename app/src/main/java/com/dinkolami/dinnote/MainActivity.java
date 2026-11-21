@@ -1733,8 +1733,9 @@ public class MainActivity extends Activity {
    if(title.isEmpty())return;
    android.graphics.Paint q=new android.graphics.Paint(p);q.setAntiAlias(true);q.setColor(ink);q.setAlpha(22);c.drawRoundRect(x+dp(3),top+dp(2),x+getSize(p,t,a,b,null),bottom-dp(1),dp(12),dp(12),q);q.setAlpha(45);c.drawCircle(x+dp(13),(top+bottom)/2f,dp(10),q);
    q.setAlpha(255);q.setColor(ink);q.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);q.setTextSize(dp(13));
-   String mark=title.startsWith("Firman")?"📖":title.startsWith("Sabda")?"❞":title.startsWith("Kalam")?"✒":title.startsWith("Dalil")?"⚖":"◎";
+   String mark=title.startsWith("Firman")?"":title.startsWith("Sabda")?"❞":title.startsWith("Kalam")?"✒":title.startsWith("Dalil")?"⚖":"◎";
    q.setTextAlign(android.graphics.Paint.Align.CENTER);c.drawText(mark,x+dp(13),(top+bottom)/2f-(q.ascent()+q.descent())/2,q);
+   if(title.startsWith("Firman")){float cx=x+dp(13),cy=(top+bottom)/2f;android.graphics.Path book=new android.graphics.Path();book.moveTo(cx,cy-dp(5));book.quadTo(cx-dp(4),cy-dp(8),cx-dp(8),cy-dp(6));book.lineTo(cx-dp(8),cy+dp(5));book.quadTo(cx-dp(4),cy+dp(3),cx,cy+dp(7));book.quadTo(cx+dp(4),cy+dp(3),cx+dp(8),cy+dp(5));book.lineTo(cx+dp(8),cy-dp(6));book.quadTo(cx+dp(4),cy-dp(8),cx,cy-dp(5));book.lineTo(cx,cy+dp(7));q.setStyle(android.graphics.Paint.Style.STROKE);q.setStrokeWidth(dp(1));c.drawPath(book,q);q.setStyle(android.graphics.Paint.Style.FILL);}
    q.setTextAlign(android.graphics.Paint.Align.LEFT);c.drawText(title,x+dp(28),(top+bottom)/2f-(q.ascent()+q.descent())/2,q);
   }
  }
@@ -1940,7 +1941,14 @@ public class MainActivity extends Activity {
   while(m.find()){
    addBoxParagraph(body,source.substring(previous,m.start()),fontSize);
    String type=m.group(1);
-   LinearLayout panel=new LinearLayout(this);panel.setOrientation(LinearLayout.VERTICAL);
+   LinearLayout panel=new LinearLayout(this){
+    @Override protected void dispatchDraw(android.graphics.Canvas c){
+     super.dispatchDraw(c);
+     android.graphics.Paint p=new android.graphics.Paint(3);p.setColor(0xff789184);p.setAlpha(65);p.setStyle(android.graphics.Paint.Style.STROKE);p.setStrokeWidth(dp(1));
+     float right=getWidth()-dp(4),top=dp(4);
+     for(int n=0;n<3;n++){float d=dp(7+n*5);android.graphics.Path path=new android.graphics.Path();path.moveTo(right-d-dp(6),top);path.lineTo(right-d,top+dp(3));path.lineTo(right-d,top+dp(6));path.lineTo(right-dp(3),top+d);path.lineTo(right,top+d+dp(5));c.drawPath(path,p);}
+    }
+   };panel.setOrientation(LinearLayout.VERTICAL);
    int bg=type.equals("FIRMAN")?0xffedf5ee:type.equals("SABDA")?0xfffaf5e8:type.equals("DALIL")?0xffedf4fa:type.equals("HIKMAH")?0xfff5eff9:0xfffcf0f2;
    int border=type.equals("FIRMAN")?0xffa5c3aa:type.equals("SABDA")?0xffd6c7a4:type.equals("DALIL")?0xff8eb4d2:type.equals("HIKMAH")?0xffbca5d0:0xffd7a0b2;
    panel.setBackground(rounded(bg,border,8));panel.setPadding(dp(10),dp(3),dp(10),dp(5));
@@ -1985,7 +1993,7 @@ public class MainActivity extends Activity {
    LinearLayout row=new LinearLayout(this);row.setGravity(Gravity.CENTER_VERTICAL);row.setPadding(dp(12),0,dp(12),0);
    View left=new View(this);left.setBackgroundColor(0xff176b47);row.addView(left,new LinearLayout.LayoutParams(0,dp(1),1));
    TextView symbol=text(ornaments.group(1).equals("FLOWER")?"✿":ornaments.group(1).equals("GEOMETRIC")?"❖":"❧",19);
-   symbol.setGravity(Gravity.CENTER);symbol.setIncludeFontPadding(false);symbol.setSingleLine(true);symbol.setTextColor(0xff176b47);row.addView(symbol,new LinearLayout.LayoutParams(dp(42),-2));
+   symbol.setGravity(Gravity.CENTER);symbol.setIncludeFontPadding(false);symbol.setSingleLine(true);symbol.setTextColor(0xff176b47);row.addView(symbol,new LinearLayout.LayoutParams(dp(42),dp(24)));
    View right=new View(this);right.setBackgroundColor(0xff176b47);row.addView(right,new LinearLayout.LayoutParams(0,dp(1),1));body.addView(row);
    start=ornaments.end();
   }
