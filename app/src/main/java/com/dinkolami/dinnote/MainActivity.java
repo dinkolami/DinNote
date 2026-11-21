@@ -1106,9 +1106,10 @@ public class MainActivity extends Activity {
   }
   readerScroll=null;
   editor=null;titleEditor=null;saveIndicator=null;selected=key;prefs.edit().putLong("viewed_"+key,System.currentTimeMillis()).putString(key.startsWith("m_")?"reading_last_m":"reading_last_n",key).apply();cleanBase();
-  LinearLayout bar=new LinearLayout(this);bar.setGravity(Gravity.CENTER_VERTICAL);bar.setPadding(dp(8),dp(3),dp(8),dp(3));bar.setBackground(rounded(0xfffffefd,0xffb8c2ca,12));bar.setTag("reader_toolbar");root.addView(bar);
+  LinearLayout bar=new LinearLayout(this);bar.setGravity(Gravity.CENTER_VERTICAL);bar.setPadding(dp(6),dp(2),dp(6),dp(2));bar.setBackgroundColor(0xfffffefd);bar.setTag("reader_toolbar");root.addView(bar);
+  TextView toolbarSpace=text("",12);bar.addView(toolbarSpace,new LinearLayout.LayoutParams(0,1,1));
   Button readerBack=action("‹",bar,()->returnFromReader());readerBack.setContentDescription(key.startsWith("m_")?"Kembali ke senarai kitab":"Kembali ke senarai nota");
-  TextView spacer=text("",12);bar.addView(spacer,new LinearLayout.LayoutParams(0,1,1));
+  
   boolean cleanReading=prefs.getBoolean("reader_clean_mode",false);
   Button cleanToggle=action(cleanReading?"▣":"▢",bar,()->{prefs.edit().putBoolean("reader_clean_mode",!cleanReading).apply();read(key);});
   cleanToggle.setContentDescription(cleanReading?"Paparkan semula toolbar bacaan":"Aktifkan mod bacaan bersih");
@@ -1154,18 +1155,19 @@ public class MainActivity extends Activity {
   LinearLayout.LayoutParams readingFrame=new LinearLayout.LayoutParams(-1,-2);
   readingFrame.setMargins(dp(12),dp(8),dp(12),dp(12));scroll.addView(body,readingFrame);
   LinearLayout metaRow=new LinearLayout(this);metaRow.setOrientation(LinearLayout.HORIZONTAL);
-  metaRow.setGravity(Gravity.CENTER_VERTICAL);metaRow.setPadding(dp(16),dp(4),dp(16),dp(4));
+  metaRow.setOrientation(LinearLayout.VERTICAL);
+  metaRow.setGravity(Gravity.START);metaRow.setPadding(dp(6),dp(1),dp(6),dp(1));
   TextView sectionLabel=text(key.startsWith("m_")?"▤  Maktabah":"✎  Nota",12);
   sectionLabel.setTextColor(0xff5b7077);sectionLabel.setSingleLine(true);
   sectionLabel.setIncludeFontPadding(false);
-  metaRow.addView(sectionLabel,new LinearLayout.LayoutParams(0,-2,1));
+  metaRow.addView(sectionLabel,new LinearLayout.LayoutParams(-1,-2));
   TextView categoryLine=text("⌑  "+readingCategory,12);
   categoryLine.setTextColor(0xff73838a);categoryLine.setSingleLine(true);
   categoryLine.setEllipsize(android.text.TextUtils.TruncateAt.END);
-  categoryLine.setGravity(Gravity.END|Gravity.CENTER_VERTICAL);
-  categoryLine.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_END);
+  categoryLine.setGravity(Gravity.START|Gravity.CENTER_VERTICAL);
+  categoryLine.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);
   categoryLine.setIncludeFontPadding(false);
-  metaRow.addView(categoryLine,new LinearLayout.LayoutParams(0,-2,1));
+  metaRow.addView(categoryLine,new LinearLayout.LayoutParams(-1,-2));
   body.addView(metaRow,new LinearLayout.LayoutParams(-1,-2));
   TextView title=text(heading,20);title.setMaxLines(3);
   title.setEllipsize(android.text.TextUtils.TruncateAt.END);
