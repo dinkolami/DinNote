@@ -738,7 +738,28 @@ public class MainActivity extends Activity {
   lastOpenedCard=k;read(k);
  });}}
 
- void cleanBase(){readerDetector=null;root=new LinearLayout(this);root.setOrientation(1);root.setBackgroundColor(Color.WHITE);setContentView(root);applySystemBarInsets(root);}
+ void cleanBase(){
+  readerDetector=null;root=new LinearLayout(this);root.setOrientation(1);root.setBackgroundColor(Color.WHITE);
+  final LinearLayout activeRoot=root;
+  final int[] lastWidth={0};
+  activeRoot.addOnLayoutChangeListener((v,left,top,right,bottom,oldLeft,oldTop,oldRight,oldBottom)->{
+   int width=right-left;
+   if(width<=0)return;
+   int previous=lastWidth[0];lastWidth[0]=width;
+   // Split-screen resizing may change window width without folding or recreating Activity.
+   if(previous>0&&Math.abs(width-previous)>=dp(16)&&editor==null&&selected!=null){
+    final String readingKey=selected;
+    activeRoot.post(()->{
+     if(root==activeRoot&&!isFinishing()&&!isDestroyed()&&editor==null
+       &&readingKey.equals(selected)&&prefs.contains(readingKey)){
+      saveReaderPosition(readingKey);
+      read(readingKey);
+     }
+    });
+   }
+  });
+  setContentView(root);applySystemBarInsets(root);
+ }
  Button action(String label,LinearLayout bar,Runnable callback){Button b=new Button(this);b.setText(label);b.setAllCaps(false);b.setTextSize(13);b.setMinWidth(0);b.setMinimumWidth(0);b.setMinHeight(0);b.setMinimumHeight(0);b.setPadding(dp(12),dp(8),dp(12),dp(8));b.setBackground(rounded(0xfff6f8fa,0xffe1e7e3,12));LinearLayout.LayoutParams buttonParams=new LinearLayout.LayoutParams(-2,dp("reader_toolbar".equals(bar.getTag())?34:42));buttonParams.setMargins(dp(3),dp("reader_toolbar".equals(bar.getTag())?3:5),dp(3),dp("reader_toolbar".equals(bar.getTag())?3:5));bar.addView(b,buttonParams);if("reader_toolbar".equals(bar.getTag())){android.graphics.drawable.GradientDrawable emerald=new android.graphics.drawable.GradientDrawable(android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,new int[]{0xffffffff,0xffedf7f0});emerald.setCornerRadius(dp(13));emerald.setStroke(dp(1),0xffb6cdbd);b.setBackground(emerald);b.setTextColor(0xff566a70);b.setElevation(dp(2));b.setTypeface(android.graphics.Typeface.DEFAULT,android.graphics.Typeface.BOLD);}b.setOnClickListener(v->callback.run());return b;}
  void returnFromReader(){selected=null;if(sectionOpen)notesPage();else home();}
 
