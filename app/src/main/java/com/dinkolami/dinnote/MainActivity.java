@@ -1290,7 +1290,7 @@ public class MainActivity extends Activity {
   body.addView(wordCounter);
   // Fixed reader controls: overlay the posting frame, never inside the scrolling body.
   FrameLayout readerFrame=new FrameLayout(this);
-  readerFrame.setBackgroundColor(0xfffffefd); // No duplicate outer posting border.
+  readerFrame.setBackgroundColor(android.graphics.Color.TRANSPARENT); // Only the original posting card has a background and border.
   readerFrame.setClipChildren(false);
   readerFrame.setClipToPadding(false);
   scroll.setPadding(0,dp(36),0,0);
