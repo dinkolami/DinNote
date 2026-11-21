@@ -1852,11 +1852,13 @@ public class MainActivity extends Activity {
    LinearLayout panel=new LinearLayout(this);panel.setOrientation(LinearLayout.VERTICAL);
    int bg=type.equals("DALIL")?0xffeff6f0:type.equals("HIKMAH")?0xfff8f4e9:0xfff0f3f4;
    int border=type.equals("DALIL")?0xffb8cdbd:type.equals("HIKMAH")?0xffd6c7a4:0xffced9da;
-   panel.setBackground(rounded(bg,border,8));panel.setPadding(dp(10),dp(5),dp(10),dp(5));
-   TextView label=text(type.equals("DALIL")?"Dalil":type.equals("HIKMAH")?"Kalam Hikmah":"Catatan Penting",11);
-   label.setTextColor(0xff557663);panel.addView(label);
+   panel.setBackground(rounded(bg,border,8));panel.setPadding(dp(10),dp(3),dp(10),dp(5));
+   TextView label=text(type.equals("DALIL")?"❖  Dalil":type.equals("HIKMAH")?"✦  Kalam Hikmah":"♧  Catatan Penting",13);
+   label.setTextColor(type.equals("DALIL")?0xff176b47:type.equals("HIKMAH")?0xff96783e:0xff516970);
+   label.setTypeface(null,android.graphics.Typeface.BOLD);label.setIncludeFontPadding(false);
+   label.setPadding(0,0,0,dp(2));panel.addView(label);
    TextView value=text("",fontSize);value.setText(formattedReadingText(m.group(2).trim()));applySharedTextMetrics(value);value.setTextColor(0xff303c43);
-   value.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);value.setTextIsSelectable(true);value.setGravity(type.equals("CATATAN")?Gravity.START:Gravity.CENTER_HORIZONTAL);panel.addView(value);
+   value.setPadding(0,0,0,0);value.setIncludeFontPadding(false);value.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);value.setTextIsSelectable(true);value.setGravity(type.equals("CATATAN")?Gravity.START:Gravity.CENTER_HORIZONTAL);panel.addView(value);
    LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);lp.setMargins(dp(8),dp(3),dp(8),dp(3));body.addView(panel,lp);
    previous=m.end();
   }
