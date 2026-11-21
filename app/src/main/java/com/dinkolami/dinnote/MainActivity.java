@@ -1235,7 +1235,8 @@ public class MainActivity extends Activity {
   content.setPadding(readingSide,dp(10),readingSide,dp(12));if(prefs.getBoolean("reader_wide_spacing",false))content.setLineSpacing(dp(5),1.15f);else content.setLineSpacing(dp(1),1.0f);content.setIncludeFontPadding(true);applySharedTextMetrics(content);
   // Display list rows with subtle mint dividers; preserve the original stored text.
   String[] displayLines=fullReadingText.split("\\n",-1);
-  boolean hasLists=false;
+  boolean hasBoxes=fullReadingText.matches("(?s).*---KOTAK(?:DALIL|HIKMAH|CATATAN)---.*");
+  boolean hasLists=hasBoxes;
   for(String line:displayLines)if(line.trim().matches("---(?:FLOWER|GEOMETRIC|CLASSIC)?---|---")){hasLists=true;break;}
   for(String line:displayLines)if(line.matches("^\\s*(?:\\d+\\.\\s+|[•☐☑✓]\\s+).*")){hasLists=true;break;}
   // Optional aligned bilingual reading. Each paired line uses Arabic || Malay.
@@ -1262,7 +1263,11 @@ public class MainActivity extends Activity {
    body.addView(bilingual);
   }
   boolean twoColumnReading=getResources().getConfiguration().screenWidthDp>=500&&prefs.getBoolean("reader_two_columns",true)&&fullReadingText.length()>=100;
-  if(bilingualReading){}
+  if(hasBoxes){
+   if(bilingualReading){body.removeViewAt(body.getChildCount()-1);}
+   renderBoxReading(body,fullReadingText,readingSizes[fontLevel]);
+  }
+  else if(bilingualReading){}
   else if(!twoColumnReading&&!hasLists)body.addView(content,new LinearLayout.LayoutParams(-1,-2));
   else if(twoColumnReading){
    // Split at a word boundary for balanced side-by-side reading on unfolded devices.
@@ -1543,6 +1548,8 @@ public class MainActivity extends Activity {
   underlineButton.setContentDescription("Garis bawah teks terpilih");
   Button dividerButton=action("✿",formatBar,()->showDividerPicker());
   dividerButton.setTextColor(0xff176b47);dividerButton.setContentDescription("Pilih pemisah perenggan Islamik");
+  Button boxButton=action("▣",formatBar,()->showTextBoxPicker());
+  boxButton.setTextColor(0xff176b47);boxButton.setContentDescription("Kotak Dalil, Kalam Hikmah dan Catatan Penting");
   Button fontButton=action("Aa",formatBar,()->new AlertDialog.Builder(this).setTitle("Saiz tulisan editor").setItems(new String[]{"Kecil","Biasa","Besar","Sangat besar"},(d,i)->{prefs.edit().putInt("reader_font_level",i).putInt("editor_font_level",i).apply();if(editor!=null)applySharedTextMetrics(editor);}).show());
   fontButton.setContentDescription("Saiz tulisan editor");
   // Uniform compact emerald buttons; formatting is highlighted while the caret is inside markup.
@@ -1615,6 +1622,44 @@ public class MainActivity extends Activity {
   while(matcher.find()){try{number=Integer.parseInt(matcher.group(1))+1;}catch(NumberFormatException ignored){}}
   editor.getText().insert(lineStart,number+". ");
   editor.setSelection(cursor+(number+". ").length());
+ }
+ void renderBoxReading(LinearLayout body,String source,int fontSize){
+  java.util.regex.Matcher m=java.util.regex.Pattern.compile("(?ms)^---KOTAK(DALIL|HIKMAH|CATATAN)---[ \\t]*\\n(.*?)^---KOTAKTAMAT---[ \\t]*(?:\\n|$)").matcher(source);
+  int previous=0;
+  while(m.find()){
+   addBoxParagraph(body,source.substring(previous,m.start()),fontSize);
+   String type=m.group(1);
+   LinearLayout panel=new LinearLayout(this);panel.setOrientation(LinearLayout.VERTICAL);
+   int bg=type.equals("DALIL")?0xffeff6f0:type.equals("HIKMAH")?0xfff8f4e9:0xfff0f3f4;
+   int border=type.equals("DALIL")?0xffb8cdbd:type.equals("HIKMAH")?0xffd6c7a4:0xffced9da;
+   panel.setBackground(rounded(bg,border,8));panel.setPadding(dp(10),dp(5),dp(10),dp(5));
+   TextView label=text(type.equals("DALIL")?"Dalil":type.equals("HIKMAH")?"Kalam Hikmah":"Catatan Penting",11);
+   label.setTextColor(0xff557663);panel.addView(label);
+   TextView value=text("",fontSize);value.setText(formattedReadingText(m.group(2).trim()));value.setTextColor(0xff303c43);
+   value.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);value.setTextIsSelectable(true);value.setGravity(type.equals("CATATAN")?Gravity.START:Gravity.CENTER_HORIZONTAL);panel.addView(value);
+   LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);lp.setMargins(dp(8),dp(3),dp(8),dp(3));body.addView(panel,lp);
+   previous=m.end();
+  }
+  addBoxParagraph(body,source.substring(previous),fontSize);
+ }
+ void addBoxParagraph(LinearLayout body,String value,int fontSize){
+  if(value.trim().isEmpty())return;
+  TextView t=text("",fontSize);t.setText(formattedReadingText(value.trim()));t.setTextColor(0xff303c43);t.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);t.setTextIsSelectable(true);t.setPadding(dp(8),dp(3),dp(8),dp(3));body.addView(t);
+ }
+ void showTextBoxPicker(){
+  if(editor==null)return;
+  final int a=Math.max(0,Math.min(editor.getSelectionStart(),editor.getSelectionEnd()));
+  final int b=Math.max(a,Math.max(editor.getSelectionStart(),editor.getSelectionEnd()));
+  final String[] types={"DALIL","HIKMAH","CATATAN"};
+  new AlertDialog.Builder(this).setTitle("Kotak teks")
+   .setItems(new String[]{"Dalil","Kalam Hikmah","Catatan Penting","Buang kotak terpilih"},(d,i)->{
+    if(editor==null||b>editor.length())return;
+    String chosen=editor.getText().subSequence(a,b).toString();
+    if(i==3){editor.getText().replace(a,b,chosen.replaceAll("(?m)^---KOTAK(?:DALIL|HIKMAH|CATATAN|TAMAT)---\\n?",""));return;}
+    String prefix="\n---KOTAK"+types[i]+"---\n";
+    editor.getText().replace(a,b,prefix+chosen+"\n---KOTAKTAMAT---\n");
+    editor.setSelection(a+prefix.length(),a+prefix.length()+chosen.length());
+   }).show();
  }
  void showDividerPicker(){
   final String[] labels={"✿  Bunga Islamik (lalai)","◇  Simpulan geometri","❧  Hiasan klasik"};
