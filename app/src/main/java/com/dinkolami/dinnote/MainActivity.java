@@ -1683,11 +1683,18 @@ public class MainActivity extends Activity {
  void previewFormatPreset(String name,int style){
   final int kind=Math.max(0,Math.min(7,style));
   LinearLayout panel=new LinearLayout(this);panel.setOrientation(LinearLayout.VERTICAL);panel.setPadding(dp(20),dp(12),dp(20),dp(12));
-  TextView sample=text(kind==0?"كِتَابُ الطَّهَارَةِ":kind==1?"إِنَّ اللَّهَ مَعَ الصَّابِرِينَ":kind==2?"الْعِلْمُ نُورٌ":kind==3?"فَصْلٌ — Fasal Pertama":"Contoh tulisan",18);
-  sample.setTextColor(0xff176b47);sample.setGravity(kind<=2?Gravity.CENTER:Gravity.START);
-  sample.setTypeface(null,kind==6?android.graphics.Typeface.ITALIC:android.graphics.Typeface.BOLD);
+  String[] examples={"كِتَابُ الطَّهَارَةِ","إِنَّ اللَّهَ مَعَ الصَّابِرِينَ","الْعِلْمُ نُورٌ","فَصْلٌ — Fasal Pertama","Perkara ini perlu difahami","Contoh tulisan tebal","Contoh tulisan condong","Contoh garis bawah"};
+  int start=Math.min(editor.getSelectionStart(),editor.getSelectionEnd()),end=Math.max(editor.getSelectionStart(),editor.getSelectionEnd());
+  String chosen=start>=0&&end>start?editor.getText().subSequence(start,end).toString():examples[kind];
+  TextView sample=text(chosen,kind<=2?20:16);
+  sample.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
+  sample.setTextColor(kind==1?0xff927337:0xff176b47);sample.setGravity(kind<=2?Gravity.CENTER:Gravity.START);
+  sample.setTypeface(null,kind==6?android.graphics.Typeface.ITALIC:kind==7?android.graphics.Typeface.NORMAL:android.graphics.Typeface.BOLD);
   if(kind==7)sample.setPaintFlags(sample.getPaintFlags()|android.graphics.Paint.UNDERLINE_TEXT_FLAG);
-  sample.setPadding(dp(12),dp(12),dp(12),dp(12));sample.setBackground(rounded(0xffeff6f0,0xffb8cdbd,10));panel.addView(sample);
+  sample.setPadding(dp(12),dp(12),dp(12),dp(12));
+  sample.setBackground(rounded(kind==1||kind==4?0xfffff9e9:0xffeff6f0,kind==1||kind==4?0xffd8c68a:0xffb8cdbd,10));panel.addView(sample);
+  if(kind==3){TextView line=text("────── ✿ ──────",14);line.setGravity(Gravity.CENTER);line.setTextColor(0xff927337);panel.addView(line);}
+  TextView info=text("Pratonton gaya • "+(start>=0&&end>start?"Teks terpilih":"Contoh tulisan"),12);info.setPadding(0,dp(8),0,0);panel.addView(info);
   new AlertDialog.Builder(this).setTitle(name).setView(panel).setPositiveButton("Gunakan",(d,w)->applyFormatPreset(kind)).setNegativeButton("Batal",null).show();
  }
  void applyFormatPreset(int kind){
