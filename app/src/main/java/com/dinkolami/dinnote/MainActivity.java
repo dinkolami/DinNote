@@ -292,24 +292,26 @@ public class MainActivity extends Activity {
   root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
   LinearLayout page=new LinearLayout(this);page.setOrientation(1);
   page.setPadding(dp(10),dp(6),dp(10),dp(12));page.setBackgroundColor(0xfffffefd);page.setTag("dinnote_home");
-  // Keep the natural content height available, but fit a *small* overflow on one screen.
+  // Fit only small height differences. Measure the unscaled page, not the
+  // wrapper's scaled height, so repeated layouts cannot compound the scale.
   FrameLayout homeFitFrame=new FrameLayout(this);
   homeFitFrame.setClipChildren(false);homeFitFrame.setClipToPadding(false);
   scroll.addView(homeFitFrame,new ScrollView.LayoutParams(-1,-2));
   homeFitFrame.addView(page,new FrameLayout.LayoutParams(-1,-2));
   final boolean[] fittingHome={false};
   homeFitFrame.getViewTreeObserver().addOnGlobalLayoutListener(()->{
-   if(fittingHome[0]||scroll.getHeight()<=0||page.getHeight()<=0)return;
-   int natural=page.getHeight(),available=scroll.getHeight();
+   if(fittingHome[0]||scroll.getHeight()<=0||page.getMeasuredHeight()<=0)return;
+   int natural=page.getMeasuredHeight();
+   int available=scroll.getHeight()-scroll.getPaddingTop()-scroll.getPaddingBottom();
+   if(available<=0)return;
    float ratio=(float)available/natural;
-   // Two-way smart fit: shrink slight overflow or enlarge slightly undersized content.
-   // Never shrink more than 7% or enlarge more than 7%; large overflow keeps scrolling.
-   float fit=ratio>=0.93f&&ratio<1f?ratio:
-     (ratio>1f&&ratio<=1.07f?ratio:1f);
-   int desiredHeight=fit!=1f?Math.round(natural*fit):natural;
-   if(Math.abs(page.getScaleY()-fit)<0.002f&&homeFitFrame.getLayoutParams().height==desiredHeight)return;
+   // Shrink or enlarge by at most 7%; large overflows keep natural scrolling.
+   float fit=ratio>=0.93f&&ratio<=1.07f?ratio:1f;
+   int desiredHeight=Math.round(natural*fit);
+   if(Math.abs(page.getScaleY()-fit)<0.001f&&homeFitFrame.getLayoutParams().height==desiredHeight)return;
    fittingHome[0]=true;
-   page.setPivotY(0f);page.setScaleY(fit);
+   page.setPivotX(0f);page.setPivotY(0f);
+   page.setScaleY(fit);
    android.view.ViewGroup.LayoutParams frameParams=homeFitFrame.getLayoutParams();
    frameParams.height=desiredHeight;homeFitFrame.setLayoutParams(frameParams);
    fittingHome[0]=false;
