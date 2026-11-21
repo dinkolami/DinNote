@@ -313,7 +313,12 @@ public class MainActivity extends Activity {
    float ratio=(float)available/natural;
    // Fit only when the dashboard genuinely fits; do not shrink or clip a tall
    // dashboard to a short split-screen window.
-   float fit=ratio>=0.93f&&ratio<1f?ratio:1f;
+   // On folded phones, compress dashboard row heights moderately to keep
+   // the bottom action visible; on narrow multi-window panes retain scrolling
+   // rather than squeezing the text and touch targets excessively.
+   int homeWindowDp=Math.round(scroll.getWidth()/getResources().getDisplayMetrics().density);
+   float minimumFit=homeWindowDp<500?0.82f:0.93f;
+   float fit=ratio>=minimumFit&&ratio<1f?ratio:1f;
    int desired=Math.round(natural*fit);
    boolean fits=desired<=available;
    homeFits[0]=fits;
