@@ -1503,14 +1503,39 @@ public class MainActivity extends Activity {
      itemRow.setGravity(Gravity.TOP|Gravity.CENTER_VERTICAL);itemRow.setPadding(dp(6),dp(8),dp(6),dp(8));
      String marker=isNumber?numbered.group(1):marked.group(1);
      String value=isNumber?numbered.group(2):marked.group(2);
-     TextView markerView=text(marker,14);markerView.setGravity(Gravity.CENTER);
-     markerView.setTextColor(0xff167c42);
-     markerView.setBackground(rounded(0xffe4f7e8,0xffc8e9d0,16));
-     itemRow.addView(markerView,new LinearLayout.LayoutParams(dp(30),dp(30)));
+     boolean arabicHeading=java.util.regex.Pattern.compile("[\\u0600-\\u06FF]").matcher(value).find();
+     // Pearl-and-gold medallion; Arabic headings put the number on the right.
+     String displayMarker=marker;
+     if(isNumber&&arabicHeading){
+      StringBuilder digits=new StringBuilder();
+      for(int j=0;j<marker.length();j++){
+       char digit=marker.charAt(j);
+       digits.append(digit>='0'&&digit<='9'?(char)('٠'+digit-'0'):digit);
+      }
+      displayMarker=digits.toString();
+     }
+     TextView markerView=text(displayMarker,17);
+     markerView.setGravity(Gravity.CENTER);
+     markerView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+     markerView.setIncludeFontPadding(false);
+     markerView.setPadding(0,0,0,0);
+     markerView.setSingleLine(true);
+     markerView.setTextColor(0xff176b47);
+     android.graphics.drawable.GradientDrawable medal=new android.graphics.drawable.GradientDrawable();
+     medal.setShape(android.graphics.drawable.GradientDrawable.OVAL);
+     medal.setColor(0xfffcf8ed);
+     medal.setStroke(dp(1),0xffc3a35a);
+     markerView.setBackground(medal);
+     LinearLayout.LayoutParams medalParams=new LinearLayout.LayoutParams(dp(36),dp(36));
+     if(arabicHeading)medalParams.leftMargin=dp(8);else medalParams.rightMargin=dp(8);
+     if(!arabicHeading)itemRow.addView(markerView,medalParams);
      TextView valueView=text("",readingSizes[fontLevel]);valueView.setText(formattedReadingText(value));applySharedTextMetrics(valueView);valueView.setTextColor(0xff303c43);
-     valueView.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);valueView.setTextIsSelectable(true);
-     valueView.setPadding(dp(10),0,dp(4),0);valueView.setLineSpacing(prefs.getBoolean("reader_wide_spacing",false)?dp(5):dp(1),prefs.getBoolean("reader_wide_spacing",false)?1.15f:1.0f);
+     valueView.setTextDirection(arabicHeading?View.TEXT_DIRECTION_RTL:View.TEXT_DIRECTION_FIRST_STRONG);valueView.setTextIsSelectable(true);
+     valueView.setGravity((arabicHeading?Gravity.RIGHT:Gravity.LEFT)|Gravity.CENTER_VERTICAL);
+     valueView.setPadding(dp(4),0,dp(4),0);
+     valueView.setLineSpacing(prefs.getBoolean("reader_wide_spacing",false)?dp(5):dp(1),prefs.getBoolean("reader_wide_spacing",false)?1.15f:1.0f);
      itemRow.addView(valueView,new LinearLayout.LayoutParams(0,-2,1));
+     if(arabicHeading)itemRow.addView(markerView,medalParams);
      readingRows.addView(itemRow);
      View fineDivider=new View(this);fineDivider.setBackgroundColor(0xffc5e7cb);
      readingRows.addView(fineDivider,new LinearLayout.LayoutParams(-1,dp(1)));
