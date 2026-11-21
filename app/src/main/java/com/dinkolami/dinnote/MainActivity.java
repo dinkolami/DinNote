@@ -549,17 +549,18 @@ public class MainActivity extends Activity {
    entry.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
    entry.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);
    entry.setSingleLine(true);entry.setEllipsize(android.text.TextUtils.TruncateAt.END);
-   entry.setIncludeFontPadding(false);
+   entry.setIncludeFontPadding(false);entry.setPadding(0,0,0,0);entry.setMinWidth(0);
    LinearLayout line=new LinearLayout(this);line.setOrientation(LinearLayout.HORIZONTAL);line.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);line.setGravity(Gravity.CENTER_VERTICAL);
-   line.setPadding(dp(10),dp(folded?3:7),dp(10),dp(folded?3:7));line.setBackground(subtleNoteBorder(9));line.setMinHeight(dp(folded?38:48));
+   line.setPadding(dp(7),dp(folded?3:7),dp(7),dp(folded?3:7));line.setBackground(subtleNoteBorder(9));line.setMinHeight(dp(folded?38:48));
    line.addView(entry,new LinearLayout.LayoutParams(0,-2,1));
-   long stamp=prefs.getLong("updated_"+key,0L);
+   Object rawStamp=prefs.getAll().get("updated_"+key);
+   long stamp=rawStamp instanceof Number?((Number)rawStamp).longValue():0L;
    if(stamp>0L){
     java.util.Calendar cal=java.util.Calendar.getInstance();cal.setTimeInMillis(stamp);
     String[] months={"Jan","Feb","Mac","Apr","Mei","Jun","Jul","Ogo","Sep","Okt","Nov","Dis"};
     String date=cal.get(java.util.Calendar.DAY_OF_MONTH)+" "+months[cal.get(java.util.Calendar.MONTH)];
     if(!pin)date+=" · "+new java.text.SimpleDateFormat("HHmm",java.util.Locale.ROOT).format(new java.util.Date(stamp));
-    TextView time=dashboardText(date,10,false);time.setTextColor(0xff68756c);time.setSingleLine(true);time.setIncludeFontPadding(false);time.setGravity(Gravity.RIGHT|Gravity.CENTER_VERTICAL);time.setPadding(dp(5),0,0,0);
+    TextView time=dashboardText(date,10,false);time.setTextColor(0xff68756c);time.setSingleLine(true);time.setTextDirection(View.TEXT_DIRECTION_LTR);time.setIncludeFontPadding(false);time.setGravity(Gravity.RIGHT|Gravity.CENTER_VERTICAL);time.setPadding(dp(5),0,0,0);
     line.addView(time,new LinearLayout.LayoutParams(-2,-2));
    }
    LinearLayout.LayoutParams ep=new LinearLayout.LayoutParams(-1,-2);ep.bottomMargin=dp(folded?3:5);target.addView(line,ep);applyTouchFeedback(line);
