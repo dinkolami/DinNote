@@ -357,8 +357,18 @@ public class MainActivity extends Activity {
    else if(postingKey.startsWith("m_"))bookCount++;
   }
   LinearLayout tiles=new LinearLayout(this);tiles.setPadding(dp(8),dp(3),dp(8),dp(5));card.addView(tiles);
-  TextView note=dashboardText("✎\nNota\n"+noteCount+" Topik",13,true);
-  TextView book=dashboardText("▤\nMaktabah\n"+bookCount+" Topik",13,true);
+  TextView note=dashboardText("✎\nNota\n"+noteCount+" topik",12,true);
+  TextView book=dashboardText("▤\nMaktabah\n"+bookCount+" topik",12,true);
+  // Smaller, pearl-gold topic counters distinguish the numbers from tile headings.
+  android.text.SpannableString noteLabel=new android.text.SpannableString(note.getText());
+  android.text.SpannableString bookLabel=new android.text.SpannableString(book.getText());
+  int noteStart=noteLabel.toString().lastIndexOf('\n')+1;
+  int bookStart=bookLabel.toString().lastIndexOf('\n')+1;
+  noteLabel.setSpan(new android.text.style.RelativeSizeSpan(0.88f),noteStart,noteLabel.length(),33);
+  bookLabel.setSpan(new android.text.style.RelativeSizeSpan(0.88f),bookStart,bookLabel.length(),33);
+  noteLabel.setSpan(new android.text.style.ForegroundColorSpan(0xff997b3e),noteStart,noteLabel.length(),33);
+  bookLabel.setSpan(new android.text.style.ForegroundColorSpan(0xff997b3e),bookStart,bookLabel.length(),33);
+  note.setText(noteLabel);book.setText(bookLabel);
   // Three lines must fit inside the 66dp tiles without clipping at the bottom.
   note.setIncludeFontPadding(false);book.setIncludeFontPadding(false);
   note.setLineSpacing(0f,1f);book.setLineSpacing(0f,1f);
