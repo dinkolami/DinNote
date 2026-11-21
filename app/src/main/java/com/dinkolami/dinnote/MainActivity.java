@@ -1317,7 +1317,7 @@ public class MainActivity extends Activity {
   content.setPadding(readingSide,dp(10),readingSide,dp(12));if(prefs.getBoolean("reader_wide_spacing",false))content.setLineSpacing(dp(5),1.15f);else content.setLineSpacing(dp(1),1.0f);content.setIncludeFontPadding(true);applySharedTextMetrics(content);
   // Display list rows with subtle mint dividers; preserve the original stored text.
   String[] displayLines=fullReadingText.split("\\n",-1);
-  boolean hasBoxes=fullReadingText.matches("(?s).*---KOTAK(?:DALIL|HIKMAH|CATATAN)---.*");
+  boolean hasBoxes=fullReadingText.matches("(?s).*---KOTAK(?:DALIL|HIKMAH|CATATAN|FIRMAN|SABDA)---.*");
   boolean hasLists=hasBoxes;
   for(String line:displayLines)if(line.trim().matches("---(?:FLOWER|GEOMETRIC|CLASSIC)?---|---")){hasLists=true;break;}
   for(String line:displayLines)if(line.matches("^\\s*(?:\\d+\\.\\s+|[•☐☑✓]\\s+).*")){hasLists=true;break;}
@@ -1838,23 +1838,23 @@ public class MainActivity extends Activity {
   String[] lines=source.split("\\n",-1);
   for(int i=0;i<lines.length;i++){
    String plain=lines[i].replaceAll("</?[biu]>|\\*","").trim();
-   if(plain.matches("---(?:KOTAK(?:DALIL|HIKMAH|CATATAN|TAMAT)|FLOWER|GEOMETRIC|CLASSIC)---"))lines[i]=plain;
+   if(plain.matches("---(?:KOTAK(?:DALIL|HIKMAH|CATATAN|FIRMAN|SABDA|TAMAT)|FLOWER|GEOMETRIC|CLASSIC)---"))lines[i]=plain;
   }
   return android.text.TextUtils.join("\n",lines);
  }
  void renderBoxReading(LinearLayout body,String source,int fontSize){
   source=normalizeStructuralMarkers(source);
-  java.util.regex.Matcher m=java.util.regex.Pattern.compile("(?ms)^---KOTAK(DALIL|HIKMAH|CATATAN)---[ \\t]*\\n(.*?)^---KOTAKTAMAT---[ \\t]*(?:\\n|$)").matcher(source);
+  java.util.regex.Matcher m=java.util.regex.Pattern.compile("(?ms)^---KOTAK(DALIL|HIKMAH|CATATAN|FIRMAN|SABDA)---[ \\t]*\\n(.*?)^---KOTAKTAMAT---[ \\t]*(?:\\n|$)").matcher(source);
   int previous=0;
   while(m.find()){
    addBoxParagraph(body,source.substring(previous,m.start()),fontSize);
    String type=m.group(1);
    LinearLayout panel=new LinearLayout(this);panel.setOrientation(LinearLayout.VERTICAL);
-   int bg=type.equals("DALIL")?0xffeff6f0:type.equals("HIKMAH")?0xfff8f4e9:0xfff0f3f4;
-   int border=type.equals("DALIL")?0xffb8cdbd:type.equals("HIKMAH")?0xffd6c7a4:0xffced9da;
+   int bg=type.equals("FIRMAN")?0xffedf5ee:type.equals("SABDA")?0xfffaf5e8:type.equals("DALIL")?0xffeff6f0:type.equals("HIKMAH")?0xfff8f4e9:0xfff0f3f4;
+   int border=type.equals("FIRMAN")?0xffa5c3aa:type.equals("SABDA")?0xffd6c7a4:type.equals("DALIL")?0xffb8cdbd:type.equals("HIKMAH")?0xffd6c7a4:0xffced9da;
    panel.setBackground(rounded(bg,border,8));panel.setPadding(dp(10),dp(3),dp(10),dp(5));
-   TextView label=text(type.equals("DALIL")?"❖  Dalil":type.equals("HIKMAH")?"✦  Kalam Hikmah":"♧  Catatan Penting",13);
-   label.setTextColor(type.equals("DALIL")?0xff176b47:type.equals("HIKMAH")?0xff96783e:0xff516970);
+   TextView label=text(type.equals("FIRMAN")?"۞  Firman Allah SWT:":type.equals("SABDA")?"❁  Sabda Nabi SAW:":type.equals("DALIL")?"❖  Dalil":type.equals("HIKMAH")?"✦  Kalam Hikmah":"♧  Catatan Penting",13);
+   label.setTextColor(type.equals("FIRMAN")?0xff176b47:type.equals("SABDA")?0xff96783e:type.equals("DALIL")?0xff176b47:type.equals("HIKMAH")?0xff96783e:0xff516970);
    label.setTypeface(null,android.graphics.Typeface.BOLD);label.setIncludeFontPadding(false);
    label.setPadding(0,0,0,dp(2));panel.addView(label);
    TextView value=text("",fontSize);value.setText(formattedReadingText(m.group(2).trim()));applySharedTextMetrics(value);value.setTextColor(0xff303c43);
@@ -1887,12 +1887,12 @@ public class MainActivity extends Activity {
   if(editor==null)return;
   final int a=Math.max(0,Math.min(editor.getSelectionStart(),editor.getSelectionEnd()));
   final int b=Math.max(a,Math.max(editor.getSelectionStart(),editor.getSelectionEnd()));
-  final String[] types={"DALIL","HIKMAH","CATATAN"};
+  final String[] types={"DALIL","HIKMAH","CATATAN","FIRMAN","SABDA"};
   new AlertDialog.Builder(this).setTitle("Kotak teks")
-   .setItems(new String[]{"Dalil","Kalam Hikmah","Catatan Penting","Buang kotak terpilih"},(d,i)->{
+   .setItems(new String[]{"Dalil","Kalam Hikmah","Catatan Penting","Firman Allah SWT:","Sabda Nabi SAW:","Buang kotak terpilih"},(d,i)->{
     if(editor==null||b>editor.length())return;
     String chosen=editor.getText().subSequence(a,b).toString();
-    if(i==3){editor.getText().replace(a,b,chosen.replaceAll("(?m)^---KOTAK(?:DALIL|HIKMAH|CATATAN|TAMAT)---\\n?",""));return;}
+    if(i==5){editor.getText().replace(a,b,chosen.replaceAll("(?m)^---KOTAK(?:DALIL|HIKMAH|CATATAN|FIRMAN|SABDA|TAMAT)---\\n?",""));return;}
     String prefix="\n---KOTAK"+types[i]+"---\n";
     editor.getText().replace(a,b,prefix+chosen+"\n---KOTAKTAMAT---\n");
     editor.setSelection(a+prefix.length(),a+prefix.length()+chosen.length());
