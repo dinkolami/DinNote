@@ -302,9 +302,11 @@ public class MainActivity extends Activity {
    if(fittingHome[0]||scroll.getHeight()<=0||page.getHeight()<=0)return;
    int natural=page.getHeight(),available=scroll.getHeight();
    float ratio=(float)available/natural;
-   // Fit only if the overflow is at most 7%; otherwise retain natural size and scrolling.
-   float fit=ratio<1f&&ratio>=0.93f?ratio:1f;
-   int desiredHeight=fit<1f?available:natural;
+   // Two-way smart fit: shrink slight overflow or enlarge slightly undersized content.
+   // Never shrink more than 7% or enlarge more than 7%; large overflow keeps scrolling.
+   float fit=ratio>=0.93f&&ratio<1f?ratio:
+     (ratio>1f&&ratio<=1.07f?ratio:1f);
+   int desiredHeight=fit!=1f?Math.round(natural*fit):natural;
    if(Math.abs(page.getScaleY()-fit)<0.002f&&homeFitFrame.getLayoutParams().height==desiredHeight)return;
    fittingHome[0]=true;
    page.setPivotY(0f);page.setScaleY(fit);
