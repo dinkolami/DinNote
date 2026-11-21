@@ -2008,8 +2008,8 @@ public class MainActivity extends Activity {
     };
     heading.setBackground(rounded(bg,border,16));heading.setPadding(dp(6),dp(1),dp(8),dp(1));label.setBackground(null);label.setPadding(0,0,0,0);LinearLayout.LayoutParams iconParams=new LinearLayout.LayoutParams(dp(book?24:19),dp(book?24:19));iconParams.setMarginEnd(dp(4));heading.addView(symbol,iconParams);heading.addView(label);panel.addView(heading,new LinearLayout.LayoutParams(-2,-2));
    }else panel.addView(label,new LinearLayout.LayoutParams(-2,-2));
-   TextView value=text("",fontSize);value.setText(formattedReadingText(m.group(2).trim()));applySharedTextMetrics(value);value.setTextColor(0xff303c43);
-   value.setPadding(0,0,0,0);value.setIncludeFontPadding(false);value.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);value.setTextIsSelectable(true);value.setGravity(Gravity.START);value.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START);panel.addView(value);
+   TextView value=text("",fontSize);String boxContent=m.group(2).replaceFirst("^\\n","").replaceFirst("\\n$","");value.setText(formattedReadingText(boxContent));applySharedTextMetrics(value);value.setTextColor(0xff303c43);
+   value.setPadding(0,0,0,0);value.setIncludeFontPadding(true);value.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);value.setTextIsSelectable(true);value.setGravity(Gravity.START);value.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START);panel.addView(value);
    LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);lp.setMargins(dp(8),dp(3),dp(8),dp(3));body.addView(panel,lp);
    previous=m.end();
   }
