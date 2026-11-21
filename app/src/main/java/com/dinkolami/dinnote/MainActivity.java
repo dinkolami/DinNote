@@ -1189,7 +1189,7 @@ public class MainActivity extends Activity {
   // Display list rows with subtle mint dividers; preserve the original stored text.
   String[] displayLines=fullReadingText.split("\\n",-1);
   boolean hasLists=false;
-  for(String line:displayLines)if(line.trim().equals("---")){hasLists=true;break;}
+  for(String line:displayLines)if(line.trim().matches("---(?:FLOWER|GEOMETRIC|CLASSIC)?---|---")){hasLists=true;break;}
   for(String line:displayLines)if(line.matches("^\\s*(?:\\d+\\.\\s+|[•☐☑✓]\\s+).*")){hasLists=true;break;}
   // Optional aligned bilingual reading. Each paired line uses Arabic || Malay.
   boolean bilingualReading=key.startsWith("m_")&&getResources().getConfiguration().screenWidthDp>=500
@@ -1247,14 +1247,18 @@ public class MainActivity extends Activity {
     java.util.regex.Matcher numbered=java.util.regex.Pattern.compile("^\\s*(\\d+)\\.\\s+(.*)$").matcher(line);
     java.util.regex.Matcher marked=java.util.regex.Pattern.compile("^\\s*([•☐☑✓])\\s+(.*)$").matcher(line);
     boolean isNumber=numbered.matches(),isMarked=!isNumber&&marked.matches();
-    if(line.trim().equals("---")){
+    if(line.trim().equals("---")||line.trim().equals("---FLOWER---")||line.trim().equals("---GEOMETRIC---")||line.trim().equals("---CLASSIC---")){
      LinearLayout ornament=new LinearLayout(this);ornament.setGravity(Gravity.CENTER_VERTICAL);
      ornament.setPadding(dp(16),dp(12),dp(16),dp(12));
-     View leftRule=new View(this);leftRule.setBackgroundColor(0xffc4a45a);
+     boolean floral=line.trim().equals("---FLOWER---");
+     boolean geometric=line.trim().equals("---GEOMETRIC---");
+     boolean classic=line.trim().equals("---CLASSIC---");
+     int ornamentColor=(floral||geometric||classic)?0xff176b47:0xffc4a45a;
+     View leftRule=new View(this);leftRule.setBackgroundColor(ornamentColor);
      ornament.addView(leftRule,new LinearLayout.LayoutParams(0,dp(1),1));
-     TextView diamond=text("◇",17);diamond.setTextColor(0xffae913d);
+     TextView diamond=text(floral?"✿":geometric?"❖":classic?"❧":"◇",floral?24:19);diamond.setTextColor((floral||geometric||classic)?0xff176b47:0xffae913d);
      diamond.setPadding(dp(10),0,dp(10),0);ornament.addView(diamond);
-     View rightRule=new View(this);rightRule.setBackgroundColor(0xffc4a45a);
+     View rightRule=new View(this);rightRule.setBackgroundColor(ornamentColor);
      ornament.addView(rightRule,new LinearLayout.LayoutParams(0,dp(1),1));
      readingRows.addView(ornament);
     }else if(isNumber||isMarked){
@@ -1479,8 +1483,8 @@ public class MainActivity extends Activity {
   checklistButton.setContentDescription("Masukkan kotak semak");
   Button underlineButton=action("U",formatBar,()->wrapEditorSelection("<u>","</u>"));
   underlineButton.setContentDescription("Garis bawah teks terpilih");
-  Button dividerButton=action("─",formatBar,()->insertEditorText("\n---\n"));
-  dividerButton.setTextColor(0xffb49a43);dividerButton.setContentDescription("Masukkan divider emas");
+  Button dividerButton=action("✿",formatBar,()->showDividerPicker());
+  dividerButton.setTextColor(0xff176b47);dividerButton.setContentDescription("Pilih pemisah perenggan Islamik");
   Button fontButton=action("Aa",formatBar,()->new AlertDialog.Builder(this).setTitle("Saiz tulisan editor").setItems(new String[]{"Kecil","Biasa","Besar","Sangat besar"},(d,i)->{prefs.edit().putInt("reader_font_level",i).putInt("editor_font_level",i).apply();if(editor!=null)applySharedTextMetrics(editor);}).show());
   fontButton.setContentDescription("Saiz tulisan editor");
   // Uniform compact emerald buttons; formatting is highlighted while the caret is inside markup.
@@ -1551,6 +1555,13 @@ public class MainActivity extends Activity {
   while(matcher.find()){try{number=Integer.parseInt(matcher.group(1))+1;}catch(NumberFormatException ignored){}}
   editor.getText().insert(lineStart,number+". ");
   editor.setSelection(cursor+(number+". ").length());
+ }
+ void showDividerPicker(){
+  final String[] labels={"✿  Bunga Islamik (lalai)","◇  Simpulan geometri","❧  Hiasan klasik"};
+  final String[] markers={"---FLOWER---","---GEOMETRIC---","---CLASSIC---"};
+  new AlertDialog.Builder(this).setTitle("Pemisah Perenggan (Divider)")
+   .setItems(labels,(dialog,choice)->insertEditorText("\n"+markers[choice]+"\n"))
+   .show();
  }
  void insertEditorText(String value){
   if(editor==null)return;
