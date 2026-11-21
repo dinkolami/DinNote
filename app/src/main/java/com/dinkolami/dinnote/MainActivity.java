@@ -405,16 +405,7 @@ public class MainActivity extends Activity {
     columns.addView(left,leftParams);columns.addView(right,rightParams);
     recentNotes.addView(columns,new LinearLayout.LayoutParams(-1,-2));
    }
-   for(int i=0;i<(wide?10:Math.min(5,keys.size()));i++){
-    if(i>=keys.size()){
-     TextView placeholder=dashboardText("＋  Ruang nota "+(i+1),13,false);
-     placeholder.setTextColor(0xff7a897f);placeholder.setGravity(Gravity.CENTER_VERTICAL);placeholder.setSingleLine(true);placeholder.setEllipsize(android.text.TextUtils.TruncateAt.END);placeholder.setPadding(dp(10),0,dp(8),0);
-     placeholder.setBackground(subtleNoteBorder(8));
-     LinearLayout.LayoutParams emptyParams=new LinearLayout.LayoutParams(-1,dp(38));emptyParams.bottomMargin=dp(4);
-     (i<5?left:right).addView(placeholder,emptyParams);
-     placeholder.setContentDescription("Cipta nota baharu di ruang "+(i+1));applyTouchFeedback(placeholder);placeholder.setOnClickListener(v->{maktabah=false;edit(null);});
-     continue;
-    }
+   for(int i=0;i<Math.min(wide?10:5,keys.size());i++){
     String k=keys.get(i);String t=prefs.getString("title_"+k,"").trim();
     if(t.trim().isEmpty())t="Tanpa tajuk";
     // Light emerald list: slightly larger titles, dates consistently aligned right.
