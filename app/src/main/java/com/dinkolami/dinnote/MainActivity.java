@@ -997,7 +997,7 @@ public class MainActivity extends Activity {
    if((mask&4)!=0)out.append("<u>");if((mask&1)!=0)out.append("<b>");if((mask&2)!=0)out.append("<i>");
    out.append(e.subSequence(i,end));
    if((mask&2)!=0)out.append("</i>");if((mask&1)!=0)out.append("</b>");if((mask&4)!=0)out.append("</u>");i=end;
-  }return out.toString();
+  }return normalizeStructuralMarkers(out.toString());
  }
  void applyLiveStyle(int kind){
   if(editor==null)return;int a=Math.min(editor.getSelectionStart(),editor.getSelectionEnd()),b=Math.max(editor.getSelectionStart(),editor.getSelectionEnd());
@@ -1834,7 +1834,16 @@ public class MainActivity extends Activity {
   editor.getText().insert(lineStart,number+". ");
   editor.setSelection(cursor+(number+". ").length());
  }
+ String normalizeStructuralMarkers(String source){
+  String[] lines=source.split("\\n",-1);
+  for(int i=0;i<lines.length;i++){
+   String plain=lines[i].replaceAll("</?[biu]>|\\*","").trim();
+   if(plain.matches("---(?:KOTAK(?:DALIL|HIKMAH|CATATAN|TAMAT)|FLOWER|GEOMETRIC|CLASSIC)---"))lines[i]=plain;
+  }
+  return android.text.TextUtils.join("\n",lines);
+ }
  void renderBoxReading(LinearLayout body,String source,int fontSize){
+  source=normalizeStructuralMarkers(source);
   java.util.regex.Matcher m=java.util.regex.Pattern.compile("(?ms)^---KOTAK(DALIL|HIKMAH|CATATAN)---[ \\t]*\\n(.*?)^---KOTAKTAMAT---[ \\t]*(?:\\n|$)").matcher(source);
   int previous=0;
   while(m.find()){
