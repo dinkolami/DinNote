@@ -1623,6 +1623,17 @@ public class MainActivity extends Activity {
    metadataToggle.setText(metadataExpanded[0]?"⌃":"⌄");
    metadataToggle.setContentDescription(metadataExpanded[0]?"Sembunyikan kategori dan tajuk":"Buka kategori dan tajuk");
   });final Runnable[] formatRefresh={null};editor=new EditText(this){
+   @Override public boolean onTextContextMenuItem(int id){
+    if(id==android.R.id.copy&&getSelectionStart()>=0&&getSelectionEnd()>=0&&getSelectionStart()!=getSelectionEnd()){
+     int a=Math.min(getSelectionStart(),getSelectionEnd()),b=Math.max(getSelectionStart(),getSelectionEnd());
+     String selected=getText().subSequence(a,b).toString();
+     String clean=selected.replaceAll("(?m)^---KOTAK(?:DALIL|HIKMAH|CATATAN|FIRMAN|SABDA|SAHABAT|TABII|ULAMA|TAMAT)---[ \\t]*(?:\\r?\\n)?","");
+     android.content.ClipboardManager clipboard=(android.content.ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
+     if(clipboard!=null){clipboard.setPrimaryClip(android.content.ClipData.newPlainText("DinNote",clean));return true;}
+    }
+    return super.onTextContextMenuItem(id);
+   }
+
    @Override protected void onDraw(android.graphics.Canvas canvas){
     super.onDraw(canvas);
     if(!hasFocus()||!isCursorVisible()||getSelectionStart()<0||getSelectionStart()!=getSelectionEnd())return;
