@@ -1536,9 +1536,9 @@ public class MainActivity extends Activity {
      medal.setStroke(dp(1),0xffdfc98d);
      markerView.setBackground(medal);
      FrameLayout.LayoutParams innerCircleParams=new FrameLayout.LayoutParams(-1,-1,Gravity.CENTER);
-     innerCircleParams.setMargins(dp(3),dp(3),dp(3),dp(3));
+     innerCircleParams.setMargins(dp(2),dp(2),dp(2),dp(2));
      medallion.addView(markerView,innerCircleParams);
-     LinearLayout.LayoutParams medalParams=new LinearLayout.LayoutParams(dp(33),dp(33));
+     LinearLayout.LayoutParams medalParams=new LinearLayout.LayoutParams(dp(29),dp(29));
      if(arabicHeading)medalParams.leftMargin=dp(8);else medalParams.rightMargin=dp(8);
      if(!arabicHeading)itemRow.addView(medallion,medalParams);
      TextView valueView=text("",readingSizes[fontLevel]);valueView.setText(formattedReadingText(value));applySharedTextMetrics(valueView);valueView.setTextColor(0xff303c43);
