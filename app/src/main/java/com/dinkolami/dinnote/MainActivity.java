@@ -970,14 +970,14 @@ public class MainActivity extends Activity {
  }
  android.text.SpannableStringBuilder formattedReadingText(String source){
   android.text.SpannableStringBuilder out=new android.text.SpannableStringBuilder(source==null?"":source);
-  String[] patterns={"\\*\\*(.+?)\\*\\*","(?<!\\*)\\*(?!\\*)([^*]+?)\\*(?!\\*)","<u>(.*?)</u>"};
+  String[] patterns={"\\*\\*(.+?)\\*\\*","(?<!\\*)\\*(?!\\*)([^*]+?)\\*(?!\\*)","<u>(.*?)</u>","<b>(.*?)</b>","<i>(.*?)</i>"};
   for(int k=0;k<patterns.length;k++){
    java.util.regex.Matcher m=java.util.regex.Pattern.compile(patterns[k],java.util.regex.Pattern.DOTALL).matcher(out.toString());
    java.util.ArrayList<int[]> ranges=new java.util.ArrayList<>();
    while(m.find())ranges.add(new int[]{m.start(),m.start(1),m.end(1),m.end()});
    for(int i=ranges.size()-1;i>=0;i--){
     int[] p=ranges.get(i);out.delete(p[2],p[3]);out.delete(p[0],p[1]);int end=p[0]+p[2]-p[1];
-    if(end>p[0])out.setSpan(k==2?new android.text.style.UnderlineSpan():new android.text.style.StyleSpan(k==0?1:2),p[0],end,android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+    if(end>p[0])out.setSpan(k==2?new android.text.style.UnderlineSpan():new android.text.style.StyleSpan(k==0||k==3?1:2),p[0],end,android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
    }
   }return out;
  }
@@ -991,11 +991,12 @@ public class MainActivity extends Activity {
   if(editor==null)return "";
   android.text.Editable e=editor.getText();StringBuilder out=new StringBuilder();int i=0;
   while(i<e.length()){
+   if(e.charAt(i)=='\n'){out.append('\n');i++;continue;}
    int mask=richMask(e,i,i+1),end=i+1;
-   while(end<e.length()&&richMask(e,end,end+1)==mask)end++;
-   if((mask&4)!=0)out.append("<u>");if((mask&1)!=0)out.append("**");if((mask&2)!=0)out.append("*");
+   while(end<e.length()&&e.charAt(end)!='\n'&&richMask(e,end,end+1)==mask)end++;
+   if((mask&4)!=0)out.append("<u>");if((mask&1)!=0)out.append("<b>");if((mask&2)!=0)out.append("<i>");
    out.append(e.subSequence(i,end));
-   if((mask&2)!=0)out.append("*");if((mask&1)!=0)out.append("**");if((mask&4)!=0)out.append("</u>");i=end;
+   if((mask&2)!=0)out.append("</i>");if((mask&1)!=0)out.append("</b>");if((mask&4)!=0)out.append("</u>");i=end;
   }return out.toString();
  }
  void applyLiveStyle(int kind){
