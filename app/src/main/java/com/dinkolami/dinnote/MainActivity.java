@@ -1623,24 +1623,6 @@ public class MainActivity extends Activity {
    metadataToggle.setText(metadataExpanded[0]?"⌃":"⌄");
    metadataToggle.setContentDescription(metadataExpanded[0]?"Sembunyikan kategori dan tajuk":"Buka kategori dan tajuk");
   });final Runnable[] formatRefresh={null};editor=new EditText(this){
-   @Override protected void onDraw(android.graphics.Canvas canvas){
-    super.onDraw(canvas);
-    if(!hasFocus()||!hasWindowFocus()||!isCursorVisible()||getSelectionStart()<0||getSelectionStart()!=getSelectionEnd()||getLayout()==null)return;
-    int offset=Math.min(getSelectionStart(),length());
-    android.text.Layout layout=getLayout();
-    int line=layout.getLineForOffset(offset);
-    float x=getCompoundPaddingLeft()+layout.getPrimaryHorizontal(offset);
-    x=Math.max(getCompoundPaddingLeft()+dp(3),Math.min(getWidth()-getCompoundPaddingRight()-dp(3),x));
-    float y=getExtendedPaddingTop()+layout.getLineTop(line);
-    float bottom=getExtendedPaddingTop()+layout.getLineBottom(line);
-    y=Math.max(getExtendedPaddingTop()+dp(2),y);bottom=Math.min(getHeight()-getExtendedPaddingBottom()-dp(2),bottom);
-    long phase=android.os.SystemClock.uptimeMillis()%1000;
-    if(phase<500){
-     android.graphics.Paint caret=new android.graphics.Paint(3);caret.setColor(0xff176b47);caret.setStrokeWidth(dp(2));
-     if(bottom>y+dp(4))canvas.drawLine(x,y+dp(2),x,bottom-dp(2),caret);
-    }
-    postInvalidateDelayed(phase<500?500-phase:1000-phase);
-   }
    @Override protected void onSelectionChanged(int start,int end){super.onSelectionChanged(start,end);if(editor==this&&start>=0&&end>=0){persistEditorPosition();if(hasFocus())post(()->revealEditorCursor(this));if(formatRefresh[0]!=null)post(formatRefresh[0]);}}
    @Override protected void onSizeChanged(int w,int h,int oldw,int oldh){super.onSizeChanged(w,h,oldw,oldh);if(editor==this)post(()->revealEditorCursor(this));}
   };final int[] boxTouchOffset={-1};
@@ -1651,7 +1633,13 @@ public class MainActivity extends Activity {
    while(headers.find()){if(offset>=headers.start()&&offset<=headers.end()){editor.setSelection(headers.end());return manageCurrentBox();}}
    return false;
   });
-  editor.setGravity(Gravity.TOP);editor.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);editor.setBreakStrategy(android.text.Layout.BREAK_STRATEGY_SIMPLE);editor.setHyphenationFrequency(android.text.Layout.HYPHENATION_FREQUENCY_NONE);editor.setTextSize(new int[]{13,15,16,18}[Math.max(0,Math.min(3,prefs.getInt("reader_font_level",1)))]);editor.setTextColor(0xff30343b);editor.setCursorVisible(true);editor.setPadding(dp(24),dp(10),dp(24),dp(12));editor.setLineSpacing(prefs.getBoolean("reader_wide_spacing",false)?dp(5):dp(1),prefs.getBoolean("reader_wide_spacing",false)?1.15f:1.0f);editor.setIncludeFontPadding(true);applySharedTextMetrics(editor);editor.setHint(maktabah?"Tulis kandungan kitab di sini…":"Tulis nota di sini…");editor.setContentDescription(maktabah?"Kandungan kitab":"Kandungan nota");editor.setBackground(rounded(0xfffffefb,0xffb8d5c2,12));editor.setOnFocusChangeListener((v,focused)->editor.setBackground(rounded(0xfffffefb,focused?0xff168254:0xffb8d5c2,12)));editor.setInputType(android.text.InputType.TYPE_CLASS_TEXT|android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE|android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);LinearLayout formatBar=new LinearLayout(this);
+  editor.setGravity(Gravity.TOP);editor.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);editor.setBreakStrategy(android.text.Layout.BREAK_STRATEGY_SIMPLE);editor.setHyphenationFrequency(android.text.Layout.HYPHENATION_FREQUENCY_NONE);editor.setTextSize(new int[]{13,15,16,18}[Math.max(0,Math.min(3,prefs.getInt("reader_font_level",1)))]);editor.setTextColor(0xff30343b);editor.setCursorVisible(true);
+  if(android.os.Build.VERSION.SDK_INT>=29){
+   android.graphics.drawable.GradientDrawable caretDrawable=new android.graphics.drawable.GradientDrawable();
+   caretDrawable.setColor(0xff176b47);
+   caretDrawable.setSize(dp(2),dp(24));
+   editor.setTextCursorDrawable(caretDrawable);
+  }editor.setPadding(dp(24),dp(10),dp(24),dp(12));editor.setLineSpacing(prefs.getBoolean("reader_wide_spacing",false)?dp(5):dp(1),prefs.getBoolean("reader_wide_spacing",false)?1.15f:1.0f);editor.setIncludeFontPadding(true);applySharedTextMetrics(editor);editor.setHint(maktabah?"Tulis kandungan kitab di sini…":"Tulis nota di sini…");editor.setContentDescription(maktabah?"Kandungan kitab":"Kandungan nota");editor.setBackground(rounded(0xfffffefb,0xffb8d5c2,12));editor.setOnFocusChangeListener((v,focused)->editor.setBackground(rounded(0xfffffefb,focused?0xff168254:0xffb8d5c2,12)));editor.setInputType(android.text.InputType.TYPE_CLASS_TEXT|android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE|android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);LinearLayout formatBar=new LinearLayout(this);
   formatBar.setGravity(Gravity.CENTER_VERTICAL);
   formatBar.setPadding(dp(5),dp(2),dp(5),dp(2));
   formatBar.setHorizontalScrollBarEnabled(false);
