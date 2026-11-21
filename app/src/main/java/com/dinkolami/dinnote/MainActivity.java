@@ -2005,8 +2005,33 @@ public class MainActivity extends Activity {
   if(value.isEmpty())return;
   TextView t=text("",fontSize);t.setText(formattedReadingText(value));applySharedTextMetrics(t);t.setTextColor(0xff303c43);t.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);t.setTextIsSelectable(true);t.setPadding(dp(8),dp(1),dp(8),dp(1));body.addView(t);
  }
+ boolean manageCurrentBox(){
+  if(editor==null)return false;
+  final EditText target=editor;
+  int cursor=target.getSelectionStart();
+  java.util.regex.Matcher boxes=java.util.regex.Pattern.compile("(?ms)^---KOTAK(DALIL|HIKMAH|CATATAN|FIRMAN|SABDA)---\\n(.*?)\\n^---KOTAKTAMAT---").matcher(target.getText().toString());
+  while(boxes.find()){
+   if(cursor<boxes.start()||cursor>boxes.end())continue;
+   final int start=boxes.start(),end=boxes.end(),headEnd=boxes.end(1),bodyStart=boxes.start(2),bodyEnd=boxes.end(2);
+   final String original=boxes.group();
+   final String[] types={"DALIL","HIKMAH","CATATAN","FIRMAN","SABDA"};
+   final String[] names={"Dalil","Kalam Hikmah","Catatan Penting","Firman Allah SWT:","Sabda Nabi SAW:"};
+   new AlertDialog.Builder(this).setTitle("Urus kotak").setItems(new String[]{"Tukar jenis kotak","Buang border, kekalkan teks","Gandakan kotak","Tambah kotak di atas","Tambah kotak di bawah"},(d,choice)->{
+    if(editor!=target||end>target.length()||!target.getText().subSequence(start,end).toString().equals(original))return;
+    if(choice==1){android.text.Editable e=target.getText();android.text.SpannableString inner=new android.text.SpannableString(e.subSequence(bodyStart,bodyEnd));e.replace(start,end,inner);target.setSelection(start+inner.length());return;}
+    if(choice==2){android.text.SpannableStringBuilder duplicate=new android.text.SpannableStringBuilder("\n");duplicate.append(target.getText().subSequence(start,end));target.getText().insert(end,duplicate);target.setSelection(end+1);return;}
+    new AlertDialog.Builder(this).setTitle("Pilih jenis kotak").setItems(names,(dialog,i)->{
+     if(editor!=target||end>target.length()||!target.getText().subSequence(start,end).toString().equals(original))return;
+     if(choice==0){target.getText().replace(start,headEnd,"---KOTAK"+types[i]);target.setSelection(start+(" ---KOTAK"+types[i]+"---").length());}
+     else{int at=choice==3?start:end;String prefix="---KOTAK"+types[i]+"---\n";String block=prefix+"\n---KOTAKTAMAT---";target.getText().insert(at,choice==3?block+"\n":"\n"+block);target.setSelection(at+(choice==3?0:1)+prefix.length());}
+    }).show();
+   }).show();return true;
+  }
+  return false;
+ }
  void showTextBoxPicker(){
   if(editor==null)return;
+  if(manageCurrentBox())return;
   final int a=Math.max(0,Math.min(editor.getSelectionStart(),editor.getSelectionEnd()));
   final int b=Math.max(a,Math.max(editor.getSelectionStart(),editor.getSelectionEnd()));
   final String[] types={"DALIL","HIKMAH","CATATAN","FIRMAN","SABDA"};
