@@ -1106,7 +1106,7 @@ public class MainActivity extends Activity {
   }
   readerScroll=null;
   editor=null;titleEditor=null;saveIndicator=null;selected=key;prefs.edit().putLong("viewed_"+key,System.currentTimeMillis()).putString(key.startsWith("m_")?"reading_last_m":"reading_last_n",key).apply();cleanBase();
-  LinearLayout bar=new LinearLayout(this);bar.setGravity(Gravity.CENTER_VERTICAL);bar.setPadding(dp(6),dp(2),dp(6),dp(2));bar.setBackgroundColor(0xfffffefd);bar.setTag("reader_toolbar");root.addView(bar);
+  LinearLayout bar=new LinearLayout(this);bar.setGravity(Gravity.CENTER_VERTICAL);bar.setPadding(dp(6),dp(2),dp(6),dp(2));bar.setBackgroundColor(0xfffffefd);bar.setTag("reader_toolbar");
   TextView toolbarSpace=text("",12);bar.addView(toolbarSpace,new LinearLayout.LayoutParams(0,1,1));
   Button readerBack=action("‹",bar,()->returnFromReader());readerBack.setContentDescription(key.startsWith("m_")?"Kembali ke senarai kitab":"Kembali ke senarai nota");
   
@@ -1155,26 +1155,26 @@ public class MainActivity extends Activity {
   LinearLayout.LayoutParams readingFrame=new LinearLayout.LayoutParams(-1,-2);
   readingFrame.setMargins(dp(12),dp(8),dp(12),dp(12));scroll.addView(body,readingFrame);
   LinearLayout metaRow=new LinearLayout(this);metaRow.setOrientation(LinearLayout.HORIZONTAL);
-  metaRow.setOrientation(LinearLayout.VERTICAL);
   metaRow.setGravity(Gravity.START);metaRow.setPadding(dp(6),dp(1),dp(6),dp(1));
   TextView sectionLabel=text(key.startsWith("m_")?"▤  Maktabah":"✎  Nota",12);
   sectionLabel.setTextColor(0xff5b7077);sectionLabel.setSingleLine(true);
   sectionLabel.setIncludeFontPadding(false);
-  metaRow.addView(sectionLabel,new LinearLayout.LayoutParams(-1,-2));
+  metaRow.addView(sectionLabel,new LinearLayout.LayoutParams(0,-2,1));
   TextView categoryLine=text("⌑  "+readingCategory,12);
   categoryLine.setTextColor(0xff73838a);categoryLine.setSingleLine(true);
   categoryLine.setEllipsize(android.text.TextUtils.TruncateAt.END);
-  categoryLine.setGravity(Gravity.START|Gravity.CENTER_VERTICAL);
-  categoryLine.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);
+  categoryLine.setGravity(Gravity.END|Gravity.CENTER_VERTICAL);
+  categoryLine.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_END);
   categoryLine.setIncludeFontPadding(false);
-  metaRow.addView(categoryLine,new LinearLayout.LayoutParams(-1,-2));
+  metaRow.addView(categoryLine,new LinearLayout.LayoutParams(0,-2,1));
+  body.addView(bar,new LinearLayout.LayoutParams(-1,-2));
   body.addView(metaRow,new LinearLayout.LayoutParams(-1,-2));
   TextView title=text(heading,20);title.setMaxLines(3);
   title.setEllipsize(android.text.TextUtils.TruncateAt.END);
   title.setBackground(rounded(0xfffffefd,0xffb8c2ca,12));
   title.setTextColor(0xff4d6068);title.setTypeface(null,android.graphics.Typeface.BOLD);
   title.setPadding(dp(24),dp(8),dp(24),dp(8));
-  title.setGravity(Gravity.CENTER_VERTICAL|Gravity.START);title.setTextIsSelectable(true);
+  title.setGravity(Gravity.CENTER);title.setTextIsSelectable(true);
   title.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);title.setIncludeFontPadding(true);
   if(!heading.isEmpty())body.addView(title);
   String firstReadingLine=fullReadingText.split("\\R",2)[0].trim();
