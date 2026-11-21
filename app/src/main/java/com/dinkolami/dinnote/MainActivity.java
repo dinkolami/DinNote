@@ -1630,12 +1630,14 @@ public class MainActivity extends Activity {
     android.text.Layout layout=getLayout();
     int line=layout.getLineForOffset(offset);
     float x=getCompoundPaddingLeft()+layout.getPrimaryHorizontal(offset);
+    x=Math.max(getCompoundPaddingLeft()+dp(3),Math.min(getWidth()-getCompoundPaddingRight()-dp(3),x));
     float y=getExtendedPaddingTop()+layout.getLineTop(line);
     float bottom=getExtendedPaddingTop()+layout.getLineBottom(line);
+    y=Math.max(getExtendedPaddingTop()+dp(2),y);bottom=Math.min(getHeight()-getExtendedPaddingBottom()-dp(2),bottom);
     long phase=android.os.SystemClock.uptimeMillis()%1000;
     if(phase<500){
      android.graphics.Paint caret=new android.graphics.Paint(3);caret.setColor(0xff176b47);caret.setStrokeWidth(dp(2));
-     canvas.drawLine(x,y+dp(2),x,Math.max(y+dp(3),bottom-dp(2)),caret);
+     if(bottom>y+dp(4))canvas.drawLine(x,y+dp(2),x,bottom-dp(2),caret);
     }
     postInvalidateDelayed(phase<500?500-phase:1000-phase);
    }
