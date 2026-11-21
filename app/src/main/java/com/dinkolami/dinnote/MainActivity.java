@@ -43,7 +43,7 @@ public class MainActivity extends Activity {
   root.setAlpha(0.94f);
   root.animate().alpha(1f).setDuration(140L).start();
   LinearLayout header=new LinearLayout(this);header.setGravity(Gravity.CENTER_VERTICAL);
-  header.setPadding(dp(8),dp(3),dp(8),dp(3));header.setBackgroundResource(R.drawable.dinnote_header_bg);
+  header.setPadding(dp(8),dp(3),dp(8),dp(3));header.setBackground(aspectFillBackground(R.drawable.dinnote_header_bg));
   ImageView menu=headerIcon("⌂",0xff9daeb9,"Halaman utama DinNote");header.addView(menu);
   menu.setOnClickListener(v->home());
   ImageView settingsMenu=headerIcon("☰",0xff9daeb9,"Menu DinNote dan Tetapan");header.addView(settingsMenu);
@@ -63,6 +63,25 @@ public class MainActivity extends Activity {
   root.addView(header,new LinearLayout.LayoutParams(-1,dp(54)));
   View border=new View(this);border.setBackgroundColor(0xffd5bb72);
   root.addView(border,new LinearLayout.LayoutParams(-1,dp(1)));
+ }
+ // Preserve PNG proportions across folded and unfolded screens; crop excess instead of stretching.
+ android.graphics.drawable.Drawable aspectFillBackground(int resourceId){
+  final android.graphics.Bitmap bitmap=android.graphics.BitmapFactory.decodeResource(getResources(),resourceId);
+  if(bitmap==null)return new android.graphics.drawable.ColorDrawable(Color.WHITE);
+  return new android.graphics.drawable.Drawable(){
+   final android.graphics.Paint paint=new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG|android.graphics.Paint.FILTER_BITMAP_FLAG);
+   public void draw(android.graphics.Canvas canvas){
+    android.graphics.Rect bounds=getBounds();if(bounds.width()<=0||bounds.height()<=0)return;
+    float scale=Math.max((float)bounds.width()/bitmap.getWidth(),(float)bounds.height()/bitmap.getHeight());
+    int sourceW=Math.max(1,Math.min(bitmap.getWidth(),Math.round(bounds.width()/scale)));
+    int sourceH=Math.max(1,Math.min(bitmap.getHeight(),Math.round(bounds.height()/scale)));
+    int left=(bitmap.getWidth()-sourceW)/2,top=(bitmap.getHeight()-sourceH)/2;
+    canvas.drawBitmap(bitmap,new android.graphics.Rect(left,top,left+sourceW,top+sourceH),bounds,paint);
+   }
+   public void setAlpha(int alpha){paint.setAlpha(alpha);invalidateSelf();}
+   public void setColorFilter(android.graphics.ColorFilter filter){paint.setColorFilter(filter);invalidateSelf();}
+   public int getOpacity(){return android.graphics.PixelFormat.OPAQUE;}
+  };
  }
  android.graphics.Bitmap transparentHeaderLogo(){
   android.graphics.Bitmap original=android.graphics.BitmapFactory.decodeResource(getResources(),R.drawable.dinnote_header_logo);
@@ -291,7 +310,7 @@ public class MainActivity extends Activity {
   scroll.setOverScrollMode(View.OVER_SCROLL_NEVER);scroll.setSmoothScrollingEnabled(true);
   root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
   LinearLayout page=new LinearLayout(this);page.setOrientation(1);
-  page.setPadding(dp(10),dp(6),dp(10),dp(12));android.graphics.drawable.BitmapDrawable homePattern=new android.graphics.drawable.BitmapDrawable(getResources(),android.graphics.BitmapFactory.decodeResource(getResources(),com.dinkolami.dinnote.R.drawable.dinnote_pattern));homePattern.setTileModeX(android.graphics.Shader.TileMode.REPEAT);homePattern.setTileModeY(android.graphics.Shader.TileMode.REPEAT);page.setBackgroundResource(R.drawable.dinnote_content_bg);page.setTag("dinnote_home");scroll.addView(page);
+  page.setPadding(dp(10),dp(6),dp(10),dp(12));android.graphics.drawable.BitmapDrawable homePattern=new android.graphics.drawable.BitmapDrawable(getResources(),android.graphics.BitmapFactory.decodeResource(getResources(),com.dinkolami.dinnote.R.drawable.dinnote_pattern));homePattern.setTileModeX(android.graphics.Shader.TileMode.REPEAT);homePattern.setTileModeY(android.graphics.Shader.TileMode.REPEAT);page.setBackground(aspectFillBackground(R.drawable.dinnote_content_bg));page.setTag("dinnote_home");scroll.addView(page);
   TextView recent=dashboardText("Baru dilihat  ▾",15,true);
   recent.setBackground(rounded(0xfffffdf5,0xff2a9062,11));recent.setTextColor(0xff075033);recent.setIncludeFontPadding(false);
   LinearLayout quickTools=new LinearLayout(this);quickTools.setOrientation(LinearLayout.HORIZONTAL);quickTools.setGravity(Gravity.CENTER_VERTICAL);
@@ -464,9 +483,9 @@ public class MainActivity extends Activity {
   applyTouchFeedback(add);applyTouchFeedback(recent);
   android.widget.ImageView mosqueFooter=new android.widget.ImageView(this);
   mosqueFooter.setImageResource(com.dinkolami.dinnote.R.drawable.dinnote_footer_bg);
-  mosqueFooter.setScaleType(android.widget.ImageView.ScaleType.FIT_XY);
+  mosqueFooter.setScaleType(android.widget.ImageView.ScaleType.FIT_CENTER);mosqueFooter.setAdjustViewBounds(true);
   mosqueFooter.setContentDescription("Hiasan masjid hijau zamrud dan emas");
-  LinearLayout.LayoutParams footerParams=new LinearLayout.LayoutParams(-1,dp(78));
+  LinearLayout.LayoutParams footerParams=new LinearLayout.LayoutParams(-1,-2);
   footerParams.topMargin=dp(10);page.addView(mosqueFooter,footerParams);
  }
  void showHomeSearchResults(String query){
