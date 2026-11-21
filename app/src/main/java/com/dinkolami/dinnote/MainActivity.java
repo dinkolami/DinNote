@@ -292,7 +292,7 @@ public class MainActivity extends Activity {
   scroll.setOverScrollMode(View.OVER_SCROLL_NEVER);scroll.setSmoothScrollingEnabled(true);
   root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
   LinearLayout page=new LinearLayout(this);page.setOrientation(1);
-  page.setPadding(dp(10),dp(6),dp(10),dp(12));page.setBackgroundColor(0xfffffefd);page.setTag("dinnote_home");
+  page.setPadding(dp(10),dp(6),dp(10),dp(22));page.setBackgroundColor(0xfffffefd);page.setTag("dinnote_home");
   // Frontpage content below search: fit minor overflow and never leave a
   // scrollable blank tail caused by the wrapper retaining its old height.
   FrameLayout homeFitFrame=new FrameLayout(this);
@@ -313,7 +313,7 @@ public class MainActivity extends Activity {
    float ratio=(float)available/natural;
    // Fit only when the dashboard genuinely fits; do not shrink or clip a tall
    // dashboard to a short split-screen window.
-   float fit=ratio>=0.93f&&ratio<=1.07f?ratio:1f;
+   float fit=ratio>=0.93f&&ratio<1f?ratio:1f;
    int desired=Math.round(natural*fit);
    boolean fits=desired<=available;
    homeFits[0]=fits;
