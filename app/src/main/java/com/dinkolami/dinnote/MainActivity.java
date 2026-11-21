@@ -1821,6 +1821,7 @@ public class MainActivity extends Activity {
   y=Math.max(0,Math.min(y,Math.max(0,layout.getHeight()-viewport)));
   if(y!=active.getScrollY())active.scrollTo(active.getScrollX(),y);
  }
+ private static final java.util.concurrent.ExecutorService autosaveFlush=java.util.concurrent.Executors.newSingleThreadExecutor();
  void save(){
   if(editor==null)return;
   String value=editor.getText().toString();
@@ -1840,7 +1841,23 @@ public class MainActivity extends Activity {
     .putString("last_edited_key",selected).apply();
   }
   persistEditorPosition();
-  if(saveIndicator!=null)saveIndicator.setText("✓ Disimpan");
+  if(saveIndicator!=null){
+   final TextView indicator=saveIndicator;
+   indicator.setText("Menyimpan…");indicator.setTextColor(0xff68756c);
+   final android.content.SharedPreferences store=prefs;
+   final String savedKey=selected;
+   final String savedValue=value;
+   final String savedTitle=title;
+   final String savedCategory=category;
+   autosaveFlush.execute(()->{
+    boolean ok=store.edit().commit();
+    runOnUiThread(()->{
+     if(saveIndicator!=indicator||editor==null||!savedKey.equals(selected)||!savedValue.equals(editor.getText().toString())||!savedTitle.equals(titleEditor==null?"":titleEditor.getText().toString())||!savedCategory.equals(categoryPicker==null||categoryPicker.getSelectedItem()==null?"Tanpa kategori":categoryPicker.getSelectedItem().toString()))return;
+     indicator.setText(ok?"✓ Disimpan":"⚠ Simpan gagal");
+     indicator.setTextColor(ok?0xff246b43:0xffb64545);
+    });
+   });
+  }
  }
 
  void seedSampleArticles(){
