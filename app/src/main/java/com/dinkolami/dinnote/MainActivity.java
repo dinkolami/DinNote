@@ -1625,6 +1625,27 @@ public class MainActivity extends Activity {
   });final Runnable[] formatRefresh={null};editor=new EditText(this){
    @Override protected void onDraw(android.graphics.Canvas canvas){
     super.onDraw(canvas);
+    if(!hasFocus()||!isCursorVisible()||getSelectionStart()<0||getSelectionStart()!=getSelectionEnd()||getLayout()==null)return;
+    int pos=getSelectionStart();
+    android.text.Editable content=getText();
+    int probe=Math.max(0,Math.min(pos,content.length()-1));
+    BoxBodySpan[] boxes=content.getSpans(probe,Math.min(content.length(),probe+1),BoxBodySpan.class);
+    if(boxes.length==0)return;
+    android.text.Layout layout=getLayout();
+    int line=layout.getLineForOffset(pos);
+    float x=getTotalPaddingLeft()+layout.getPrimaryHorizontal(pos);
+    float top=getExtendedPaddingTop()+layout.getLineTop(line);
+    float bottom=getExtendedPaddingTop()+layout.getLineBottom(line);
+    long phase=android.os.SystemClock.uptimeMillis()%1000;
+    if(phase<500){
+     android.graphics.Paint caret=new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
+     caret.setColor(0xff176b47);caret.setStrokeWidth(dp(2));
+     canvas.drawLine(x,top+dp(2),x,bottom-dp(2),caret);
+    }
+    postInvalidateDelayed(phase<500?500-phase:1000-phase);
+   }
+   @Override protected void onDraw(android.graphics.Canvas canvas){
+    super.onDraw(canvas);
     if(!hasFocus()||!isCursorVisible()||getSelectionStart()<0||getSelectionStart()!=getSelectionEnd())return;
     android.text.Layout layout=getLayout();if(layout==null)return;
     int offset=Math.min(getSelectionStart(),length());
