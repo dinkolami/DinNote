@@ -286,11 +286,10 @@ public class MainActivity extends Activity {
  }
  void openSection(boolean books){sectionOpen=true;maktabah=books;categoryFilter="Semua";notesPage();}
  String smartPasteText(String value){
-  // Preserve Arabic diacritics, punctuation and meaningful paragraph breaks.
-  // Only normalize common clipboard line endings, non-breaking spaces and excess blank lines.
-  return value.replace("\\r\\n","\\n").replace('\\r','\\n')
-   .replace('\\u00a0',' ').replaceAll("[ \\t]+(?=\\n)","")
-   .replaceAll("\\n{4,}","\\n\\n\\n");
+  // Conservative cleanup: preserve Arabic harakat, headings, lists and paragraph breaks.
+  String clean=value.replace("\r\n","\n").replace('\r','\n').replace('\u00a0',' ');
+  clean=clean.replaceAll("[ \t]+(?=\n)","").replaceAll("\n{4,}","\n\n\n");
+  return clean;
  }
  void home(){
   items=null;sectionOpen=false;editor=null;titleEditor=null;categoryPicker=null;selected=null;maktabah=false;
@@ -1699,7 +1698,7 @@ public class MainActivity extends Activity {
       if(clip!=null&&clip.getItemCount()>0){
        CharSequence source=clip.getItemAt(0).coerceToText(MainActivity.this);
        if(source!=null){
-        String clean=smartPasteText(source.toString());
+        String clean=id==android.R.id.pasteAsPlainText?source.toString():smartPasteText(source.toString());
         int start=Math.max(0,Math.min(getSelectionStart(),getSelectionEnd()));
         int end=Math.max(start,Math.max(getSelectionStart(),getSelectionEnd()));
         start=Math.min(start,length());end=Math.min(end,length());
