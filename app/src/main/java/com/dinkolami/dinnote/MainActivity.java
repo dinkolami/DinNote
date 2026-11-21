@@ -296,6 +296,19 @@ public class MainActivity extends Activity {
   // Use the actual measured dashboard height. Avoid scaleY, synthetic spacer
   // and fixed-height wrapper: all three created a scrollable empty tail.
   scroll.addView(page,new ScrollView.LayoutParams(-1,-2));
+// Rebuild Home when the measured window crosses the Fold6 column breakpoint.
+   final boolean builtWide=homeWindowWidthDp()>=440;
+   root.addOnLayoutChangeListener((view,left,top,right,bottom,oldLeft,oldTop,oldRight,oldBottom)->{
+    if(view!=root||root.findViewWithTag("dinnote_home")==null||isFinishing()||isDestroyed())return;
+    int measuredDp=Math.round((right-left)/getResources().getDisplayMetrics().density);
+    if(measuredDp<=0||(measuredDp>=440)==builtWide)return;
+    final LinearLayout currentRoot=root;
+    currentRoot.post(()->{
+     if(root!=currentRoot||root.findViewWithTag("dinnote_home")==null||isFinishing()||isDestroyed())return;
+     int actualDp=Math.round(root.getWidth()/getResources().getDisplayMetrics().density);
+     if(actualDp>0&&(actualDp>=440)!=builtWide)home();
+    });
+   });
   TextView recent=dashboardText("Baru dilihat  ▾",15,true);
   recent.setBackground(rounded(0xfffdfefe,0xffcdd6df,9));recent.setTextColor(0xff566a70);recent.setIncludeFontPadding(false);
   LinearLayout quickTools=new LinearLayout(this);quickTools.setOrientation(LinearLayout.HORIZONTAL);quickTools.setGravity(Gravity.CENTER_VERTICAL);
