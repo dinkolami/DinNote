@@ -570,7 +570,7 @@ public class MainActivity extends Activity {
  void dashboardSection(LinearLayout target,String heading,ArrayList<String> keys,boolean pin){
   // Keep folded rows compact; unfolded columns retain comfortable touch targets.
   boolean folded=getResources().getConfiguration().screenWidthDp<500;
-  TextView title=dashboardText((pin?"⌖  ":"◷  ")+heading+"    "+Math.min(3,keys.size())+" Topik",15,true);
+  TextView title=dashboardText((pin?"⌖  ":"◷  ")+heading+"    "+Math.min(pin?5:3,keys.size())+" Topik",15,true);
   title.setTextColor(0xff365c48);
   title.setBackground(dashboardTileSurface(!pin));title.setElevation(dp(1));title.setPadding(dp(10),dp(folded?6:8),dp(10),dp(folded?6:8));title.setIncludeFontPadding(false);title.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);title.setSingleLine(true);title.setEllipsize(android.text.TextUtils.TruncateAt.END);title.setContentDescription(heading);title.setTooltipText(heading);title.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);LinearLayout.LayoutParams titleParams=new LinearLayout.LayoutParams(-1,-2);titleParams.topMargin=dp(5);titleParams.bottomMargin=dp(5);target.addView(title,titleParams);
   if(keys.isEmpty()){
@@ -584,7 +584,7 @@ public class MainActivity extends Activity {
    empty.setContentDescription(pin?"Tiada nota disemat":"Tiada nota yang dikemaskini");
    target.addView(empty);return;
   }
-  for(int i=0;i<Math.min(3,keys.size());i++){
+  for(int i=0;i<Math.min(pin?5:3,keys.size());i++){
    String key=keys.get(i),label=prefs.getString("title_"+key,"").trim();
    if(label.isEmpty()){
     String body=prefs.getString(key,"").trim();
