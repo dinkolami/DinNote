@@ -292,57 +292,10 @@ public class MainActivity extends Activity {
   scroll.setOverScrollMode(View.OVER_SCROLL_NEVER);scroll.setSmoothScrollingEnabled(true);
   root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
   LinearLayout page=new LinearLayout(this);page.setOrientation(1);
-  page.setPadding(dp(10),dp(6),dp(10),dp(22));page.setBackgroundColor(0xfffffefd);page.setTag("dinnote_home");
-  // Frontpage content below search: fit minor overflow and never leave a
-  // scrollable blank tail caused by the wrapper retaining its old height.
-  FrameLayout homeFitFrame=new FrameLayout(this);
-  homeFitFrame.setClipChildren(false);homeFitFrame.setClipToPadding(false);
-  scroll.addView(homeFitFrame,new ScrollView.LayoutParams(-1,-2));
-  homeFitFrame.addView(page,new FrameLayout.LayoutParams(-1,-2));
-  final boolean[] homeFits={false};
-  final View[] homeFlexibleSpace={null};
-  // Never intercept dashboard scrolling: in split-screen the visible height is smaller.
-  // Android must be allowed to scroll all real content, including the bottom rows.
-  scroll.getViewTreeObserver().addOnGlobalLayoutListener(()->{
-   int available=scroll.getHeight()-scroll.getPaddingTop()-scroll.getPaddingBottom();
-   int width=homeFitFrame.getWidth();
-   if(available<=0||width<=0)return;
-   page.measure(View.MeasureSpec.makeMeasureSpec(width,View.MeasureSpec.EXACTLY),
-     View.MeasureSpec.makeMeasureSpec(0,View.MeasureSpec.UNSPECIFIED));
-   int natural=page.getMeasuredHeight();
-   // Subtract the previously allocated flexible gap to avoid layout oscillation.
-   if(homeFlexibleSpace[0]!=null)natural-=homeFlexibleSpace[0].getLayoutParams().height;
-   if(natural<=0)return;
-   float ratio=(float)available/natural;
-   // Fit only when the dashboard genuinely fits; do not shrink or clip a tall
-   // dashboard to a short split-screen window.
-   // On folded phones, compress dashboard row heights moderately to keep
-   // the bottom action visible; on narrow multi-window panes retain scrolling
-   // rather than squeezing the text and touch targets excessively.
-   int homeWindowDp=Math.round(scroll.getWidth()/getResources().getDisplayMetrics().density);
-   float minimumFit=homeWindowDp<500?0.82f:0.93f;
-   // Fill surplus vertical space too: folded and unfolded dashboards
-   // should end near the bottom rather than leaving a blank strip.
-   // Bound the stretch to preserve readable labels and touch targets.
-   float fit=ratio<1f&&ratio>=minimumFit?ratio:1f;
-   int extra=fit==1f?Math.max(0,available-natural):0;
-   extra=Math.min(extra,dp(260));
-   if(homeFlexibleSpace[0]!=null&&homeFlexibleSpace[0].getLayoutParams().height!=extra){
-    android.view.ViewGroup.LayoutParams gapParams=homeFlexibleSpace[0].getLayoutParams();
-    gapParams.height=extra;homeFlexibleSpace[0].setLayoutParams(gapParams);
-   }
-   int desired=Math.round((natural+extra)*fit);
-   boolean fits=desired<=available;
-   homeFits[0]=fits;
-   // Clamp the wrapper to the actual visual content height; the ScrollView
-   // must never be able to scroll through leftover wrapper space.
-   if(Math.abs(page.getScaleY()-fit)>=0.001f||homeFitFrame.getLayoutParams().height!=desired){
-    page.setPivotX(0f);page.setPivotY(0f);page.setScaleY(fit);
-    android.view.ViewGroup.LayoutParams params=homeFitFrame.getLayoutParams();
-    params.height=desired;homeFitFrame.setLayoutParams(params);
-   }
-   if(fits&&scroll.getScrollY()!=0)scroll.scrollTo(0,0);
-  });
+  page.setPadding(dp(10),dp(6),dp(10),dp(6));page.setBackgroundColor(0xfffffefd);page.setTag("dinnote_home");
+  // Use the actual measured dashboard height. Avoid scaleY, synthetic spacer
+  // and fixed-height wrapper: all three created a scrollable empty tail.
+  scroll.addView(page,new ScrollView.LayoutParams(-1,-2));
   TextView recent=dashboardText("Baru dilihat  ▾",15,true);
   recent.setBackground(rounded(0xfffdfefe,0xffcdd6df,9));recent.setTextColor(0xff566a70);recent.setIncludeFontPadding(false);
   LinearLayout quickTools=new LinearLayout(this);quickTools.setOrientation(LinearLayout.HORIZONTAL);quickTools.setGravity(Gravity.CENTER_VERTICAL);
@@ -419,9 +372,6 @@ public class MainActivity extends Activity {
    dashboardSection(shortcuts,"Nota disemat",dashboardKeys("pinned_",false),true);
    dashboardSection(shortcuts,"Terakhir dikemaskini",dashboardKeys("updated_",false),false);
   }
-  View flexibleSpace=new View(this);
-  shortcuts.addView(flexibleSpace,new LinearLayout.LayoutParams(-1,0));
-  homeFlexibleSpace[0]=flexibleSpace;
   String resume=prefs.getString("last_edited_key","");
   if(!resume.isEmpty()&&prefs.contains(resume)){
    TextView resumeButton=dashboardText("✎  Sambung menulis  ›",15,true);
