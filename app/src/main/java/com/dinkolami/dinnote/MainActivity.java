@@ -1396,7 +1396,7 @@ public class MainActivity extends Activity {
     boolean isNumber=numbered.matches(),isMarked=!isNumber&&marked.matches();
     if(line.trim().equals("---")||line.trim().equals("---FLOWER---")||line.trim().equals("---GEOMETRIC---")||line.trim().equals("---CLASSIC---")){
      LinearLayout ornament=new LinearLayout(this);ornament.setGravity(Gravity.CENTER_VERTICAL);
-     ornament.setPadding(dp(16),dp(5),dp(16),dp(5));
+     ornament.setOrientation(LinearLayout.HORIZONTAL);ornament.setPadding(dp(12),dp(2),dp(12),dp(2));
      boolean floral=line.trim().equals("---FLOWER---");
      boolean geometric=line.trim().equals("---GEOMETRIC---");
      boolean classic=line.trim().equals("---CLASSIC---");
@@ -1404,7 +1404,7 @@ public class MainActivity extends Activity {
      View leftRule=new View(this);leftRule.setBackgroundColor(ornamentColor);
      ornament.addView(leftRule,new LinearLayout.LayoutParams(0,dp(1),1));
      TextView diamond=text(floral?"✿":geometric?"❖":classic?"❧":"◇",floral?24:19);diamond.setTextColor((floral||geometric||classic)?0xff176b47:0xffae913d);
-     diamond.setPadding(dp(10),0,dp(10),0);ornament.addView(diamond);
+     diamond.setSingleLine(true);diamond.setMaxLines(1);diamond.setGravity(Gravity.CENTER);diamond.setIncludeFontPadding(false);diamond.setPadding(dp(6),0,dp(6),0);ornament.addView(diamond,new LinearLayout.LayoutParams(dp(42),-2));
      View rightRule=new View(this);rightRule.setBackgroundColor(ornamentColor);
      ornament.addView(rightRule,new LinearLayout.LayoutParams(0,dp(1),1));
      readingRows.addView(ornament);
@@ -1427,7 +1427,7 @@ public class MainActivity extends Activity {
     }else{
      TextView paragraph=text("",readingSizes[fontLevel]);paragraph.setText(formattedReadingText(line.isEmpty()?" ":line));applySharedTextMetrics(paragraph);
      paragraph.setTextColor(0xff303c43);paragraph.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
-     paragraph.setTextIsSelectable(true);paragraph.setPadding(dp(4),dp(4),dp(4),dp(4));
+     paragraph.setTextIsSelectable(true);paragraph.setPadding(dp(4),dp(1),dp(4),dp(1));
      paragraph.setLineSpacing(prefs.getBoolean("reader_wide_spacing",false)?dp(5):dp(1),prefs.getBoolean("reader_wide_spacing",false)?1.15f:1.0f);readingRows.addView(paragraph);
     }
    }
@@ -1842,7 +1842,7 @@ public class MainActivity extends Activity {
  }
  void addBoxParagraph(LinearLayout body,String value,int fontSize){
   if(value.trim().isEmpty())return;
-  TextView t=text("",fontSize);t.setText(formattedReadingText(value.trim()));applySharedTextMetrics(t);t.setTextColor(0xff303c43);t.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);t.setTextIsSelectable(true);t.setPadding(dp(8),dp(3),dp(8),dp(3));body.addView(t);
+  TextView t=text("",fontSize);t.setText(formattedReadingText(value.trim()));applySharedTextMetrics(t);t.setTextColor(0xff303c43);t.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);t.setTextIsSelectable(true);t.setPadding(dp(8),dp(1),dp(8),dp(1));body.addView(t);
  }
  void showTextBoxPicker(){
   if(editor==null)return;
