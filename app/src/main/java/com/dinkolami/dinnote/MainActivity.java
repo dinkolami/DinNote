@@ -318,7 +318,10 @@ public class MainActivity extends Activity {
    // rather than squeezing the text and touch targets excessively.
    int homeWindowDp=Math.round(scroll.getWidth()/getResources().getDisplayMetrics().density);
    float minimumFit=homeWindowDp<500?0.82f:0.93f;
-   float fit=ratio>=minimumFit&&ratio<1f?ratio:1f;
+   // Fill surplus vertical space too: folded and unfolded dashboards
+   // should end near the bottom rather than leaving a blank strip.
+   // Bound the stretch to preserve readable labels and touch targets.
+   float fit=ratio>=minimumFit&&ratio<=1.25f?ratio:(ratio>1.25f?1.25f:1f);
    int desired=Math.round(natural*fit);
    boolean fits=desired<=available;
    homeFits[0]=fits;
