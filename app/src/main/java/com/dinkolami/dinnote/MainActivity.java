@@ -362,11 +362,7 @@ public class MainActivity extends Activity {
    final boolean isBook=j==1;
    LinearLayout tile=new LinearLayout(this);tile.setGravity(Gravity.CENTER_VERTICAL);
    tile.setPadding(dp(8),0,dp(8),0);
-   android.graphics.drawable.GradientDrawable surface=new android.graphics.drawable.GradientDrawable(
-     android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
-     isBook?new int[]{0xffffffff,0xffe9edeb}:new int[]{0xfffafffb,0xffddece2});
-   surface.setCornerRadius(dp(12));surface.setStroke(Math.max(1,Math.round(getResources().getDisplayMetrics().density*0.6f)),isBook?0xffd2d9d5:0xffc3d3c8);
-   tile.setBackground(surface);tile.setElevation(dp(1));
+   tile.setBackground(dashboardTileSurface(isBook));tile.setElevation(dp(1));
    TextView symbol=dashboardText(isBook?"▤":"✎",20,false);
    symbol.setTextColor(0xff528069);symbol.setPadding(0,0,dp(5),0);tile.addView(symbol);
    TextView label=dashboardText(isBook?"Maktabah":"Nota",12,true);
@@ -516,17 +512,20 @@ public class MainActivity extends Activity {
   });
   return out;
  }
+ android.graphics.drawable.GradientDrawable dashboardTileSurface(boolean pearl){
+  android.graphics.drawable.GradientDrawable surface=new android.graphics.drawable.GradientDrawable(
+   android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
+   pearl?new int[]{0xffffffff,0xffe9edeb}:new int[]{0xfffafffb,0xffddece2});
+  surface.setCornerRadius(dp(12));
+  surface.setStroke(Math.max(1,Math.round(getResources().getDisplayMetrics().density*0.6f)),pearl?0xffd2d9d5:0xffc3d3c8);
+  return surface;
+ }
  void dashboardSection(LinearLayout target,String heading,ArrayList<String> keys,boolean pin){
   // Keep folded rows compact; unfolded columns retain comfortable touch targets.
   boolean folded=getResources().getConfiguration().screenWidthDp<500;
   TextView title=dashboardText((pin?"⌖  ":"◷  ")+heading+"    "+Math.min(3,keys.size())+" Topik",15,true);
   title.setTextColor(0xff365c48);
-  android.graphics.drawable.GradientDrawable sectionSurface=new android.graphics.drawable.GradientDrawable(
-    android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
-    pin?new int[]{0xfffafffb,0xffddece2}:new int[]{0xffffffff,0xffe9edeb});
-  sectionSurface.setCornerRadius(dp(12));
-  sectionSurface.setStroke(Math.max(1,Math.round(getResources().getDisplayMetrics().density*0.6f)),pin?0xffc3d3c8:0xffd2d9d5);
-  title.setBackground(sectionSurface);title.setElevation(dp(1));title.setPadding(dp(10),dp(folded?6:8),dp(10),dp(folded?6:8));title.setIncludeFontPadding(false);title.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);title.setSingleLine(true);title.setEllipsize(android.text.TextUtils.TruncateAt.END);title.setContentDescription(heading);title.setTooltipText(heading);title.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);LinearLayout.LayoutParams titleParams=new LinearLayout.LayoutParams(-1,-2);titleParams.topMargin=dp(5);titleParams.bottomMargin=dp(5);target.addView(title,titleParams);
+  title.setBackground(dashboardTileSurface(!pin));title.setElevation(dp(1));title.setPadding(dp(10),dp(folded?6:8),dp(10),dp(folded?6:8));title.setIncludeFontPadding(false);title.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);title.setSingleLine(true);title.setEllipsize(android.text.TextUtils.TruncateAt.END);title.setContentDescription(heading);title.setTooltipText(heading);title.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);LinearLayout.LayoutParams titleParams=new LinearLayout.LayoutParams(-1,-2);titleParams.topMargin=dp(5);titleParams.bottomMargin=dp(5);target.addView(title,titleParams);
   if(keys.isEmpty()){
    TextView empty=dashboardText(pin?"Belum ada nota disemat":"Belum ada nota dikemaskini",13,false);
    empty.setTextColor(0xff68756c);empty.setPadding(dp(10),dp(6),dp(10),dp(8));
@@ -551,7 +550,7 @@ public class MainActivity extends Activity {
    entry.setSingleLine(true);entry.setEllipsize(android.text.TextUtils.TruncateAt.END);
    entry.setIncludeFontPadding(false);entry.setPadding(0,0,0,0);entry.setMinWidth(0);
    LinearLayout line=new LinearLayout(this);line.setOrientation(LinearLayout.HORIZONTAL);line.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);line.setGravity(Gravity.CENTER_VERTICAL);
-   line.setPadding(dp(7),dp(folded?3:7),dp(7),dp(folded?3:7));line.setBackground(subtleNoteBorder(9));line.setMinimumHeight(dp(folded?38:48));
+   line.setPadding(dp(7),dp(folded?3:7),dp(7),dp(folded?3:7));line.setBackground(dashboardTileSurface(!pin));line.setElevation(dp(1));line.setMinimumHeight(dp(folded?38:48));
    line.addView(entry,new LinearLayout.LayoutParams(0,-2,1));
    Object rawStamp=prefs.getAll().get("updated_"+key);
    long stamp=rawStamp instanceof Number?((Number)rawStamp).longValue():0L;
