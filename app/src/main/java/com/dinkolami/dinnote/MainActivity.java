@@ -1745,6 +1745,18 @@ public class MainActivity extends Activity {
    refreshEditorBoxes(e);save();final EditText active=editor;if(active!=null)active.post(()->revealEditorCursor(active));}};editor.addTextChangedListener(bodyWatcher);refreshEditorBoxes(editor.getText());editor.addOnLayoutChangeListener((v,l,t,rr,bb,ol,ot,orr,ob)->{if(rr-l!=orr-ol&&v==editor)refreshEditorBoxes(editor.getText());});categoryPicker.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener(){public void onNothingSelected(android.widget.AdapterView<?> p){}public void onItemSelected(android.widget.AdapterView<?> p,View v,int position,long id){save();}});}
 
  
+ void drawSacredBoxIcon(android.graphics.Canvas canvas,boolean book,int ink){
+      android.graphics.Paint p=new android.graphics.Paint(3);p.setColor(ink);p.setStyle(android.graphics.Paint.Style.STROKE);p.setStrokeWidth(1.7f);p.setStrokeCap(android.graphics.Paint.Cap.ROUND);p.setStrokeJoin(android.graphics.Paint.Join.ROUND);
+      android.graphics.Path trace=new android.graphics.Path();
+      if(book){
+       trace.moveTo(16,8);trace.quadTo(9,3,2,6);trace.lineTo(2,25);trace.quadTo(9,22,16,27);trace.quadTo(23,22,30,25);trace.lineTo(30,6);trace.quadTo(23,3,16,8);trace.lineTo(16,27);
+       for(int y=10;y<=18;y+=4){trace.moveTo(5,y);trace.quadTo(10,y-1,13,y+2);trace.moveTo(19,y+2);trace.quadTo(23,y-1,27,y);}
+      }else{
+       trace.moveTo(7,4);trace.lineTo(25,4);trace.quadTo(29,4,29,8);trace.lineTo(29,21);trace.quadTo(29,25,25,25);trace.lineTo(13,25);trace.lineTo(13,29);trace.quadTo(9,28,7,25);trace.quadTo(3,25,3,21);trace.lineTo(3,8);trace.quadTo(3,4,7,4);trace.close();
+       trace.moveTo(8,11);trace.lineTo(24,11);trace.moveTo(8,15);trace.lineTo(24,15);trace.moveTo(8,19);trace.lineTo(19,19);
+      }
+      canvas.drawPath(trace,p);
+ }
  class BoxMarkerSpan extends android.text.style.ReplacementSpan {
   final String title;final int ink,bg;
   BoxMarkerSpan(String t,int i,int b){title=t;ink=i;bg=b;}
@@ -1757,9 +1769,9 @@ public class MainActivity extends Activity {
    if(title.isEmpty())return;
    android.graphics.Paint q=new android.graphics.Paint(p);q.setAntiAlias(true);q.setColor(ink);q.setAlpha(22);c.drawRoundRect(x+dp(3),top+dp(2),x+getSize(p,t,a,b,null),bottom-dp(1),dp(12),dp(12),q);q.setAlpha(45);c.drawCircle(x+dp(13),(top+bottom)/2f,dp(10),q);
    q.setAlpha(255);q.setColor(ink);q.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);q.setTextSize(dp(13));
-   String mark=title.startsWith("Firman")?"":title.startsWith("Sabda")?"❞":title.startsWith("Kalam")?"✒":title.startsWith("Dalil")?"⚖":"◎";
+   String mark=title.startsWith("Firman")?"":title.startsWith("Sabda")?"":title.startsWith("Kalam")?"✒":title.startsWith("Dalil")?"⚖":"◎";
    q.setTextAlign(android.graphics.Paint.Align.CENTER);c.drawText(mark,x+dp(13),(top+bottom)/2f-(q.ascent()+q.descent())/2,q);
-   if(title.startsWith("Firman")){float cx=x+dp(13),cy=(top+bottom)/2f;android.graphics.Path book=new android.graphics.Path();book.moveTo(cx,cy-dp(5));book.quadTo(cx-dp(4),cy-dp(8),cx-dp(8),cy-dp(6));book.lineTo(cx-dp(8),cy+dp(5));book.quadTo(cx-dp(4),cy+dp(3),cx,cy+dp(7));book.quadTo(cx+dp(4),cy+dp(3),cx+dp(8),cy+dp(5));book.lineTo(cx+dp(8),cy-dp(6));book.quadTo(cx+dp(4),cy-dp(8),cx,cy-dp(5));book.lineTo(cx,cy+dp(7));q.setStyle(android.graphics.Paint.Style.STROKE);q.setStrokeWidth(dp(1));c.drawPath(book,q);q.setStyle(android.graphics.Paint.Style.FILL);}
+   if(title.startsWith("Firman")||title.startsWith("Sabda")){boolean book=title.startsWith("Firman");float size=dp(book?24:19);c.save();c.translate(x+dp(13)-size/2f,(top+bottom-size)/2f);c.scale(size/32f,size/32f);drawSacredBoxIcon(c,book,ink);c.restore();}
    q.setTextAlign(android.graphics.Paint.Align.LEFT);c.drawText(title,x+dp(28),(top+bottom)/2f-(q.ascent()+q.descent())/2,q);
   }
  }
@@ -1989,16 +2001,7 @@ public class MainActivity extends Activity {
     View symbol=new View(this){
      @Override protected void onDraw(android.graphics.Canvas canvas){
       super.onDraw(canvas);canvas.save();canvas.scale(getWidth()/32f,getHeight()/32f);
-      android.graphics.Paint p=new android.graphics.Paint(3);p.setColor(ink);p.setStyle(android.graphics.Paint.Style.STROKE);p.setStrokeWidth(1.7f);p.setStrokeCap(android.graphics.Paint.Cap.ROUND);p.setStrokeJoin(android.graphics.Paint.Join.ROUND);
-      android.graphics.Path trace=new android.graphics.Path();
-      if(book){
-       trace.moveTo(16,8);trace.quadTo(9,3,2,6);trace.lineTo(2,25);trace.quadTo(9,22,16,27);trace.quadTo(23,22,30,25);trace.lineTo(30,6);trace.quadTo(23,3,16,8);trace.lineTo(16,27);
-       for(int y=10;y<=18;y+=4){trace.moveTo(5,y);trace.quadTo(10,y-1,13,y+2);trace.moveTo(19,y+2);trace.quadTo(23,y-1,27,y);}
-      }else{
-       trace.moveTo(7,4);trace.lineTo(25,4);trace.quadTo(29,4,29,8);trace.lineTo(29,21);trace.quadTo(29,25,25,25);trace.lineTo(13,25);trace.lineTo(13,29);trace.quadTo(9,28,7,25);trace.quadTo(3,25,3,21);trace.lineTo(3,8);trace.quadTo(3,4,7,4);trace.close();
-       trace.moveTo(8,11);trace.lineTo(24,11);trace.moveTo(8,15);trace.lineTo(24,15);trace.moveTo(8,19);trace.lineTo(19,19);
-      }
-      canvas.drawPath(trace,p);canvas.restore();
+      drawSacredBoxIcon(canvas,book,ink);canvas.restore();
      }
     };
     heading.setBackground(rounded(bg,border,16));heading.setPadding(dp(6),dp(1),dp(8),dp(1));label.setBackground(null);label.setPadding(0,0,0,0);LinearLayout.LayoutParams iconParams=new LinearLayout.LayoutParams(dp(book?24:19),dp(book?24:19));iconParams.setMarginEnd(dp(4));heading.addView(symbol,iconParams);heading.addView(label);panel.addView(heading,new LinearLayout.LayoutParams(-2,-2));
