@@ -288,11 +288,11 @@ public class MainActivity extends Activity {
  void home(){
   items=null;sectionOpen=false;editor=null;titleEditor=null;categoryPicker=null;selected=null;maktabah=false;
   base("DinNote");
-  ScrollView scroll=new ScrollView(this);scroll.setFillViewport(false);scroll.setVerticalScrollBarEnabled(false);
+  ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);scroll.setVerticalScrollBarEnabled(false);
   scroll.setOverScrollMode(View.OVER_SCROLL_NEVER);scroll.setSmoothScrollingEnabled(true);
   root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
   LinearLayout page=new LinearLayout(this);page.setOrientation(1);
-  page.setPadding(dp(10),dp(6),dp(10),dp(6));page.setBackgroundColor(0xfffffefd);page.setTag("dinnote_home");
+  page.setPadding(dp(10),dp(6),dp(10),dp(3));page.setBackgroundColor(0xfffffefd);page.setTag("dinnote_home");
   // Use the actual measured dashboard height. Avoid scaleY, synthetic spacer
   // and fixed-height wrapper: all three created a scrollable empty tail.
   scroll.addView(page,new ScrollView.LayoutParams(-1,-2));
@@ -354,7 +354,7 @@ public class MainActivity extends Activity {
   // Compact GitHub-style shortcuts, without changing the approved header.
   LinearLayout shortcuts=new LinearLayout(this);shortcuts.setOrientation(1);
   shortcuts.setPadding(dp(2),dp(2),dp(2),dp(1));page.addView(shortcuts);
-  if(getResources().getConfiguration().screenWidthDp>=500){
+  if(homeWindowWidthDp()>=500){
    LinearLayout sectionColumns=new LinearLayout(this);
    sectionColumns.setOrientation(LinearLayout.HORIZONTAL);
    LinearLayout pinnedColumn=new LinearLayout(this);pinnedColumn.setOrientation(LinearLayout.VERTICAL);
@@ -394,7 +394,7 @@ public class MainActivity extends Activity {
    hint.setGravity(Gravity.CENTER);hint.setTextColor(0xff656d76);hint.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);hint.setTextSize(13);hint.setPadding(dp(12),dp(6),dp(12),dp(12));recentNotes.addView(hint);
   }else {
    // Two balanced columns of five on an unfolded Fold6; one column on narrow screens.
-   boolean wide=getResources().getConfiguration().screenWidthDp>=500;
+   boolean wide=homeWindowWidthDp()>=500;
    LinearLayout columns=null,left=null,right=null;
    if(wide){
     columns=new LinearLayout(this);columns.setOrientation(LinearLayout.HORIZONTAL);
@@ -463,13 +463,13 @@ public class MainActivity extends Activity {
   // independent of dashboard scrolling and window size.
   LinearLayout footer=new LinearLayout(this);
   footer.setOrientation(LinearLayout.VERTICAL);
-  footer.setPadding(dp(10),dp(5),dp(10),dp(7));
+  footer.setPadding(dp(10),dp(3),dp(10),dp(4));
   footer.setBackgroundColor(0xfffdfefe);
   footer.setElevation(dp(3));
   root.addView(footer,new LinearLayout.LayoutParams(-1,-2));
   LinearLayout.LayoutParams ap=new LinearLayout.LayoutParams(-1,dp(42));
   LinearLayout actions=new LinearLayout(this);actions.setOrientation(LinearLayout.HORIZONTAL);
-  footer.addView(actions,new LinearLayout.LayoutParams(-1,dp(42)));
+  footer.addView(actions,new LinearLayout.LayoutParams(-1,dp(38)));
   LinearLayout.LayoutParams noteActionParams=new LinearLayout.LayoutParams(0,-1,1);noteActionParams.rightMargin=dp(4);
   actions.addView(add,noteActionParams);
   TextView addBook=dashboardText("＋  Kitab baharu",15,true);
@@ -538,9 +538,13 @@ public class MainActivity extends Activity {
   surface.setStroke(Math.max(1,Math.round(getResources().getDisplayMetrics().density*0.6f)),pearl?0xffd2d9d5:0xffc3d3c8);
   return surface;
  }
+ int homeWindowWidthDp(){
+  int widthPx=root!=null&&root.getWidth()>0?root.getWidth():getWindow().getDecorView().getWidth();
+  return widthPx>0?Math.round(widthPx/getResources().getDisplayMetrics().density):getResources().getConfiguration().screenWidthDp;
+ }
  void dashboardSection(LinearLayout target,String heading,ArrayList<String> keys,boolean pin){
   // Keep folded rows compact; unfolded columns retain comfortable touch targets.
-  boolean folded=getResources().getConfiguration().screenWidthDp<500;
+  boolean folded=homeWindowWidthDp()<500;
   boolean collapsed=prefs.getBoolean(pin?"home_pinned_collapsed":"home_updated_collapsed",false);
   TextView title=dashboardText((pin?"◆  ":"◷  ")+heading+"    "+Math.min(3,keys.size())+" Topik  "+(collapsed?"▸":"▾"),15,true);
   title.setTextColor(0xff365c48);
