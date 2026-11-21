@@ -1650,7 +1650,7 @@ public class MainActivity extends Activity {
   Button dividerButton=action("✿",formatBar,()->showDividerPicker());
   dividerButton.setTextColor(0xff176b47);dividerButton.setContentDescription("Pilih pemisah perenggan Islamik");
   Button boxButton=action("▣",formatBar,()->showTextBoxPicker());
-  boxButton.setTextColor(0xff176b47);boxButton.setContentDescription("Kotak Dalil, Kalam Hikmah dan Catatan Penting");
+  boxButton.setOnLongClickListener(v->{if(!manageCurrentBox(true))showTextBoxPicker();return true;});boxButton.setTextColor(0xff176b47);boxButton.setContentDescription("Kotak Dalil, Kalam Hikmah dan Catatan Penting");
   Button fontButton=action("Aa",formatBar,()->new AlertDialog.Builder(this).setTitle("Saiz tulisan editor").setItems(new String[]{"Kecil","Biasa","Besar","Sangat besar"},(d,i)->{prefs.edit().putInt("reader_font_level",i).putInt("editor_font_level",i).apply();if(editor!=null)applySharedTextMetrics(editor);}).show());
   fontButton.setContentDescription("Saiz tulisan editor");
   // Uniform compact emerald buttons; formatting is highlighted while the caret is inside markup.
@@ -2005,12 +2005,16 @@ public class MainActivity extends Activity {
   if(value.isEmpty())return;
   TextView t=text("",fontSize);t.setText(formattedReadingText(value));applySharedTextMetrics(t);t.setTextColor(0xff303c43);t.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);t.setTextIsSelectable(true);t.setPadding(dp(8),dp(1),dp(8),dp(1));body.addView(t);
  }
- boolean manageCurrentBox(){
+ boolean manageCurrentBox(){return manageCurrentBox(false);}
+ boolean manageCurrentBox(boolean choose){
   if(editor==null)return false;
   final EditText target=editor;
   int cursor=target.getSelectionStart();
   java.util.regex.Matcher boxes=java.util.regex.Pattern.compile("(?ms)^---KOTAK(DALIL|HIKMAH|CATATAN|FIRMAN|SABDA)---\\n(.*?)\\n^---KOTAKTAMAT---").matcher(target.getText().toString());
+  java.util.ArrayList<Integer> positions=new java.util.ArrayList<>();java.util.ArrayList<String> labels=new java.util.ArrayList<>();
   while(boxes.find()){
+   positions.add(boxes.start());labels.add(boxes.group(1).replace("HIKMAH","Kalam Hikmah").replace("CATATAN","Catatan Penting").replace("FIRMAN","Firman Allah SWT").replace("SABDA","Sabda Nabi SAW").replace("DALIL","Dalil"));
+   if(choose)continue;
    if(cursor<boxes.start()||cursor>boxes.end())continue;
    final int start=boxes.start(),end=boxes.end(),headEnd=boxes.end(1),bodyStart=boxes.start(2),bodyEnd=boxes.end(2);
    final String original=boxes.group();
@@ -2027,6 +2031,7 @@ public class MainActivity extends Activity {
     }).show();
    }).show();return true;
   }
+  if(choose&&!positions.isEmpty()){new AlertDialog.Builder(this).setTitle("Pilih kotak untuk diurus").setItems(labels.toArray(new String[0]),(d,i)->{if(editor==target){target.setSelection(Math.min(positions.get(i),target.length()));manageCurrentBox(false);}}).show();return true;}
   return false;
  }
  void showTextBoxPicker(){
@@ -2036,7 +2041,8 @@ public class MainActivity extends Activity {
   final int b=Math.max(a,Math.max(editor.getSelectionStart(),editor.getSelectionEnd()));
   final String[] types={"DALIL","HIKMAH","CATATAN","FIRMAN","SABDA"};
   new AlertDialog.Builder(this).setTitle("Kotak teks")
-   .setItems(new String[]{"Dalil","Kalam Hikmah","Catatan Penting","Firman Allah SWT:","Sabda Nabi SAW:","Buang kotak terpilih"},(d,i)->{
+   .setItems(new String[]{"Dalil","Kalam Hikmah","Catatan Penting","Firman Allah SWT:","Sabda Nabi SAW:","Buang kotak terpilih","Urus kotak sedia ada"},(d,i)->{
+    if(i==6){manageCurrentBox(true);return;}
     if(editor==null||b>editor.length())return;
     String chosen=editor.getText().subSequence(a,b).toString();
     if(i==5){editor.getText().replace(a,b,chosen.replaceAll("(?m)^---KOTAK(?:DALIL|HIKMAH|CATATAN|FIRMAN|SABDA|TAMAT)---\\n?",""));return;}
