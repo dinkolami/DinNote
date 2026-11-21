@@ -1585,6 +1585,33 @@ public class MainActivity extends Activity {
       // anchored to the left while Android still shapes Arabic glyphs correctly.
       commentaryEditor.setGravity(Gravity.TOP|Gravity.LEFT);
       commentaryEditor.setTextDirection(View.TEXT_DIRECTION_LTR);
+      // Arabic-only paragraphs align right; Latin and mixed paragraphs align left.
+      final boolean[] adjustingCommentary={false};
+      TextWatcher commentaryAlignment=new TextWatcher(){
+       public void beforeTextChanged(CharSequence t,int st,int count,int after){}
+       public void onTextChanged(CharSequence t,int st,int before,int count){}
+       public void afterTextChanged(Editable e){
+        if(adjustingCommentary[0])return;
+        adjustingCommentary[0]=true;
+        try{
+         android.text.style.AlignmentSpan[] spans=e.getSpans(0,e.length(),android.text.style.AlignmentSpan.class);
+         for(android.text.style.AlignmentSpan span:spans)e.removeSpan(span);
+         String content=e.toString();
+         int start=0;
+         while(start<content.length()){
+          int end=content.indexOf('\\n',start);
+          if(end<0)end=content.length();
+          String paragraph=content.substring(start,end);
+          boolean arabic=java.util.regex.Pattern.compile("[\\u0600-\\u06FF]").matcher(paragraph).find();
+          boolean latin=java.util.regex.Pattern.compile("[A-Za-z]").matcher(paragraph).find();
+          if(arabic&&!latin&&end>start)e.setSpan(new android.text.style.AlignmentSpan.Standard(android.text.Layout.Alignment.ALIGN_OPPOSITE),start,end,android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+          start=end+1;
+         }
+        }finally{adjustingCommentary[0]=false;}
+       }
+      };
+      commentaryEditor.addTextChangedListener(commentaryAlignment);
+      commentaryAlignment.afterTextChanged(commentaryEditor.getText());
       commentaryEditor.addTextChangedListener(new TextWatcher(){
        public void beforeTextChanged(CharSequence t,int st,int count,int after){}
        public void onTextChanged(CharSequence t,int st,int before,int count){
