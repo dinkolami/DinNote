@@ -530,8 +530,13 @@ public class MainActivity extends Activity {
   return surface;
  }
  int homeWindowWidthDp(){
+  // Configuration width tracks the current Android multi-window bounds.
+  // root/decor measured widths can still describe the previous full-screen
+  // layout while onConfigurationChanged is rebuilding the dashboard.
+  int configuredWidthDp=getResources().getConfiguration().screenWidthDp;
+  if(configuredWidthDp>0)return configuredWidthDp;
   int widthPx=root!=null&&root.getWidth()>0?root.getWidth():getWindow().getDecorView().getWidth();
-  return widthPx>0?Math.round(widthPx/getResources().getDisplayMetrics().density):getResources().getConfiguration().screenWidthDp;
+  return widthPx>0?Math.round(widthPx/getResources().getDisplayMetrics().density):0;
  }
  void dashboardSection(LinearLayout target,String heading,ArrayList<String> keys,boolean pin){
   // Keep folded rows compact; unfolded columns retain comfortable touch targets.
