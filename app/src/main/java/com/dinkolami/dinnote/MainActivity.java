@@ -300,7 +300,8 @@ public class MainActivity extends Activity {
   scroll.addView(homeFitFrame,new ScrollView.LayoutParams(-1,-2));
   homeFitFrame.addView(page,new FrameLayout.LayoutParams(-1,-2));
   final boolean[] homeFits={false};
-  scroll.setOnTouchListener((v,event)->homeFits[0]);
+  // Never intercept dashboard scrolling: in split-screen the visible height is smaller.
+  // Android must be allowed to scroll all real content, including the bottom rows.
   scroll.getViewTreeObserver().addOnGlobalLayoutListener(()->{
    int available=scroll.getHeight()-scroll.getPaddingTop()-scroll.getPaddingBottom();
    int width=homeFitFrame.getWidth();
@@ -310,6 +311,8 @@ public class MainActivity extends Activity {
    int natural=page.getMeasuredHeight();
    if(natural<=0)return;
    float ratio=(float)available/natural;
+   // Fit only when the dashboard genuinely fits; do not shrink or clip a tall
+   // dashboard to a short split-screen window.
    float fit=ratio>=0.93f&&ratio<=1.07f?ratio:1f;
    int desired=Math.round(natural*fit);
    boolean fits=desired<=available;
