@@ -1599,7 +1599,7 @@ public class MainActivity extends Activity {
          String content=e.toString();
          int start=0;
          while(start<content.length()){
-          int end=content.indexOf('\\n',start);
+          int end=content.indexOf('\n',start);
           if(end<0)end=content.length();
           String paragraph=content.substring(start,end);
           boolean arabic=java.util.regex.Pattern.compile("[\\u0600-\\u06FF]").matcher(paragraph).find();
