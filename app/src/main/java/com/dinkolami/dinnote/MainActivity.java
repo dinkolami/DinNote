@@ -1106,7 +1106,7 @@ public class MainActivity extends Activity {
   }
   readerScroll=null;
   editor=null;titleEditor=null;saveIndicator=null;selected=key;prefs.edit().putLong("viewed_"+key,System.currentTimeMillis()).putString(key.startsWith("m_")?"reading_last_m":"reading_last_n",key).apply();cleanBase();
-  LinearLayout bar=new LinearLayout(this);bar.setGravity(Gravity.CENTER_VERTICAL);bar.setPadding(dp(6),dp(2),dp(6),dp(2));bar.setBackgroundColor(0xfffffefd);bar.setTag("reader_toolbar");
+  LinearLayout bar=new LinearLayout(this);bar.setGravity(Gravity.CENTER_VERTICAL);bar.setPadding(dp(6),dp(2),dp(6),dp(2));bar.setBackgroundColor(android.graphics.Color.TRANSPARENT);bar.setTag("reader_toolbar");
   TextView toolbarSpace=text("",12);bar.addView(toolbarSpace,new LinearLayout.LayoutParams(0,1,1));
   Button readerBack=action("‹",bar,()->returnFromReader());readerBack.setContentDescription(key.startsWith("m_")?"Kembali ke senarai kitab":"Kembali ke senarai nota");
   
@@ -1167,7 +1167,9 @@ public class MainActivity extends Activity {
   categoryLine.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_END);
   categoryLine.setIncludeFontPadding(false);
   metaRow.addView(categoryLine,new LinearLayout.LayoutParams(0,-2,1));
-  body.addView(metaRow,new LinearLayout.LayoutParams(-1,-2));
+  LinearLayout.LayoutParams metaParams=new LinearLayout.LayoutParams(-1,-2);
+  metaParams.topMargin=dp(52); // Reserve space inside the single posting card for fixed controls.
+  body.addView(metaRow,metaParams);
   TextView title=text(heading,20);title.setMaxLines(3);
   title.setEllipsize(android.text.TextUtils.TruncateAt.END);
   title.setBackground(rounded(0xfffffefd,0xffb8c2ca,12));
@@ -1293,7 +1295,7 @@ public class MainActivity extends Activity {
   readerFrame.setBackgroundColor(android.graphics.Color.TRANSPARENT); // Only the original posting card has a background and border.
   readerFrame.setClipChildren(false);
   readerFrame.setClipToPadding(false);
-  scroll.setPadding(0,dp(36),0,0);
+  scroll.setPadding(0,0,0,0);
   scroll.setClipToPadding(false);
   readerFrame.addView(scroll,new FrameLayout.LayoutParams(-1,-1));
   FrameLayout.LayoutParams fixedBarParams=new FrameLayout.LayoutParams(-2,-2,Gravity.TOP|Gravity.RIGHT);
