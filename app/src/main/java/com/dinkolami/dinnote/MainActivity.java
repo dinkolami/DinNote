@@ -1290,13 +1290,21 @@ public class MainActivity extends Activity {
    LinearLayout readingRows=new LinearLayout(this);readingRows.setOrientation(1);
    readingRows.setPadding(readingSide,dp(8),readingSide,dp(12));
    body.addView(readingRows);
-   for(String line:displayLines){
+   for(int rowIndex=0;rowIndex<displayLines.length;rowIndex++){
+    String line=displayLines[rowIndex];
+    if(line.trim().isEmpty()){
+     int before=rowIndex-1,after=rowIndex+1;
+     while(before>=0&&displayLines[before].trim().isEmpty())before--;
+     while(after<displayLines.length&&displayLines[after].trim().isEmpty())after++;
+     if((before>=0&&displayLines[before].trim().matches("---(?:FLOWER|GEOMETRIC|CLASSIC)?---"))||
+        (after<displayLines.length&&displayLines[after].trim().matches("---(?:FLOWER|GEOMETRIC|CLASSIC)?---")))continue;
+    }
     java.util.regex.Matcher numbered=java.util.regex.Pattern.compile("^\\s*(\\d+)\\.\\s+(.*)$").matcher(line);
     java.util.regex.Matcher marked=java.util.regex.Pattern.compile("^\\s*([•☐☑✓])\\s+(.*)$").matcher(line);
     boolean isNumber=numbered.matches(),isMarked=!isNumber&&marked.matches();
     if(line.trim().equals("---")||line.trim().equals("---FLOWER---")||line.trim().equals("---GEOMETRIC---")||line.trim().equals("---CLASSIC---")){
      LinearLayout ornament=new LinearLayout(this);ornament.setGravity(Gravity.CENTER_VERTICAL);
-     ornament.setPadding(dp(16),dp(12),dp(16),dp(12));
+     ornament.setPadding(dp(16),dp(5),dp(16),dp(5));
      boolean floral=line.trim().equals("---FLOWER---");
      boolean geometric=line.trim().equals("---GEOMETRIC---");
      boolean classic=line.trim().equals("---CLASSIC---");
