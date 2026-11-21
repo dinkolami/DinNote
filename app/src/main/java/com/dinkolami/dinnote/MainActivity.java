@@ -376,7 +376,13 @@ public class MainActivity extends Activity {
   book.setPadding(dp(3),dp(3),dp(3),dp(3));
   note.setGravity(Gravity.CENTER);book.setGravity(Gravity.CENTER);note.setFocusable(true);book.setFocusable(true);note.setTextColor(0xff566a70);book.setTextColor(0xff566a70);
   note.setBackground(rounded(0xffe9f8ed,0xffa6cdb7,14));note.setElevation(dp(2));
-  book.setBackground(rounded(0xfffffefd,0xffb8c2ca,14));book.setElevation(dp(2));
+  // Pearl inset finish: a hairline outline and gentle top-to-bottom shading.
+  android.graphics.drawable.GradientDrawable bookInset=new android.graphics.drawable.GradientDrawable(
+    android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
+    new int[]{0xfff0f2f3,0xfff9faf9,0xffffffff});
+  bookInset.setCornerRadius(dp(14));
+  bookInset.setStroke(Math.max(1,Math.round(getResources().getDisplayMetrics().density*0.6f)),0xffcbd2d5);
+  book.setBackground(bookInset);book.setElevation(dp(1));
   LinearLayout.LayoutParams a=new LinearLayout.LayoutParams(0,dp(66),1);a.rightMargin=dp(4);
   LinearLayout.LayoutParams b=new LinearLayout.LayoutParams(0,dp(66),1);b.leftMargin=dp(4);
   tiles.addView(note,a);tiles.addView(book,b);
