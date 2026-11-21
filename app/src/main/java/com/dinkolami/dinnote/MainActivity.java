@@ -491,7 +491,7 @@ public class MainActivity extends Activity {
    empty.setContentDescription(pin?"Tiada nota disemat":"Tiada nota yang dikemaskini");
    target.addView(empty);return;
   }
-  for(int i=0;i<Math.min(5,keys.size());i++){
+  for(int i=0;i<Math.min(3,keys.size());i++){
    String key=keys.get(i),label=prefs.getString("title_"+key,"").trim();
    if(label.isEmpty()){
     String body=prefs.getString(key,"").trim();
