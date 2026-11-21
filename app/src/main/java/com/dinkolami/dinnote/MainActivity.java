@@ -1280,6 +1280,31 @@ public class MainActivity extends Activity {
    prefs.getBoolean("reader_wide_spacing",false)?1.15f:1.0f);
   view.setIncludeFontPadding(true);
  }
+ void selectLongReadingText(String key){
+  String raw=prefs.getString(key,"");
+  ScrollView selectionScroll=new ScrollView(this);
+  selectionScroll.setFillViewport(false);
+  selectionScroll.setPadding(dp(12),dp(8),dp(12),dp(8));
+  TextView selectable=text("",Math.max(12,new int[]{13,15,16,18}[Math.max(0,Math.min(3,prefs.getInt("reader_font_level",1)))]));
+  selectable.setText(formattedReadingText(raw));
+  applySharedTextMetrics(selectable);
+  selectable.setTextColor(0xff303c43);
+  selectable.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
+  selectable.setTextIsSelectable(true);
+  selectable.setPadding(dp(8),dp(8),dp(8),dp(24));
+  selectionScroll.addView(selectable,new ScrollView.LayoutParams(-1,-2));
+  AlertDialog dialog=new AlertDialog.Builder(this)
+   .setTitle("Pilih teks panjang")
+   .setView(selectionScroll)
+   .setNeutralButton("Salin semua",(d,w)->{
+    android.content.ClipboardManager clipboard=(android.content.ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
+    clipboard.setPrimaryClip(android.content.ClipData.newPlainText("DinNote",raw));
+    Toast.makeText(this,"Semua teks disalin",Toast.LENGTH_SHORT).show();
+   })
+   .setNegativeButton("Tutup",null).create();
+  dialog.show();
+  if(dialog.getWindow()!=null)dialog.getWindow().setLayout(-1,(int)(getResources().getDisplayMetrics().heightPixels*0.82f));
+ }
  void read(String key){
   // Use the actual DinNote window width: Fold6 split-screen may be narrower than the display.
   int windowWidthPx=root!=null&&root.getWidth()>0?root.getWidth():getWindow().getDecorView().getWidth();
@@ -1297,6 +1322,8 @@ public class MainActivity extends Activity {
   Button readerBack=action("‹",bar,()->returnFromReader());readerBack.setContentDescription(key.startsWith("m_")?"Kembali ke senarai kitab":"Kembali ke senarai nota");
   TextView spacer=text("",12);bar.addView(spacer,new LinearLayout.LayoutParams(0,1,1));
   boolean cleanReading=prefs.getBoolean("reader_clean_mode",false);
+  Button selectTextButton=action("▤",bar,()->selectLongReadingText(key));
+  selectTextButton.setContentDescription("Pilih dan salin teks merentasi perenggan");
   Button cleanToggle=action(cleanReading?"▣":"▢",bar,()->{prefs.edit().putBoolean("reader_clean_mode",!cleanReading).apply();read(key);});
   cleanToggle.setContentDescription(cleanReading?"Paparkan semula toolbar bacaan":"Aktifkan mod bacaan bersih");
   if(!cleanReading){
