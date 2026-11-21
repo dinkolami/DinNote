@@ -292,19 +292,18 @@ public class MainActivity extends Activity {
   root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
   LinearLayout page=new LinearLayout(this);page.setOrientation(1);
   page.setPadding(dp(10),dp(6),dp(10),dp(12));page.setBackgroundColor(0xfffffefd);page.setTag("dinnote_home");
-  // Use a natural-height page; only fit minor differences and prevent free scrolling
-  // when the complete frontpage fits. A fixed-size wrapper must not remeasure the page.
+  // Frontpage content below search: fit minor overflow and never leave a
+  // scrollable blank tail caused by the wrapper retaining its old height.
   FrameLayout homeFitFrame=new FrameLayout(this);
   homeFitFrame.setClipChildren(false);homeFitFrame.setClipToPadding(false);
   scroll.addView(homeFitFrame,new ScrollView.LayoutParams(-1,-2));
   homeFitFrame.addView(page,new FrameLayout.LayoutParams(-1,-2));
   final boolean[] homeFits={false};
-  scroll.setOnTouchListener((v,event)->homeFits[0]&&event.getActionMasked()!=android.view.MotionEvent.ACTION_CANCEL);
+  scroll.setOnTouchListener((v,event)->homeFits[0]);
   scroll.getViewTreeObserver().addOnGlobalLayoutListener(()->{
    int available=scroll.getHeight()-scroll.getPaddingTop()-scroll.getPaddingBottom();
    int width=homeFitFrame.getWidth();
    if(available<=0||width<=0)return;
-   // Measure the actual unscaled content independently of the wrapper's fitted height.
    page.measure(View.MeasureSpec.makeMeasureSpec(width,View.MeasureSpec.EXACTLY),
      View.MeasureSpec.makeMeasureSpec(0,View.MeasureSpec.UNSPECIFIED));
    int natural=page.getMeasuredHeight();
@@ -314,11 +313,13 @@ public class MainActivity extends Activity {
    int desired=Math.round(natural*fit);
    boolean fits=desired<=available;
    homeFits[0]=fits;
-   if(Math.abs(page.getScaleY()-fit)<0.001f&&homeFitFrame.getLayoutParams().height==desired)return;
-   page.setPivotX(0f);page.setPivotY(0f);
-   page.setScaleY(fit);
-   android.view.ViewGroup.LayoutParams params=homeFitFrame.getLayoutParams();
-   params.height=desired;homeFitFrame.setLayoutParams(params);
+   // Clamp the wrapper to the actual visual content height; the ScrollView
+   // must never be able to scroll through leftover wrapper space.
+   if(Math.abs(page.getScaleY()-fit)>=0.001f||homeFitFrame.getLayoutParams().height!=desired){
+    page.setPivotX(0f);page.setPivotY(0f);page.setScaleY(fit);
+    android.view.ViewGroup.LayoutParams params=homeFitFrame.getLayoutParams();
+    params.height=desired;homeFitFrame.setLayoutParams(params);
+   }
    if(fits&&scroll.getScrollY()!=0)scroll.scrollTo(0,0);
   });
   TextView recent=dashboardText("Baru dilihat  ▾",15,true);
