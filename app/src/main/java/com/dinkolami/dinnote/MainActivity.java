@@ -292,29 +292,34 @@ public class MainActivity extends Activity {
   root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
   LinearLayout page=new LinearLayout(this);page.setOrientation(1);
   page.setPadding(dp(10),dp(6),dp(10),dp(12));page.setBackgroundColor(0xfffffefd);page.setTag("dinnote_home");
-  // Fit only small height differences. Measure the unscaled page, not the
-  // wrapper's scaled height, so repeated layouts cannot compound the scale.
+  // Use a natural-height page; only fit minor differences and prevent free scrolling
+  // when the complete frontpage fits. A fixed-size wrapper must not remeasure the page.
   FrameLayout homeFitFrame=new FrameLayout(this);
   homeFitFrame.setClipChildren(false);homeFitFrame.setClipToPadding(false);
   scroll.addView(homeFitFrame,new ScrollView.LayoutParams(-1,-2));
   homeFitFrame.addView(page,new FrameLayout.LayoutParams(-1,-2));
-  final boolean[] fittingHome={false};
-  homeFitFrame.getViewTreeObserver().addOnGlobalLayoutListener(()->{
-   if(fittingHome[0]||scroll.getHeight()<=0||page.getMeasuredHeight()<=0)return;
-   int natural=page.getMeasuredHeight();
+  final boolean[] homeFits={false};
+  scroll.setOnTouchListener((v,event)->homeFits[0]&&event.getActionMasked()!=android.view.MotionEvent.ACTION_CANCEL);
+  scroll.getViewTreeObserver().addOnGlobalLayoutListener(()->{
    int available=scroll.getHeight()-scroll.getPaddingTop()-scroll.getPaddingBottom();
-   if(available<=0)return;
+   int width=homeFitFrame.getWidth();
+   if(available<=0||width<=0)return;
+   // Measure the actual unscaled content independently of the wrapper's fitted height.
+   page.measure(View.MeasureSpec.makeMeasureSpec(width,View.MeasureSpec.EXACTLY),
+     View.MeasureSpec.makeMeasureSpec(0,View.MeasureSpec.UNSPECIFIED));
+   int natural=page.getMeasuredHeight();
+   if(natural<=0)return;
    float ratio=(float)available/natural;
-   // Shrink or enlarge by at most 7%; large overflows keep natural scrolling.
    float fit=ratio>=0.93f&&ratio<=1.07f?ratio:1f;
-   int desiredHeight=Math.round(natural*fit);
-   if(Math.abs(page.getScaleY()-fit)<0.001f&&homeFitFrame.getLayoutParams().height==desiredHeight)return;
-   fittingHome[0]=true;
+   int desired=Math.round(natural*fit);
+   boolean fits=desired<=available;
+   homeFits[0]=fits;
+   if(Math.abs(page.getScaleY()-fit)<0.001f&&homeFitFrame.getLayoutParams().height==desired)return;
    page.setPivotX(0f);page.setPivotY(0f);
    page.setScaleY(fit);
-   android.view.ViewGroup.LayoutParams frameParams=homeFitFrame.getLayoutParams();
-   frameParams.height=desiredHeight;homeFitFrame.setLayoutParams(frameParams);
-   fittingHome[0]=false;
+   android.view.ViewGroup.LayoutParams params=homeFitFrame.getLayoutParams();
+   params.height=desired;homeFitFrame.setLayoutParams(params);
+   if(fits&&scroll.getScrollY()!=0)scroll.scrollTo(0,0);
   });
   TextView recent=dashboardText("Baru dilihat  ▾",15,true);
   recent.setBackground(rounded(0xfffdfefe,0xffcdd6df,9));recent.setTextColor(0xff566a70);recent.setIncludeFontPadding(false);
