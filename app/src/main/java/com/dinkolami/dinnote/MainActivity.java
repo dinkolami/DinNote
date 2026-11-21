@@ -1724,36 +1724,58 @@ public class MainActivity extends Activity {
   final String title;final int ink,bg;
   BoxMarkerSpan(String t,int i,int b){title=t;ink=i;bg=b;}
   @Override public int getSize(android.graphics.Paint p,CharSequence t,int a,int b,android.graphics.Paint.FontMetricsInt fm){
-   if(fm!=null){int h=dp(title.isEmpty()?3:23);fm.ascent=-h;fm.top=-h;fm.descent=dp(2);fm.bottom=fm.descent;}
-   return title.isEmpty()?1:Math.round(p.measureText(title))+dp(16);
+   if(fm!=null){int h=dp(title.isEmpty()?5:22);fm.ascent=-h;fm.top=-h;fm.descent=dp(2);fm.bottom=fm.descent;}
+   android.graphics.Paint q=new android.graphics.Paint(p);q.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);q.setTextSize(dp(13));
+   return title.isEmpty()?1:Math.round(q.measureText(title))+dp(38);
   }
   @Override public void draw(android.graphics.Canvas c,CharSequence t,int a,int b,float x,int top,int y,int bottom,android.graphics.Paint p){
    if(title.isEmpty())return;
-   android.graphics.Paint q=new android.graphics.Paint(p);q.setColor(bg);c.drawRoundRect(x,top,x+getSize(p,t,a,b,null),bottom,dp(6),dp(6),q);
-   q.setColor(ink);q.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);q.setTextSize(dp(13));c.drawText(title,x+dp(6),bottom-dp(6),q);
+   android.graphics.Paint q=new android.graphics.Paint(p);q.setAntiAlias(true);q.setColor(ink);q.setAlpha(35);c.drawCircle(x+dp(13),(top+bottom)/2f,dp(10),q);
+   q.setAlpha(255);q.setColor(ink);q.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);q.setTextSize(dp(13));
+   String mark=title.startsWith("Firman")?"▤":title.startsWith("Sabda")?"❞":title.startsWith("Kalam")?"✦":title.startsWith("Dalil")?"❖":"♧";
+   q.setTextAlign(android.graphics.Paint.Align.CENTER);c.drawText(mark,x+dp(13),(top+bottom)/2f-(q.ascent()+q.descent())/2,q);
+   q.setTextAlign(android.graphics.Paint.Align.LEFT);c.drawText(title,x+dp(28),(top+bottom)/2f-(q.ascent()+q.descent())/2,q);
   }
  }
  class BoxBodySpan implements android.text.style.LineBackgroundSpan {
-  final int bg,ink;BoxBodySpan(int b,int i){bg=b;ink=i;}
+  final int bg,ink,first,last;BoxBodySpan(int b,int i,int a,int z){bg=b;ink=i;first=a;last=z;}
   @Override public void drawBackground(android.graphics.Canvas c,android.graphics.Paint p,int left,int right,int top,int baseline,int bottom,CharSequence t,int start,int end,int line){
-   android.graphics.Paint q=new android.graphics.Paint(p);q.setColor(bg);c.drawRect(left,top,right,bottom,q);q.setColor(ink);q.setAlpha(100);c.drawRect(left,top,left+dp(1),bottom,q);c.drawRect(right-dp(1),top,right,bottom,q);
+   boolean head=start<=first,tail=end>=last;
+   float l=left+dp(1),r=right-dp(1),rad=dp(8);
+   float[] corners={head?rad:0,head?rad:0,head?rad:0,head?rad:0,tail?rad:0,tail?rad:0,tail?rad:0,tail?rad:0};
+   android.graphics.Paint q=new android.graphics.Paint(p);q.setAntiAlias(true);q.setStyle(android.graphics.Paint.Style.FILL);q.setColor(bg);
+   android.graphics.Path shape=new android.graphics.Path();shape.addRoundRect(new android.graphics.RectF(l,top,r,bottom),corners,android.graphics.Path.Direction.CW);c.drawPath(shape,q);
+   q.setColor(ink);q.setAlpha(135);q.setStyle(android.graphics.Paint.Style.STROKE);q.setStrokeWidth(dp(1));
+   android.graphics.Path edge=new android.graphics.Path();
+   edge.moveTo(l,tail?bottom-rad:bottom);edge.lineTo(l,head?top+rad:top);
+   if(head){edge.quadTo(l,top,l+rad,top);edge.lineTo(r-rad,top);edge.quadTo(r,top,r,top+rad);}
+   else edge.moveTo(r,top);
+   edge.lineTo(r,tail?bottom-rad:bottom);
+   if(tail){edge.quadTo(r,bottom,r-rad,bottom);edge.lineTo(l+rad,bottom);edge.quadTo(l,bottom,l,bottom-rad);}
+   c.drawPath(edge,q);
+   if(head){q.setAlpha(55);for(int j=0;j<3;j++){float d=dp(5+j*4);c.drawLine(r-d,top+dp(3),r-dp(3),top+d,q);}}
   }
+ }
+ class BoxInsetSpan extends android.text.style.LeadingMarginSpan.Standard {
+  BoxInsetSpan(){super(dp(9));}
  }
  void refreshEditorBoxes(android.text.Editable e){
   for(BoxMarkerSpan span:e.getSpans(0,e.length(),BoxMarkerSpan.class))e.removeSpan(span);
   for(BoxBodySpan span:e.getSpans(0,e.length(),BoxBodySpan.class))e.removeSpan(span);
+  for(BoxInsetSpan span:e.getSpans(0,e.length(),BoxInsetSpan.class))e.removeSpan(span);
   java.util.regex.Matcher m=java.util.regex.Pattern.compile("(?m)^---KOTAK(DALIL|HIKMAH|CATATAN|FIRMAN|SABDA|TAMAT)---$").matcher(e.toString());
-  int body=-1,bg=0,ink=0;
+  int body=-1,bg=0,ink=0,first=-1;
   while(m.find()){
    String kind=m.group(1);
    if(kind.equals("TAMAT")){
-    if(body>=0&&body<m.start())e.setSpan(new BoxBodySpan(bg,ink),body,m.start(),33);
-    e.setSpan(new BoxMarkerSpan("",ink,bg),m.start(),m.end(),33);body=-1;continue;
+    if(first>=0){e.setSpan(new BoxBodySpan(bg,ink,first,m.end()),first,m.end(),33);if(body<m.start())e.setSpan(new BoxInsetSpan(),body,m.start(),33);}
+    e.setSpan(new BoxMarkerSpan("",ink,bg),m.start(),m.end(),33);body=-1;first=-1;continue;
    }
-   boolean gold=kind.equals("HIKMAH")||kind.equals("SABDA"),gray=kind.equals("CATATAN");
-   bg=gold?0xfffaf5e8:gray?0xfff0f3f4:0xffedf5ee;ink=gold?0xff96783e:gray?0xff516970:0xff176b47;
-   String title=kind.equals("FIRMAN")?"▤  Firman Allah SWT:":kind.equals("SABDA")?"❞  Sabda Nabi SAW:":kind.equals("DALIL")?"❖  Dalil":kind.equals("HIKMAH")?"✦  Kalam Hikmah":"♧  Catatan Penting";
-   e.setSpan(new BoxMarkerSpan(title,ink,bg),m.start(),m.end(),33);body=Math.min(e.length(),m.end()+1);
+   boolean gold=kind.equals("SABDA"),gray=kind.equals("CATATAN"),wisdom=kind.equals("HIKMAH"),dalil=kind.equals("DALIL");
+   bg=gold?0xfffaf5e8:gray?0xfffcf0f2:wisdom?0xfff5eff9:dalil?0xffedf4fa:0xffedf5ee;
+   ink=gold?0xff96783e:gray?0xff946176:wisdom?0xff79549b:dalil?0xff426e96:0xff176b47;
+   String title=kind.equals("FIRMAN")?"Firman Allah SWT:":kind.equals("SABDA")?"Sabda Nabi SAW:":dalil?"Dalil":wisdom?"Kalam Hikmah":"Catatan Penting";
+   first=m.start();e.setSpan(new BoxMarkerSpan(title,ink,bg),m.start(),m.end(),33);body=Math.min(e.length(),m.end()+1);
   }
  }
  void clearSelectedFormatting(){
