@@ -738,6 +738,7 @@ public class MainActivity extends Activity {
   lastOpenedCard=k;read(k);
  });}}
 
+ int readerBuiltWidthPx=0;
  void cleanBase(){
   readerDetector=null;root=new LinearLayout(this);root.setOrientation(1);root.setBackgroundColor(Color.WHITE);
   final LinearLayout activeRoot=root;
@@ -759,7 +760,11 @@ public class MainActivity extends Activity {
      }
     });
    }
-   if(previous>0&&Math.abs(width-previous)>=dp(16)&&editor==null&&selected!=null){
+   // First layout can reveal a different width than the previous window/decor
+   // measurement used to build the reader (common on Fold6 multi-window).
+   boolean firstReaderWidthMismatch=previous==0&&editor==null&&selected!=null
+     &&readerBuiltWidthPx>0&&Math.abs(width-readerBuiltWidthPx)>=dp(16);
+   if((firstReaderWidthMismatch||(previous>0&&Math.abs(width-previous)>=dp(16)))&&editor==null&&selected!=null){
     final String readingKey=selected;
     activeRoot.post(()->{
      if(root==activeRoot&&!isFinishing()&&!isDestroyed()&&editor==null
@@ -1265,6 +1270,7 @@ public class MainActivity extends Activity {
   // Use the actual DinNote window width: Fold6 split-screen may be narrower than the display.
   int windowWidthPx=root!=null&&root.getWidth()>0?root.getWidth():getWindow().getDecorView().getWidth();
   final int availableReaderWidthDp=windowWidthPx>0?Math.round(windowWidthPx/getResources().getDisplayMetrics().density):getResources().getConfiguration().screenWidthDp;
+  readerBuiltWidthPx=windowWidthPx;
   if(key==null||!prefs.contains(key)){
    selected=null;readerScroll=null;editor=null;titleEditor=null;
    Toast.makeText(this,"Nota atau kitab tidak ditemui",Toast.LENGTH_LONG).show();
