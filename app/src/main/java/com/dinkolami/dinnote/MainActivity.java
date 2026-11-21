@@ -1829,7 +1829,7 @@ public class MainActivity extends Activity {
   String suffix=m.group(2);
   restoring[0]=true;
   try{
-   e.replace(insertAt,m.end(2),"\\n"+suffix);
+   e.replace(insertAt,m.end(2),"\n"+suffix);
    int newCursor=oldCursor>=insertAt?oldCursor+1:oldCursor;
    editor.setSelection(Math.max(0,Math.min(newCursor,e.length())));
   }finally{restoring[0]=false;}
