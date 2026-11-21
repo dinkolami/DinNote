@@ -319,17 +319,14 @@ public class MainActivity extends Activity {
   LinearLayout card=new LinearLayout(this);card.setOrientation(1);card.setClipToPadding(false);
   card.setBackground(rounded(0xfffdfefe,0xffd0d8df,10));
   LinearLayout.LayoutParams cp=new LinearLayout.LayoutParams(-1,-2);page.addView(card,cp);
-  TextView count=dashboardText("Nota dan Maktabah",15,true);
-  count.setGravity(Gravity.CENTER);count.setTextColor(0xff566a70);count.setBackgroundColor(0xfffdfefe);count.setPadding(dp(8),dp(9),dp(8),dp(9));card.addView(count);
-  View divider=new View(this);divider.setBackgroundColor(0xffe8d8b0);
-  card.addView(divider,new LinearLayout.LayoutParams(-1,dp(1)));
+  // The frontpage category tiles now begin directly beneath the search controls.
   int noteCount=0,bookCount=0;
   for(String postingKey:prefs.getAll().keySet()){
    if(!(prefs.getAll().get(postingKey) instanceof String)||prefs.getBoolean("deleted_"+postingKey,false))continue;
    if(postingKey.startsWith("n_"))noteCount++;
    else if(postingKey.startsWith("m_"))bookCount++;
   }
-  LinearLayout tiles=new LinearLayout(this);tiles.setPadding(dp(8),dp(7),dp(8),dp(7));card.addView(tiles);
+  LinearLayout tiles=new LinearLayout(this);tiles.setPadding(dp(8),dp(3),dp(8),dp(5));card.addView(tiles);
   TextView note=dashboardText("✎\n"+noteCount+" Topik",18,true);
   TextView book=dashboardText("▤\n"+bookCount+" Topik",18,true);
   note.setGravity(Gravity.CENTER);book.setGravity(Gravity.CENTER);note.setFocusable(true);book.setFocusable(true);note.setTextColor(0xff566a70);book.setTextColor(0xff566a70);
