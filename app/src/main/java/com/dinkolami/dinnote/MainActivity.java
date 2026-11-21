@@ -1282,11 +1282,13 @@ public class MainActivity extends Activity {
  }
  void selectLongReadingText(String key){
   String raw=prefs.getString(key,"");
+  // Hide decorative control markers in the continuous selection view and clipboard.
+  String cleanText=raw.replaceAll("(?m)^[ \\t]*---(?:CLASSIC|GEOMETRIC|FLOWER)---[ \\t]*(?:\\r?\\n)?","").replaceAll("(?m)^[ \\t]*---[ \\t]*(?:\\r?\\n)?","");
   ScrollView selectionScroll=new ScrollView(this);
   selectionScroll.setFillViewport(false);
   selectionScroll.setPadding(dp(12),dp(8),dp(12),dp(8));
   TextView selectable=text("",Math.max(12,new int[]{13,15,16,18}[Math.max(0,Math.min(3,prefs.getInt("reader_font_level",1)))]));
-  selectable.setText(formattedReadingText(raw));
+  selectable.setText(formattedReadingText(cleanText));
   applySharedTextMetrics(selectable);
   selectable.setTextColor(0xff303c43);
   selectable.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
@@ -1298,7 +1300,7 @@ public class MainActivity extends Activity {
    .setView(selectionScroll)
    .setNeutralButton("Salin semua",(d,w)->{
     android.content.ClipboardManager clipboard=(android.content.ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
-    clipboard.setPrimaryClip(android.content.ClipData.newPlainText("DinNote",raw));
+    clipboard.setPrimaryClip(android.content.ClipData.newPlainText("DinNote",cleanText));
     Toast.makeText(this,"Semua teks disalin",Toast.LENGTH_SHORT).show();
    })
    .setNegativeButton("Tutup",null).create();
