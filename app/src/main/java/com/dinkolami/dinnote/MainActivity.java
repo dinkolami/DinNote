@@ -285,6 +285,13 @@ public class MainActivity extends Activity {
   }
  }
  void openSection(boolean books){sectionOpen=true;maktabah=books;categoryFilter="Semua";notesPage();}
+ String smartPasteText(String value){
+  // Preserve Arabic diacritics, punctuation and meaningful paragraph breaks.
+  // Only normalize common clipboard line endings, non-breaking spaces and excess blank lines.
+  return value.replace("\\r\\n","\\n").replace('\\r','\\n')
+   .replace('\\u00a0',' ').replaceAll("[ \\t]+(?=\\n)","")
+   .replaceAll("\\n{4,}","\\n\\n\\n");
+ }
  void home(){
   items=null;sectionOpen=false;editor=null;titleEditor=null;categoryPicker=null;selected=null;maktabah=false;
   base("DinNote");
@@ -1684,6 +1691,24 @@ public class MainActivity extends Activity {
      String clean=selected.replaceAll("(?m)^---KOTAK(?:DALIL|HIKMAH|CATATAN|FIRMAN|SABDA|SAHABAT|TABII|ULAMA|TAMAT)---[ \\t]*(?:\\r?\\n)?","");
      android.content.ClipboardManager clipboard=(android.content.ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
      if(clipboard!=null){clipboard.setPrimaryClip(android.content.ClipData.newPlainText("DinNote",clean));return true;}
+    }
+    if(id==android.R.id.paste||id==android.R.id.pasteAsPlainText){
+     android.content.ClipboardManager clipboard=(android.content.ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
+     if(clipboard!=null&&clipboard.hasPrimaryClip()){
+      android.content.ClipData clip=clipboard.getPrimaryClip();
+      if(clip!=null&&clip.getItemCount()>0){
+       CharSequence source=clip.getItemAt(0).coerceToText(MainActivity.this);
+       if(source!=null){
+        String clean=smartPasteText(source.toString());
+        int start=Math.max(0,Math.min(getSelectionStart(),getSelectionEnd()));
+        int end=Math.max(start,Math.max(getSelectionStart(),getSelectionEnd()));
+        start=Math.min(start,length());end=Math.min(end,length());
+        getText().replace(start,end,clean);
+        setSelection(start+clean.length());
+        return true;
+       }
+      }
+     }
     }
     return super.onTextContextMenuItem(id);
    }
