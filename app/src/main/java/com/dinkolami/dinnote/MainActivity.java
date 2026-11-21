@@ -1167,7 +1167,6 @@ public class MainActivity extends Activity {
   categoryLine.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_END);
   categoryLine.setIncludeFontPadding(false);
   metaRow.addView(categoryLine,new LinearLayout.LayoutParams(0,-2,1));
-  body.addView(bar,new LinearLayout.LayoutParams(-1,-2));
   body.addView(metaRow,new LinearLayout.LayoutParams(-1,-2));
   TextView title=text(heading,20);title.setMaxLines(3);
   title.setEllipsize(android.text.TextUtils.TruncateAt.END);
@@ -1289,7 +1288,18 @@ public class MainActivity extends Activity {
   wordCounter.setTextColor(0xff687078);
   wordCounter.setPadding(dp(20),dp(8),dp(20),dp(20));
   body.addView(wordCounter);
-  root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
+  // Fixed reader controls: overlay the posting frame, never inside the scrolling body.
+  FrameLayout readerFrame=new FrameLayout(this);
+  readerFrame.setBackground(rounded(0xfffffefd,0xffb8c2ca,12));
+  readerFrame.setClipChildren(false);
+  readerFrame.setClipToPadding(false);
+  scroll.setPadding(0,dp(48),0,0);
+  scroll.setClipToPadding(false);
+  readerFrame.addView(scroll,new FrameLayout.LayoutParams(-1,-1));
+  FrameLayout.LayoutParams fixedBarParams=new FrameLayout.LayoutParams(-2,-2,Gravity.TOP|Gravity.RIGHT);
+  fixedBarParams.setMargins(dp(4),dp(2),dp(8),0);
+  readerFrame.addView(bar,fixedBarParams);
+  root.addView(readerFrame,new LinearLayout.LayoutParams(-1,0,1));
    // Compact reading progress indicator shared by Nota and Maktabah.
    FrameLayout progressFrame=new FrameLayout(this);
    progressFrame.setBackgroundColor(0xfff8faf8);
