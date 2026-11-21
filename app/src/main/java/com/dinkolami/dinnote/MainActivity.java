@@ -1853,7 +1853,7 @@ public class MainActivity extends Activity {
    int bg=type.equals("FIRMAN")?0xffedf5ee:type.equals("SABDA")?0xfffaf5e8:type.equals("DALIL")?0xffeff6f0:type.equals("HIKMAH")?0xfff8f4e9:0xfff0f3f4;
    int border=type.equals("FIRMAN")?0xffa5c3aa:type.equals("SABDA")?0xffd6c7a4:type.equals("DALIL")?0xffb8cdbd:type.equals("HIKMAH")?0xffd6c7a4:0xffced9da;
    panel.setBackground(rounded(bg,border,8));panel.setPadding(dp(10),dp(3),dp(10),dp(5));
-   TextView label=text(type.equals("FIRMAN")?"۞  Firman Allah SWT:":type.equals("SABDA")?"❁  Sabda Nabi SAW:":type.equals("DALIL")?"❖  Dalil":type.equals("HIKMAH")?"✦  Kalam Hikmah":"♧  Catatan Penting",13);
+   TextView label=text(type.equals("FIRMAN")?"📖  Firman Allah SWT:":type.equals("SABDA")?"📚  Sabda Nabi SAW:":type.equals("DALIL")?"❖  Dalil":type.equals("HIKMAH")?"✦  Kalam Hikmah":"♧  Catatan Penting",13);
    label.setTextColor(type.equals("FIRMAN")?0xff176b47:type.equals("SABDA")?0xff96783e:type.equals("DALIL")?0xff176b47:type.equals("HIKMAH")?0xff96783e:0xff516970);
    label.setTypeface(null,android.graphics.Typeface.BOLD);label.setIncludeFontPadding(false);
    label.setPadding(0,0,0,dp(2));panel.addView(label);
