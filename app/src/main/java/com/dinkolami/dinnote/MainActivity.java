@@ -518,7 +518,7 @@ public class MainActivity extends Activity {
   if(homeWindowWidthDp()<440){
    final java.util.ArrayList<String> sampleWisdom=homeWisdomEntries();
    LinearLayout wisdomCard=new LinearLayout(this);wisdomCard.setOrientation(LinearLayout.VERTICAL);
-   wisdomCard.setPadding(dp(12),dp(10),dp(12),dp(11));
+   wisdomCard.setPadding(dp(12),dp(30),dp(12),dp(31));
    wisdomCard.setBackground(rounded(0xfffdfcf7,0xffd8c69c,11));
    LinearLayout.LayoutParams wisdomParams=new LinearLayout.LayoutParams(-1,-2);
    wisdomParams.bottomMargin=dp(5);footer.addView(wisdomCard,wisdomParams);
