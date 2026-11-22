@@ -1618,6 +1618,7 @@ public class MainActivity extends Activity {
   if(dialog.getWindow()!=null)dialog.getWindow().setLayout(-1,(int)(getResources().getDisplayMetrics().heightPixels*0.82f));
  }
  void read(String key){
+  if(key!=null&&prefs.contains("pdf_original_"+key)){showOriginalPdf(key);return;}
   stopAutoReading();
   // Use the actual DinNote window width: Fold6 split-screen may be narrower than the display.
   int windowWidthPx=root!=null&&root.getWidth()>0?root.getWidth():getWindow().getDecorView().getWidth();
@@ -3177,7 +3178,53 @@ public class MainActivity extends Activity {
    if(out.length()>500000)throw new java.io.IOException("Pecahkan kitab kepada jilid lebih kecil");
   }return out.toString();
  }
- void importBookText(android.net.Uri uri){
+ void saveOriginalPdf(byte[] bytes,String filename){
+  EditText name=new EditText(this);name.setSingleLine(true);name.setText(filename.replaceFirst("\\.[^.]+$",""));
+  new AlertDialog.Builder(this).setTitle("Simpan PDF asal").setView(name).setNegativeButton("Batal",null).setPositiveButton("Simpan",(d,w)->{
+   String key="m_"+java.util.UUID.randomUUID().toString();
+   boolean ok=prefs.edit().putString(key,"Dokumen PDF asal · Bacaan offline").putString("pdf_original_"+key,android.util.Base64.encodeToString(bytes,android.util.Base64.NO_WRAP)).putString("title_"+key,name.getText().toString().trim()).putString("cat_"+key,"Tanpa kategori").putLong("updated_"+key,System.currentTimeMillis()).commit();
+   if(ok)openSection(true);else Toast.makeText(this,"Simpan gagal",Toast.LENGTH_LONG).show();
+  }).show();
+ }
+ void showOriginalPdf(String key){
+  java.io.File tmp=null;
+  android.os.ParcelFileDescriptor fd=null;
+  android.graphics.pdf.PdfRenderer renderer=null;
+  try{
+   tmp=java.io.File.createTempFile("dinnote_pdf_",".pdf",getCacheDir());
+   try(java.io.FileOutputStream out=new java.io.FileOutputStream(tmp)){out.write(android.util.Base64.decode(prefs.getString("pdf_original_"+key,""),android.util.Base64.NO_WRAP));}
+   fd=android.os.ParcelFileDescriptor.open(tmp,android.os.ParcelFileDescriptor.MODE_READ_ONLY);
+   renderer=new android.graphics.pdf.PdfRenderer(fd);fd=null;
+   final android.graphics.pdf.PdfRenderer pdf=renderer;final java.io.File cache=tmp;
+   if(pdf.getPageCount()==0)throw new java.io.IOException("PDF kosong");
+   LinearLayout panel=new LinearLayout(this);panel.setOrientation(1);
+   LinearLayout controls=new LinearLayout(this);
+   Button prev=new Button(this),next=new Button(this);prev.setText("‹");next.setText("›");
+   TextView pageLabel=text("",13);pageLabel.setGravity(Gravity.CENTER);
+   controls.addView(prev);controls.addView(pageLabel,new LinearLayout.LayoutParams(0,-2,1));controls.addView(next);panel.addView(controls);
+   ImageView image=new ImageView(this);image.setAdjustViewBounds(true);image.setScaleType(ImageView.ScaleType.FIT_CENTER);
+   ScrollView scroll=new ScrollView(this);scroll.addView(image,new ScrollView.LayoutParams(-1,-2));panel.addView(scroll,new LinearLayout.LayoutParams(-1,dp(480)));
+   int[] index={Math.max(0,Math.min(pdf.getPageCount()-1,prefs.getInt("pdf_page_"+key,0)))};
+   android.graphics.Bitmap[] current={null};
+   Runnable draw=()->{
+    try(android.graphics.pdf.PdfRenderer.Page page=pdf.openPage(index[0])){
+     float scale=Math.min(2.5f,1800f/Math.max(page.getWidth(),page.getHeight()));
+     android.graphics.Bitmap bmp=android.graphics.Bitmap.createBitmap(Math.max(1,Math.round(page.getWidth()*scale)),Math.max(1,Math.round(page.getHeight()*scale)),android.graphics.Bitmap.Config.ARGB_8888);
+     bmp.eraseColor(android.graphics.Color.WHITE);page.render(bmp,null,null,android.graphics.pdf.PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY);
+     image.setImageBitmap(bmp);if(current[0]!=null)current[0].recycle();current[0]=bmp;
+     pageLabel.setText((index[0]+1)+" / "+pdf.getPageCount());prev.setEnabled(index[0]>0);next.setEnabled(index[0]+1<pdf.getPageCount());scroll.scrollTo(0,0);
+     prefs.edit().putInt("pdf_page_"+key,index[0]).apply();
+    }catch(Exception e){Toast.makeText(this,"Halaman gagal dibaca",Toast.LENGTH_SHORT).show();}
+   };
+   prev.setOnClickListener(v->{if(index[0]>0){index[0]--;draw.run();}});
+   next.setOnClickListener(v->{if(index[0]+1<pdf.getPageCount()){index[0]++;draw.run();}});
+   AlertDialog dialog=new AlertDialog.Builder(this).setTitle(prefs.getString("title_"+key,"PDF asal")).setView(panel).setPositiveButton("Tutup",null).create();
+   dialog.setOnDismissListener(d->{image.setImageDrawable(null);if(current[0]!=null)current[0].recycle();pdf.close();cache.delete();});
+   dialog.show();draw.run();
+  }catch(Exception e){if(renderer!=null)renderer.close();if(fd!=null)try{fd.close();}catch(Exception ignored){}if(tmp!=null)tmp.delete();Toast.makeText(this,"PDF gagal dibuka: "+e.getMessage(),Toast.LENGTH_LONG).show();}
+ }
+ void importBookText(android.net.Uri uri){importBookText(uri,false);}
+ void importBookText(android.net.Uri uri,boolean extractPdf){
   try{
    java.io.ByteArrayOutputStream out=new java.io.ByteArrayOutputStream();
    try(java.io.InputStream in=getContentResolver().openInputStream(uri)){
@@ -3188,6 +3235,9 @@ public class MainActivity extends Activity {
    String mime=getContentResolver().getType(uri);
    final String body;
    if(bytes.length>=5&&bytes[0]==37&&bytes[1]==80&&bytes[2]==68&&bytes[3]==70&&bytes[4]==45){
+    if(!extractPdf){
+     new AlertDialog.Builder(this).setTitle("Cara import PDF").setItems(new String[]{"PDF asal · Kekalkan halaman dan tulisan Arab","Ekstrak teks · Boleh disunting"},(d,w)->{if(w==0)saveOriginalPdf(bytes,filename);else importBookText(uri,true);}).setNegativeButton("Batal",null).show();return;
+    }
     com.tom_roush.pdfbox.android.PDFBoxResourceLoader.init(getApplicationContext());
     try(com.tom_roush.pdfbox.pdmodel.PDDocument doc=com.tom_roush.pdfbox.pdmodel.PDDocument.load(bytes)){
      if(!doc.getCurrentAccessPermission().canExtractContent())throw new java.io.IOException("PDF tidak membenarkan pengekstrakan teks");
@@ -3216,7 +3266,9 @@ public class MainActivity extends Activity {
    if(body.length()>500000)throw new java.io.IOException("Pecahkan kitab kepada jilid lebih kecil");
    if(body.trim().isEmpty())throw new java.io.IOException("Teks kosong");
    EditText name=new EditText(this);name.setHint("Nama kitab");name.setSingleLine(true);name.setText(filename.replaceFirst("\\.[^.]+$",""));
-   new AlertDialog.Builder(this).setTitle("Import kitab").setView(name).setNegativeButton("Batal",null).setPositiveButton("Simpan",(d,w)->{
+   LinearLayout importPanel=new LinearLayout(this);importPanel.setOrientation(1);importPanel.addView(name);
+   if(extractPdf){TextView sample=text("Semak tulisan Arab sebelum simpan:\n\n"+body.substring(0,Math.min(700,body.length())),15);ScrollView preview=new ScrollView(this);preview.addView(sample);importPanel.addView(preview,new LinearLayout.LayoutParams(-1,dp(240)));}
+   new AlertDialog.Builder(this).setTitle("Import kitab").setView(importPanel).setNegativeButton("Batal",null).setPositiveButton("Simpan",(d,w)->{
     String key="m_"+java.util.UUID.randomUUID().toString();
     boolean ok=prefs.edit().putString(key,body).putString("title_"+key,name.getText().toString().trim().isEmpty()?"Kitab import":name.getText().toString().trim()).putString("cat_"+key,"Tanpa kategori").putLong("updated_"+key,System.currentTimeMillis()).commit();
     if(ok)openSection(true);else Toast.makeText(this,"Simpan gagal",Toast.LENGTH_LONG).show();
