@@ -4144,8 +4144,16 @@ public class MainActivity extends Activity {
   super.onPause();
  }
  @Override protected void onStop(){
-  if(editor!=null&&!prefs.edit().commit())
-   android.util.Log.e("DinNote","Failed to flush editor data on stop");
+  // Checkpoint the latest editor text before flushing when Android backgrounds the app.
+  if(editor!=null){
+   save();
+   if(!prefs.edit().commit()){
+    android.util.Log.e("DinNote","Failed to flush editor data on stop");
+    if(saveIndicator!=null)saveIndicator.setText("⚠ Simpan gagal");
+   }
+  }else if(selected!=null){
+   saveReaderPosition(selected);
+  }
   super.onStop();
  }
  @Override public boolean onKeyDown(int keyCode,android.view.KeyEvent event){
