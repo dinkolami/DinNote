@@ -2814,10 +2814,12 @@ public class MainActivity extends Activity {
   while(ornaments.find()){
    addPlainBoxParagraph(body,value.substring(start,ornaments.start()),fontSize,key,baseLine+value.substring(0,start).split("\\n",-1).length-1);
    LinearLayout row=new LinearLayout(this);row.setGravity(Gravity.CENTER_VERTICAL);row.setPadding(dp(12),0,dp(12),0);
-   View left=new View(this);left.setBackgroundColor(0xff176b47);row.addView(left,new LinearLayout.LayoutParams(0,dp(1),1));
+   View left=new View(this);left.setBackgroundColor(0xffb7d3c5);row.addView(left,new LinearLayout.LayoutParams(0,dp(1),1));
    TextView symbol=text(ornaments.group(1).equals("FLOWER")?"✿":ornaments.group(1).equals("GEOMETRIC")?"❖":"❧",19);
    symbol.setGravity(Gravity.CENTER);symbol.setIncludeFontPadding(false);symbol.setSingleLine(true);symbol.setTextColor(0xff176b47);symbol.setMinHeight(0);symbol.setMinimumHeight(0);symbol.setPadding(0,0,0,0);symbol.setLineSpacing(0,1f);row.addView(symbol,new LinearLayout.LayoutParams(dp(42),-2));
-   View right=new View(this);right.setBackgroundColor(0xff176b47);row.addView(right,new LinearLayout.LayoutParams(0,dp(1),1));body.addView(row);
+   View right=new View(this);right.setBackgroundColor(0xffb7d3c5);row.addView(right,new LinearLayout.LayoutParams(0,dp(1),1));
+   LinearLayout.LayoutParams dividerParams=new LinearLayout.LayoutParams(-1,-2);
+   dividerParams.setMargins(dp(5),dp(7),dp(5),dp(7));body.addView(row,dividerParams);
    start=ornaments.end();
   }
   addPlainBoxParagraph(body,value.substring(start),fontSize,key,baseLine+value.substring(0,start).split("\\n",-1).length-1);
