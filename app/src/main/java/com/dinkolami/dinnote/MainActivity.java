@@ -1652,6 +1652,23 @@ public class MainActivity extends Activity {
   if(dialog.getWindow()!=null)dialog.getWindow().setLayout(-1,(int)(getResources().getDisplayMetrics().heightPixels*0.82f));
  }
  void read(String key){
+  try{readContentSafely(key);}
+  catch(Exception failure){
+   android.util.Log.e("DinNote","Reader failed for "+key,failure);
+   showReaderRecovery(key,failure);
+  }
+ }
+ void showReaderRecovery(String key,Exception failure){
+  editor=null;titleEditor=null;readerScroll=null;selected=null;
+  LinearLayout recovery=new LinearLayout(this);recovery.setOrientation(1);recovery.setPadding(dp(20),dp(24),dp(20),dp(16));
+  setContentView(recovery);recovery.setBackgroundColor(0xfffafbf7);
+  TextView heading=text("DinNote · Pemulihan Bacaan",20);heading.setTextColor(0xff176b47);recovery.addView(heading);
+  TextView msg=text("Posting tidak dapat dipaparkan. Kandungan asal tidak dipadam. Sila buat backup sebelum mengubah data.",15);recovery.addView(msg);
+  Button backup=new Button(this);backup.setText("Backup data");recovery.addView(backup);backup.setOnClickListener(v->startBackup());
+  Button back=new Button(this);back.setText("Kembali ke halaman depan");recovery.addView(back);back.setOnClickListener(v->openHomeSafely());
+  TextView details=text("Ralat: "+failure.getClass().getSimpleName()+": "+String.valueOf(failure.getMessage()),12);details.setTextIsSelectable(true);recovery.addView(details);
+ }
+ void readContentSafely(String key){
   if(key!=null&&prefs.contains("pdf_original_"+key)){showOriginalPdf(key);return;}
   stopAutoReading();
   // Use the actual DinNote window width: Fold6 split-screen may be narrower than the display.
@@ -2245,7 +2262,7 @@ public class MainActivity extends Activity {
   String[] lines=encodedEditorText().split("\\n",-1);
   ArrayList<Integer> positions=new ArrayList<>();ArrayList<String> labels=new ArrayList<>();
   for(int i=0;i<lines.length;i++){
-   java.util.regex.Matcher m=java.util.regex.Pattern.compile("^\\\\s*(\\\\d+)\\\\.\\\\s+(.*)$").matcher(lines[i]);
+   java.util.regex.Matcher m=java.util.regex.Pattern.compile("^\\s*(\\d+)\\.\\s+(.*)$").matcher(lines[i]);
    if(m.matches()){positions.add(i);labels.add(m.group(1)+". "+m.group(2));}
   }
   if(positions.isEmpty()){new AlertDialog.Builder(this).setTitle("Huraian bernombor").setMessage("Tulis senarai seperti 1. Pertama, 2. Kedua dan seterusnya terlebih dahulu.").setPositiveButton("Faham",null).show();return;}
@@ -2773,7 +2790,7 @@ public class MainActivity extends Activity {
   String[] lines=value.split("\\n",-1);StringBuilder paragraph=new StringBuilder();
   for(int i=0;i<lines.length;i++){
    String line=lines[i];
-   java.util.regex.Matcher numbered=java.util.regex.Pattern.compile("^\\\\s*(\\\\d+)\\\\.\\\\s+(.*)$").matcher(line);
+   java.util.regex.Matcher numbered=java.util.regex.Pattern.compile("^\\s*(\\d+)\\.\\s+(.*)$").matcher(line);
    if(numbered.matches()){
     addPlainBoxText(body,paragraph.toString(),fontSize);paragraph.setLength(0);
     final String commentaryKey="syarahan_"+key+"_"+(baseLine+i);
@@ -2795,7 +2812,7 @@ public class MainActivity extends Activity {
   addPlainBoxText(body,paragraph.toString(),fontSize);
  }
  void addPlainBoxText(LinearLayout body,String value,int fontSize){
-  value=value.replaceAll("(?m)^[ \\t]*\\\\*{1,2}[ \\t]*$","").trim();
+  value=value.replaceAll("(?m)^[ \\t]*\\*{1,2}[ \\t]*$","").trim();
   if(value.isEmpty())return;
   TextView t=text("",fontSize);t.setText(readerLabelText(value));applySharedTextMetrics(t);t.setTextColor(0xff303c43);t.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);t.setTextIsSelectable(true);t.setPadding(dp(8),dp(1),dp(8),dp(1));body.addView(t);
  }
