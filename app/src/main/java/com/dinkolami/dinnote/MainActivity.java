@@ -417,7 +417,7 @@ public class MainActivity extends Activity {
   searchIcon.setGravity(Gravity.CENTER);searchIcon.setTextColor(0xff47745d);
   searchIcon.setBackground(rounded(0xfffdfefe,0xffcdd6df,9));
   searchIcon.setContentDescription("Cari nota atau kitab");
-  LinearLayout.LayoutParams searchIconParams=new LinearLayout.LayoutParams(dp(36),dp(42));
+  LinearLayout.LayoutParams searchIconParams=new LinearLayout.LayoutParams(dp(36),dp(38));
   searchIconParams.leftMargin=dp(4);tiles.addView(searchIcon,searchIconParams);
   searchIcon.setOnClickListener(v->{
    EditText queryInput=new EditText(this);
@@ -456,6 +456,9 @@ public class MainActivity extends Activity {
   String resume=prefs.getString("last_edited_key","");
   // Resume editing is available as a compact icon between the home actions.
 
+  LinearLayout card=new LinearLayout(this);card.setOrientation(1);card.setClipToPadding(false);
+  card.setBackground(homeInsetSurface(0xfffdfefe,0xfffdfefe,0xffc1ccc8,10));
+  page.addView(card,new LinearLayout.LayoutParams(-1,-2));
   LinearLayout recentNotes=new LinearLayout(this);recentNotes.setOrientation(1);
   recentNotes.setPadding(dp(10),dp(4),dp(10),dp(7));card.addView(recentNotes);
   ArrayList<String> keys=new ArrayList<>();
