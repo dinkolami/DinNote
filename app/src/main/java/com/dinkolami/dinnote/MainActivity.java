@@ -376,20 +376,20 @@ public class MainActivity extends Activity {
      if(actualDp>0&&(actualDp>=440)!=builtWide)home();
     });
    });
-  TextView recent=dashboardText("Baru dilihat  ▾",15,true);
+  TextView recent=dashboardText("◷",22,true);
   recent.setBackground(rounded(0xfffdfefe,0xffcdd6df,9));recent.setTextColor(0xff566a70);recent.setIncludeFontPadding(false);
   LinearLayout quickTools=new LinearLayout(this);quickTools.setOrientation(LinearLayout.HORIZONTAL);quickTools.setGravity(Gravity.CENTER_VERTICAL);
   LinearLayout.LayoutParams quickParams=new LinearLayout.LayoutParams(-1,-2);quickParams.bottomMargin=dp(1);
   quickTools.setPadding(dp(10),dp(4),dp(10),dp(6));quickTools.setBackgroundColor(0xfffffefd);quickTools.setElevation(dp(1));
   // Keep dashboard search and view selector visible while the note list scrolls.
   root.addView(quickTools,2,quickParams);
-  LinearLayout.LayoutParams rp=new LinearLayout.LayoutParams(-2,dp(42));rp.rightMargin=dp(6);
-  recent.setGravity(Gravity.CENTER_VERTICAL);recent.setPadding(dp(12),0,dp(12),0);
+  LinearLayout.LayoutParams rp=new LinearLayout.LayoutParams(dp(42),dp(42));rp.rightMargin=dp(6);
+  recent.setGravity(Gravity.CENTER);recent.setPadding(0,0,0,0);
   quickTools.addView(recent,rp);
   recent.setContentDescription("Pilih paparan: baru dilihat, semua nota atau Maktabah");recent.setFocusable(true);applyTouchFeedback(recent);
   recent.setOnClickListener(v->new AlertDialog.Builder(this).setItems(new String[]{"Baru dilihat","Semua nota","Maktabah"},(d,i)->{if(i==2)openSection(true);else openSection(false);}).show());
   EditText search=new EditText(this);search.setSingleLine(true);search.setTextSize(14);
-  search.setHint("Cari nota atau kitab");search.setContentDescription("Carian nota dan kitab");
+  search.setHint("⌕");search.setContentDescription("Cari nota atau kitab");
   search.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);
   search.setInputType(android.text.InputType.TYPE_CLASS_TEXT);
   search.setPadding(dp(12),dp(6),dp(12),dp(6));
