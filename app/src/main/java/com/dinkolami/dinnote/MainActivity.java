@@ -541,11 +541,11 @@ public class MainActivity extends Activity {
   if(homeWindowWidthDp()<440){
    final java.util.ArrayList<String> sampleWisdom=homeWisdomEntries();
    LinearLayout wisdomCard=new LinearLayout(this);wisdomCard.setOrientation(LinearLayout.VERTICAL);
-   wisdomCard.setPadding(dp(12),dp(17),dp(12),dp(26));
+   wisdomCard.setPadding(dp(12),dp(9),dp(12),dp(9));
    final int[] wisdomBorders={0xffd8c69c,0xffb7d2be,0xffd4c5df};
    final int wisdomStyle=new java.util.Random().nextInt(wisdomBorders.length);
    wisdomCard.setBackground(rounded(0xfffdfcf7,wisdomBorders[wisdomStyle],11));
-   LinearLayout.LayoutParams wisdomParams=new LinearLayout.LayoutParams(-1,-2);
+   LinearLayout.LayoutParams wisdomParams=new LinearLayout.LayoutParams(-1,dp(156));
    wisdomParams.bottomMargin=dp(5);footer.addView(wisdomCard,wisdomParams);
    TextView wisdomHeading=dashboardText("❀  Mutiara Hikmah  ❀",14,true);
    wisdomHeading.setTextColor(0xff47745d);wisdomHeading.setGravity(Gravity.CENTER);
@@ -555,9 +555,13 @@ public class MainActivity extends Activity {
    String[] wisdomFamilies={"serif","sans-serif","casual","serif-monospace"};
    String family=wisdomFamilies[new java.util.Random().nextInt(wisdomFamilies.length)];
    wisdomBody.setTypeface(android.graphics.Typeface.create(family,android.graphics.Typeface.NORMAL));
-   wisdomBody.setGravity(Gravity.CENTER);wisdomBody.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);wisdomBody.setMaxLines(6);
-   LinearLayout.LayoutParams wisdomTextParams=new LinearLayout.LayoutParams(-1,-2);
-   wisdomTextParams.topMargin=dp(3);wisdomCard.addView(wisdomBody,wisdomTextParams);
+   wisdomBody.setGravity(Gravity.CENTER);wisdomBody.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
+   ScrollView wisdomScroll=new ScrollView(this);
+   wisdomScroll.setFillViewport(true);wisdomScroll.setVerticalScrollBarEnabled(false);
+   LinearLayout.LayoutParams wisdomTextParams=new LinearLayout.LayoutParams(-1,0,1);
+   wisdomTextParams.topMargin=dp(3);wisdomCard.addView(wisdomScroll,wisdomTextParams);
+   wisdomScroll.addView(wisdomBody,new ScrollView.LayoutParams(-1,-2));
+   wisdomScroll.setOnLongClickListener(v->{maktabah=true;edit("m_hikmah_ringkas");return true;});
    final int[] wisdomIndex={new java.util.Random().nextInt(sampleWisdom.size())};
    setHomeWisdomText(wisdomBody,sampleWisdom.get(wisdomIndex[0]));
    wisdomCard.setContentDescription("Mutiara Hikmah. Ketik untuk petikan lain. Tekan lama untuk edit posting");
