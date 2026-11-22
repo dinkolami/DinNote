@@ -2523,16 +2523,16 @@ public class MainActivity extends Activity {
   }
  }
  class BoxBodySpan implements android.text.style.LineBackgroundSpan {
-  final int bg,ink,first,last;BoxBodySpan(int b,int i,int a,int z){bg=b;ink=i;first=a;last=z;}
+  final int bg,ink,first,last;final android.graphics.Paint reusablePaint=new android.graphics.Paint(3);final android.graphics.Path reusableShape=new android.graphics.Path();final android.graphics.Path reusableEdge=new android.graphics.Path();BoxBodySpan(int b,int i,int a,int z){bg=b;ink=i;first=a;last=z;}
   @Override public void drawBackground(android.graphics.Canvas c,android.graphics.Paint p,int left,int right,int top,int baseline,int bottom,CharSequence t,int start,int end,int line){
    boolean head=start<=first,tail=end>=last;
    if(head)top+=dp(2);if(tail)bottom-=dp(2);if(bottom<=top)return;
    float l=left+dp(1),r=right-dp(1),rad=dp(8);
    float[] corners={head?rad:0,head?rad:0,head?rad:0,head?rad:0,tail?rad:0,tail?rad:0,tail?rad:0,tail?rad:0};
-   android.graphics.Paint q=new android.graphics.Paint(p);q.setAntiAlias(true);q.setStyle(android.graphics.Paint.Style.FILL);q.setColor(bg);
-   android.graphics.Path shape=new android.graphics.Path();shape.addRoundRect(new android.graphics.RectF(l,top,r,bottom),corners,android.graphics.Path.Direction.CW);c.drawPath(shape,q);
+   android.graphics.Paint q=reusablePaint;q.reset();q.setAntiAlias(true);q.setStyle(android.graphics.Paint.Style.FILL);q.setColor(bg);
+   android.graphics.Path shape=reusableShape;shape.rewind();shape.addRoundRect(new android.graphics.RectF(l,top,r,bottom),corners,android.graphics.Path.Direction.CW);c.drawPath(shape,q);
    q.setColor(ink);q.setAlpha(135);q.setStyle(android.graphics.Paint.Style.STROKE);q.setStrokeWidth(dp(1));
-   android.graphics.Path edge=new android.graphics.Path();
+   android.graphics.Path edge=reusableEdge;edge.rewind();
    edge.moveTo(l,tail?bottom-rad:bottom);edge.lineTo(l,head?top+rad:top);
    if(head){edge.quadTo(l,top,l+rad,top);edge.lineTo(r-rad,top);edge.quadTo(r,top,r,top+rad);}
    else edge.moveTo(r,top);
