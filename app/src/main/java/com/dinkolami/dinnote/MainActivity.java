@@ -630,7 +630,7 @@ public class MainActivity extends Activity {
   addBook.setContentDescription("Cipta kitab baharu");addBook.setOnClickListener(v->{maktabah=true;edit(null);});applyTouchFeedback(addBook);
   add.setContentDescription("Cipta nota baharu");add.setFocusable(true);
   add.setOnClickListener(v->{maktabah=false;edit(null);});
-  applyTouchFeedback(add);applyTouchFeedback(recent);
+  applyTouchFeedback(add);
  }
  void showDashboardActions(String key){
   if(!prefs.contains(key)||prefs.getBoolean("deleted_"+key,false))return;
