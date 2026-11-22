@@ -471,7 +471,9 @@ public class MainActivity extends Activity {
   latestHeading.setTextColor(0xff365c48);
   latestHeading.setIncludeFontPadding(false);
   latestHeading.setPadding(dp(8),dp(homeWindowWidthDp()<440?6:8),dp(8),dp(homeWindowWidthDp()<440?6:8));
-  latestHeader.addView(latestHeading,new LinearLayout.LayoutParams(-1,-2));
+  ImageView latestIcon=new ImageView(this);latestIcon.setImageResource(R.drawable.home_icon_history);
+  LinearLayout.LayoutParams latestIconParams=new LinearLayout.LayoutParams(dp(16),dp(16));latestIconParams.leftMargin=dp(9);latestIconParams.rightMargin=dp(2);latestHeader.addView(latestIcon,latestIconParams);
+  latestHeader.addView(latestHeading,new LinearLayout.LayoutParams(0,-2,1));
   LinearLayout.LayoutParams latestHeadingParams=new LinearLayout.LayoutParams(-1,-2);
   latestHeadingParams.topMargin=dp(2);latestHeadingParams.bottomMargin=dp(3);
   page.addView(latestHeader,latestHeadingParams);
@@ -731,7 +733,7 @@ public class MainActivity extends Activity {
   // Keep folded rows compact; unfolded columns retain comfortable touch targets.
   boolean folded=homeWindowWidthDp()<440;
   boolean collapsed=prefs.getBoolean(pin?"home_pinned_collapsed":"home_updated_collapsed",false);
-  TextView title=dashboardText((pin?"◆  ":"◷  ")+heading+"  "+(collapsed?"▸":"▾"),15,true);
+  TextView title=dashboardText(heading+"  "+(collapsed?"▸":"▾"),15,true);
   title.setTextColor(0xff365c48);
   title.setElevation(0);title.setPadding(dp(8),dp(folded?6:8),0,dp(folded?6:8));title.setIncludeFontPadding(false);title.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);title.setSingleLine(true);title.setEllipsize(android.text.TextUtils.TruncateAt.END);title.setContentDescription(heading+", ketik untuk buka atau lipat");title.setTooltipText(heading);title.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);LinearLayout.LayoutParams titleParams=new LinearLayout.LayoutParams(-1,-2);titleParams.topMargin=dp(2);titleParams.bottomMargin=dp(2);
   LinearLayout headingRow=new LinearLayout(this);headingRow.setGravity(Gravity.CENTER_VERTICAL);
@@ -739,6 +741,8 @@ public class MainActivity extends Activity {
   headingFill.setCornerRadius(dp(8));headingRow.setBackground(headingFill);headingRow.setPadding(0,0,dp(5),0);
   View goldAccent=new View(this);goldAccent.setBackgroundColor(0xffc6ad70);
   LinearLayout.LayoutParams accentParams=new LinearLayout.LayoutParams(dp(1),dp(15));accentParams.leftMargin=dp(5);headingRow.addView(goldAccent,accentParams);
+  ImageView sectionIcon=new ImageView(this);sectionIcon.setImageResource(pin?R.drawable.home_icon_pin:R.drawable.home_icon_clock);
+  LinearLayout.LayoutParams sectionIconParams=new LinearLayout.LayoutParams(dp(16),dp(16));sectionIconParams.leftMargin=dp(9);sectionIconParams.rightMargin=dp(2);headingRow.addView(sectionIcon,sectionIconParams);
   headingRow.addView(title,new LinearLayout.LayoutParams(0,-2,1));
   TextView topicCount=dashboardText(Math.min(3,keys.size())+" Topik",10,true);
   topicCount.setTextColor(0xff416653);topicCount.setGravity(Gravity.CENTER);topicCount.setPadding(dp(5),dp(3),dp(5),dp(3));
