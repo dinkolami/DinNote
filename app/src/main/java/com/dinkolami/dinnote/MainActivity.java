@@ -2527,13 +2527,13 @@ public class MainActivity extends Activity {
   BoxMarkerSpan(String t,int i,int b){title=t;ink=i;bg=b;}
   @Override public int getSize(android.graphics.Paint p,CharSequence t,int a,int b,android.graphics.Paint.FontMetricsInt fm){
    if(fm!=null){int h=dp(title.isEmpty()?5:22);fm.ascent=-h;fm.top=-h;fm.descent=dp(2);fm.bottom=fm.descent;}
-   android.graphics.Paint q=new android.graphics.Paint(p);q.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);q.setTextSize(dp(13));
+   android.graphics.Paint q=new android.graphics.Paint(p);q.setTypeface(android.graphics.Typeface.DEFAULT);q.setTextSize(dp(13));
    return title.isEmpty()?1:Math.round(q.measureText(title))+dp(38);
   }
   @Override public void draw(android.graphics.Canvas c,CharSequence t,int a,int b,float x,int top,int y,int bottom,android.graphics.Paint p){
    if(title.isEmpty())return;
    android.graphics.Paint q=new android.graphics.Paint(p);q.setAntiAlias(true);q.setColor(ink);q.setAlpha(22);c.drawRoundRect(x+dp(7),top+dp(4),x+getSize(p,t,a,b,null)-dp(4),bottom-dp(3),dp(12),dp(12),q);q.setAlpha(45);c.drawCircle(x+dp(13),(top+bottom)/2f,dp(10),q);
-   q.setAlpha(255);q.setColor(ink);q.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);q.setTextSize(dp(13));
+   q.setAlpha(255);q.setColor(ink);q.setTypeface(android.graphics.Typeface.DEFAULT);q.setTextSize(dp(13));
    String mark=title.startsWith("Firman")?"":title.startsWith("Sabda")?"":title.startsWith("Kalam")?"✒":title.startsWith("Dalil")?"⚖":"◎";
    q.setTextAlign(android.graphics.Paint.Align.CENTER);c.drawText(mark,x+dp(13),(top+bottom)/2f-(q.ascent()+q.descent())/2,q);
    if(title.startsWith("Firman")||title.startsWith("Sabda")){boolean book=title.startsWith("Firman");float size=dp(book?24:19);c.save();c.translate(x+dp(13)-size/2f,(top+bottom-size)/2f);c.scale(size/32f,size/32f);drawSacredBoxIcon(c,book,ink);c.restore();}
@@ -2549,7 +2549,7 @@ public class MainActivity extends Activity {
    float[] corners={head?rad:0,head?rad:0,head?rad:0,head?rad:0,tail?rad:0,tail?rad:0,tail?rad:0,tail?rad:0};
    android.graphics.Paint q=reusablePaint;q.reset();q.setAntiAlias(true);q.setStyle(android.graphics.Paint.Style.FILL);q.setColor(bg);
    android.graphics.Path shape=reusableShape;shape.rewind();shape.addRoundRect(new android.graphics.RectF(l,top,r,bottom),corners,android.graphics.Path.Direction.CW);c.drawPath(shape,q);
-   q.setColor(ink);q.setAlpha(135);q.setStyle(android.graphics.Paint.Style.STROKE);q.setStrokeWidth(dp(1));
+   q.setColor(ink);q.setAlpha(75);q.setStyle(android.graphics.Paint.Style.STROKE);q.setStrokeWidth(dp(1));
    android.graphics.Path edge=reusableEdge;edge.rewind();
    edge.moveTo(l,tail?bottom-rad:bottom);edge.lineTo(l,head?top+rad:top);
    if(head){edge.quadTo(l,top,l+rad,top);edge.lineTo(r-rad,top);edge.quadTo(r,top,r,top+rad);}
@@ -2776,10 +2776,11 @@ public class MainActivity extends Activity {
    };panel.setOrientation(LinearLayout.VERTICAL);
    int bg=type.equals("FIRMAN")?0xffedf5ee:type.equals("SABDA")?0xfffaf5e8:type.equals("DALIL")?0xffedf4fa:type.equals("HIKMAH")?0xfff5eff9:type.equals("SAHABAT")?0xfff1f6ec:type.equals("TABII")?0xfff1f4fa:type.equals("ULAMA")?0xfffaf1ed:0xfffcf0f2;
    int border=type.equals("FIRMAN")?0xffa5c3aa:type.equals("SABDA")?0xffd6c7a4:type.equals("DALIL")?0xff8eb4d2:type.equals("HIKMAH")?0xffbca5d0:type.equals("SAHABAT")?0xffb6c9a3:type.equals("TABII")?0xffb0bfd9:type.equals("ULAMA")?0xffd6b7a5:0xffd7a0b2;
+   border=Color.rgb((Color.red(border)+Color.red(bg))/2,(Color.green(border)+Color.green(bg))/2,(Color.blue(border)+Color.blue(bg))/2);
    panel.setBackground(rounded(bg,border,8));panel.setPadding(dp(7),dp(2),dp(7),dp(3));
    TextView label=text(type.equals("FIRMAN")?"Firman Allah SWT:":type.equals("SABDA")?"Sabda Nabi SAW:":type.equals("DALIL")?"⚖  Dalil":type.equals("HIKMAH")?"✒  Kalam Hikmah":type.equals("SAHABAT")?"✦  Kata Sahabat Rdh.":type.equals("TABII")?"❖  Kata Tabi\u0027in Rhm.":type.equals("ULAMA")?"✧  Kata Ulama\u0027 Rhm.":"◎  Catatan Penting",13);
    label.setTextColor(type.equals("FIRMAN")?0xff176b47:type.equals("SABDA")?0xff96783e:type.equals("DALIL")?0xff426e96:type.equals("HIKMAH")?0xff79549b:type.equals("SAHABAT")?0xff607d42:type.equals("TABII")?0xff536f9b:type.equals("ULAMA")?0xff9b654b:0xff946176);
-   label.setTypeface(null,android.graphics.Typeface.BOLD);label.setIncludeFontPadding(false);
+   label.setTypeface(null,android.graphics.Typeface.NORMAL);label.setIncludeFontPadding(false);
    label.setPadding(dp(6),dp(2),dp(8),dp(2));
    label.setBackground(rounded(bg,border,16));
    if(type.equals("FIRMAN")||type.equals("SABDA")){
