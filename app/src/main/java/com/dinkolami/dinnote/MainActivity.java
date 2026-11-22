@@ -1602,6 +1602,8 @@ public class MainActivity extends Activity {
       commentaryPanel.addView(commentaryLabel);
       EditText commentaryEditor=new EditText(this);
       commentaryEditor.setText(prefs.getString(commentaryKey,""));
+      // Share the same live AutoCorrect dictionary with expandable commentary.
+      new AutoCorrectDictionary(this).attach(commentaryEditor);
       commentaryEditor.setHint("Tulis syarahan di sini…");
       commentaryEditor.setTextSize(15);
       commentaryEditor.setTextColor(0xff303c43);
