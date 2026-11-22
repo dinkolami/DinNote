@@ -467,7 +467,8 @@ public class MainActivity extends Activity {
   View latestAccent=new View(this);latestAccent.setBackgroundColor(0xffc6ad70);
   LinearLayout.LayoutParams latestAccentParams=new LinearLayout.LayoutParams(dp(1),dp(15));
   latestAccentParams.leftMargin=dp(5);latestHeader.addView(latestAccent,latestAccentParams);
-  TextView latestHeading=dashboardText("5 Terkini",15,true);
+  boolean latestCollapsed=prefs.getBoolean("home_latest_collapsed",false);
+  TextView latestHeading=dashboardText("5 Terkini  "+(latestCollapsed?"▸":"▾"),15,true);
   latestHeading.setTextColor(0xff365c48);
   latestHeading.setIncludeFontPadding(false);
   latestHeading.setPadding(dp(8),dp(homeWindowWidthDp()<440?6:8),dp(8),dp(homeWindowWidthDp()<440?6:8));
@@ -480,6 +481,10 @@ public class MainActivity extends Activity {
   LinearLayout card=new LinearLayout(this);card.setOrientation(1);card.setClipToPadding(false);
   card.setBackground(homeInsetSurface(0xfffdfefe,0xfffdfefe,0xffc1ccc8,10));
   page.addView(card,new LinearLayout.LayoutParams(-1,-2));
+  card.setVisibility(latestCollapsed?View.GONE:View.VISIBLE);
+  latestHeader.setContentDescription("5 Terkini, ketik untuk buka atau lipat");
+  latestHeader.setFocusable(true);applyTouchFeedback(latestHeader);
+  latestHeader.setOnClickListener(v->{prefs.edit().putBoolean("home_latest_collapsed",!latestCollapsed).apply();home();});
   LinearLayout recentNotes=new LinearLayout(this);recentNotes.setOrientation(1);
   recentNotes.setPadding(dp(10),dp(4),dp(10),dp(7));card.addView(recentNotes);
   ArrayList<String> keys=new ArrayList<>();
