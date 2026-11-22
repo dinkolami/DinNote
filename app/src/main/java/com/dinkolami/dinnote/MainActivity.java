@@ -3495,7 +3495,10 @@ public class MainActivity extends Activity {
    android.graphics.Bitmap[] current={null};
    Runnable draw=()->{
     try(android.graphics.pdf.PdfRenderer.Page page=pdf.openPage(index[0])){
+     // Bound bitmap memory on large scanned pages and narrow Fold screens.
      float scale=Math.min(2.5f,1800f/Math.max(page.getWidth(),page.getHeight()));
+     double pixels=(double)page.getWidth()*page.getHeight()*scale*scale;
+     if(pixels>3000000d)scale*=(float)Math.sqrt(3000000d/pixels);
      android.graphics.Bitmap bmp=android.graphics.Bitmap.createBitmap(Math.max(1,Math.round(page.getWidth()*scale)),Math.max(1,Math.round(page.getHeight()*scale)),android.graphics.Bitmap.Config.ARGB_8888);
      bmp.eraseColor(android.graphics.Color.WHITE);page.render(bmp,null,null,android.graphics.pdf.PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY);
      image.setImageBitmap(bmp);if(current[0]!=null)current[0].recycle();current[0]=bmp;
