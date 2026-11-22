@@ -461,7 +461,7 @@ public class MainActivity extends Activity {
   latestHeader.setGravity(Gravity.CENTER_VERTICAL);
   android.graphics.drawable.GradientDrawable latestFill=new android.graphics.drawable.GradientDrawable(
    android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
-   new int[]{0xffffffff,0xffe9edeb});
+   new int[]{0xfffafffb,0xffddece2});
   latestFill.setCornerRadius(dp(8));
   latestHeader.setBackground(latestFill);
   View latestAccent=new View(this);latestAccent.setBackgroundColor(0xffc6ad70);
