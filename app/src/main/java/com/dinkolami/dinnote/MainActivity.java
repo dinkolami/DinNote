@@ -2335,8 +2335,25 @@ public class MainActivity extends Activity {
     return super.onTextContextMenuItem(id);
    }
 
-   // Let Android draw the native IME-aware caret. A second manually drawn
-   // caret used Layout coordinates that could drift inside styled boxes.
+   // Draw a visible emerald caret at Android Layout's actual selection position.
+   // Native cursor drawables are invisible on some Samsung configurations.
+   @Override protected void onDraw(android.graphics.Canvas canvas){
+    super.onDraw(canvas);
+    if(!hasFocus()||getSelectionStart()<0||getSelectionStart()!=getSelectionEnd())return;
+    android.text.Layout layout=getLayout();if(layout==null)return;
+    int offset=Math.min(getSelectionStart(),length());
+    int line=layout.getLineForOffset(offset);
+    float x=getCompoundPaddingLeft()+layout.getPrimaryHorizontal(offset)-getScrollX();
+    float top=getExtendedPaddingTop()+layout.getLineTop(line)-getScrollY();
+    float bottom=getExtendedPaddingTop()+layout.getLineBottom(line)-getScrollY();
+    x=Math.max(getCompoundPaddingLeft()+dp(1),Math.min(getWidth()-getCompoundPaddingRight()-dp(1),x));
+    top=Math.max(getExtendedPaddingTop(),top);
+    bottom=Math.min(getHeight()-getExtendedPaddingBottom(),bottom);
+    if(bottom-top<dp(4))return;
+    long phase=android.os.SystemClock.uptimeMillis()%1000;
+    if(phase<600){android.graphics.Paint caret=new android.graphics.Paint(3);caret.setColor(0xff176b47);caret.setStrokeWidth(dp(2));canvas.drawLine(x,top+dp(1),x,bottom-dp(1),caret);}
+    postInvalidateDelayed(phase<600?600-phase:1000-phase);
+   }
    @Override protected void onSelectionChanged(int start,int end){super.onSelectionChanged(start,end);if(editor==this&&start>=0&&end>=0){persistEditorPosition();if(hasFocus())post(()->revealEditorCursor(this));if(formatRefresh[0]!=null)post(formatRefresh[0]);}}
    @Override protected void onSizeChanged(int w,int h,int oldw,int oldh){super.onSizeChanged(w,h,oldw,oldh);if(editor==this)post(()->revealEditorCursor(this));}
   };final int[] boxTouchOffset={-1};
