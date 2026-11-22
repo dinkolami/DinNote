@@ -1614,6 +1614,8 @@ public class MainActivity extends Activity {
   if(window!=null)window.setLayout(Math.min(getResources().getDisplayMetrics().widthPixels-dp(32),dp(430)),-2);
  }
  void applySharedTextMetrics(android.widget.TextView view){
+  // GitHub-like reading typography: lightweight sans-serif for prose, with Android font fallback for Arabic.
+  view.setTypeface(android.graphics.Typeface.create("sans-serif",android.graphics.Typeface.NORMAL));
   int level=Math.max(0,Math.min(3,prefs.getInt("reader_font_level",1)));
   view.setTextSize(new int[]{13,15,16,18}[level]);
   view.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
