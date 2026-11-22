@@ -796,6 +796,12 @@ public class MainActivity extends Activity {
  void returnFromReader(){if(selected!=null)saveReaderPosition(selected);getWindow().clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);prefs.edit().putBoolean("reader_clean_mode",false).apply();selected=null;if(sectionOpen)notesPage();else home();}
 
 
+ Button lectureSettingsButton(){
+  Button b=new Button(this);b.setText("⚙");b.setTextSize(22);b.setPadding(0,0,0,0);b.setMinWidth(0);b.setMinHeight(0);b.setBackground(rounded(0xfff3f7f3,0xffbed2c5,50));b.setElevation(dp(5));b.setContentDescription("Kawalan kuliah");return b;
+ }
+ FrameLayout.LayoutParams lectureSettingsParams(){
+  FrameLayout.LayoutParams p=new FrameLayout.LayoutParams(dp(44),dp(44),Gravity.CENTER);p.topMargin=dp(140);return p;
+ }
  void showPagedReader(String key){
   final CharSequence source=formattedReadingText(prefs.getString(key,""));
   final int availableWidthDp=Math.round(getResources().getDisplayMetrics().widthPixels/getResources().getDisplayMetrics().density);
@@ -866,13 +872,19 @@ public class MainActivity extends Activity {
    if(lecturePages){prefs.edit().putBoolean("reader_clean_mode",false).apply();read(key);}
    else returnFromReader();
   });
-  final Runnable hidePageBack=()->readingFrame.removeView(pageBack);
+  Button pageSettings=lectureSettingsButton();
+  pageSettings.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Kawalan kuliah").setItems(new String[]{"Bacaan scroll dan syarahan","Saiz tulisan"},(d,w)->{
+   if(w==0){prefs.edit().putBoolean("reader_swipe_mode",false).putBoolean("reader_clean_mode",true).apply();read(key);}
+   else new AlertDialog.Builder(this).setTitle("Saiz tulisan").setItems(new String[]{"Kecil","Biasa","Besar","Lebih besar"},(dialog,size)->{prefs.edit().putInt("reader_font_level",size).apply();read(key);}).show();
+  }).show());
+  final Runnable hidePageBack=()->{readingFrame.removeView(pageBack);readingFrame.removeView(pageSettings);};
   readerDetector=new android.view.GestureDetector(this,new android.view.GestureDetector.SimpleOnGestureListener(){
    @Override public boolean onDown(android.view.MotionEvent e){return true;}
    @Override public boolean onDoubleTap(android.view.MotionEvent e){
     readingFrame.removeCallbacks(hidePageBack);
     if(pageBack.getParent()==null)readingFrame.addView(pageBack,new FrameLayout.LayoutParams(dp(76),dp(76),Gravity.CENTER));
     pageBack.bringToFront();
+    if(pageSettings.getParent()==null)readingFrame.addView(pageSettings,lectureSettingsParams());
     readingFrame.postDelayed(hidePageBack,3000);
     return true;
    }
@@ -1742,10 +1754,13 @@ public class MainActivity extends Activity {
     return true;
    });
    // Do not attach the Back control until a deliberate double tap.
-   final Runnable hideLectureBack=()->lectureSurface.removeView(floatingBack);
+   Button settings=lectureSettingsButton();
+   settings.setOnClickListener(v->floatingBack.performLongClick());
+   final Runnable hideLectureBack=()->{lectureSurface.removeView(floatingBack);lectureSurface.removeView(settings);};
    lectureBackReveal=()->{
     lectureSurface.removeCallbacks(hideLectureBack);
     if(floatingBack.getParent()==null)lectureSurface.addView(floatingBack,floatingParams);
+    if(settings.getParent()==null)lectureSurface.addView(settings,lectureSettingsParams());
     lectureSurface.postDelayed(hideLectureBack,3000);
    };
    root.addView(lectureSurface,new LinearLayout.LayoutParams(-1,0,1));
