@@ -1326,6 +1326,19 @@ public class MainActivity extends Activity {
    }catch(Exception e){Toast.makeText(this,"Simpan gagal",Toast.LENGTH_SHORT).show();}
   }));dialog.show();
  }
+ void insertReadingTag(String code){
+  if(editor==null)return;
+  int start=Math.min(editor.getSelectionStart(),editor.getSelectionEnd()),end=Math.max(editor.getSelectionStart(),editor.getSelectionEnd());
+  if(start<0||end>editor.length())return;
+  android.text.Editable value=editor.getText();
+  if(start!=end&&value.subSequence(start,end).toString().matches("(?s).*---(?:MATAN|SYARAHAN|DALIL|TERJEMAHAN|TAMAT)---.*")){Toast.makeText(this,"Pilih teks tanpa tanda bacaan sedia ada",Toast.LENGTH_SHORT).show();return;}
+  String opening=(start>0&&value.charAt(start-1)!='\n'?"\n":"")+"---"+code+"---\n";
+  String closing="\n---TAMAT---\n";
+  android.text.SpannableStringBuilder block=new android.text.SpannableStringBuilder(opening);
+  block.append(value.subSequence(start,end));block.append(closing);
+  value.replace(start,end,block);
+  editor.setSelection(Math.min(value.length(),start+opening.length()+(end-start)));
+ }
  String selectedReadingText(String key,int mode){
   String raw=prefs.getString(key,"");
   StringBuilder out=new StringBuilder();int type=0;
@@ -2212,6 +2225,14 @@ public class MainActivity extends Activity {
    }).show());
   toolsButton.setContentDescription("Alat penyuntingan tambahan");
 
+  LinearLayout readingTags=new LinearLayout(this);readingTags.setOrientation(LinearLayout.HORIZONTAL);readingTags.setPadding(dp(4),dp(2),dp(4),dp(2));root.addView(readingTags);
+  String[] tagLabels={"المتن · Matan","الشرح · Syarahan","الدليل · Dalil","الترجمة · Terjemahan"};
+  String[] tagCodes={"MATAN","SYARAHAN","DALIL","TERJEMAHAN"};
+  for(int j=0;j<tagLabels.length;j++){
+   final String code=tagCodes[j];Button tag=new Button(this);tag.setText(tagLabels[j]);tag.setTextSize(10);tag.setAllCaps(false);tag.setPadding(dp(2),0,dp(2),0);tag.setMinWidth(0);tag.setMinimumWidth(0);tag.setTextColor(0xff176b47);tag.setBackground(rounded(0xffedf5ee,0xffc6b582,9));
+   LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(0,dp(38),1);lp.setMargins(dp(2),0,dp(2),0);readingTags.addView(tag,lp);
+   tag.setOnClickListener(v->insertReadingTag(code));
+  }
   LinearLayout.LayoutParams editBodyFrame=new LinearLayout.LayoutParams(-1,0,1);editBodyFrame.setMargins(dp(4),0,dp(4),0);root.addView(editor,editBodyFrame);
   // Keep normal Android double-tap text selection while editing.
   // Never navigate away while EditText is handling touch/selection events.
