@@ -853,7 +853,7 @@ public class MainActivity extends Activity {
  }
  void showPagedReader(String key){
   enableLectureZoom(key);startLectureTimer(key);
-  final CharSequence source=formattedReadingText(selectedReadingText(key));
+  final CharSequence source=readerLabelText(selectedReadingText(key));
   final int availableWidthDp=Math.round(readerBuiltWidthPx/getResources().getDisplayMetrics().density);
   final boolean spread=availableWidthDp>=500&&prefs.getBoolean("reader_two_columns",true);
   final int fontLevel=Math.max(0,Math.min(3,prefs.getInt("reader_font_level",1)));
@@ -1141,6 +1141,16 @@ public class MainActivity extends Activity {
    }
   }return out;
  }
+ android.text.SpannableStringBuilder readerLabelText(String source){
+  android.text.SpannableStringBuilder out=formattedReadingText(source);
+  java.util.regex.Matcher marks=java.util.regex.Pattern.compile("(?m)^---(MATAN|SYARAHAN|DALIL|TERJEMAHAN)---[ \\t]*$").matcher(out.toString());
+  while(marks.find()){
+   String k=marks.group(1);
+   String label=k.equals("MATAN")?"المتن · Matan":k.equals("SYARAHAN")?"الشرح · Syarahan":k.equals("DALIL")?"الدليل · Dalil":"الترجمة · Terjemahan";
+   out.setSpan(new BoxMarkerSpan(label,0xff176b47,0xffedf5ee),marks.start(),marks.end(),33);
+  }
+  return out;
+ }
  int richMask(android.text.Spanned value,int a,int b){
   int mask=0;
   for(android.text.style.StyleSpan span:value.getSpans(a,b,android.text.style.StyleSpan.class))if(value.getSpanStart(span)<=a&&value.getSpanEnd(span)>=b)mask|=span.getStyle()&3;
@@ -1344,15 +1354,16 @@ public class MainActivity extends Activity {
   value.replace(start,end,block);
   editor.setSelection(Math.min(value.length(),start+opening.length()+(end-start)));
  }
- String selectedReadingText(String key,int mode){
+ String selectedReadingText(String key,int mode){return selectedReadingText(key,mode,false);}
+ String selectedReadingText(String key,int mode,boolean labels){
   String raw=prefs.getString(key,"");
   StringBuilder out=new StringBuilder();int type=0;
   for(String line:raw.split("\\r?\\n",-1)){
    String marker=line.trim();
-   if(marker.equals("---MATAN---")){type=1;continue;}
-   if(marker.equals("---SYARAHAN---")){type=2;continue;}
-   if(marker.equals("---DALIL---")){type=3;continue;}
-   if(marker.equals("---TERJEMAHAN---")){type=4;continue;}
+   if(marker.equals("---MATAN---")){type=1;if(labels&&(mode==0||mode==type))out.append(marker).append('\n');continue;}
+   if(marker.equals("---SYARAHAN---")){type=2;if(labels&&(mode==0||mode==type))out.append(marker).append('\n');continue;}
+   if(marker.equals("---DALIL---")){type=3;if(labels&&(mode==0||mode==type))out.append(marker).append('\n');continue;}
+   if(marker.equals("---TERJEMAHAN---")){type=4;if(labels&&(mode==0||mode==type))out.append(marker).append('\n');continue;}
    if(marker.equals("---TAMAT---")){type=0;continue;}
    if(marker.equals("---KOTAKDALIL---")||marker.equals("---KOTAKFIRMAN---")||marker.equals("---KOTAKSABDA---"))type=3;
    if(mode==0||type==mode)out.append(line).append('\n');
@@ -1363,8 +1374,8 @@ public class MainActivity extends Activity {
  String selectedReadingText(String key){
   int mode=prefs.getInt("reading_filter_"+key,0);
   String filtered=selectedReadingText(key,mode);
-  if(mode!=0&&filtered.isEmpty()){prefs.edit().remove("reading_filter_"+key).apply();return selectedReadingText(key,0);}
-  return filtered;
+  if(mode!=0&&filtered.isEmpty()){prefs.edit().remove("reading_filter_"+key).apply();return selectedReadingText(key,0,true);}
+  return selectedReadingText(key,mode,true);
  }
  void showSelectedReading(String key){
   String[] names={"Teks lengkap","Matan sahaja","Syarahan sahaja","Dalil sahaja","Terjemahan sahaja"};
@@ -1723,7 +1734,7 @@ public class MainActivity extends Activity {
   }
   int fontLevel=Math.max(0,Math.min(3,prefs.getInt("reader_font_level",1)));
   int[] readingSizes=new int[]{13,15,16,18}; // Match editor for both Nota and Maktabah.
-  TextView content=text("",readingSizes[fontLevel]);content.setText(formattedReadingText(fullReadingText));boolean containsArabic=java.util.regex.Pattern.compile("[\\u0600-\\u06FF]").matcher(fullReadingText).find();if(containsArabic){if(prefs.getBoolean("reader_arabic_clear_font",false))content.setTypeface(android.graphics.Typeface.create("serif",android.graphics.Typeface.NORMAL));}
+  TextView content=text("",readingSizes[fontLevel]);content.setText(readerLabelText(fullReadingText));boolean containsArabic=java.util.regex.Pattern.compile("[\\u0600-\\u06FF]").matcher(fullReadingText).find();if(containsArabic){if(prefs.getBoolean("reader_arabic_clear_font",false))content.setTypeface(android.graphics.Typeface.create("serif",android.graphics.Typeface.NORMAL));}
   content.setTextColor(0xff303c43);content.setGravity(Gravity.TOP);content.setBreakStrategy(android.text.Layout.BREAK_STRATEGY_SIMPLE);content.setHyphenationFrequency(android.text.Layout.HYPHENATION_FREQUENCY_NONE);content.setTextIsSelectable(true);content.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);int readingSide=dp(4); // 12dp frame + 8dp body + 4dp content = 24dp editor inset.
   content.setPadding(readingSide,dp(10),readingSide,dp(12));if(prefs.getBoolean("reader_wide_spacing",false))content.setLineSpacing(dp(5),1.15f);else content.setLineSpacing(dp(1),1.0f);content.setIncludeFontPadding(true);applySharedTextMetrics(content);
   // Display list rows with subtle mint dividers; preserve the original stored text.
@@ -1771,7 +1782,7 @@ public class MainActivity extends Activity {
    LinearLayout columns=new LinearLayout(this);columns.setOrientation(LinearLayout.HORIZONTAL);
    columns.setPadding(dp(4),dp(8),dp(4),dp(12));
    // Preserve every original character, including newlines and whitespace at the split.
-    android.text.SpannableStringBuilder formatted=formattedReadingText(fullReadingText);
+    android.text.SpannableStringBuilder formatted=readerLabelText(fullReadingText);
     int visibleMiddle=formatted.length()/2;
     int visibleSplit=formatted.toString().indexOf('\n',visibleMiddle);
     if(visibleSplit<0)visibleSplit=formatted.toString().indexOf(' ',visibleMiddle);
@@ -1878,7 +1889,7 @@ public class MainActivity extends Activity {
      LinearLayout.LayoutParams medalParams=new LinearLayout.LayoutParams(dp(25),dp(25));
      if(arabicHeading)medalParams.leftMargin=dp(3);else medalParams.rightMargin=dp(3);
      if(!arabicHeading)itemRow.addView(medallion,medalParams);
-     TextView valueView=text("",readingSizes[fontLevel]);valueView.setText(formattedReadingText(value));applySharedTextMetrics(valueView);valueView.setTextColor(0xff303c43);
+     TextView valueView=text("",readingSizes[fontLevel]);valueView.setText(readerLabelText(value));applySharedTextMetrics(valueView);valueView.setTextColor(0xff303c43);
      valueView.setTextDirection(arabicHeading?View.TEXT_DIRECTION_RTL:View.TEXT_DIRECTION_FIRST_STRONG);valueView.setTextIsSelectable(true);
      valueView.setGravity((arabicHeading?Gravity.RIGHT:Gravity.LEFT)|Gravity.CENTER_VERTICAL);
      valueView.setPadding(dp(4),0,dp(4),0);
@@ -1959,7 +1970,7 @@ public class MainActivity extends Activity {
        expandButton.setText(opening?"⌃":"⌄");
       };
       lecturePanels.add(commentaryPanel);lectureArrows.add(expandButton);
-      lectureHeadings.add(itemRow);lectureTitles.add(formattedReadingText(value));
+      lectureHeadings.add(itemRow);lectureTitles.add(readerLabelText(value));
       expandButton.setOnClickListener(toggleCommentary);
       medallion.setOnClickListener(toggleCommentary);
       medallion.setContentDescription("Buka atau tutup syarahan nombor "+marker);
@@ -1969,7 +1980,7 @@ public class MainActivity extends Activity {
      View fineDivider=new View(this);fineDivider.setBackgroundColor(0xffc5e7cb);
      readingRows.addView(fineDivider,new LinearLayout.LayoutParams(-1,dp(1)));
     }else{
-     TextView paragraph=text("",readingSizes[fontLevel]);paragraph.setText(formattedReadingText(line.isEmpty()?" ":line));applySharedTextMetrics(paragraph);
+     TextView paragraph=text("",readingSizes[fontLevel]);paragraph.setText(readerLabelText(line.isEmpty()?" ":line));applySharedTextMetrics(paragraph);
      paragraph.setTextColor(0xff303c43);paragraph.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
      paragraph.setTextIsSelectable(!cleanReading);if(cleanReading)paragraph.setOnClickListener(v->markLectureParagraph(paragraph));paragraph.setPadding(dp(4),dp(1),dp(4),dp(1));
      paragraph.setLineSpacing(prefs.getBoolean("reader_wide_spacing",false)?dp(5):dp(1),prefs.getBoolean("reader_wide_spacing",false)?1.15f:1.0f);readingRows.addView(paragraph);
@@ -2667,7 +2678,7 @@ public class MainActivity extends Activity {
     };
     heading.setBackground(rounded(bg,border,16));heading.setPadding(dp(6),dp(1),dp(8),dp(1));label.setBackground(null);label.setPadding(0,0,0,0);LinearLayout.LayoutParams iconParams=new LinearLayout.LayoutParams(dp(book?24:19),dp(book?24:19));iconParams.setMarginEnd(dp(4));heading.addView(symbol,iconParams);heading.addView(label);panel.addView(heading,new LinearLayout.LayoutParams(-2,-2));
    }else panel.addView(label,new LinearLayout.LayoutParams(-2,-2));
-   TextView value=text("",fontSize);String boxContent=m.group(2).replaceFirst("^\\n","").replaceFirst("\\n$","");value.setText(formattedReadingText(boxContent));applySharedTextMetrics(value);value.setTextColor(0xff303c43);
+   TextView value=text("",fontSize);String boxContent=m.group(2).replaceFirst("^\\n","").replaceFirst("\\n$","");value.setText(readerLabelText(boxContent));applySharedTextMetrics(value);value.setTextColor(0xff303c43);
    value.setPadding(0,0,0,0);value.setIncludeFontPadding(true);value.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);value.setTextIsSelectable(true);value.setGravity(Gravity.START);value.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START);panel.addView(value);
    LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);lp.setMargins(dp(8),dp(3),dp(8),dp(3));body.addView(panel,lp);
    previous=m.end();
@@ -2691,7 +2702,7 @@ public class MainActivity extends Activity {
  void addPlainBoxParagraph(LinearLayout body,String value,int fontSize){
   value=value.replaceAll("(?m)^[ \\t]*\\*{1,2}[ \\t]*$","").trim();
   if(value.isEmpty())return;
-  TextView t=text("",fontSize);t.setText(formattedReadingText(value));applySharedTextMetrics(t);t.setTextColor(0xff303c43);t.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);t.setTextIsSelectable(true);t.setPadding(dp(8),dp(1),dp(8),dp(1));body.addView(t);
+  TextView t=text("",fontSize);t.setText(readerLabelText(value));applySharedTextMetrics(t);t.setTextColor(0xff303c43);t.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);t.setTextIsSelectable(true);t.setPadding(dp(8),dp(1),dp(8),dp(1));body.addView(t);
  }
  boolean manageCurrentBox(){return manageCurrentBox(false);}
  boolean manageCurrentBox(boolean choose){
