@@ -548,14 +548,14 @@ public class MainActivity extends Activity {
    LinearLayout.LayoutParams wisdomParams=new LinearLayout.LayoutParams(-1,dp(126));
    wisdomParams.bottomMargin=dp(5);footer.addView(wisdomCard,wisdomParams);
    TextView wisdomHeading=dashboardText("❀  Mutiara Hikmah  ❀",14,true);
-   wisdomHeading.setTextColor(0xff47745d);wisdomHeading.setGravity(Gravity.CENTER);
+   wisdomHeading.setTextColor(0xff47745d);wisdomHeading.setGravity(Gravity.CENTER);wisdomHeading.setIncludeFontPadding(false);
    wisdomCard.addView(wisdomHeading);
    TextView wisdomBody=dashboardText("",13,false);wisdomBody.setTextColor(0xff35453c);
    // Rotate available Android Arabic typeface styles until dedicated font assets are bundled.
    String[] wisdomFamilies={"serif","sans-serif","casual","serif-monospace"};
    String family=wisdomFamilies[new java.util.Random().nextInt(wisdomFamilies.length)];
    wisdomBody.setTypeface(android.graphics.Typeface.create(family,android.graphics.Typeface.NORMAL));
-   wisdomBody.setGravity(Gravity.CENTER);wisdomBody.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
+   wisdomBody.setGravity(Gravity.TOP|Gravity.CENTER_HORIZONTAL);wisdomBody.setIncludeFontPadding(false);wisdomBody.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
    ScrollView wisdomScroll=new ScrollView(this);
    wisdomScroll.setFillViewport(false);
    wisdomScroll.setVerticalScrollBarEnabled(false);
