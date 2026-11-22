@@ -310,6 +310,25 @@ public class MainActivity extends Activity {
   clean=clean.replaceAll("[ \t]+(?=\n)","").replaceAll("\n{4,}","\n\n\n");
   return clean;
  }
+ // One editable Maktabah posting supplies all home wisdom entries.
+ // Each ---HIKMAH--- begins a separate short entry; no extra posts required.
+ java.util.ArrayList<String> homeWisdomEntries(){
+  final String key="m_hikmah_ringkas";
+  if(!prefs.contains(key)&&!prefs.getBoolean("deleted_"+key,false)){
+   prefs.edit().putString(key,
+    "---HIKMAH---\\nMasa ialah amanah. Susunlah waktu untuk ilmu, ibadah dan tanggungjawab.\\n\\n"+
+    "---HIKMAH---\\nIlmu menjadi lebih bermanfaat apabila dipelajari dengan adab dan diamalkan.")
+    .putString("title_"+key,"Hikmah Ringkas").putString("cat_"+key,"Kalam Hikmah").apply();
+  }
+  java.util.ArrayList<String> entries=new java.util.ArrayList<>();
+  String source=prefs.getString(key,"");
+  for(String section:source.split("(?m)^\\\\s*---HIKMAH---\\\\s*$")){
+   String clean=section.replaceAll("(?s)<[^>]*>","").trim();
+   if(clean.length()>0&&clean.length()<=280)entries.add(clean);
+  }
+  if(entries.isEmpty())entries.add("Tambah hikmah melalui posting Hikmah Ringkas dalam Maktabah.");
+  return entries;
+ }
  void home(){
   items=null;sectionOpen=false;editor=null;titleEditor=null;categoryPicker=null;selected=null;maktabah=false;
   base("DinNote");
@@ -501,10 +520,7 @@ public class MainActivity extends Activity {
   // Compact Hikmah Ringkas preview: fixed above the home actions on the folded screen only.
   // Use existing sample wisdom text for layout testing; do not touch user notes.
   if(homeWindowWidthDp()<440){
-   final String[] sampleWisdom={
-    "Masa ialah amanah. Susunlah waktu untuk ilmu, ibadah dan tanggungjawab.",
-    "Ilmu menjadi lebih bermanfaat apabila dipelajari dengan adab dan diamalkan."
-   };
+   final java.util.ArrayList<String> sampleWisdom=homeWisdomEntries();
    LinearLayout wisdomCard=new LinearLayout(this);wisdomCard.setOrientation(LinearLayout.VERTICAL);
    wisdomCard.setPadding(dp(12),dp(6),dp(12),dp(7));
    wisdomCard.setBackground(rounded(0xfffdfcf7,0xffd8c69c,11));
@@ -517,10 +533,11 @@ public class MainActivity extends Activity {
    wisdomBody.setGravity(Gravity.CENTER);wisdomBody.setMaxLines(3);
    LinearLayout.LayoutParams wisdomTextParams=new LinearLayout.LayoutParams(-1,-2);
    wisdomTextParams.topMargin=dp(3);wisdomCard.addView(wisdomBody,wisdomTextParams);
-   final int[] wisdomIndex={new java.util.Random().nextInt(sampleWisdom.length)};
-   wisdomBody.setText(sampleWisdom[wisdomIndex[0]]);
-   wisdomCard.setContentDescription("Hikmah Ringkas. Ketik untuk hikmah lain");
-   wisdomCard.setOnClickListener(v->{wisdomIndex[0]=(wisdomIndex[0]+1)%sampleWisdom.length;wisdomBody.setText(sampleWisdom[wisdomIndex[0]]);});
+   final int[] wisdomIndex={new java.util.Random().nextInt(sampleWisdom.size())};
+   wisdomBody.setText(sampleWisdom.get(wisdomIndex[0]));
+   wisdomCard.setContentDescription("Hikmah Ringkas. Ketik untuk hikmah lain. Tekan lama untuk edit posting");
+   wisdomCard.setOnClickListener(v->{wisdomIndex[0]=(wisdomIndex[0]+1)%sampleWisdom.size();wisdomBody.setText(sampleWisdom.get(wisdomIndex[0]));});
+   wisdomCard.setOnLongClickListener(v->{maktabah=true;edit("m_hikmah_ringkas");return true;});
    applyTouchFeedback(wisdomCard);
   }
   footer.addView(actions,new LinearLayout.LayoutParams(-1,dp(38)));
