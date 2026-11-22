@@ -2412,7 +2412,20 @@ public class MainActivity extends Activity {
     if(!desired.equals(editor.getTypeface()))editor.setTypeface(desired);
    }
    if(!restoring[0]&&repairTypedBoxMarkers(e,restoring))return;
-   refreshEditorBoxes(e);save();final EditText active=editor;if(active!=null)active.post(()->revealEditorCursor(active));}};editor.addTextChangedListener(bodyWatcher);refreshEditorBoxes(editor.getText());editor.addOnLayoutChangeListener((v,l,t,rr,bb,ol,ot,orr,ob)->{if(rr-l!=orr-ol&&v==editor)refreshEditorBoxes(editor.getText());});categoryPicker.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener(){public void onNothingSelected(android.widget.AdapterView<?> p){}public void onItemSelected(android.widget.AdapterView<?> p,View v,int position,long id){save();}});}
+   // Do not rebuild ReplacementSpans while the keyboard is composing a character:
+   // doing so can leave the caret visually over the newly inserted glyph.
+   final EditText active=editor;
+   int composingStart=android.view.inputmethod.BaseInputConnection.getComposingSpanStart(e);
+   int composingEnd=android.view.inputmethod.BaseInputConnection.getComposingSpanEnd(e);
+   boolean composing=composingStart>=0&&composingEnd>=composingStart;
+   if(!composing)refreshEditorBoxes(e);
+   save();
+   if(active!=null)active.post(()->{
+    if(active!=editor)return;
+    android.text.Editable latest=active.getText();
+    if(android.view.inputmethod.BaseInputConnection.getComposingSpanStart(latest)<0)refreshEditorBoxes(latest);
+    revealEditorCursor(active);
+   });}};editor.addTextChangedListener(bodyWatcher);refreshEditorBoxes(editor.getText());editor.addOnLayoutChangeListener((v,l,t,rr,bb,ol,ot,orr,ob)->{if(rr-l!=orr-ol&&v==editor)refreshEditorBoxes(editor.getText());});categoryPicker.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener(){public void onNothingSelected(android.widget.AdapterView<?> p){}public void onItemSelected(android.widget.AdapterView<?> p,View v,int position,long id){save();}});}
 
  
  void drawSacredBoxIcon(android.graphics.Canvas canvas,boolean book,int ink){
