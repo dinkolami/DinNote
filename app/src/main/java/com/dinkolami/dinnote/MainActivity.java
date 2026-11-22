@@ -3780,7 +3780,7 @@ public class MainActivity extends Activity {
      throw new java.io.IOException("Status nota dalam sandaran tidak sah; data sedia ada tidak diubah");
     if((key.startsWith("book_author_")||key.startsWith("book_edition_")||key.startsWith("book_reference_")||key.startsWith("book_tags_")||key.startsWith("named_stops_")||key.startsWith("footnotes_")||key.startsWith("quote_"))&&!(value instanceof String))throw new java.io.IOException("Metadata Maktabah tidak sah");
     if(key.equals("book_manual_order")&&!(value instanceof Boolean))throw new java.io.IOException("Susunan kitab tidak sah");
-    if((key.startsWith("book_rank_")||key.startsWith("reading_filter_")||key.equals("auto_read_speed"))&&!(value instanceof Integer))throw new java.io.IOException("Tetapan Maktabah tidak sah");
+    if((key.startsWith("book_rank_")||key.startsWith("reading_filter_")||key.equals("auto_read_speed"))&&(!(value instanceof Number)||((Number)value).doubleValue()%1!=0||((Number)value).doubleValue()<0||((Number)value).doubleValue()>Integer.MAX_VALUE))throw new java.io.IOException("Tetapan Maktabah tidak sah");
     // Validate all numeric values before creating the destructive restore transaction.
     if(value instanceof Number&&!(value instanceof Integer)&&!(value instanceof Long)){
      double number=((Number)value).doubleValue();
@@ -3807,7 +3807,12 @@ public class MainActivity extends Activity {
    selected=null;items=null;sectionOpen=false;
    home();
    Toast.makeText(this,"Data DinNote berjaya dipulihkan",Toast.LENGTH_LONG).show();
-  }catch(Exception e){Toast.makeText(this,"Restore gagal: "+e.getMessage(),Toast.LENGTH_LONG).show();}
+  }catch(Exception e){
+   String reason=e.getMessage()==null?e.getClass().getSimpleName():e.getMessage();
+   new AlertDialog.Builder(this).setTitle("Restore DinNote gagal")
+    .setMessage("Punca: "+reason+"\\n\\nData sedia ada tidak diubah jika pemeriksaan gagal sebelum pemulihan. Jangan padam fail backup asal.")
+    .setPositiveButton("Faham",null).show();
+  }
  }
  @Override public void onConfigurationChanged(android.content.res.Configuration newConfig){
   super.onConfigurationChanged(newConfig);
