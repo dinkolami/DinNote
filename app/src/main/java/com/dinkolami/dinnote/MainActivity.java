@@ -545,8 +545,8 @@ public class MainActivity extends Activity {
  android.graphics.drawable.Drawable homeInsetSurface(int top,int bottom,int border,int radius){
   android.graphics.drawable.GradientDrawable surface=new android.graphics.drawable.GradientDrawable(android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,new int[]{top,bottom});
   surface.setCornerRadius(dp(radius));
-  surface.setStroke(Math.max(1,dp(1)),border);
-  android.graphics.drawable.GradientDrawable inner=new android.graphics.drawable.GradientDrawable(android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,new int[]{0x18000000,0x00000000,0x10ffffff});
+  surface.setStroke(Math.max(1,Math.round(0.5f*getResources().getDisplayMetrics().density)),border);
+  android.graphics.drawable.GradientDrawable inner=new android.graphics.drawable.GradientDrawable(android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,new int[]{0x08000000,0x00000000,0x08ffffff});
   inner.setCornerRadius(dp(radius));
   android.graphics.drawable.LayerDrawable layers=new android.graphics.drawable.LayerDrawable(new android.graphics.drawable.Drawable[]{surface,inner});
   return layers;
