@@ -1368,6 +1368,37 @@ public class MainActivity extends Activity {
    prefs.edit().putInt("reading_filter_"+key,i).apply();d.dismiss();read(key);
   }).setNeutralButton("Panduan tanda",(d,w)->new AlertDialog.Builder(this).setTitle("Penandaan dalam editor").setMessage("Letakkan tanda pada baris berasingan sebelum teks: ---MATAN---, ---SYARAHAN---, ---DALIL--- atau ---TERJEMAHAN---. Akhiri bahagian dengan ---TAMAT---. Teks tanpa tanda kekal dalam mod lengkap.").setPositiveButton("OK",null).show()).setNegativeButton("Batal",null).show();
  }
+ void showLayeredCommentary(String key){
+  LinearLayout panel=new LinearLayout(this);panel.setOrientation(1);panel.setPadding(dp(12),dp(8),dp(12),dp(12));
+  ScrollView scroll=new ScrollView(this);scroll.addView(panel);
+  String raw=prefs.getString(key,"");
+  java.util.regex.Matcher blocks=java.util.regex.Pattern.compile("(?m)^---(MATAN|SYARAHAN|DALIL|TERJEMAHAN|TAMAT)---[ \\t]*$").matcher(raw);
+  int start=0;String kind="";LinearLayout group=panel;int count=0;
+  while(blocks.find()){
+   String chunk=raw.substring(start,blocks.start()).trim();
+   if(!chunk.isEmpty())group=appendLayeredBlock(panel,group,kind,chunk);
+   kind=blocks.group(1);if(kind.equals("MATAN"))count++;
+   start=blocks.end();
+  }
+  String tail=raw.substring(start).trim();if(!tail.isEmpty())appendLayeredBlock(panel,group,kind,tail);
+  if(count==0){Toast.makeText(this,"Tandakan matan dan syarahan dalam editor untuk bacaan bertingkat",Toast.LENGTH_LONG).show();return;}
+  if(key.startsWith("m_")){Button foot=new Button(this);foot.setText("الحواشي · Catatan kaki kitab");panel.addView(foot);foot.setOnClickListener(v->showBookFootnotes(key));}
+  AlertDialog dialog=new AlertDialog.Builder(this).setTitle("الشرح والحاشية · "+prefs.getString("title_"+key,"")).setView(scroll).setNegativeButton("Tutup",null).create();dialog.show();
+  if(dialog.getWindow()!=null)dialog.getWindow().setLayout(-1,(int)(getResources().getDisplayMetrics().heightPixels*.85f));
+ }
+ LinearLayout appendLayeredBlock(LinearLayout panel,LinearLayout group,String kind,String chunk){
+  TextView value=text("",15);value.setText(formattedReadingText(chunk));applySharedTextMetrics(value);value.setTextIsSelectable(true);value.setPadding(dp(10),dp(8),dp(10),dp(8));value.setTextColor(0xff303c43);
+  if(kind.equals("MATAN")){
+   LinearLayout card=new LinearLayout(this);card.setOrientation(1);card.setPadding(dp(5),dp(5),dp(5),dp(5));card.setBackground(rounded(0xfff9fcf8,0xffc6b582,10));
+   LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);lp.bottomMargin=dp(8);panel.addView(card,lp);
+   value.setTypeface(null,android.graphics.Typeface.BOLD);card.addView(value);return card;
+  }
+  if(kind.equals("SYARAHAN")){
+   TextView toggle=text("▸  الشرح · Buka syarahan",13);toggle.setTextColor(0xff176b47);toggle.setPadding(dp(10),dp(12),dp(10),dp(12));group.addView(toggle);group.addView(value);value.setVisibility(View.GONE);
+   toggle.setOnClickListener(v->{boolean open=value.getVisibility()!=View.VISIBLE;value.setVisibility(open?View.VISIBLE:View.GONE);toggle.setText(open?"▾  الشرح · Tutup syarahan":"▸  الشرح · Buka syarahan");});
+  }else group.addView(value);
+  return group;
+ }
  void showReaderActions(String key,boolean compact){
   boolean book=key.startsWith("m_");
   String noun=book?"kitab":"nota";
@@ -1401,6 +1432,12 @@ public class MainActivity extends Activity {
    labels=java.util.Arrays.copyOf(labels,n+1);icons=java.util.Arrays.copyOf(icons,n+1);descriptions=java.util.Arrays.copyOf(descriptions,n+1);
    labels[n]=labels[n-1];icons[n]=icons[n-1];descriptions[n]=descriptions[n-1];
    labels[n-1]="Mod Bacaan Terpilih";icons[n-1]="▤";descriptions[n-1]="Lengkap, matan, syarahan, dalil atau terjemahan";
+  }
+  {
+   int n=labels.length;
+   labels=java.util.Arrays.copyOf(labels,n+1);icons=java.util.Arrays.copyOf(icons,n+1);descriptions=java.util.Arrays.copyOf(descriptions,n+1);
+   labels[n]=labels[n-1];icons[n]=icons[n-1];descriptions[n]=descriptions[n-1];
+   labels[n-1]="Syarahan Bertingkat";icons[n-1]="▾";descriptions[n-1]="Buka atau tutup syarahan dan hasyiah";
   }
   int beforePdf=labels.length;
   labels=java.util.Arrays.copyOf(labels,beforePdf+1);icons=java.util.Arrays.copyOf(icons,beforePdf+1);descriptions=java.util.Arrays.copyOf(descriptions,beforePdf+1);
@@ -1449,7 +1486,8 @@ public class MainActivity extends Activity {
     }
     else if(book&&option==(compact?10:8))showBookFootnotes(key);
     else if(option==(book?(compact?11:9):(compact?7:5)))showSelectedReading(key);
-    else if(option==(book?(compact?12:10):(compact?8:6)))printReaderAsPdf(key);
+    else if(option==(book?(compact?12:10):(compact?8:6)))showLayeredCommentary(key);
+    else if(option==(book?(compact?13:11):(compact?9:7)))printReaderAsPdf(key);
     else confirmDelete(key);
    });
   }
