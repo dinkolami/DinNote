@@ -2314,7 +2314,7 @@ public class MainActivity extends Activity {
    metadataToggle.setContentDescription(metadataExpanded[0]?"Sembunyikan kategori dan tajuk":"Buka kategori dan tajuk");
   });final Runnable[] formatRefresh={null};final android.widget.OverScroller editorMomentum=new android.widget.OverScroller(this);
   // A little more friction keeps editor flings smooth without excessive travel.
-  editorMomentum.setFriction(android.view.ViewConfiguration.getScrollFriction()*1.2f);
+  editorMomentum.setFriction(android.view.ViewConfiguration.getScrollFriction()*1.1f);
   editor=new EditText(this){
    @Override public void computeScroll(){super.computeScroll();if(editorMomentum.computeScrollOffset()){scrollTo(getScrollX(),editorMomentum.getCurrY());postInvalidateOnAnimation();}}
    @Override public boolean onTextContextMenuItem(int id){
