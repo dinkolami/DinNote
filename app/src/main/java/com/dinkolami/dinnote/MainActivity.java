@@ -2335,24 +2335,8 @@ public class MainActivity extends Activity {
     return super.onTextContextMenuItem(id);
    }
 
-   @Override protected void onDraw(android.graphics.Canvas canvas){
-    super.onDraw(canvas);
-    if(!hasFocus()||!isCursorVisible()||getSelectionStart()<0||getSelectionStart()!=getSelectionEnd())return;
-    android.text.Layout layout=getLayout();if(layout==null)return;
-    int offset=Math.min(getSelectionStart(),length());
-    int line=layout.getLineForOffset(offset);
-    float x=getCompoundPaddingLeft()+layout.getPrimaryHorizontal(offset)-getScrollX();
-    float y=getExtendedPaddingTop()+layout.getLineTop(line)-getScrollY();
-    float bottom=getExtendedPaddingTop()+layout.getLineBottom(line)-getScrollY();
-    float left=getCompoundPaddingLeft()+dp(2),right=getWidth()-getCompoundPaddingRight()-dp(2);
-    if(right<=left||bottom<0||y>getHeight())return;
-    x=Math.max(left,Math.min(right,x));
-    y=Math.max(getExtendedPaddingTop(),y);bottom=Math.min(getHeight()-getExtendedPaddingBottom(),bottom);
-    if(bottom-y<dp(4))return;
-    long phase=android.os.SystemClock.uptimeMillis()%1000;
-    if(phase<550){android.graphics.Paint caret=new android.graphics.Paint(3);caret.setColor(0xff176b47);caret.setStrokeWidth(dp(2));canvas.drawLine(x,y+dp(1),x,bottom-dp(1),caret);}
-    postInvalidateDelayed(phase<550?550-phase:1000-phase);
-   }
+   // Let Android draw the native IME-aware caret. A second manually drawn
+   // caret used Layout coordinates that could drift inside styled boxes.
    @Override protected void onSelectionChanged(int start,int end){super.onSelectionChanged(start,end);if(editor==this&&start>=0&&end>=0){persistEditorPosition();if(hasFocus())post(()->revealEditorCursor(this));if(formatRefresh[0]!=null)post(formatRefresh[0]);}}
    @Override protected void onSizeChanged(int w,int h,int oldw,int oldh){super.onSizeChanged(w,h,oldw,oldh);if(editor==this)post(()->revealEditorCursor(this));}
   };final int[] boxTouchOffset={-1};
