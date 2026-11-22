@@ -338,7 +338,7 @@ public class MainActivity extends Activity {
   if(!attribution.isEmpty()){
    int start=styled.length();
    styled.append("\n").append(attribution);
-   styled.setSpan(new android.text.style.RelativeSizeSpan(0.78f),start,styled.length(),android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+   styled.setSpan(new android.text.style.RelativeSizeSpan(0.92f),start,styled.length(),android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
    styled.setSpan(new android.text.style.ForegroundColorSpan(0xff718075),start,styled.length(),android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
   }
   target.setText(styled);
