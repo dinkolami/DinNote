@@ -1693,7 +1693,6 @@ public class MainActivity extends Activity {
    floatingBack.setOnClickListener(v->{saveReaderPosition(key);prefs.edit().putBoolean("reader_clean_mode",false).apply();read(key);});
    floatingBack.setAlpha(0.65f);
    FrameLayout.LayoutParams floatingParams=new FrameLayout.LayoutParams(dp(30),dp(30),Gravity.BOTTOM|Gravity.LEFT);
-   floatingBack.setAlpha(0.65f);
    floatingParams.setMargins(dp(5),0,0,dp(8));
    lectureSurface.addView(floatingBack,floatingParams);
    root.addView(lectureSurface,new LinearLayout.LayoutParams(-1,0,1));
