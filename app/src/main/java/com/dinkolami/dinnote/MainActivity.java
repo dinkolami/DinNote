@@ -476,7 +476,7 @@ public class MainActivity extends Activity {
   LinearLayout.LayoutParams latestIconParams=new LinearLayout.LayoutParams(dp(16),dp(16));latestIconParams.leftMargin=dp(9);latestIconParams.rightMargin=dp(2);latestHeader.addView(latestIcon,latestIconParams);
   latestHeader.addView(latestHeading,new LinearLayout.LayoutParams(0,-2,1));
   LinearLayout.LayoutParams latestHeadingParams=new LinearLayout.LayoutParams(-1,-2);
-  latestHeadingParams.topMargin=dp(2);latestHeadingParams.bottomMargin=dp(3);
+  latestHeadingParams.topMargin=dp(2);latestHeadingParams.bottomMargin=dp(2);
   LinearLayout card=new LinearLayout(this);card.setOrientation(1);card.setClipToPadding(false);
   card.setBackground(homeInsetSurface(0xfffdfefe,0xfffdfefe,0xffc1ccc8,10));
   card.setPadding(dp(3),0,dp(3),0);
@@ -486,7 +486,7 @@ public class MainActivity extends Activity {
   latestHeader.setFocusable(true);applyTouchFeedback(latestHeader);
   latestHeader.setOnClickListener(v->{prefs.edit().putBoolean("home_latest_collapsed",!latestCollapsed).apply();home();});
   LinearLayout recentNotes=new LinearLayout(this);recentNotes.setOrientation(1);
-  recentNotes.setPadding(0,dp(4),0,dp(5));card.addView(recentNotes);
+  recentNotes.setPadding(0,0,0,0);card.addView(recentNotes);
   recentNotes.setVisibility(latestCollapsed?View.GONE:View.VISIBLE);
   ArrayList<String> keys=new ArrayList<>();
   for(String k:prefs.getAll().keySet())if((k.startsWith("n_")||k.startsWith("m_"))&&prefs.getAll().get(k) instanceof String&&!prefs.getBoolean("deleted_"+k,false)&&prefs.getLong("viewed_"+k,0L)>0L)keys.add(k);
