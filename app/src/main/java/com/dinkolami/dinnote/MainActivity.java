@@ -577,7 +577,8 @@ public class MainActivity extends Activity {
   title.setTextColor(0xff365c48);
   title.setElevation(0);title.setPadding(dp(8),dp(folded?6:8),0,dp(folded?6:8));title.setIncludeFontPadding(false);title.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);title.setSingleLine(true);title.setEllipsize(android.text.TextUtils.TruncateAt.END);title.setContentDescription(heading+", ketik untuk buka atau lipat");title.setTooltipText(heading);title.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);LinearLayout.LayoutParams titleParams=new LinearLayout.LayoutParams(-1,-2);titleParams.topMargin=dp(2);titleParams.bottomMargin=dp(2);
   LinearLayout headingRow=new LinearLayout(this);headingRow.setGravity(Gravity.CENTER_VERTICAL);
-  headingRow.setBackground(dashboardTileSurface(!pin));headingRow.setPadding(0,0,dp(5),0);
+  android.graphics.drawable.GradientDrawable headingFill=new android.graphics.drawable.GradientDrawable(android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,new int[]{pin?0xfffafffb:0xffffffff,pin?0xffddece2:0xffe9edeb});
+  headingFill.setCornerRadius(dp(8));headingRow.setBackground(headingFill);headingRow.setPadding(0,0,dp(5),0);
   View goldAccent=new View(this);goldAccent.setBackgroundColor(0xffc6ad70);
   LinearLayout.LayoutParams accentParams=new LinearLayout.LayoutParams(dp(1),dp(15));accentParams.leftMargin=dp(5);headingRow.addView(goldAccent,accentParams);
   headingRow.addView(title,new LinearLayout.LayoutParams(0,-2,1));
