@@ -559,11 +559,23 @@ public class MainActivity extends Activity {
    LinearLayout.LayoutParams wisdomTextParams=new LinearLayout.LayoutParams(-1,0,1);
    wisdomTextParams.topMargin=dp(0);wisdomCard.addView(wisdomBody,wisdomTextParams);
    final int[] wisdomIndex={new java.util.Random().nextInt(sampleWisdom.size())};
-   wisdomBody.setOnClickListener(v->{wisdomIndex[0]=(wisdomIndex[0]+1)%sampleWisdom.size();setHomeWisdomText(wisdomBody,sampleWisdom.get(wisdomIndex[0]));});
+   final long[] wisdomLastTap={0L};
+   View.OnClickListener wisdomTap=v->{
+    long now=android.os.SystemClock.uptimeMillis();
+    if(now-wisdomLastTap[0]<350L){
+     wisdomLastTap[0]=0L;
+     maktabah=true;read("m_hikmah_ringkas");
+    }else{
+     wisdomLastTap[0]=now;
+     wisdomIndex[0]=(wisdomIndex[0]+1)%sampleWisdom.size();
+     setHomeWisdomText(wisdomBody,sampleWisdom.get(wisdomIndex[0]));
+    }
+   };
+   wisdomBody.setOnClickListener(wisdomTap);
    wisdomBody.setOnLongClickListener(v->{maktabah=true;edit("m_hikmah_ringkas");return true;});
    setHomeWisdomText(wisdomBody,sampleWisdom.get(wisdomIndex[0]));
-   wisdomCard.setContentDescription("Mutiara Hikmah. Ketik untuk petikan lain. Tekan lama untuk edit posting");
-   wisdomCard.setOnClickListener(v->{wisdomIndex[0]=(wisdomIndex[0]+1)%sampleWisdom.size();setHomeWisdomText(wisdomBody,sampleWisdom.get(wisdomIndex[0]));});
+   wisdomCard.setContentDescription("Mutiara Hikmah. Ketik untuk petikan lain. Ketik dua kali untuk buka topik. Tekan lama untuk edit posting");
+   wisdomCard.setOnClickListener(wisdomTap);
    wisdomCard.setOnLongClickListener(v->{maktabah=true;edit("m_hikmah_ringkas");return true;});
    applyTouchFeedback(wisdomCard);
   }
