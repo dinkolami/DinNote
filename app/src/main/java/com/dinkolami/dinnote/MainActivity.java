@@ -494,7 +494,7 @@ public class MainActivity extends Activity {
     if(t.trim().isEmpty())t="Tanpa tajuk";
     // Light emerald list: slightly larger titles, dates consistently aligned right.
     FrameLayout row=new FrameLayout(this);
-    row.setBackground(homeInsetSurface(0xffffffff,0xffffffff,0xffd4ddd7,10));row.setMinimumHeight(dp(42));
+    row.setBackground(homeInsetSurface(0xfffcfffd,0xfff3faf5,0xffa9c6b4,10));row.setMinimumHeight(dp(42));
     TextView item=dashboardText((k.startsWith("m_")?"▤  ":"✎  ")+t,14,false);
     item.setTextColor(0xff303b42);item.setGravity(Gravity.CENTER_VERTICAL);
     item.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
@@ -516,6 +516,7 @@ public class MainActivity extends Activity {
     }
     LinearLayout.LayoutParams itemParams=new LinearLayout.LayoutParams(-1,-2);
     itemParams.bottomMargin=dp(5);
+    itemParams.leftMargin=dp(3);itemParams.rightMargin=dp(3);
     if(wide)(i<5?left:right).addView(row,itemParams);else recentNotes.addView(row,itemParams);
     applyTouchFeedback(row);row.setFocusable(true);
     row.setContentDescription("Buka "+(k.startsWith("m_")?"kitab ":"nota ")+t);
