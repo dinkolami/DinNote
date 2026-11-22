@@ -456,6 +456,10 @@ public class MainActivity extends Activity {
   String resume=prefs.getString("last_edited_key","");
   // Resume editing is available as a compact icon between the home actions.
 
+  TextView latestHeading=dashboardText("5 Terkini",15,true);
+  latestHeading.setTextColor(0xff365c48);
+  latestHeading.setPadding(dp(10),dp(7),dp(10),dp(6));
+  page.addView(latestHeading,new LinearLayout.LayoutParams(-1,-2));
   LinearLayout card=new LinearLayout(this);card.setOrientation(1);card.setClipToPadding(false);
   card.setBackground(homeInsetSurface(0xfffdfefe,0xfffdfefe,0xffc1ccc8,10));
   page.addView(card,new LinearLayout.LayoutParams(-1,-2));
@@ -485,7 +489,7 @@ public class MainActivity extends Activity {
     columns.addView(left,leftParams);columns.addView(right,rightParams);
     recentNotes.addView(columns,new LinearLayout.LayoutParams(-1,-2));
    }
-   for(int i=0;i<Math.min(wide?10:5,keys.size());i++){
+   for(int i=0;i<Math.min(5,keys.size());i++){
     String k=keys.get(i);String t=prefs.getString("title_"+k,"").trim();
     if(t.trim().isEmpty())t="Tanpa tajuk";
     // Light emerald list: slightly larger titles, dates consistently aligned right.
