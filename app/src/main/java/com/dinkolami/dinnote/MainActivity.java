@@ -1356,7 +1356,10 @@ public class MainActivity extends Activity {
   return out.toString().trim();
  }
  String selectedReadingText(String key){
-  return selectedReadingText(key,key.startsWith("m_")?prefs.getInt("reading_filter_"+key,0):0);
+  int mode=prefs.getInt("reading_filter_"+key,0);
+  String filtered=selectedReadingText(key,mode);
+  if(mode!=0&&filtered.isEmpty()){prefs.edit().remove("reading_filter_"+key).apply();return selectedReadingText(key,0);}
+  return filtered;
  }
  void showSelectedReading(String key){
   String[] names={"Teks lengkap","Matan sahaja","Syarahan sahaja","Dalil sahaja","Terjemahan sahaja"};
@@ -1393,7 +1396,7 @@ public class MainActivity extends Activity {
    labels[n]=labels[n-1];icons[n]=icons[n-1];descriptions[n]=descriptions[n-1];
    labels[n-1]="Catatan Kaki (الحواشي)";icons[n-1]="¹";descriptions[n-1]="Catatan bernombor dan rujukan kitab";
   }
-  if(book){
+  {
    int n=labels.length;
    labels=java.util.Arrays.copyOf(labels,n+1);icons=java.util.Arrays.copyOf(icons,n+1);descriptions=java.util.Arrays.copyOf(descriptions,n+1);
    labels[n]=labels[n-1];icons[n]=icons[n-1];descriptions[n]=descriptions[n-1];
@@ -1445,8 +1448,8 @@ public class MainActivity extends Activity {
      Toast.makeText(this,next?"Paparan Arab–Melayu diaktifkan":"Paparan Arab–Melayu dimatikan",Toast.LENGTH_SHORT).show();read(key);
     }
     else if(book&&option==(compact?10:8))showBookFootnotes(key);
-    else if(book&&option==(compact?11:9))showSelectedReading(key);
-    else if(option==(book?(compact?12:10):(compact?7:5)))printReaderAsPdf(key);
+    else if(option==(book?(compact?11:9):(compact?7:5)))showSelectedReading(key);
+    else if(option==(book?(compact?12:10):(compact?8:6)))printReaderAsPdf(key);
     else confirmDelete(key);
    });
   }
