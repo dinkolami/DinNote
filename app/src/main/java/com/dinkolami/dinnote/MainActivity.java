@@ -517,7 +517,7 @@ public class MainActivity extends Activity {
     if(t.trim().isEmpty())t="Tanpa tajuk";
     // Light emerald list: slightly larger titles, dates consistently aligned right.
     FrameLayout row=new FrameLayout(this);
-    row.setBackground(homeInsetSurface(0xfffcfffd,0xfff3faf5,0xffa9c6b4,10));row.setMinimumHeight(dp(42));
+    row.setBackground(homeInsetSurface(0xffffffff,0xffffffff,0xffd4ddd7,10));row.setMinimumHeight(dp(42));
     TextView item=dashboardText((k.startsWith("m_")?"▤  ":"✎  ")+t,14,false);
     item.setTextColor(0xff303b42);item.setGravity(Gravity.CENTER_VERTICAL);
     item.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
