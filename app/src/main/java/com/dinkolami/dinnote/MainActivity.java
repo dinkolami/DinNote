@@ -2863,13 +2863,14 @@ public class MainActivity extends Activity {
   }));dialog.show();
  }
  void showBookAddMenu(){
-  new AlertDialog.Builder(this).setTitle("Tambah kitab").setItems(new String[]{"Tulis / tampal teks","Import TXT / HTML / DOCX / EPUB / PDF","Import DinNote JSON","Buka Maktabah Syamilah","Banding dua kitab","Tampal petikan Syamilah"},(d,i)->{
+  new AlertDialog.Builder(this).setTitle("Tambah kitab").setItems(new String[]{"Tulis / tampal teks","Import TXT / HTML / DOCX / EPUB / PDF","Import DinNote JSON","Buka Maktabah Syamilah","Banding dua kitab","Tampal petikan Syamilah","Koleksi petikan ulama"},(d,i)->{
    if(i==0)edit(null);
    else if(i==1){Intent intent=new Intent(Intent.ACTION_OPEN_DOCUMENT);intent.addCategory(Intent.CATEGORY_OPENABLE);intent.setType("*/*");intent.putExtra(Intent.EXTRA_MIME_TYPES,new String[]{"text/plain","text/html","application/vnd.openxmlformats-officedocument.wordprocessingml.document","application/epub+zip","application/pdf","application/zip","application/octet-stream"});startActivityForResult(intent,BOOK_TEXT_IMPORT);}
    else if(i==2)startContentImport();
    else if(i==3){try{startActivity(new Intent(Intent.ACTION_VIEW,android.net.Uri.parse("https://shamela.ws/")));}catch(Exception e){Toast.makeText(this,"Pelayar tidak tersedia",Toast.LENGTH_SHORT).show();}}
    else if(i==4)chooseComparison(null);
-   else showSharedBookImport("",null);
+   else if(i==5)showSharedBookImport("",null);
+   else showQuoteCollection();
   }).show();
  }
  String bookImportName(android.net.Uri uri){
@@ -3020,7 +3021,47 @@ public class MainActivity extends Activity {
  void showGlobalBookExcerpt(String key,int offset){
   CharSequence source=formattedReadingText(prefs.getString(key,""));
   int pos=Math.min(offset,source.length());
-  new AlertDialog.Builder(this).setTitle(prefs.getString("title_"+key,"Kitab")).setMessage(source.subSequence(Math.max(0,pos-100),Math.min(source.length(),pos+250))).setNegativeButton("Tutup",null).setPositiveButton("Buka kitab",(d,w)->read(key)).show();
+  new AlertDialog.Builder(this).setTitle(prefs.getString("title_"+key,"Kitab")).setMessage(source.subSequence(Math.max(0,pos-100),Math.min(source.length(),pos+250))).setNegativeButton("Tutup",null).setNeutralButton("Simpan petikan",(d,w)->saveBookQuote(key,source.subSequence(Math.max(0,pos-100),Math.min(source.length(),pos+250)).toString())).setPositiveButton("Buka kitab",(d,w)->read(key)).show();
+ }
+ void saveBookQuote(String key,String excerpt){
+  LinearLayout panel=new LinearLayout(this);panel.setOrientation(1);panel.setPadding(dp(16),dp(8),dp(16),dp(8));
+  EditText topic=new EditText(this);topic.setSingleLine(true);topic.setHint("Tajuk pengajian");panel.addView(topic);
+  EditText ref=new EditText(this);ref.setSingleLine(true);ref.setHint("Jilid / halaman / rujukan");panel.addView(ref);
+  EditText quote=new EditText(this);quote.setMinLines(4);quote.setMaxLines(8);quote.setText(excerpt);panel.addView(quote);
+  AlertDialog dialog=new AlertDialog.Builder(this).setTitle("Simpan petikan ulama").setView(panel).setNegativeButton("Batal",null).setPositiveButton("Simpan",null).create();
+  dialog.setOnShowListener(v->dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(w->{
+   if(quote.getText().toString().trim().isEmpty()){quote.setError("Masukkan petikan");return;}
+   try{
+    org.json.JSONObject item=new org.json.JSONObject();
+    item.put("book",key);item.put("title",prefs.getString("title_"+key,"Kitab"));item.put("topic",topic.getText().toString().trim());item.put("reference",ref.getText().toString().trim());item.put("text",quote.getText().toString());item.put("created",System.currentTimeMillis());
+    if(!prefs.edit().putString("quote_"+java.util.UUID.randomUUID(),item.toString()).commit())throw new java.io.IOException();
+    dialog.dismiss();Toast.makeText(this,"Petikan disimpan",Toast.LENGTH_SHORT).show();
+   }catch(Exception e){Toast.makeText(this,"Simpan gagal",Toast.LENGTH_SHORT).show();}
+  }));dialog.show();
+ }
+ void showQuoteCollection(){
+  ArrayList<String> ids=new ArrayList<>();for(String k:prefs.getAll().keySet())if(k.startsWith("quote_"))ids.add(k);
+  ArrayList<org.json.JSONObject> items=new ArrayList<>();ArrayList<String> valid=new ArrayList<>();
+  for(String id:ids)try{items.add(new org.json.JSONObject(prefs.getString(id,"")));valid.add(id);}catch(Exception ignored){}
+  if(items.isEmpty()){new AlertDialog.Builder(this).setTitle("Koleksi petikan ulama").setMessage("Cari teks dalam Maktabah, buka petikan hasil carian dan pilih Simpan petikan.").setPositiveButton("Cari",(d,w)->showGlobalBookSearch()).setNegativeButton("Tutup",null).show();return;}
+  java.util.TreeSet<String> topics=new java.util.TreeSet<>();
+  for(org.json.JSONObject item:items)topics.add(item.optString("topic").isEmpty()?"Tanpa tajuk":item.optString("topic"));
+  ArrayList<String> labels=new ArrayList<>(topics);labels.add(0,"Semua petikan");
+  new AlertDialog.Builder(this).setTitle("Koleksi petikan ulama").setItems(labels.toArray(new String[0]),(d,w)->{
+   ArrayList<Integer> positions=new ArrayList<>();ArrayList<String> rows=new ArrayList<>();
+   for(int i=0;i<items.size();i++){org.json.JSONObject item=items.get(i);String t=item.optString("topic");if(w!=0&&!labels.get(w).equals(t.isEmpty()?"Tanpa tajuk":t))continue;
+    String excerpt=item.optString("text");positions.add(i);rows.add(item.optString("title")+"\n"+excerpt.substring(0,Math.min(100,excerpt.length())));
+   }
+   new AlertDialog.Builder(this).setTitle(labels.get(w)).setItems(rows.toArray(new String[0]),(dd,i)->showSavedQuote(valid.get(positions.get(i)),items.get(positions.get(i)))).setNegativeButton("Kembali",(dd,i)->showQuoteCollection()).show();
+  }).setNegativeButton("Tutup",null).show();
+ }
+ void showSavedQuote(String id,org.json.JSONObject item){
+  String key=item.optString("book"),body=item.optString("text"),title=item.optString("title");
+  new AlertDialog.Builder(this).setTitle(title).setMessage(body+"\n\n"+item.optString("reference")).setPositiveButton("Tindakan",(outer,action)->new AlertDialog.Builder(this).setTitle("Tindakan petikan").setItems(new String[]{"Buka kitab asal","Banding dengan kitab lain","Salin petikan dan sumber","Padam petikan"},(d,w)->{
+   if(w<2){if(!prefs.contains(key)||prefs.getBoolean("deleted_"+key,false)){Toast.makeText(this,"Kitab asal tidak tersedia",Toast.LENGTH_SHORT).show();return;}if(w==0)read(key);else chooseComparison(key);}
+   else if(w==2){android.content.ClipboardManager cb=(android.content.ClipboardManager)getSystemService(CLIPBOARD_SERVICE);if(cb!=null)cb.setPrimaryClip(android.content.ClipData.newPlainText(title,body+"\n\n"+title+" "+item.optString("reference")));}
+   else new AlertDialog.Builder(this).setMessage("Padam petikan ini sahaja?").setNegativeButton("Batal",null).setPositiveButton("Padam",(dd,i)->{prefs.edit().remove(id).apply();showQuoteCollection();}).show();
+  }).show()).setNegativeButton("Kembali",(d,w)->showQuoteCollection()).show();
  }
  String normalizeCompareText(String value){
   return value.replaceAll("[\\u064B-\\u065F\\u0670\\u0640]","").replaceAll("[أإآٱ]","ا").toLowerCase(java.util.Locale.ROOT);
