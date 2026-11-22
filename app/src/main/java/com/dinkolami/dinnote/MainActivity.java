@@ -1,7 +1,7 @@
 package com.dinkolami.dinnote;
 import android.app.*;import android.os.*;import android.graphics.Color;import android.view.*;import android.widget.*;import android.text.*;import android.content.*;import java.util.*;
 public class MainActivity extends Activity {
- LinearLayout root,items,compactSummary; ScrollView listScroll,readerScroll; int savedNotesScroll=0,savedBooksScroll=0; String lastOpenedCard=null; android.view.GestureDetector readerDetector; EditText editor,titleEditor; TextView saveIndicator; Spinner categoryPicker; String categoryFilter="Semua"; String sortMode="Terbaru"; String selected=null; boolean maktabah=false, sectionOpen=false; android.content.SharedPreferences prefs;
+ LinearLayout root,items,compactSummary; ScrollView listScroll,readerScroll; int savedNotesScroll=0,savedBooksScroll=0; String lastOpenedCard=null; android.view.GestureDetector readerDetector; Runnable lectureBackReveal; EditText editor,titleEditor; TextView saveIndicator; Spinner categoryPicker; String categoryFilter="Semua"; String sortMode="Terbaru"; String selected=null; boolean maktabah=false, sectionOpen=false; android.content.SharedPreferences prefs;
  int green=Color.rgb(23,107,71), gold=Color.rgb(197,166,107); static final int BACKUP_CREATE=4201, BACKUP_OPEN=4202, CONTENT_IMPORT=4203;
  public void onCreate(Bundle b){super.onCreate(b);prefs=getSharedPreferences("notes",0);if(!prefs.getBoolean("font_defaults_13_15_16_18_applied",false)){prefs.edit().putInt("reader_font_level",1).putInt("editor_font_level",1).putBoolean("font_defaults_13_15_16_18_applied",true).apply();}if(prefs.contains("security_pin_hash"))promptUnlock();else home();} // User content and categories are local; import them explicitly.}
  void applySystemBarInsets(LinearLayout view){
@@ -1320,6 +1320,7 @@ public class MainActivity extends Activity {
    return;
   }
   readerScroll=null;
+  lectureBackReveal=null;
   editor=null;titleEditor=null;saveIndicator=null;selected=key;prefs.edit().putLong("viewed_"+key,System.currentTimeMillis()).putString(key.startsWith("m_")?"reading_last_m":"reading_last_n",key).apply();cleanBase();
   LinearLayout bar=new LinearLayout(this);bar.setGravity(Gravity.CENTER_VERTICAL);bar.setPadding(dp(8),dp(2),dp(8),dp(2));bar.setBackground(rounded(0xfffffefd,0xffb8c2ca,12));bar.setTag("reader_toolbar");root.addView(bar);
   boolean cleanReading=prefs.getBoolean("reader_clean_mode",false);
@@ -1695,34 +1696,13 @@ public class MainActivity extends Activity {
    FrameLayout.LayoutParams floatingParams=new FrameLayout.LayoutParams(dp(30),dp(30),Gravity.BOTTOM|Gravity.LEFT);
    floatingParams.setMargins(dp(5),0,0,dp(8));
    lectureSurface.addView(floatingBack,floatingParams);
-   floatingBack.setOnTouchListener(new View.OnTouchListener(){
-    float downX,downY,initialX,initialY;
-    boolean dragging;
-    public boolean onTouch(View v,android.view.MotionEvent event){
-     switch(event.getActionMasked()){
-      case android.view.MotionEvent.ACTION_DOWN:
-       downX=event.getRawX();downY=event.getRawY();
-       initialX=v.getX();initialY=v.getY();dragging=false;
-       v.getParent().requestDisallowInterceptTouchEvent(true);
-       return true;
-      case android.view.MotionEvent.ACTION_MOVE:
-       float dx=event.getRawX()-downX,dy=event.getRawY()-downY;
-       if(Math.hypot(dx,dy)>android.view.ViewConfiguration.get(MainActivity.this).getScaledTouchSlop())dragging=true;
-       if(dragging){
-        v.setX(Math.max(0,Math.min(lectureSurface.getWidth()-v.getWidth(),initialX+dx)));
-        v.setY(Math.max(0,Math.min(lectureSurface.getHeight()-v.getHeight(),initialY+dy)));
-       }
-       return true;
-      case android.view.MotionEvent.ACTION_UP:
-       v.getParent().requestDisallowInterceptTouchEvent(false);
-       if(!dragging)v.performClick();
-       return true;
-      case android.view.MotionEvent.ACTION_CANCEL:
-       v.getParent().requestDisallowInterceptTouchEvent(false);return true;
-     }
-     return false;
-    }
-   });
+   floatingBack.setVisibility(View.GONE);
+   final Runnable hideLectureBack=()->floatingBack.setVisibility(View.GONE);
+   lectureBackReveal=()->{
+    floatingBack.removeCallbacks(hideLectureBack);
+    floatingBack.setVisibility(View.VISIBLE);
+    floatingBack.postDelayed(hideLectureBack,3000);
+   };
    root.addView(lectureSurface,new LinearLayout.LayoutParams(-1,0,1));
   }else root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
    // Compact reading progress indicator shared by Nota and Maktabah.
@@ -1770,7 +1750,7 @@ public class MainActivity extends Activity {
    });
   readerDetector=new android.view.GestureDetector(this,new android.view.GestureDetector.SimpleOnGestureListener(){
    @Override public boolean onDown(android.view.MotionEvent e){return true;}
-   @Override public boolean onDoubleTap(android.view.MotionEvent e){bar.setVisibility(bar.getVisibility()==View.VISIBLE?View.GONE:View.VISIBLE);return true;}
+   @Override public boolean onDoubleTap(android.view.MotionEvent e){if(cleanReading){if(lectureBackReveal!=null)lectureBackReveal.run();}else bar.setVisibility(bar.getVisibility()==View.VISIBLE?View.GONE:View.VISIBLE);return true;}
   });
   // Touch events are observed once in dispatchTouchEvent, including selectable text.
   // Long press is a reliable alternative when double tap is intercepted by text selection.
