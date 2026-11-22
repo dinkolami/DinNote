@@ -855,6 +855,29 @@ public class MainActivity extends Activity {
   progressParams.bottomMargin=dp(1);
   readingFrame.addView(indicator,progressParams);
   indicator.bringToFront();
+  final boolean lecturePages=prefs.getBoolean("reader_clean_mode",false);
+  Button pageBack=new Button(this);
+  pageBack.setText("‹");pageBack.setTextSize(48);pageBack.setAllCaps(false);
+  pageBack.setPadding(0,0,0,0);pageBack.setMinWidth(0);pageBack.setMinHeight(0);
+  pageBack.setBackground(rounded(0xfff3f7f3,0xffbed2c5,50));
+  pageBack.setAlpha(0.95f);pageBack.setElevation(dp(5));
+  pageBack.setContentDescription("Kembali ke paparan bacaan biasa");
+  pageBack.setOnClickListener(v->{
+   if(lecturePages){prefs.edit().putBoolean("reader_clean_mode",false).apply();read(key);}
+   else returnFromReader();
+  });
+  final Runnable hidePageBack=()->readingFrame.removeView(pageBack);
+  readerDetector=new android.view.GestureDetector(this,new android.view.GestureDetector.SimpleOnGestureListener(){
+   @Override public boolean onDown(android.view.MotionEvent e){return true;}
+   @Override public boolean onDoubleTap(android.view.MotionEvent e){
+    readingFrame.removeCallbacks(hidePageBack);
+    if(pageBack.getParent()==null)readingFrame.addView(pageBack,new FrameLayout.LayoutParams(dp(76),dp(76),Gravity.CENTER));
+    pageBack.bringToFront();
+    readingFrame.postDelayed(hidePageBack,3000);
+    return true;
+   }
+  });
+
   LinearLayout.LayoutParams navigationParams=new LinearLayout.LayoutParams(-1,-2);
   navigationParams.bottomMargin=dp(5); // Small gap above Android system navigation.
   root.addView(navigation,navigationParams);
