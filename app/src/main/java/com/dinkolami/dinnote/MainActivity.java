@@ -2773,7 +2773,7 @@ public class MainActivity extends Activity {
     View.OnClickListener toggle=v->{boolean open=details.getVisibility()!=View.VISIBLE;details.setVisibility(open?View.VISIBLE:View.GONE);arrow.setText(open?"⌃":"⌄");};
     heading.setOnClickListener(toggle);arrow.setOnClickListener(toggle);
     body.addView(wrapper);
-   }else{paragraph.append(line);if(i<lines.length-1)paragraph.append('\\n');}
+   }else{paragraph.append(line);if(i<lines.length-1)paragraph.append('\n');}
   }
   addPlainBoxText(body,paragraph.toString(),fontSize);
  }
