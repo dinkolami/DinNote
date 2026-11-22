@@ -1347,6 +1347,11 @@ public class MainActivity extends Activity {
   editor=null;titleEditor=null;saveIndicator=null;selected=key;prefs.edit().putLong("viewed_"+key,System.currentTimeMillis()).putString(key.startsWith("m_")?"reading_last_m":"reading_last_n",key).apply();cleanBase();
   LinearLayout bar=new LinearLayout(this);bar.setGravity(Gravity.CENTER_VERTICAL);bar.setPadding(dp(8),dp(2),dp(8),dp(2));bar.setBackground(rounded(0xfffffefd,0xffb8c2ca,12));bar.setTag("reader_toolbar");root.addView(bar);
   boolean cleanReading=prefs.getBoolean("reader_clean_mode",false);
+  final ArrayList<View> lecturePanels=new ArrayList<>();
+  final ArrayList<TextView> lectureArrows=new ArrayList<>();
+  final ArrayList<View> lectureHeadings=new ArrayList<>();
+  final ArrayList<String> lectureTitles=new ArrayList<>();
+
   Button readerBack=action("‹",bar,()->{
    if(cleanReading){saveReaderPosition(key);prefs.edit().putBoolean("reader_clean_mode",false).apply();read(key);}
    else returnFromReader();
@@ -1679,6 +1684,8 @@ public class MainActivity extends Activity {
        commentaryPanel.setVisibility(opening?View.VISIBLE:View.GONE);
        expandButton.setText(opening?"⌃":"⌄");
       };
+      lecturePanels.add(commentaryPanel);lectureArrows.add(expandButton);
+      lectureHeadings.add(itemRow);lectureTitles.add(value);
       expandButton.setOnClickListener(toggleCommentary);
       medallion.setOnClickListener(toggleCommentary);
       medallion.setContentDescription("Buka atau tutup syarahan nombor "+marker);
@@ -1717,6 +1724,23 @@ public class MainActivity extends Activity {
    floatingBack.setOnClickListener(v->{saveReaderPosition(key);prefs.edit().putBoolean("reader_clean_mode",false).apply();read(key);});
    floatingBack.setAlpha(0.95f);
    FrameLayout.LayoutParams floatingParams=new FrameLayout.LayoutParams(dp(76),dp(76),Gravity.CENTER);
+   floatingBack.setOnLongClickListener(v->{
+    new AlertDialog.Builder(this).setTitle("Kawalan kuliah").setItems(new String[]{"Buka semua syarahan","Tutup semua syarahan","Indeks kuliah"},(d,which)->{
+     if(which<2){
+      for(int j=0;j<lecturePanels.size();j++){
+       lecturePanels.get(j).setVisibility(which==0?View.VISIBLE:View.GONE);
+       lectureArrows.get(j).setText(which==0?"⌃":"⌄");
+      }
+     }else if(lectureTitles.isEmpty())Toast.makeText(this,"Tiada tajuk bernombor",Toast.LENGTH_SHORT).show();
+     else new AlertDialog.Builder(this).setTitle("Indeks kuliah").setItems(lectureTitles.toArray(new String[0]),(dialog,index)->{
+      android.graphics.Rect rect=new android.graphics.Rect();
+      lectureHeadings.get(index).getDrawingRect(rect);
+      scroll.offsetDescendantRectToMyCoords(lectureHeadings.get(index),rect);
+      scroll.smoothScrollTo(0,rect.top);
+     }).show();
+    }).show();
+    return true;
+   });
    // Do not attach the Back control until a deliberate double tap.
    final Runnable hideLectureBack=()->lectureSurface.removeView(floatingBack);
    lectureBackReveal=()->{
