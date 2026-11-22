@@ -2,7 +2,7 @@ package com.dinkolami.dinnote;
 import android.app.*;import android.os.*;import android.graphics.Color;import android.view.*;import android.widget.*;import android.text.*;import android.content.*;import java.util.*;
 public class MainActivity extends Activity {
  LinearLayout root,items,compactSummary; ScrollView listScroll,readerScroll; int savedNotesScroll=0,savedBooksScroll=0; String lastOpenedCard=null; android.view.GestureDetector readerDetector; Runnable lectureBackReveal; EditText editor,titleEditor; TextView saveIndicator; Spinner categoryPicker; String categoryFilter="Semua"; String sortMode="Terbaru"; String selected=null; boolean maktabah=false, sectionOpen=false; android.content.SharedPreferences prefs;
- int green=Color.rgb(23,107,71), gold=Color.rgb(197,166,107); static final int BACKUP_CREATE=4201, BACKUP_OPEN=4202, CONTENT_IMPORT=4203;
+ int green=Color.rgb(23,107,71), gold=Color.rgb(197,166,107); static final int BACKUP_CREATE=4201, BACKUP_OPEN=4202, CONTENT_IMPORT=4203, BOOK_TEXT_IMPORT=4204;
  public void onCreate(Bundle b){super.onCreate(b);prefs=getSharedPreferences("notes",0);if(!prefs.getBoolean("font_defaults_13_15_16_18_applied",false)){prefs.edit().putInt("reader_font_level",1).putInt("editor_font_level",1).putBoolean("font_defaults_13_15_16_18_applied",true).apply();}if(prefs.contains("security_pin_hash"))promptUnlock();else home();} // User content and categories are local; import them explicitly.}
  void applySystemBarInsets(LinearLayout view){
   // Keep Android's real clock, battery and network status bar visible.
@@ -240,7 +240,7 @@ public class MainActivity extends Activity {
  void notesPage(){editor=null;titleEditor=null;categoryPicker=null;selected=null;base("DinNote");LinearLayout tabs=new LinearLayout(this);tabs.setPadding(dp(12),dp(7),dp(12),dp(5));tabs.setGravity(Gravity.CENTER_VERTICAL);TextView notes=text("✎ Nota",13);TextView books=text("▤ Maktabah",13);notes.setGravity(Gravity.CENTER);books.setGravity(Gravity.CENTER);notes.setTypeface(null,maktabah?android.graphics.Typeface.NORMAL:android.graphics.Typeface.BOLD);books.setTypeface(null,maktabah?android.graphics.Typeface.BOLD:android.graphics.Typeface.NORMAL);notes.setPadding(dp(5),dp(10),dp(5),dp(10));books.setPadding(dp(5),dp(10),dp(5),dp(10));notes.setBackground(rounded(maktabah?0xfff8faf8:0xfff0f3f6,maktabah?0xffe0e6e2:0xffb7c1c9,16));notes.setTextColor(maktabah?0xff65777b:0xff566a70);notes.setContentDescription(maktabah?"Buka Nota":"Nota, bahagian dipilih");books.setBackground(rounded(maktabah?0xfff0f3f6:0xfff8faf8,maktabah?0xffb7c1c9:0xffe0e6e2,16));books.setTextColor(maktabah?0xff566a70:0xff65777b);books.setContentDescription(maktabah?"Maktabah, bahagian dipilih":"Buka Maktabah");LinearLayout.LayoutParams noteTabParams=new LinearLayout.LayoutParams(0,dp(44),1f);noteTabParams.rightMargin=dp(4);tabs.addView(notes,noteTabParams);
  LinearLayout.LayoutParams bookTabParams=new LinearLayout.LayoutParams(0,dp(44),1.25f);bookTabParams.rightMargin=dp(7);tabs.addView(books,bookTabParams);
  TextView quickSearch=text("⌕",23);quickSearch.setGravity(Gravity.CENTER);quickSearch.setTextColor(0xff566a70);quickSearch.setBackground(rounded(0xfff8faf8,0xffdce5df,12));quickSearch.setContentDescription("Cari tajuk, isi atau kategori");applyTouchFeedback(quickSearch);LinearLayout.LayoutParams quickSearchParams=new LinearLayout.LayoutParams(dp(43),dp(44));quickSearchParams.rightMargin=dp(5);tabs.addView(quickSearch,quickSearchParams);
- TextView quickAdd=text("✚",20);quickAdd.setGravity(Gravity.CENTER);quickAdd.setTextColor(0xff566a70);quickAdd.setBackground(rounded(0xffeaf4ee,0xffc9dfd0,12));quickAdd.setContentDescription(maktabah?"Kitab baharu":"Nota baharu");quickAdd.setOnClickListener(v->edit(null));applyTouchFeedback(quickAdd);
+ TextView quickAdd=text("✚",20);quickAdd.setGravity(Gravity.CENTER);quickAdd.setTextColor(0xff566a70);quickAdd.setBackground(rounded(0xffeaf4ee,0xffc9dfd0,12));quickAdd.setContentDescription(maktabah?"Kitab baharu":"Nota baharu");quickAdd.setOnClickListener(v->{if(maktabah)showBookAddMenu();else edit(null);});applyTouchFeedback(quickAdd);
  LinearLayout.LayoutParams quickParams=new LinearLayout.LayoutParams(dp(43),dp(44));quickParams.rightMargin=dp(5);tabs.addView(quickAdd,quickParams);
  TextView quickCategory=text("⚙",19);quickCategory.setGravity(Gravity.CENTER);quickCategory.setTextColor(0xff596e75);quickCategory.setBackground(rounded(0xfff8faf8,0xffdce5df,12));quickCategory.setContentDescription("Urus kategori");quickCategory.setOnClickListener(v->manageCategories());applyTouchFeedback(quickCategory);
  LinearLayout.LayoutParams categoryButtonParams=new LinearLayout.LayoutParams(dp(43),dp(44));categoryButtonParams.rightMargin=dp(5);tabs.addView(quickCategory,categoryButtonParams);
@@ -2837,6 +2837,57 @@ public class MainActivity extends Activity {
   intent.putExtra(Intent.EXTRA_TITLE,"DinNote-backup.json");
   startActivityForResult(intent,BACKUP_CREATE);
  }
+ void showBookAddMenu(){
+  new AlertDialog.Builder(this).setTitle("Tambah kitab").setItems(new String[]{"Tulis / tampal teks","Import TXT / HTML","Import DinNote JSON","Buka Maktabah Syamilah","Banding dua kitab"},(d,i)->{
+   if(i==0)edit(null);
+   else if(i==1){Intent intent=new Intent(Intent.ACTION_OPEN_DOCUMENT);intent.addCategory(Intent.CATEGORY_OPENABLE);intent.setType("*/*");intent.putExtra(Intent.EXTRA_MIME_TYPES,new String[]{"text/plain","text/html"});startActivityForResult(intent,BOOK_TEXT_IMPORT);}
+   else if(i==2)startContentImport();
+   else if(i==3){try{startActivity(new Intent(Intent.ACTION_VIEW,android.net.Uri.parse("https://shamela.ws/")));}catch(Exception e){Toast.makeText(this,"Pelayar tidak tersedia",Toast.LENGTH_SHORT).show();}}
+   else chooseComparison(null);
+  }).show();
+ }
+ void importBookText(android.net.Uri uri){
+  try{
+   java.io.ByteArrayOutputStream out=new java.io.ByteArrayOutputStream();
+   try(java.io.InputStream in=getContentResolver().openInputStream(uri)){
+    if(in==null)throw new java.io.IOException("Fail tidak dapat dibaca");
+    byte[] buf=new byte[8192];int n;while((n=in.read(buf))!=-1){if(out.size()+n>1024*1024)throw new java.io.IOException("Had fail 1 MB");out.write(buf,0,n);}
+   }
+   String raw=new String(out.toByteArray(),java.nio.charset.StandardCharsets.UTF_8);
+   if(raw.indexOf(0)>=0||raw.indexOf('\uFFFD')>=0)throw new java.io.IOException("Gunakan teks UTF-8");
+   String mime=getContentResolver().getType(uri);
+   final String body="text/html".equals(mime)?android.text.Html.fromHtml(raw,0).toString():raw;
+   if(body.trim().isEmpty())throw new java.io.IOException("Teks kosong");
+   EditText name=new EditText(this);name.setHint("Nama kitab");name.setSingleLine(true);
+   new AlertDialog.Builder(this).setTitle("Import kitab").setView(name).setNegativeButton("Batal",null).setPositiveButton("Simpan",(d,w)->{
+    String key="m_"+java.util.UUID.randomUUID().toString();
+    boolean ok=prefs.edit().putString(key,body).putString("title_"+key,name.getText().toString().trim().isEmpty()?"Kitab import":name.getText().toString().trim()).putString("cat_"+key,"Tanpa kategori").putLong("updated_"+key,System.currentTimeMillis()).commit();
+    if(ok)openSection(true);else Toast.makeText(this,"Simpan gagal",Toast.LENGTH_LONG).show();
+   }).show();
+  }catch(Exception e){Toast.makeText(this,"Import gagal: "+e.getMessage(),Toast.LENGTH_LONG).show();}
+ }
+ void chooseComparison(String first){
+  ArrayList<String> keys=new ArrayList<>(),names=new ArrayList<>();
+  for(String k:prefs.getAll().keySet())if(k.startsWith("m_")&&prefs.getAll().get(k) instanceof String&&!prefs.getBoolean("deleted_"+k,false)&&!k.equals(first))keys.add(k);
+  java.util.Collections.sort(keys,(a,b)->prefs.getString("title_"+a,"").compareToIgnoreCase(prefs.getString("title_"+b,"")));
+  if(keys.isEmpty()||(first==null&&keys.size()<2)){Toast.makeText(this,"Perlu sekurang-kurangnya dua kitab",Toast.LENGTH_SHORT).show();return;}
+  for(String k:keys)names.add(prefs.getString("title_"+k,"Tanpa tajuk"));
+  new AlertDialog.Builder(this).setTitle(first==null?"Pilih kitab pertama":"Pilih kitab kedua").setItems(names.toArray(new String[0]),(d,i)->{if(first==null)chooseComparison(keys.get(i));else showComparison(first,keys.get(i));}).show();
+ }
+ void showComparison(String a,String b){
+  LinearLayout panel=new LinearLayout(this);panel.setOrientation(LinearLayout.HORIZONTAL);panel.setBackgroundColor(0xfff8f7f0);
+  for(String k:new String[]{a,b}){
+   LinearLayout column=new LinearLayout(this);column.setOrientation(LinearLayout.VERTICAL);column.setPadding(dp(8),dp(8),dp(8),dp(8));panel.addView(column,new LinearLayout.LayoutParams(0,-1,1));
+   TextView title=text(prefs.getString("title_"+k,"Tanpa tajuk"),16);title.setTextColor(0xff176b47);title.setGravity(Gravity.CENTER);title.setTypeface(null,android.graphics.Typeface.BOLD);column.addView(title);
+   ScrollView scroll=new ScrollView(this);column.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
+   TextView content=text("",15);applySharedTextMetrics(content);content.setText(formattedReadingText(prefs.getString(k,"")));content.setTextColor(0xff26352d);content.setGravity(Gravity.START);content.setTextIsSelectable(true);scroll.addView(content);
+   scroll.post(()->scroll.scrollTo(0,prefs.getInt("compare_y_"+k,0)));
+   scroll.setOnScrollChangeListener((v,x,y,ox,oy)->prefs.edit().putInt("compare_y_"+k,y).apply());
+   if(k.equals(a)){View divider=new View(this);divider.setBackgroundColor(0xffc5a66b);panel.addView(divider,new LinearLayout.LayoutParams(dp(1),-1));}
+  }
+  AlertDialog dialog=new AlertDialog.Builder(this).setTitle("Perbandingan dua kitab").setView(panel).setPositiveButton("Tutup",null).create();
+  dialog.show();if(dialog.getWindow()!=null)dialog.getWindow().setLayout(-1,-1);
+ }
  void startContentImport(){
   Intent intent=new Intent(Intent.ACTION_OPEN_DOCUMENT);
   intent.addCategory(Intent.CATEGORY_OPENABLE);
@@ -2885,6 +2936,7 @@ public class MainActivity extends Activity {
   super.onActivityResult(request,result,data);
   if(result!=RESULT_OK||data==null||data.getData()==null)return;
   android.net.Uri uri=data.getData();
+  if(request==BOOK_TEXT_IMPORT){importBookText(uri);return;}
   if(request==BACKUP_CREATE){
    try{
     org.json.JSONObject obj=new org.json.JSONObject();
