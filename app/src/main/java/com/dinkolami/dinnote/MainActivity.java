@@ -2801,9 +2801,9 @@ public class MainActivity extends Activity {
     android.graphics.drawable.GradientDrawable ring=new android.graphics.drawable.GradientDrawable();
     ring.setShape(android.graphics.drawable.GradientDrawable.OVAL);ring.setColor(0xfffcf8ed);ring.setStroke(dp(1),0xffc3a35a);
     medallion.setBackground(ring);
-    TextView numeral=text(numbered.group(1),12);numeral.setTypeface(android.graphics.Typeface.create("sans-serif",android.graphics.Typeface.NORMAL));numeral.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);numeral.setGravity(Gravity.CENTER);numeral.setTextColor(0xff176b47);numeral.setIncludeFontPadding(false);
+    TextView numeral=new TextView(this);numeral.setText(numbered.group(1));numeral.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP,13);numeral.setTypeface(android.graphics.Typeface.create("sans-serif-medium",android.graphics.Typeface.NORMAL));numeral.setGravity(Gravity.CENTER);numeral.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);numeral.setTextColor(0xff176b47);numeral.setIncludeFontPadding(false);numeral.setPadding(0,0,0,0);numeral.setSingleLine(true);numeral.setMinHeight(0);numeral.setMinimumHeight(0);numeral.setMinWidth(0);numeral.setMinimumWidth(0);
     FrameLayout.LayoutParams numeralParams=new FrameLayout.LayoutParams(-1,-1);medallion.addView(numeral,numeralParams);
-    LinearLayout.LayoutParams medalParams=new LinearLayout.LayoutParams(dp(20),dp(20));medalParams.setMargins(dp(4),0,dp(5),0);heading.addView(medallion,medalParams);
+    LinearLayout.LayoutParams medalParams=new LinearLayout.LayoutParams(dp(23),dp(23));medalParams.setMargins(dp(4),0,dp(5),0);heading.addView(medallion,medalParams);
     TextView title=text(numbered.group(2),fontSize);title.setTextColor(0xff303c43);title.setPadding(0,dp(2),dp(3),dp(2));heading.addView(title,new LinearLayout.LayoutParams(0,-2,1));
     TextView arrow=text("⌄",18);arrow.setTextColor(0xff176b47);arrow.setGravity(Gravity.CENTER);arrow.setContentDescription("Buka atau tutup huraian nombor "+numbered.group(1));heading.addView(arrow,new LinearLayout.LayoutParams(dp(40),dp(36)));
     wrapper.addView(heading);
