@@ -538,7 +538,7 @@ public class MainActivity extends Activity {
      dateParams.rightMargin=dp(8);row.addView(date,dateParams);date.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);date.setContentDescription("Dilihat pada "+new java.text.SimpleDateFormat("dd MMMM",new java.util.Locale("ms","MY")).format(new java.util.Date(when)));
     }
     LinearLayout.LayoutParams itemParams=new LinearLayout.LayoutParams(-1,-2);
-    itemParams.bottomMargin=dp(3);
+    itemParams.bottomMargin=dp(2);
     itemParams.leftMargin=0;itemParams.rightMargin=0;
     if(wide)(i<5?left:right).addView(row,itemParams);else recentNotes.addView(row,itemParams);
     applyTouchFeedback(row);row.setFocusable(true);
