@@ -797,7 +797,7 @@ public class MainActivity extends Activity {
 
 
  void showPagedReader(String key){
-  final String source=prefs.getString(key,"");
+  final CharSequence source=formattedReadingText(prefs.getString(key,""));
   final int availableWidthDp=Math.round(getResources().getDisplayMetrics().widthPixels/getResources().getDisplayMetrics().density);
   final boolean spread=availableWidthDp>=500&&prefs.getBoolean("reader_two_columns",true);
   final int fontLevel=Math.max(0,Math.min(3,prefs.getInt("reader_font_level",1)));
@@ -862,7 +862,7 @@ public class MainActivity extends Activity {
   // Paginate after the view has been measured. Avoid repeated layout passes and
   // view-tree changes while Android is measuring the page content.
   // Display saved content immediately, even before pagination is calculated.
-  TextView loading=text(source,Math.max(12,fontSize));loading.setTextColor(0xff303c43);loading.setPadding(dp(12),dp(12),dp(12),dp(12));pageRow.addView(loading,new LinearLayout.LayoutParams(-1,-1));
+  TextView loading=text("",Math.max(12,fontSize));loading.setText(source);loading.setTextColor(0xff303c43);loading.setPadding(dp(12),dp(12),dp(12),dp(12));pageRow.addView(loading,new LinearLayout.LayoutParams(-1,-1));
   pageRow.post(()->{
    if(isFinishing()||isDestroyed()||pageRow.getParent()==null||root==null||!key.equals(selected)||!pageRow.isAttachedToWindow())return;
    try{
@@ -879,7 +879,7 @@ public class MainActivity extends Activity {
     probe.setLineSpacing(extraLine,lineMultiplier);
     probe.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
     android.text.TextPaint paint=probe.getPaint();
-    ArrayList<String> parts=new ArrayList<>();
+    ArrayList<CharSequence> parts=new ArrayList<>();
      ArrayList<Integer> repeatedPrefixLengths=new ArrayList<>();
      int previousStop=0;
     int cursor=0;
@@ -908,7 +908,7 @@ public class MainActivity extends Activity {
      // Never split a surrogate pair, and preserve every character in order.
      if(stop<source.length()&&stop>cursor&&Character.isHighSurrogate(source.charAt(stop-1))&&Character.isLowSurrogate(source.charAt(stop)))stop--;
      if(stop<=cursor)stop=cursor+1;
-     parts.add(source.substring(cursor,stop));
+     parts.add(source.subSequence(cursor,stop));
       repeatedPrefixLengths.add(Math.max(0,Math.min(stop-cursor,previousStop-cursor)));
       previousStop=stop;
      cursor=stop;
@@ -926,9 +926,9 @@ public class MainActivity extends Activity {
      pageRow.removeAllViews();
      for(int i=0;i<(spread?2:1);i++){
       int pageNumber=position[0]+i;
-      TextView page=text(pageNumber<total?parts.get(pageNumber):"",fontSize);
+      TextView page=text("",fontSize);page.setText(pageNumber<total?parts.get(pageNumber):"");
        if(pageNumber<total && repeatedPrefixLengths.get(pageNumber)>0){
-        String visible=parts.get(pageNumber);
+        CharSequence visible=parts.get(pageNumber);
         int repeated=Math.min(visible.length(),repeatedPrefixLengths.get(pageNumber));
         android.text.SpannableString marked=new android.text.SpannableString(visible);
         marked.setSpan(new android.text.style.BackgroundColorSpan(0xfffff0bd),0,repeated,android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
