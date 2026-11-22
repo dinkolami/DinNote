@@ -316,9 +316,9 @@ public class MainActivity extends Activity {
   final String key="m_hikmah_ringkas";
   if(!prefs.contains(key)&&!prefs.getBoolean("deleted_"+key,false)){
    prefs.edit().putString(key,
-    "---HIKMAH---\\nMasa ialah amanah. Susunlah waktu untuk ilmu, ibadah dan tanggungjawab.\\n\\n"+
-    "---HIKMAH---\\nIlmu menjadi lebih bermanfaat apabila dipelajari dengan adab dan diamalkan.")
-    .putString("title_"+key,"Hikmah Ringkas").putString("cat_"+key,"Kalam Hikmah").apply();
+    "---HIKMAH---\\nإِنَّ مَعَ الْعُسْرِ يُسْرًا\\nسورة الشرح: ٦\\n\\n"+
+    "---HIKMAH---\\nرَبِّ زِدْنِي عِلْمًا\\nسورة طه: ١١٤")
+    .putString("title_"+key,"Mutiara Hikmah").putString("cat_"+key,"Kalam Hikmah").apply();
   }
   java.util.ArrayList<String> entries=new java.util.ArrayList<>();
   String source=prefs.getString(key,"");
@@ -326,7 +326,7 @@ public class MainActivity extends Activity {
    String clean=section.replaceAll("(?s)<[^>]*>","").trim();
    if(clean.length()>0&&clean.length()<=280)entries.add(clean);
   }
-  if(entries.isEmpty())entries.add("Tambah hikmah melalui posting Hikmah Ringkas dalam Maktabah.");
+  if(entries.isEmpty())entries.add("Tambah teks Arab melalui posting Mutiara Hikmah dalam Maktabah.");
   return entries;
  }
  void home(){
@@ -526,16 +526,16 @@ public class MainActivity extends Activity {
    wisdomCard.setBackground(rounded(0xfffdfcf7,0xffd8c69c,11));
    LinearLayout.LayoutParams wisdomParams=new LinearLayout.LayoutParams(-1,-2);
    wisdomParams.bottomMargin=dp(5);footer.addView(wisdomCard,wisdomParams);
-   TextView wisdomHeading=dashboardText("✦  Hikmah Ringkas  ✦",12,true);
+   TextView wisdomHeading=dashboardText("❀  Mutiara Hikmah  ❀",12,true);
    wisdomHeading.setTextColor(0xff47745d);wisdomHeading.setGravity(Gravity.CENTER);
    wisdomCard.addView(wisdomHeading);
    TextView wisdomBody=dashboardText("",13,false);wisdomBody.setTextColor(0xff35453c);
-   wisdomBody.setGravity(Gravity.CENTER);wisdomBody.setMaxLines(3);
+   wisdomBody.setGravity(Gravity.CENTER);wisdomBody.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);wisdomBody.setMaxLines(4);
    LinearLayout.LayoutParams wisdomTextParams=new LinearLayout.LayoutParams(-1,-2);
    wisdomTextParams.topMargin=dp(3);wisdomCard.addView(wisdomBody,wisdomTextParams);
    final int[] wisdomIndex={new java.util.Random().nextInt(sampleWisdom.size())};
    wisdomBody.setText(sampleWisdom.get(wisdomIndex[0]));
-   wisdomCard.setContentDescription("Hikmah Ringkas. Ketik untuk hikmah lain. Tekan lama untuk edit posting");
+   wisdomCard.setContentDescription("Mutiara Hikmah. Ketik untuk petikan lain. Tekan lama untuk edit posting");
    wisdomCard.setOnClickListener(v->{wisdomIndex[0]=(wisdomIndex[0]+1)%sampleWisdom.size();wisdomBody.setText(sampleWisdom.get(wisdomIndex[0]));});
    wisdomCard.setOnLongClickListener(v->{maktabah=true;edit("m_hikmah_ringkas");return true;});
    applyTouchFeedback(wisdomCard);
