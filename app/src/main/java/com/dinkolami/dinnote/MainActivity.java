@@ -322,7 +322,7 @@ public class MainActivity extends Activity {
   }
   java.util.ArrayList<String> entries=new java.util.ArrayList<>();
   String source=prefs.getString(key,"");
-  for(String section:source.split("(?m)^\\\\s*---HIKMAH---\\\\s*$")){
+  for(String section:source.split("---HIKMAH---")){
    String clean=section.replaceAll("(?s)<[^>]*>","").trim();
    if(clean.length()>0&&clean.length()<=280)entries.add(clean);
   }
