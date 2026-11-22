@@ -1322,13 +1322,29 @@ public class MainActivity extends Activity {
   readerScroll=null;
   editor=null;titleEditor=null;saveIndicator=null;selected=key;prefs.edit().putLong("viewed_"+key,System.currentTimeMillis()).putString(key.startsWith("m_")?"reading_last_m":"reading_last_n",key).apply();cleanBase();
   LinearLayout bar=new LinearLayout(this);bar.setGravity(Gravity.CENTER_VERTICAL);bar.setPadding(dp(8),dp(2),dp(8),dp(2));bar.setBackground(rounded(0xfffffefd,0xffb8c2ca,12));bar.setTag("reader_toolbar");root.addView(bar);
-  Button readerBack=action("‹",bar,()->returnFromReader());readerBack.setContentDescription(key.startsWith("m_")?"Kembali ke senarai kitab":"Kembali ke senarai nota");
-  TextView spacer=text("",12);bar.addView(spacer,new LinearLayout.LayoutParams(0,1,1));
   boolean cleanReading=prefs.getBoolean("reader_clean_mode",false);
+  Button readerBack=action("‹",bar,()->{
+   if(cleanReading){saveReaderPosition(key);prefs.edit().putBoolean("reader_clean_mode",false).apply();read(key);}
+   else returnFromReader();
+  });
+  readerBack.setContentDescription(cleanReading?"Keluar mod kuliah":(key.startsWith("m_")?"Kembali ke senarai kitab":"Kembali ke senarai nota"));
+  TextView spacer=text("",12);bar.addView(spacer,new LinearLayout.LayoutParams(0,1,1));
+  if(cleanReading){
+   // Lecture mode: the normal back control is the only visible toolbar action.
+   // Keep the same ScrollView and its touch scrolling, including Fold6 reflow.
+   if(root.getChildCount()>0)root.getChildAt(0).setVisibility(View.GONE);
+   getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+   if(android.os.Build.VERSION.SDK_INT>=30){
+    android.view.WindowInsetsController controller=getWindow().getInsetsController();
+    if(controller!=null)controller.hide(android.view.WindowInsets.Type.statusBars()|android.view.WindowInsets.Type.navigationBars());
+   }else getWindow().getDecorView().setSystemUiVisibility(5894);
+  }else getWindow().clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+  if(!cleanReading){
   Button selectTextButton=action("▤",bar,()->selectLongReadingText(key));
   selectTextButton.setContentDescription("Pilih dan salin teks merentasi perenggan");
-  Button cleanToggle=action(cleanReading?"▣":"▢",bar,()->{prefs.edit().putBoolean("reader_clean_mode",!cleanReading).apply();read(key);});
-  cleanToggle.setContentDescription(cleanReading?"Paparkan semula toolbar bacaan":"Aktifkan mod bacaan bersih");
+  Button cleanToggle=action(cleanReading?"▣":"▢",bar,()->{saveReaderPosition(key);prefs.edit().putBoolean("reader_clean_mode",true).apply();read(key);});
+  cleanToggle.setContentDescription("Aktifkan mod kuliah skrin penuh");
+  } // End normal reading toolbar; lecture mode retains Back only.
   if(!cleanReading){
   
   Button readerFont=action("Aa",bar,()->showReaderSettings(key));readerFont.setContentDescription("Ubah saiz tulisan Nota dan Maktabah");
