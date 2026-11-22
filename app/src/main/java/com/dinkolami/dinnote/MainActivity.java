@@ -430,12 +430,8 @@ public class MainActivity extends Activity {
    dashboardSection(shortcuts,"Terakhir dikemaskini",dashboardKeys("updated_",false),false);
   }
   String resume=prefs.getString("last_edited_key","");
-  if(!resume.isEmpty()&&prefs.contains(resume)){
-   TextView resumeButton=dashboardText("✎  Sambung menulis  ›",15,true);
-   resumeButton.setBackground(rounded(0xfff5f7f9,0xffd7bd79,8));resumeButton.setTextColor(0xff566a70);
-   shortcuts.addView(resumeButton);
-   resumeButton.setContentDescription("Sambung menulis nota terakhir");resumeButton.setFocusable(true);applyTouchFeedback(resumeButton);resumeButton.setOnClickListener(v->edit(resume));
-  }
+  // Resume editing is available as a compact icon between the home actions.
+
   LinearLayout recentNotes=new LinearLayout(this);recentNotes.setOrientation(1);
   recentNotes.setPadding(dp(10),dp(4),dp(10),dp(7));card.addView(recentNotes);
   ArrayList<String> keys=new ArrayList<>();
@@ -543,6 +539,20 @@ public class MainActivity extends Activity {
   footer.addView(actions,new LinearLayout.LayoutParams(-1,dp(38)));
   LinearLayout.LayoutParams noteActionParams=new LinearLayout.LayoutParams(0,-1,1);noteActionParams.rightMargin=dp(4);
   actions.addView(add,noteActionParams);
+  String resumeKey=prefs.getString("last_edited_key","");
+  if(!resumeKey.isEmpty()&&prefs.contains(resumeKey)&&!prefs.getBoolean("deleted_"+resumeKey,false)){
+   TextView resumeIcon=dashboardText("✎",19,true);
+   resumeIcon.setGravity(Gravity.CENTER);
+   resumeIcon.setTextColor(0xff47745d);
+   resumeIcon.setBackground(homeInsetSurface(0xfffdfcf7,0xfff7f2e5,0xffd8c69c,10));
+   LinearLayout.LayoutParams resumeIconParams=new LinearLayout.LayoutParams(dp(38),-1);
+   resumeIconParams.leftMargin=dp(3);resumeIconParams.rightMargin=dp(3);
+   actions.addView(resumeIcon,resumeIconParams);
+   resumeIcon.setContentDescription("Sambung menulis");
+   resumeIcon.setTooltipText("Sambung menulis");
+   resumeIcon.setOnClickListener(v->{maktabah=resumeKey.startsWith("m_");edit(resumeKey);});
+   applyTouchFeedback(resumeIcon);
+  }
   TextView addBook=dashboardText("＋  Kitab baharu",15,true);
   addBook.setGravity(Gravity.CENTER);addBook.setTextColor(0xff365c48);
   addBook.setBackground(homeInsetSurface(0xfff6fbf7,0xffe4efe6,0xffc4d8c8,10));
