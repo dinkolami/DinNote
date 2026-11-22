@@ -456,10 +456,13 @@ public class MainActivity extends Activity {
   String resume=prefs.getString("last_edited_key","");
   // Resume editing is available as a compact icon between the home actions.
 
-  TextView latestHeading=dashboardText("5 Terkini",15,true);
+  TextView latestHeading=dashboardText("◷  5 Terkini",15,true);
   latestHeading.setTextColor(0xff365c48);
-  latestHeading.setPadding(dp(10),dp(7),dp(10),dp(6));
-  page.addView(latestHeading,new LinearLayout.LayoutParams(-1,-2));
+  latestHeading.setBackground(homeInsetSurface(0xfff1f8f3,0xffe2f0e7,0xffc1d4c5,10));
+  latestHeading.setPadding(dp(12),dp(8),dp(10),dp(8));
+  LinearLayout.LayoutParams latestHeadingParams=new LinearLayout.LayoutParams(-1,-2);
+  latestHeadingParams.bottomMargin=dp(3);
+  page.addView(latestHeading,latestHeadingParams);
   LinearLayout card=new LinearLayout(this);card.setOrientation(1);card.setClipToPadding(false);
   card.setBackground(homeInsetSurface(0xfffdfefe,0xfffdfefe,0xffc1ccc8,10));
   page.addView(card,new LinearLayout.LayoutParams(-1,-2));
