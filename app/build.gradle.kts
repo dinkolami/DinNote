@@ -6,3 +6,5 @@ android { namespace = "com.dinkolami.dinnote"; compileSdk = 35
  compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
 }
 
+
+dependencies { implementation("com.tom-roush:pdfbox-android:2.0.27.0") }
