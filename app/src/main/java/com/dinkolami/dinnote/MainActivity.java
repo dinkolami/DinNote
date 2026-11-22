@@ -456,13 +456,25 @@ public class MainActivity extends Activity {
   String resume=prefs.getString("last_edited_key","");
   // Resume editing is available as a compact icon between the home actions.
 
-  TextView latestHeading=dashboardText("◷  5 Terkini",15,true);
+  // Match the neutral "Terakhir dikemaskini" section rather than the darker pinned style.
+  LinearLayout latestHeader=new LinearLayout(this);
+  latestHeader.setGravity(Gravity.CENTER_VERTICAL);
+  android.graphics.drawable.GradientDrawable latestFill=new android.graphics.drawable.GradientDrawable(
+   android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
+   new int[]{0xffffffff,0xffe9edeb});
+  latestFill.setCornerRadius(dp(8));
+  latestHeader.setBackground(latestFill);
+  View latestAccent=new View(this);latestAccent.setBackgroundColor(0xffc6ad70);
+  LinearLayout.LayoutParams latestAccentParams=new LinearLayout.LayoutParams(dp(1),dp(15));
+  latestAccentParams.leftMargin=dp(5);latestHeader.addView(latestAccent,latestAccentParams);
+  TextView latestHeading=dashboardText("5 Terkini",15,true);
   latestHeading.setTextColor(0xff365c48);
-  latestHeading.setBackground(homeInsetSurface(0xfff1f8f3,0xffe2f0e7,0xffc1d4c5,10));
-  latestHeading.setPadding(dp(12),dp(8),dp(10),dp(8));
+  latestHeading.setIncludeFontPadding(false);
+  latestHeading.setPadding(dp(8),dp(homeWindowWidthDp()<440?6:8),dp(8),dp(homeWindowWidthDp()<440?6:8));
+  latestHeader.addView(latestHeading,new LinearLayout.LayoutParams(-1,-2));
   LinearLayout.LayoutParams latestHeadingParams=new LinearLayout.LayoutParams(-1,-2);
-  latestHeadingParams.bottomMargin=dp(3);
-  page.addView(latestHeading,latestHeadingParams);
+  latestHeadingParams.topMargin=dp(2);latestHeadingParams.bottomMargin=dp(3);
+  page.addView(latestHeader,latestHeadingParams);
   LinearLayout card=new LinearLayout(this);card.setOrientation(1);card.setClipToPadding(false);
   card.setBackground(homeInsetSurface(0xfffdfefe,0xfffdfefe,0xffc1ccc8,10));
   page.addView(card,new LinearLayout.LayoutParams(-1,-2));
