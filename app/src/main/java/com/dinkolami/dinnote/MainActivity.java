@@ -2335,24 +2335,23 @@ public class MainActivity extends Activity {
     return super.onTextContextMenuItem(id);
    }
 
-   // Draw a visible emerald caret at Android Layout's actual selection position.
-   // Native cursor drawables are invisible on some Samsung configurations.
-   @Override protected void onDraw(android.graphics.Canvas canvas){
-    super.onDraw(canvas);
+   // Keep the native Samsung insertion handle, but draw a visible caret above text.
+   // Foreground drawing avoids the text/background clipping that hid prior attempts.
+   @Override public void onDrawForeground(android.graphics.Canvas canvas){
+    super.onDrawForeground(canvas);
     if(!hasFocus()||getSelectionStart()<0||getSelectionStart()!=getSelectionEnd())return;
     android.text.Layout layout=getLayout();if(layout==null)return;
     int offset=Math.min(getSelectionStart(),length());
     int line=layout.getLineForOffset(offset);
-    float x=getCompoundPaddingLeft()+layout.getPrimaryHorizontal(offset)-getScrollX();
-    float top=getExtendedPaddingTop()+layout.getLineTop(line)-getScrollY();
-    float bottom=getExtendedPaddingTop()+layout.getLineBottom(line)-getScrollY();
-    x=Math.max(getCompoundPaddingLeft()+dp(1),Math.min(getWidth()-getCompoundPaddingRight()-dp(1),x));
-    top=Math.max(getExtendedPaddingTop(),top);
-    bottom=Math.min(getHeight()-getExtendedPaddingBottom(),bottom);
-    if(bottom-top<dp(4))return;
-    long phase=android.os.SystemClock.uptimeMillis()%1000;
-    if(phase<600){android.graphics.Paint caret=new android.graphics.Paint(3);caret.setColor(0xff176b47);caret.setStrokeWidth(dp(2));canvas.drawLine(x,top+dp(1),x,bottom-dp(1),caret);}
-    postInvalidateDelayed(phase<600?600-phase:1000-phase);
+    float x=getTotalPaddingLeft()+layout.getPrimaryHorizontal(offset)-getScrollX();
+    float top=getTotalPaddingTop()+layout.getLineTop(line)-getScrollY();
+    float bottom=getTotalPaddingTop()+layout.getLineBottom(line)-getScrollY();
+    if(x<0||x>getWidth()||bottom<0||top>getHeight())return;
+    top=Math.max(0,top);bottom=Math.min(getHeight(),bottom);
+    if(bottom-top<dp(3))return;
+    android.graphics.Paint caret=new android.graphics.Paint(3);
+    caret.setColor(0xff087b4c);caret.setStrokeWidth(dp(3));
+    canvas.drawLine(x,top+dp(1),x,bottom-dp(1),caret);
    }
    @Override protected void onSelectionChanged(int start,int end){super.onSelectionChanged(start,end);if(editor==this&&start>=0&&end>=0){persistEditorPosition();if(hasFocus())post(()->revealEditorCursor(this));if(formatRefresh[0]!=null)post(formatRefresh[0]);}}
    @Override protected void onSizeChanged(int w,int h,int oldw,int oldh){super.onSizeChanged(w,h,oldw,oldh);if(editor==this)post(()->revealEditorCursor(this));}
