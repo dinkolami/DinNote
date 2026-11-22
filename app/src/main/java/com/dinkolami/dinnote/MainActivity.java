@@ -2382,14 +2382,15 @@ public class MainActivity extends Activity {
   boldButton.setTypeface(null,android.graphics.Typeface.BOLD);boldButton.setContentDescription("Tebal: tandakan teks terpilih");
   Button italicButton=action("I",formatBar,()->wrapEditorSelection("*","*"));
   italicButton.setTypeface(null,android.graphics.Typeface.ITALIC);italicButton.setContentDescription("Condong: tandakan teks terpilih");
+  // Keep underline next to bold and italic, visible before horizontally scrolled list tools.
+  Button underlineButton=action("U̲",formatBar,()->applyLiveStyle(4));
   Button bulletButton=action("☷",formatBar,()->insertEditorText("• "));
   bulletButton.setContentDescription("Masukkan senarai");
   Button numberedButton=action("1.",formatBar,()->insertNumberedList());
   numberedButton.setTextColor(0xff17814a);numberedButton.setContentDescription("Senarai bernombor automatik");
   Button checklistButton=action("☑",formatBar,()->insertEditorText("☐ "));
   checklistButton.setContentDescription("Masukkan kotak semak");
-  Button underlineButton=action("U",formatBar,()->wrapEditorSelection("<u>","</u>"));
-  underlineButton.setContentDescription("Garis bawah teks terpilih");
+    underlineButton.setContentDescription("Garis bawah teks terpilih");
   Button dividerButton=action("✿",formatBar,()->showDividerPicker());
   dividerButton.setTextColor(0xff176b47);dividerButton.setContentDescription("Pilih pemisah perenggan Islamik");
   Button boxButton=action("▣",formatBar,()->showTextBoxPicker());
