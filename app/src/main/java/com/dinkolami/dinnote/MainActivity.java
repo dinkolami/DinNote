@@ -2838,9 +2838,9 @@ public class MainActivity extends Activity {
   startActivityForResult(intent,BACKUP_CREATE);
  }
  void showBookAddMenu(){
-  new AlertDialog.Builder(this).setTitle("Tambah kitab").setItems(new String[]{"Tulis / tampal teks","Import TXT / HTML / DOCX / EPUB","Import DinNote JSON","Buka Maktabah Syamilah","Banding dua kitab"},(d,i)->{
+  new AlertDialog.Builder(this).setTitle("Tambah kitab").setItems(new String[]{"Tulis / tampal teks","Import TXT / HTML / DOCX / EPUB / PDF","Import DinNote JSON","Buka Maktabah Syamilah","Banding dua kitab"},(d,i)->{
    if(i==0)edit(null);
-   else if(i==1){Intent intent=new Intent(Intent.ACTION_OPEN_DOCUMENT);intent.addCategory(Intent.CATEGORY_OPENABLE);intent.setType("*/*");intent.putExtra(Intent.EXTRA_MIME_TYPES,new String[]{"text/plain","text/html","application/vnd.openxmlformats-officedocument.wordprocessingml.document","application/epub+zip","application/zip","application/octet-stream"});startActivityForResult(intent,BOOK_TEXT_IMPORT);}
+   else if(i==1){Intent intent=new Intent(Intent.ACTION_OPEN_DOCUMENT);intent.addCategory(Intent.CATEGORY_OPENABLE);intent.setType("*/*");intent.putExtra(Intent.EXTRA_MIME_TYPES,new String[]{"text/plain","text/html","application/vnd.openxmlformats-officedocument.wordprocessingml.document","application/epub+zip","application/pdf","application/zip","application/octet-stream"});startActivityForResult(intent,BOOK_TEXT_IMPORT);}
    else if(i==2)startContentImport();
    else if(i==3){try{startActivity(new Intent(Intent.ACTION_VIEW,android.net.Uri.parse("https://shamela.ws/")));}catch(Exception e){Toast.makeText(this,"Pelayar tidak tersedia",Toast.LENGTH_SHORT).show();}}
    else chooseComparison(null);
@@ -2903,7 +2903,23 @@ public class MainActivity extends Activity {
    byte[] bytes=out.toByteArray();String filename=bookImportName(uri);
    String mime=getContentResolver().getType(uri);
    final String body;
-   if(bytes.length>=4&&bytes[0]==80&&bytes[1]==75){
+   if(bytes.length>=5&&bytes[0]==37&&bytes[1]==80&&bytes[2]==68&&bytes[3]==70&&bytes[4]==45){
+    com.tom_roush.pdfbox.android.PDFBoxResourceLoader.init(getApplicationContext());
+    try(com.tom_roush.pdfbox.pdmodel.PDDocument doc=com.tom_roush.pdfbox.pdmodel.PDDocument.load(bytes)){
+     if(!doc.getCurrentAccessPermission().canExtractContent())throw new java.io.IOException("PDF tidak membenarkan pengekstrakan teks");
+     if(doc.getNumberOfPages()>300)throw new java.io.IOException("Had 300 halaman; pecahkan PDF dahulu");
+     com.tom_roush.pdfbox.text.PDFTextStripper stripper=new com.tom_roush.pdfbox.text.PDFTextStripper();
+     stripper.setSortByPosition(true);
+     StringBuilder extracted=new StringBuilder();
+     for(int page=1;page<=doc.getNumberOfPages();page++){
+      stripper.setStartPage(page);stripper.setEndPage(page);
+      extracted.append(stripper.getText(doc)).append("\n\n");
+      if(extracted.length()>500000)throw new java.io.IOException("Pecahkan kitab kepada jilid lebih kecil");
+     }
+     body=extracted.toString().trim();
+     if(body.isEmpty())throw new java.io.IOException("Tiada teks PDF; fail imbasan memerlukan OCR");
+    }
+   }else if(bytes.length>=4&&bytes[0]==80&&bytes[1]==75){
     java.util.Map<String,byte[]> entries=readBookZip(bytes);
     if(entries.containsKey("word/document.xml"))body=extractDocx(entries);
     else if(entries.containsKey("META-INF/container.xml"))body=extractEpub(entries);
