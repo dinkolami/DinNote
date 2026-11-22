@@ -191,7 +191,7 @@ public class MainActivity extends Activity {
  }
  void showSettings(){
   new AlertDialog.Builder(this).setTitle("Tetapan DinNote")
-   .setItems(new String[]{"Saiz tulisan bacaan","Saiz tulisan editor","Backup ke fail","Restore daripada fail","Import kandungan JSON","Tong sampah","Kunci PIN aplikasi","Maklumat aplikasi"},(dialog,which)->{
+   .setItems(new String[]{"Saiz tulisan bacaan","Saiz tulisan editor","AutoCorrect & Word Replace","Backup ke fail","Restore daripada fail","Import kandungan JSON","Tong sampah","Kunci PIN aplikasi","Maklumat aplikasi"},(dialog,which)->{
     if(which==0){
      new AlertDialog.Builder(this).setTitle("Saiz tulisan Nota dan Maktabah")
       .setSingleChoiceItems(new String[]{"Kecil","Biasa","Besar","Sangat besar"},
@@ -209,11 +209,12 @@ public class MainActivity extends Activity {
         if(editor!=null)editor.setTextSize(new int[]{13,15,16,18}[choice]);
         Toast.makeText(this,"Saiz tulisan editor dikemas kini",Toast.LENGTH_SHORT).show();
        }).setNegativeButton("Batal",null).show();
-    }else if(which==2)startBackup();
-    else if(which==3)startRestore();
-    else if(which==4)startContentImport();
-    else if(which==5)showTrash();
-    else if(which==6)configurePin();
+    }else if(which==2)showAutoCorrectDictionary();
+    else if(which==3)startBackup();
+    else if(which==4)startRestore();
+    else if(which==5)startContentImport();
+    else if(which==6)showTrash();
+    else if(which==7)configurePin();
     else{
      String version="Tidak diketahui";
      try{
@@ -225,7 +226,32 @@ public class MainActivity extends Activity {
     }
    }).setNegativeButton("Tutup",null).show();
  }
- void searchNotesDialog(){
+ void showAutoCorrectDictionary(){
+  AutoCorrectDictionary dictionary=new AutoCorrectDictionary(this);
+  LinearLayout panel=new LinearLayout(this);panel.setOrientation(1);panel.setPadding(dp(18),dp(8),dp(18),dp(8));
+  Switch toggle=new Switch(this);toggle.setText("Pembetulan automatik");toggle.setChecked(dictionary.isEnabled());
+  toggle.setOnCheckedChangeListener((button,checked)->dictionary.setEnabled(checked));panel.addView(toggle);
+  TextView list=text("",13);StringBuilder summary=new StringBuilder();
+  for(java.util.Map.Entry<String,String> item:dictionary.entries().entrySet())
+   summary.append(item.getKey()).append(" → ").append(item.getValue()).append("\\n");
+  list.setText(summary.length()==0?"Belum ada perkataan disimpan":summary.toString());panel.addView(list);
+  EditText original=new EditText(this);original.setHint("Perkataan asal (contoh: sholat)");panel.addView(original);
+  EditText replacement=new EditText(this);replacement.setHint("Gantikan dengan (contoh: solat)");panel.addView(replacement);
+  new AlertDialog.Builder(this).setTitle("AutoCorrect & Word Replace").setView(panel)
+   .setPositiveButton("Simpan",(d,w)->{
+    if(original.getText().toString().trim().isEmpty()||replacement.getText().toString().isEmpty()){
+     Toast.makeText(this,"Isi kedua-dua perkataan",Toast.LENGTH_SHORT).show();return;
+    }
+    dictionary.put(original.getText().toString(),replacement.getText().toString());
+    Toast.makeText(this,"Perkataan disimpan",Toast.LENGTH_SHORT).show();
+   }).setNeutralButton("Padam perkataan",(d,w)->{
+    EditText key=new EditText(this);key.setHint("Perkataan asal untuk dipadam");
+    new AlertDialog.Builder(this).setTitle("Padam penggantian").setView(key)
+     .setPositiveButton("Padam",(dialog,which)->dictionary.remove(key.getText().toString().trim()))
+     .setNegativeButton("Batal",null).show();
+   }).setNegativeButton("Tutup",null).show();
+ }
+  void searchNotesDialog(){
   final EditText field=new EditText(this);field.setSingleLine(true);field.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);field.setHint("Cari tajuk atau kandungan nota");field.setContentDescription("Carian tajuk dan kandungan");
   LinearLayout wrapper=new LinearLayout(this);wrapper.setPadding(dp(20),dp(6),dp(20),0);wrapper.addView(field,new LinearLayout.LayoutParams(-1,-2));
   new AlertDialog.Builder(this).setTitle("Carian DinNote").setView(wrapper)
@@ -1891,7 +1917,7 @@ public class MainActivity extends Activity {
    }
    @Override protected void onSelectionChanged(int start,int end){super.onSelectionChanged(start,end);if(editor==this&&start>=0&&end>=0){persistEditorPosition();if(hasFocus())post(()->revealEditorCursor(this));if(formatRefresh[0]!=null)post(formatRefresh[0]);}}
    @Override protected void onSizeChanged(int w,int h,int oldw,int oldh){super.onSizeChanged(w,h,oldw,oldh);if(editor==this)post(()->revealEditorCursor(this));}
-  };final int[] boxTouchOffset={-1};
+  };new AutoCorrectDictionary(this).attach(editor);final int[] boxTouchOffset={-1};
   editor.setOnTouchListener((v,event)->{if(event.getActionMasked()==android.view.MotionEvent.ACTION_DOWN){boxTouchOffset[0]=((EditText)v).getOffsetForPosition(event.getX(),event.getY());}return false;});
   editor.setOnLongClickListener(v->{
    int offset=boxTouchOffset[0];if(offset<0||editor!=v)return false;
