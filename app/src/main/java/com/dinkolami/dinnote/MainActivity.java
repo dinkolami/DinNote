@@ -3,7 +3,24 @@ import android.app.*;import android.os.*;import android.graphics.Color;import an
 public class MainActivity extends Activity {
  LinearLayout root,items,compactSummary; ScrollView listScroll,readerScroll; int savedNotesScroll=0,savedBooksScroll=0; String lastOpenedCard=null; android.view.GestureDetector readerDetector; Runnable lectureBackReveal; EditText editor,titleEditor; TextView saveIndicator; Spinner categoryPicker; String categoryFilter="Semua"; String sortMode="Terbaru"; String selected=null; boolean maktabah=false, sectionOpen=false; android.content.SharedPreferences prefs;
  int green=Color.rgb(23,107,71), gold=Color.rgb(197,166,107); static final int BACKUP_CREATE=4201, BACKUP_OPEN=4202, CONTENT_IMPORT=4203, BOOK_TEXT_IMPORT=4204;
- public void onCreate(Bundle b){super.onCreate(b);prefs=getSharedPreferences("notes",0);if(!prefs.getBoolean("font_defaults_13_15_16_18_applied",false)){prefs.edit().putInt("reader_font_level",1).putInt("editor_font_level",1).putBoolean("font_defaults_13_15_16_18_applied",true).apply();}if(prefs.contains("security_pin_hash"))promptUnlock();else {home();receiveBookShare();}} // User content and categories are local; import them explicitly.}
+ public void onCreate(Bundle b){super.onCreate(b);prefs=getSharedPreferences("notes",0);if(!prefs.getBoolean("font_defaults_13_15_16_18_applied",false)){prefs.edit().putInt("reader_font_level",1).putInt("editor_font_level",1).putBoolean("font_defaults_13_15_16_18_applied",true).apply();}if(prefs.contains("security_pin_hash"))promptUnlock();else {openHomeSafely();receiveBookShare();}} // User content and categories are local; import them explicitly.}
+ void openHomeSafely(){
+  try{home();}
+  catch(Exception problem){
+   android.util.Log.e("DinNote","Home startup failure; entering data-safe recovery",problem);
+   showDataSafeRecovery(problem);
+  }
+ }
+ void showDataSafeRecovery(Exception problem){
+  editor=null;titleEditor=null;saveIndicator=null;selected=null;sectionOpen=false;
+  LinearLayout safe=new LinearLayout(this);safe.setOrientation(1);safe.setPadding(dp(20),dp(35),dp(20),dp(20));safe.setBackgroundColor(0xfffafbf7);
+  setContentView(safe);
+  TextView heading=text("DinNote · Mod Pemulihan",20);heading.setTextColor(0xff176b47);safe.addView(heading);
+  TextView warning=text("Paparan utama menghadapi masalah. Nota dan kitab tidak dipadam. Buat backup dahulu sebelum mencuba pembaikan.",15);warning.setPadding(0,dp(12),0,dp(18));safe.addView(warning);
+  Button backup=new Button(this);backup.setText("Simpan backup data sekarang");safe.addView(backup);backup.setOnClickListener(v->startBackup());
+  Button retry=new Button(this);retry.setText("Cuba buka halaman utama");safe.addView(retry);retry.setOnClickListener(v->openHomeSafely());
+  TextView detail=text("Ralat: "+problem.getClass().getSimpleName()+": "+String.valueOf(problem.getMessage()),12);detail.setTextIsSelectable(true);safe.addView(detail);
+ }
  void applySystemBarInsets(LinearLayout view){
   // Keep Android's real clock, battery and network status bar visible.
   getWindow().clearFlags(android.view.WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -160,7 +177,7 @@ public class MainActivity extends Activity {
    .setPositiveButton("Buka",null)
    .setNegativeButton("Keluar",(d,w)->finish()).create();
   dialog.setOnShowListener(v->dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(w->{
-   if(verifyPin(input.getText().toString())){dialog.dismiss();home();receiveBookShare();}
+   if(verifyPin(input.getText().toString())){dialog.dismiss();openHomeSafely();receiveBookShare();}
    else{input.setText("");input.setError("PIN tidak tepat");}
   }));
   dialog.show();
