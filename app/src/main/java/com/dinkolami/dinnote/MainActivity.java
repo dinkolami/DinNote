@@ -447,11 +447,11 @@ public class MainActivity extends Activity {
    sectionColumns.addView(pinnedColumn,pinnedParams);
    sectionColumns.addView(updatedColumn,updatedParams);
    shortcuts.addView(sectionColumns,new LinearLayout.LayoutParams(-1,-2));
-   dashboardSection(pinnedColumn,"Nota Disematkan",dashboardKeys("pinned_",false),true);
-   dashboardSection(updatedColumn,"Terakhir Dikemaskini",dashboardKeys("updated_",false),false);
+   dashboardSection(pinnedColumn,"Nota Disemat",dashboardKeys("pinned_",false),true);
+   dashboardSection(updatedColumn,"Kemaskini Terakhir",dashboardKeys("updated_",false),false);
   }else{
-   dashboardSection(shortcuts,"Nota Disematkan",dashboardKeys("pinned_",false),true);
-   dashboardSection(shortcuts,"Terakhir Dikemaskini",dashboardKeys("updated_",false),false);
+   dashboardSection(shortcuts,"Nota Disemat",dashboardKeys("pinned_",false),true);
+   dashboardSection(shortcuts,"Kemaskini Terakhir",dashboardKeys("updated_",false),false);
   }
   String resume=prefs.getString("last_edited_key","");
   // Resume editing is available as a compact icon between the home actions.
