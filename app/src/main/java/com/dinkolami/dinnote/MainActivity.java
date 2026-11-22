@@ -680,9 +680,10 @@ public class MainActivity extends Activity {
   matcher.appendTail(result);
   return result.toString();
  }
- void list(String filter){filter=filter.trim();String query=filter.replaceAll("\\s+"," ").toLowerCase(java.util.Locale.ROOT);String[] terms=query.isEmpty()?new String[0]:query.split(" ");items.removeAllViews();ArrayList<String> keys=new ArrayList<>();for(String k:prefs.getAll().keySet())if(k.startsWith(maktabah?"m_":"n_")&&prefs.getAll().get(k) instanceof String&&!prefs.getBoolean("deleted_"+k,false))keys.add(k);Collections.sort(keys,(a,b)->{
+ void list(String filter){filter=filter.trim();String query=filter.replaceAll("\\s+"," ").toLowerCase(java.util.Locale.ROOT);String[] terms=query.isEmpty()?new String[0]:query.split(" ");items.removeAllViews();ArrayList<String> keys=new ArrayList<>();java.util.Map<String,?> listSnapshot=prefs.getAll();for(String k:listSnapshot.keySet())if(k.startsWith(maktabah?"m_":"n_")&&listSnapshot.get(k) instanceof String&&!prefs.getBoolean("deleted_"+k,false))keys.add(k);Collections.sort(keys,(a,b)->{
    boolean pinA=prefs.getBoolean("pinned_"+a,false),pinB=prefs.getBoolean("pinned_"+b,false);
    if(pinA!=pinB)return pinA?-1:1;
+   if(maktabah&&prefs.getBoolean("book_manual_order",false)){int rank=Integer.compare(prefs.getInt("book_rank_"+a,Integer.MAX_VALUE),prefs.getInt("book_rank_"+b,Integer.MAX_VALUE));if(rank!=0)return rank;}
    if("Tajuk A–Z".equals(sortMode)){int byTitle=prefs.getString("title_"+a,"").trim().compareToIgnoreCase(prefs.getString("title_"+b,"").trim());if(byTitle!=0)return byTitle;}
    if("Kerap dibuka".equals(sortMode)){int byViews=Long.compare(prefs.getLong("viewed_"+b,0),prefs.getLong("viewed_"+a,0));if(byViews!=0)return byViews;}
    long ta=prefs.getLong("updated_"+a,0),tb=prefs.getLong("updated_"+b,0);
@@ -3067,8 +3068,37 @@ public class MainActivity extends Activity {
    if(ok){dialog.dismiss();openSection(true);}else Toast.makeText(this,"Simpan gagal",Toast.LENGTH_LONG).show();
   }));dialog.show();
  }
+ ArrayList<String> managedBooks(){
+  ArrayList<String> books=new ArrayList<>();java.util.Map<String,?> snapshot=prefs.getAll();
+  for(String k:snapshot.keySet())if(k.startsWith("m_")&&snapshot.get(k) instanceof String&&!prefs.getBoolean("deleted_"+k,false))books.add(k);
+  java.util.Collections.sort(books,(a,b)->{int rank=Integer.compare(prefs.getInt("book_rank_"+a,Integer.MAX_VALUE),prefs.getInt("book_rank_"+b,Integer.MAX_VALUE));return rank!=0?rank:prefs.getString("title_"+a,"").compareToIgnoreCase(prefs.getString("title_"+b,""));});return books;
+ }
+ void showBookManagement(){
+  ArrayList<String> books=managedBooks();String[] names=new String[books.size()];for(int i=0;i<names.length;i++)names[i]=prefs.getString("title_"+books.get(i),"Tanpa tajuk");
+  new AlertDialog.Builder(this).setTitle("Urus kitab & tag").setItems(names,(dg,i)->editBookDetails(books.get(i))).setNeutralButton("Cari tag",(dg,w)->searchBookTags()).setNegativeButton("Tutup",null).show();
+ }
+ void editBookDetails(String key){
+  LinearLayout panel=new LinearLayout(this);panel.setOrientation(1);panel.setPadding(dp(16),dp(8),dp(16),dp(8));
+  String[] fields={"Pengarang","Edisi / penerbit","Jilid / rujukan","Tag (pisahkan dengan koma)"};
+  String[] prefixes={"book_author_","book_edition_","book_reference_","book_tags_"};
+  EditText[] inputs=new EditText[fields.length];for(int i=0;i<fields.length;i++){inputs[i]=new EditText(this);inputs[i].setSingleLine(true);inputs[i].setHint(fields[i]);inputs[i].setText(prefs.getString(prefixes[i]+key,""));panel.addView(inputs[i]);}
+  int words=0;boolean inWord=false;String source=selectedReadingText(key,0);for(int i=0;i<source.length();i++){boolean letter=Character.isLetterOrDigit(source.charAt(i));if(letter&&!inWord)words++;if(letter)inWord=true;else if(Character.getType(source.charAt(i))!=Character.NON_SPACING_MARK)inWord=false;}
+  panel.addView(text("Anggaran bacaan: "+Math.max(1,(words+119)/120)+" minit (120 perkataan/minit)",13));
+  new AlertDialog.Builder(this).setTitle(prefs.getString("title_"+key,"Kitab")).setView(panel).setPositiveButton("Simpan",(dg,w)->{android.content.SharedPreferences.Editor tx=prefs.edit();for(int i=0;i<inputs.length;i++)tx.putString(prefixes[i]+key,inputs[i].getText().toString().trim());tx.apply();}).setNegativeButton("Batal",null).show();
+ }
+ void searchBookTags(){
+  java.util.TreeMap<String,ArrayList<String>> tags=new java.util.TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+  for(String key:managedBooks())for(String raw:prefs.getString("book_tags_"+key,"").split("[,،]")){String tag=raw.trim();if(tag.isEmpty())continue;if(!tags.containsKey(tag))tags.put(tag,new ArrayList<>());if(!tags.get(tag).contains(key))tags.get(tag).add(key);}
+  String[] names=tags.keySet().toArray(new String[0]);new AlertDialog.Builder(this).setTitle("Tag kitab").setItems(names,(dg,i)->{ArrayList<String> keys=tags.get(names[i]);String[] titles=new String[keys.size()];for(int j=0;j<titles.length;j++)titles[j]=prefs.getString("title_"+keys.get(j),"Kitab");new AlertDialog.Builder(this).setTitle(names[i]).setItems(titles,(dd,j)->read(keys.get(j))).setNegativeButton("Tutup",null).show();}).setNegativeButton("Tutup",null).show();
+ }
+ void showManualBookOrder(){
+  ArrayList<String> books=managedBooks();String[] names=new String[books.size()];for(int i=0;i<names.length;i++)names[i]=(i+1)+". "+prefs.getString("title_"+books.get(i),"Kitab");
+  new AlertDialog.Builder(this).setTitle("Susun kitab manual").setItems(names,(dg,i)->new AlertDialog.Builder(this).setTitle(names[i]).setItems(new String[]{"Naik satu","Turun satu","Pindah ke teratas"},(dd,w)->{
+   int dest=w==0?Math.max(0,i-1):w==1?Math.min(books.size()-1,i+1):0;books.add(dest,books.remove(i));android.content.SharedPreferences.Editor tx=prefs.edit();for(int j=0;j<books.size();j++)tx.putInt("book_rank_"+books.get(j),j);tx.putBoolean("book_manual_order",true).apply();showManualBookOrder();
+  }).show()).setNeutralButton("Susunan asal",(dg,w)->{prefs.edit().putBoolean("book_manual_order",false).apply();notesPage();}).setNegativeButton("Selesai",(dg,w)->notesPage()).show();
+ }
  void showBookAddMenu(){
-  new AlertDialog.Builder(this).setTitle("Tambah kitab").setItems(new String[]{"Tulis / tampal teks","Import TXT / HTML / DOCX / EPUB / PDF","Import DinNote JSON","Buka Maktabah Syamilah","Banding dua kitab","Tampal petikan Syamilah","Koleksi petikan ulama","Penyusun Kuliah Pintar","Indeks Tematik Pintar"},(d,i)->{
+  new AlertDialog.Builder(this).setTitle("Tambah kitab").setItems(new String[]{"Tulis / tampal teks","Import TXT / HTML / DOCX / EPUB / PDF","Import DinNote JSON","Buka Maktabah Syamilah","Banding dua kitab","Tampal petikan Syamilah","Koleksi petikan ulama","Penyusun Kuliah Pintar","Indeks Tematik Pintar","Urus kitab & tag","Susun kitab manual"},(d,i)->{
    if(i==0)edit(null);
    else if(i==1){Intent intent=new Intent(Intent.ACTION_OPEN_DOCUMENT);intent.addCategory(Intent.CATEGORY_OPENABLE);intent.setType("*/*");intent.putExtra(Intent.EXTRA_MIME_TYPES,new String[]{"text/plain","text/html","application/vnd.openxmlformats-officedocument.wordprocessingml.document","application/epub+zip","application/pdf","application/zip","application/octet-stream"});startActivityForResult(intent,BOOK_TEXT_IMPORT);}
    else if(i==2)startContentImport();
@@ -3077,7 +3107,9 @@ public class MainActivity extends Activity {
    else if(i==5)showSharedBookImport("",null);
    else if(i==6)showQuoteCollection();
    else if(i==7)showLectureComposer();
-   else showThematicIndex();
+   else if(i==8)showThematicIndex();
+   else if(i==9)showBookManagement();
+   else showManualBookOrder();
   }).show();
  }
  String bookImportName(android.net.Uri uri){
@@ -3603,6 +3635,9 @@ public class MainActivity extends Activity {
      throw new java.io.IOException("Tarikh nota dalam sandaran tidak sah; data sedia ada tidak diubah");
     if((key.startsWith("pinned_")||key.startsWith("deleted_"))&&!(value instanceof Boolean))
      throw new java.io.IOException("Status nota dalam sandaran tidak sah; data sedia ada tidak diubah");
+    if((key.startsWith("book_author_")||key.startsWith("book_edition_")||key.startsWith("book_reference_")||key.startsWith("book_tags_")||key.startsWith("named_stops_")||key.startsWith("footnotes_")||key.startsWith("quote_"))&&!(value instanceof String))throw new java.io.IOException("Metadata Maktabah tidak sah");
+    if(key.equals("book_manual_order")&&!(value instanceof Boolean))throw new java.io.IOException("Susunan kitab tidak sah");
+    if((key.startsWith("book_rank_")||key.startsWith("reading_filter_")||key.equals("auto_read_speed"))&&!(value instanceof Integer))throw new java.io.IOException("Tetapan Maktabah tidak sah");
     // Validate all numeric values before creating the destructive restore transaction.
     if(value instanceof Number&&!(value instanceof Integer)&&!(value instanceof Long)){
      double number=((Number)value).doubleValue();
