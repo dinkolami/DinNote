@@ -2863,14 +2863,15 @@ public class MainActivity extends Activity {
   }));dialog.show();
  }
  void showBookAddMenu(){
-  new AlertDialog.Builder(this).setTitle("Tambah kitab").setItems(new String[]{"Tulis / tampal teks","Import TXT / HTML / DOCX / EPUB / PDF","Import DinNote JSON","Buka Maktabah Syamilah","Banding dua kitab","Tampal petikan Syamilah","Koleksi petikan ulama"},(d,i)->{
+  new AlertDialog.Builder(this).setTitle("Tambah kitab").setItems(new String[]{"Tulis / tampal teks","Import TXT / HTML / DOCX / EPUB / PDF","Import DinNote JSON","Buka Maktabah Syamilah","Banding dua kitab","Tampal petikan Syamilah","Koleksi petikan ulama","Penyusun Kuliah Pintar"},(d,i)->{
    if(i==0)edit(null);
    else if(i==1){Intent intent=new Intent(Intent.ACTION_OPEN_DOCUMENT);intent.addCategory(Intent.CATEGORY_OPENABLE);intent.setType("*/*");intent.putExtra(Intent.EXTRA_MIME_TYPES,new String[]{"text/plain","text/html","application/vnd.openxmlformats-officedocument.wordprocessingml.document","application/epub+zip","application/pdf","application/zip","application/octet-stream"});startActivityForResult(intent,BOOK_TEXT_IMPORT);}
    else if(i==2)startContentImport();
    else if(i==3){try{startActivity(new Intent(Intent.ACTION_VIEW,android.net.Uri.parse("https://shamela.ws/")));}catch(Exception e){Toast.makeText(this,"Pelayar tidak tersedia",Toast.LENGTH_SHORT).show();}}
    else if(i==4)chooseComparison(null);
    else if(i==5)showSharedBookImport("",null);
-   else showQuoteCollection();
+   else if(i==6)showQuoteCollection();
+   else showLectureComposer();
   }).show();
  }
  String bookImportName(android.net.Uri uri){
@@ -3038,6 +3039,33 @@ public class MainActivity extends Activity {
     dialog.dismiss();Toast.makeText(this,"Petikan disimpan",Toast.LENGTH_SHORT).show();
    }catch(Exception e){Toast.makeText(this,"Simpan gagal",Toast.LENGTH_SHORT).show();}
   }));dialog.show();
+ }
+ void showLectureComposer(){
+  ArrayList<org.json.JSONObject> items=new ArrayList<>();
+  for(String key:prefs.getAll().keySet())if(key.startsWith("quote_"))try{items.add(new org.json.JSONObject(prefs.getString(key,"")));}catch(Exception ignored){}
+  if(items.isEmpty()){new AlertDialog.Builder(this).setTitle("Penyusun Kuliah Pintar").setMessage("Simpan petikan ulama dahulu untuk membina nota kuliah.").setPositiveButton("Koleksi petikan",(d,w)->showQuoteCollection()).setNegativeButton("Tutup",null).show();return;}
+  java.util.Collections.sort(items,(a,b)->Long.compare(a.optLong("created"),b.optLong("created")));
+  String[] labels=new String[items.size()];boolean[] checked=new boolean[items.size()];ArrayList<Integer> order=new ArrayList<>();
+  for(int i=0;i<items.size();i++){org.json.JSONObject item=items.get(i);String body=item.optString("text");labels[i]=item.optString("topic")+" · "+item.optString("title")+"\n"+body.substring(0,Math.min(90,body.length()));}
+  new AlertDialog.Builder(this).setTitle("Pilih petikan mengikut urutan kuliah").setMultiChoiceItems(labels,checked,(d,i,on)->{if(on)order.add(i);else order.remove(Integer.valueOf(i));}).setNegativeButton("Batal",null).setPositiveButton("Susun",(d,w)->{
+   if(order.isEmpty()){Toast.makeText(this,"Pilih sekurang-kurangnya satu petikan",Toast.LENGTH_SHORT).show();return;}
+   StringBuilder draft=new StringBuilder();
+   for(int j=0;j<order.size();j++){
+    org.json.JSONObject item=items.get(order.get(j));
+    if(j>0)draft.append("\n\n---CLASSIC---\n\n");
+    draft.append(j+1).append(". ").append(item.optString("topic")).append("\n\n").append(item.optString("text")).append("\n\nSumber: ").append(item.optString("title"));
+    if(!item.optString("reference").isEmpty())draft.append(" — ").append(item.optString("reference"));
+    draft.append("\n\nHuraian:\n");
+   }
+   EditText title=new EditText(this);title.setSingleLine(true);title.setHint("Tajuk kuliah");
+   AlertDialog confirm=new AlertDialog.Builder(this).setTitle("Cipta nota kuliah").setView(title).setNegativeButton("Batal",null).setPositiveButton("Cipta",null).create();
+   confirm.setOnShowListener(v->confirm.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(x->{
+    String name=title.getText().toString().trim();if(name.isEmpty()){title.setError("Masukkan tajuk");return;}
+    String key="n_"+java.util.UUID.randomUUID().toString();
+    boolean ok=prefs.edit().putString(key,draft.toString()).putString("title_"+key,name).putString("cat_"+key,"Tanpa kategori").putLong("updated_"+key,System.currentTimeMillis()).commit();
+    if(ok){confirm.dismiss();openSection(false);edit(key);}else Toast.makeText(this,"Simpan gagal",Toast.LENGTH_SHORT).show();
+   }));confirm.show();
+  }).show();
  }
  void showQuoteCollection(){
   ArrayList<String> ids=new ArrayList<>();for(String k:prefs.getAll().keySet())if(k.startsWith("quote_"))ids.add(k);
