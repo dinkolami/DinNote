@@ -3103,7 +3103,7 @@ public class MainActivity extends Activity {
      if(!progress.isShowing()||isFinishing()||isDestroyed()||root!=currentRoot)return;
      progress.dismiss();
      if(keys.isEmpty()){Toast.makeText(this,"Tiada padanan",Toast.LENGTH_SHORT).show();return;}
-     new AlertDialog.Builder(this).setTitle("Hasil Maktabah ("+keys.size()+")").setItems(labels.toArray(new String[0]),(d,i)->{
+     new AlertDialog.Builder(this).setTitle("Hasil Maktabah ("+keys.size()+")").setItems(labels.toArray(new String[0]),(resultDialog,i)->{
       String key=keys.get(i);if(!prefs.contains(key)||prefs.getBoolean("deleted_"+key,false))return;
       if(offsets.get(i)<0){read(key);return;}
       showGlobalBookExcerpt(key,offsets.get(i));
