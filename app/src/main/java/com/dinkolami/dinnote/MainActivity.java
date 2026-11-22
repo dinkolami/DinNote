@@ -843,11 +843,12 @@ public class MainActivity extends Activity {
  void showPagedReader(String key){
   enableLectureZoom(key);startLectureTimer(key);
   final CharSequence source=formattedReadingText(prefs.getString(key,""));
-  final int availableWidthDp=Math.round(getResources().getDisplayMetrics().widthPixels/getResources().getDisplayMetrics().density);
+  final int availableWidthDp=Math.round(readerBuiltWidthPx/getResources().getDisplayMetrics().density);
   final boolean spread=availableWidthDp>=500&&prefs.getBoolean("reader_two_columns",true);
   final int fontLevel=Math.max(0,Math.min(3,prefs.getInt("reader_font_level",1)));
   final int fontSize=new int[]{13,15,16,18}[fontLevel];
   final int paper=lecturePaper();
+  final Runnable[] pageIndex={()->Toast.makeText(this,"Indeks sedang disediakan",Toast.LENGTH_SHORT).show()};
   final String heading=prefs.getString("title_"+key,"");
   TextView headingView=text(heading,17);headingView.setGravity(Gravity.CENTER);headingView.setTypeface(null,android.graphics.Typeface.BOLD);headingView.setMaxLines(2);
   headingView.setEllipsize(android.text.TextUtils.TruncateAt.END);
@@ -912,7 +913,8 @@ public class MainActivity extends Activity {
    else returnFromReader();
   });
   Button pageSettings=lectureSettingsButton();
-  pageSettings.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Kawalan kuliah").setItems(new String[]{"Bacaan scroll dan syarahan","Saiz tulisan","Warna kertas"},(d,w)->{
+  pageSettings.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Kawalan kuliah").setItems(new String[]{"Bacaan scroll dan syarahan","Saiz tulisan","Warna kertas","Indeks kuliah"},(d,w)->{
+   if(w==3){pageIndex[0].run();return;}
    if(w==2){chooseLecturePaper(key);return;}
    if(w==0){prefs.edit().putBoolean("reader_swipe_mode",false).putBoolean("reader_clean_mode",true).apply();read(key);}
    else new AlertDialog.Builder(this).setTitle("Saiz tulisan").setItems(new String[]{"Kecil","Biasa","Besar","Lebih besar"},(dialog,size)->{prefs.edit().putInt("reader_font_level",size).apply();read(key);}).show();
@@ -957,6 +959,7 @@ public class MainActivity extends Activity {
     probe.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
     android.text.TextPaint paint=probe.getPaint();
     ArrayList<CharSequence> parts=new ArrayList<>();
+    ArrayList<Integer> starts=new ArrayList<>();
      ArrayList<Integer> repeatedPrefixLengths=new ArrayList<>();
      int previousStop=0;
     int cursor=0;
@@ -985,7 +988,7 @@ public class MainActivity extends Activity {
      // Never split a surrogate pair, and preserve every character in order.
      if(stop<source.length()&&stop>cursor&&Character.isHighSurrogate(source.charAt(stop-1))&&Character.isLowSurrogate(source.charAt(stop)))stop--;
      if(stop<=cursor)stop=cursor+1;
-     parts.add(source.subSequence(cursor,stop));
+     starts.add(cursor);parts.add(source.subSequence(cursor,stop));
       repeatedPrefixLengths.add(Math.max(0,Math.min(stop-cursor,previousStop-cursor)));
       previousStop=stop;
      cursor=stop;
@@ -994,9 +997,11 @@ public class MainActivity extends Activity {
        if(nextCursor>cursor-chars && nextCursor<cursor)cursor=nextCursor;
       }
     }
-    if(parts.isEmpty()){parts.add("");repeatedPrefixLengths.add(0);}
+    if(parts.isEmpty()){starts.add(0);parts.add("");repeatedPrefixLengths.add(0);}
     final int total=parts.size();
     final int[] position={Math.min(total-1,Math.max(0,prefs.getInt("reading_page_"+key,0)))};
+    int savedOffset=prefs.getInt("reading_page_offset_"+key,-1);
+    if(savedOffset>=0){for(int j=0;j<starts.size();j++){if(starts.get(j)>savedOffset)break;position[0]=j;}}
     if(spread)position[0]=position[0]/2*2;
     final Runnable[] render={null};
     render[0]=()->{
@@ -1039,7 +1044,19 @@ public class MainActivity extends Activity {
       });
      }
      indicator.setText((position[0]+1)+(spread&&position[0]+1<total?"–"+(position[0]+2):"")+" / "+total+" · "+Math.min(100,Math.round((position[0]+(spread?2:1))*100f/total))+"%");
-     prefs.edit().putInt("reading_page_"+key,position[0]).apply();
+     prefs.edit().putInt("reading_page_"+key,position[0]).putInt("reading_page_offset_"+key,starts.get(position[0])).apply();
+    };
+    pageIndex[0]=()->{
+     ArrayList<String> titles=new ArrayList<>();
+     ArrayList<Integer> targets=new ArrayList<>();
+     java.util.regex.Matcher m=java.util.regex.Pattern.compile("(?m)^[ \\t]*(?:[0-9٠-٩۰-۹]+[.)،:–-]|[0-9]\\uFE0F?\\u20E3|[①-⑳]|(?:Bab|Fasal|باب|فصل)\\s+)[^\\r\\n]*").matcher(source);
+     while(m.find()){
+      int target=0;
+      for(int j=0;j<starts.size();j++){if(starts.get(j)>m.start())break;target=j;}
+      titles.add(m.group().trim());targets.add(target);
+     }
+     if(titles.isEmpty()){Toast.makeText(this,"Tiada tajuk bernombor",Toast.LENGTH_SHORT).show();return;}
+     new AlertDialog.Builder(this).setTitle("Indeks kuliah").setItems(titles.toArray(new String[0]),(d,w)->{int target=targets.get(w);position[0]=spread?target/2*2:target;render[0].run();}).setNegativeButton("Tutup",null).show();
     };
     bookmark.setOnClickListener(v->{prefs.edit().putInt("bookmark_page_"+key,position[0]).apply();Toast.makeText(this,"Penanda disimpan",Toast.LENGTH_SHORT).show();});
     jump.setOnClickListener(v->{
