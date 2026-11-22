@@ -226,6 +226,37 @@ public class MainActivity extends Activity {
     }
    }).setNegativeButton("Tutup",null).show();
  }
+
+ void previewCorrectAll(EditText target){
+  if(target==null)return;
+  AutoCorrectDictionary dictionary=new AutoCorrectDictionary(this);
+  java.util.Map<String,String> entries=dictionary.entries();
+  if(entries.isEmpty()){Toast.makeText(this,"Kamus masih kosong",Toast.LENGTH_SHORT).show();return;}
+  String original=target.getText().toString(),corrected=original;
+  int changes=0;
+  for(java.util.Map.Entry<String,String> entry:entries.entrySet()){
+   String from=entry.getKey(),to=entry.getValue();
+   if(from.isEmpty()||from.equals(to))continue;
+   // Replace whole words only; do not modify Arabic-script paragraphs.
+   String[] lines=corrected.split("\\n",-1);
+   for(int i=0;i<lines.length;i++){
+    if(java.util.regex.Pattern.compile("[\\u0600-\\u06FF]").matcher(lines[i]).find())continue;
+    java.util.regex.Pattern pattern=java.util.regex.Pattern.compile("(?<![\\p{L}\\p{N}_])"+java.util.regex.Pattern.quote(from)+"(?![\\p{L}\\p{N}_])");
+    java.util.regex.Matcher matcher=pattern.matcher(lines[i]);
+    StringBuffer output=new StringBuffer();
+    while(matcher.find()){matcher.appendReplacement(output,java.util.regex.Matcher.quoteReplacement(to));changes++;}
+    matcher.appendTail(output);lines[i]=output.toString();
+   }
+   corrected=android.text.TextUtils.join("\\n",lines);
+  }
+  if(changes==0){Toast.makeText(this,"Tiada perkataan yang perlu dibetulkan",Toast.LENGTH_SHORT).show();return;}
+  final String result=corrected;
+  final int total=changes;
+  new AlertDialog.Builder(this).setTitle("Pratonton Betulkan Semua ("+total+")")
+   .setMessage("Semak hasil sebelum menggantikan teks. Baris yang mengandungi tulisan Arab dilangkau.\\n\\n"+(result.length()>1800?result.substring(0,1800)+"…":result))
+   .setPositiveButton("Gunakan",(dialog,which)->{target.setText(result);target.setSelection(Math.min(result.length(),target.length()));Toast.makeText(this,total+" penggantian digunakan",Toast.LENGTH_SHORT).show();})
+   .setNegativeButton("Batal",null).show();
+ }
  void showAutoCorrectDictionary(){
   AutoCorrectDictionary dictionary=new AutoCorrectDictionary(this);
   LinearLayout panel=new LinearLayout(this);panel.setOrientation(1);panel.setPadding(dp(18),dp(8),dp(18),dp(8));
@@ -1604,6 +1635,7 @@ public class MainActivity extends Activity {
       commentaryEditor.setText(prefs.getString(commentaryKey,""));
       // Share the same live AutoCorrect dictionary with expandable commentary.
       new AutoCorrectDictionary(this).attach(commentaryEditor);
+      Button correctCommentary=action("✓ Betulkan Semua",commentaryPanel,()->previewCorrectAll(commentaryEditor));correctCommentary.setTextSize(12);
       commentaryEditor.setHint("Tulis syarahan di sini…");
       commentaryEditor.setTextSize(15);
       commentaryEditor.setTextColor(0xff303c43);
@@ -1851,7 +1883,7 @@ public class MainActivity extends Activity {
    if(sectionOpen)notesPage();else home();
    return;
   }
-  maktabah=key.startsWith("m_");prefs.edit().putString("last_edited_key",key).apply();}editor=null;saveIndicator=null;selected=key;cleanBase();LinearLayout bar=new LinearLayout(this);bar.setGravity(Gravity.CENTER_VERTICAL);root.addView(bar);Button editorBack=action("←",bar,()->finishEditingSafely());editorBack.setTextSize(23);editorBack.setTextColor(0xff176b47);editorBack.setContentDescription("Kembali dan simpan");saveIndicator=text("✓ Disimpan",11);saveIndicator.setTextColor(0xff566a70);saveIndicator.setTypeface(null,android.graphics.Typeface.BOLD);saveIndicator.setGravity(Gravity.CENTER);saveIndicator.setPadding(dp(9),dp(5),dp(9),dp(5));saveIndicator.setBackground(rounded(0xffe5f5eb,0xffc9e8cf,12));LinearLayout.LayoutParams savedBadgeParams=new LinearLayout.LayoutParams(-2,-2);savedBadgeParams.leftMargin=dp(5);bar.addView(saveIndicator,savedBadgeParams);TextView spacer=text("",12);bar.addView(spacer,new LinearLayout.LayoutParams(0,1,1));final java.util.ArrayDeque<EditorSnapshot> undoHistory=new java.util.ArrayDeque<>();final java.util.ArrayDeque<EditorSnapshot> redoHistory=new java.util.ArrayDeque<>();final boolean[] restoring={false};final TextView[] historyButtons=new TextView[2];historyButtons[0]=action("↶",bar,()->{if(editor==null||undoHistory.isEmpty())return;restoring[0]=true;EditorSnapshot current=new EditorSnapshot(editor);EditorSnapshot previous=undoHistory.removeLast();redoHistory.addLast(current);previous.restore(editor);revealEditorCursor(editor);restoring[0]=false;save();historyButtons[0].setAlpha(undoHistory.isEmpty()?0.35f:1f);historyButtons[1].setAlpha(1f);});historyButtons[1]=action("↷",bar,()->{if(editor==null||redoHistory.isEmpty())return;restoring[0]=true;EditorSnapshot current=new EditorSnapshot(editor);EditorSnapshot next=redoHistory.removeLast();undoHistory.addLast(current);next.restore(editor);revealEditorCursor(editor);restoring[0]=false;save();historyButtons[0].setAlpha(1f);historyButtons[1].setAlpha(redoHistory.isEmpty()?0.35f:1f);});historyButtons[0].setContentDescription("Undo perubahan teks");historyButtons[1].setContentDescription("Redo perubahan teks");for(TextView historyButton:historyButtons){historyButton.setTextSize(23);historyButton.setTextColor(0xff146b45);historyButton.setBackground(rounded(0xfff0f5f2,0xffc6d9cf,12));historyButton.setPadding(dp(9),dp(4),dp(9),dp(4));}historyButtons[0].setAlpha(0.45f);historyButtons[1].setAlpha(0.45f);Button autocorrectButton=action("Aa✓",bar,()->showAutoCorrectDictionary());autocorrectButton.setTextSize(13);autocorrectButton.setTextColor(0xff146b45);autocorrectButton.setBackground(rounded(0xfff0f5f2,0xffc6d9cf,12));autocorrectButton.setContentDescription("Kamus AutoCorrect dan Word Replace");Button doneButton=action("✓ Selesai",bar,()->finishEditingSafely());doneButton.setTextColor(Color.WHITE);doneButton.setTypeface(null,android.graphics.Typeface.BOLD);doneButton.setBackground(rounded(0xff516970,0xffadbcc5,12));doneButton.setContentDescription("Selesai menyunting dan simpan nota");action("⋮",bar,()->{String[] options=new String[]{"Masukkan tarikh","Masukkan masa","Masukkan tarikh dan masa","Simpan versi","Sejarah suntingan","Padam"};new AlertDialog.Builder(this).setItems(options,(d,i)->{if(i<3)insertCurrentDateTime(i);else if(i==3)saveHistoryVersion();else if(i==4)showHistoryVersions();else if(selected!=null)confirmDelete(selected);}).show();});categoryPicker=new Spinner(this);categoryPicker.setContentDescription(maktabah?"Kategori kitab":"Kategori nota");ArrayList<String> choices=new ArrayList<>();choices.add("Tanpa kategori");choices.addAll(categories());categoryPicker.setAdapter(new ArrayAdapter<>(this,android.R.layout.simple_spinner_dropdown_item,choices));String savedCat=key==null?"Tanpa kategori":prefs.getString("cat_"+key,"Tanpa kategori");
+  maktabah=key.startsWith("m_");prefs.edit().putString("last_edited_key",key).apply();}editor=null;saveIndicator=null;selected=key;cleanBase();LinearLayout bar=new LinearLayout(this);bar.setGravity(Gravity.CENTER_VERTICAL);root.addView(bar);Button editorBack=action("←",bar,()->finishEditingSafely());editorBack.setTextSize(23);editorBack.setTextColor(0xff176b47);editorBack.setContentDescription("Kembali dan simpan");saveIndicator=text("✓ Disimpan",11);saveIndicator.setTextColor(0xff566a70);saveIndicator.setTypeface(null,android.graphics.Typeface.BOLD);saveIndicator.setGravity(Gravity.CENTER);saveIndicator.setPadding(dp(9),dp(5),dp(9),dp(5));saveIndicator.setBackground(rounded(0xffe5f5eb,0xffc9e8cf,12));LinearLayout.LayoutParams savedBadgeParams=new LinearLayout.LayoutParams(-2,-2);savedBadgeParams.leftMargin=dp(5);bar.addView(saveIndicator,savedBadgeParams);TextView spacer=text("",12);bar.addView(spacer,new LinearLayout.LayoutParams(0,1,1));final java.util.ArrayDeque<EditorSnapshot> undoHistory=new java.util.ArrayDeque<>();final java.util.ArrayDeque<EditorSnapshot> redoHistory=new java.util.ArrayDeque<>();final boolean[] restoring={false};final TextView[] historyButtons=new TextView[2];historyButtons[0]=action("↶",bar,()->{if(editor==null||undoHistory.isEmpty())return;restoring[0]=true;EditorSnapshot current=new EditorSnapshot(editor);EditorSnapshot previous=undoHistory.removeLast();redoHistory.addLast(current);previous.restore(editor);revealEditorCursor(editor);restoring[0]=false;save();historyButtons[0].setAlpha(undoHistory.isEmpty()?0.35f:1f);historyButtons[1].setAlpha(1f);});historyButtons[1]=action("↷",bar,()->{if(editor==null||redoHistory.isEmpty())return;restoring[0]=true;EditorSnapshot current=new EditorSnapshot(editor);EditorSnapshot next=redoHistory.removeLast();undoHistory.addLast(current);next.restore(editor);revealEditorCursor(editor);restoring[0]=false;save();historyButtons[0].setAlpha(1f);historyButtons[1].setAlpha(redoHistory.isEmpty()?0.35f:1f);});historyButtons[0].setContentDescription("Undo perubahan teks");historyButtons[1].setContentDescription("Redo perubahan teks");for(TextView historyButton:historyButtons){historyButton.setTextSize(23);historyButton.setTextColor(0xff146b45);historyButton.setBackground(rounded(0xfff0f5f2,0xffc6d9cf,12));historyButton.setPadding(dp(9),dp(4),dp(9),dp(4));}historyButtons[0].setAlpha(0.45f);historyButtons[1].setAlpha(0.45f);Button autocorrectButton=action("Aa✓",bar,()->showAutoCorrectDictionary());Button correctAllButton=action("✓ Semua",bar,()->previewCorrectAll(editor));correctAllButton.setTextSize(12);correctAllButton.setContentDescription("Pratonton dan betulkan semua perkataan lama");autocorrectButton.setTextSize(13);autocorrectButton.setTextColor(0xff146b45);autocorrectButton.setBackground(rounded(0xfff0f5f2,0xffc6d9cf,12));autocorrectButton.setContentDescription("Kamus AutoCorrect dan Word Replace");Button doneButton=action("✓ Selesai",bar,()->finishEditingSafely());doneButton.setTextColor(Color.WHITE);doneButton.setTypeface(null,android.graphics.Typeface.BOLD);doneButton.setBackground(rounded(0xff516970,0xffadbcc5,12));doneButton.setContentDescription("Selesai menyunting dan simpan nota");action("⋮",bar,()->{String[] options=new String[]{"Masukkan tarikh","Masukkan masa","Masukkan tarikh dan masa","Simpan versi","Sejarah suntingan","Padam"};new AlertDialog.Builder(this).setItems(options,(d,i)->{if(i<3)insertCurrentDateTime(i);else if(i==3)saveHistoryVersion();else if(i==4)showHistoryVersions();else if(selected!=null)confirmDelete(selected);}).show();});categoryPicker=new Spinner(this);categoryPicker.setContentDescription(maktabah?"Kategori kitab":"Kategori nota");ArrayList<String> choices=new ArrayList<>();choices.add("Tanpa kategori");choices.addAll(categories());categoryPicker.setAdapter(new ArrayAdapter<>(this,android.R.layout.simple_spinner_dropdown_item,choices));String savedCat=key==null?"Tanpa kategori":prefs.getString("cat_"+key,"Tanpa kategori");
   // Preserve an existing note category even if it is missing from the category list.
   if(!choices.contains(savedCat)){
    choices.add(savedCat);
