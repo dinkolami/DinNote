@@ -297,7 +297,36 @@ public class MainActivity extends Activity {
   base("DinNote");
   ScrollView scroll=new ScrollView(this);scroll.setFillViewport(false);scroll.setVerticalScrollBarEnabled(false);
   scroll.setOverScrollMode(View.OVER_SCROLL_NEVER);scroll.setSmoothScrollingEnabled(true);
-  root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
+  if(cleanReading){
+   // No toolbar, card border, header, title, metadata or progress strip.
+   body.setBackgroundColor(Color.WHITE);
+   body.setPadding(dp(3),dp(4),dp(3),dp(3));
+   readingFrame.setMargins(0,0,0,0);
+   FrameLayout lectureSurface=new FrameLayout(this);
+   lectureSurface.addView(scroll,new FrameLayout.LayoutParams(-1,-1));
+   Button floatingBack=new Button(this);
+   floatingBack.setText("‹");
+   floatingBack.setTextSize(25);
+   floatingBack.setAllCaps(false);
+   floatingBack.setPadding(0,0,0,0);
+   floatingBack.setMinWidth(0);floatingBack.setMinHeight(0);
+   floatingBack.setBackground(rounded(0xfff3f7f3,0xffbed2c5,50));
+   floatingBack.setContentDescription("Kembali ke paparan bacaan biasa");
+   floatingBack.setElevation(dp(5));
+   floatingBack.setOnClickListener(v->{saveReaderPosition(key);prefs.edit().putBoolean("reader_clean_mode",false).apply();read(key);});
+   FrameLayout.LayoutParams floatingParams=new FrameLayout.LayoutParams(dp(38),dp(38),Gravity.TOP|Gravity.LEFT);
+   floatingParams.setMargins(dp(5),dp(5),0,0);
+   lectureSurface.addView(floatingBack,floatingParams);
+   root.addView(lectureSurface,new LinearLayout.LayoutParams(-1,0,1));
+   // Hide system bars after the root inset listener has run.
+   root.post(()->{
+    if(root.indexOfChild(lectureSurface)<0)return;
+    if(android.os.Build.VERSION.SDK_INT>=30){
+     android.view.WindowInsetsController c=getWindow().getInsetsController();
+     if(c!=null)c.hide(android.view.WindowInsets.Type.statusBars()|android.view.WindowInsets.Type.navigationBars());
+    }else getWindow().getDecorView().setSystemUiVisibility(5894);
+   });
+  }else root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
   LinearLayout page=new LinearLayout(this);page.setOrientation(1);
   page.setPadding(dp(10),dp(6),dp(10),dp(3));page.setBackgroundColor(0xfffffefd);page.setTag("dinnote_home");
   // Use the actual measured dashboard height. Avoid scaleY, synthetic spacer
@@ -1330,6 +1359,8 @@ public class MainActivity extends Activity {
   readerBack.setContentDescription(cleanReading?"Keluar mod kuliah":(key.startsWith("m_")?"Kembali ke senarai kitab":"Kembali ke senarai nota"));
   TextView spacer=text("",12);bar.addView(spacer,new LinearLayout.LayoutParams(0,1,1));
   if(cleanReading){
+   // The Back control is placed as an overlay on the reading surface below.
+   root.removeView(bar);
    // Lecture mode: the normal back control is the only visible toolbar action.
    // Keep the same ScrollView and its touch scrolling, including Fold6 reflow.
    if(root.getChildCount()>0)root.getChildAt(0).setVisibility(View.GONE);
@@ -1401,7 +1432,7 @@ public class MainActivity extends Activity {
   categoryLine.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_END);
   categoryLine.setIncludeFontPadding(false);
   metaRow.addView(categoryLine,new LinearLayout.LayoutParams(0,-2,1));
-  body.addView(metaRow,new LinearLayout.LayoutParams(-1,-2));
+  if(!cleanReading)body.addView(metaRow,new LinearLayout.LayoutParams(-1,-2));
   TextView title=text(heading,20);title.setMaxLines(3);
   title.setEllipsize(android.text.TextUtils.TruncateAt.END);
   title.setBackground(rounded(0xfffffefd,0xffb8c2ca,12));
@@ -1409,9 +1440,9 @@ public class MainActivity extends Activity {
   title.setPadding(dp(24),dp(8),dp(24),dp(8));
   title.setGravity(Gravity.CENTER_VERTICAL|Gravity.START);title.setTextIsSelectable(true);
   title.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);title.setIncludeFontPadding(true);
-  if(!heading.isEmpty())body.addView(title);
+  if(!cleanReading&&!heading.isEmpty())body.addView(title);
   String firstReadingLine=fullReadingText.split("\\R",2)[0].trim();
-  if(firstReadingLine.matches("(?i)^(bab|الفصل|باب)\\b.*")&&firstReadingLine.length()<110){
+  if(!cleanReading&&firstReadingLine.matches("(?i)^(bab|الفصل|باب)\\b.*")&&firstReadingLine.length()<110){
    TextView chapterLabel=text(firstReadingLine,16);
    chapterLabel.setTextColor(0xff566a70);chapterLabel.setTypeface(null,android.graphics.Typeface.BOLD);
    chapterLabel.setPadding(dp(20),dp(8),dp(20),dp(8));body.addView(chapterLabel);
@@ -1675,7 +1706,7 @@ public class MainActivity extends Activity {
   long readingUpdated=prefs.getLong("updated_"+key,0L);String updatedLabel=readingUpdated>0?new java.text.SimpleDateFormat("dd/MM/yyyy",java.util.Locale.getDefault()).format(new java.util.Date(readingUpdated)):"—";TextView wordCounter=text(wordCount+" perkataan  ·  Dikemas kini "+updatedLabel,12);
   wordCounter.setTextColor(0xff687078);
   wordCounter.setPadding(dp(20),dp(6),dp(20),dp(6));
-  body.addView(wordCounter);
+  if(!cleanReading)body.addView(wordCounter);
   root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
    // Compact reading progress indicator shared by Nota and Maktabah.
    FrameLayout progressFrame=new FrameLayout(this);
@@ -1694,7 +1725,7 @@ public class MainActivity extends Activity {
    FrameLayout.LayoutParams percentParams=new FrameLayout.LayoutParams(-2,dp(18),Gravity.TOP|Gravity.RIGHT);
    percentParams.rightMargin=dp(8);
    progressFrame.addView(readingPercent,percentParams);
-   root.addView(progressFrame,new LinearLayout.LayoutParams(-1,dp(18)));
+   if(!cleanReading)root.addView(progressFrame,new LinearLayout.LayoutParams(-1,dp(18)));
    Runnable updateReadingProgress=()->{
     if(scroll.getChildCount()==0)return;
     int maxScroll=Math.max(0,scroll.getChildAt(0).getHeight()-scroll.getHeight());
