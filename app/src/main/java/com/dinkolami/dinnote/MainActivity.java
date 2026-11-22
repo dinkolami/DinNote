@@ -1422,7 +1422,7 @@ public class MainActivity extends Activity {
   final ArrayList<View> lecturePanels=new ArrayList<>();
   final ArrayList<TextView> lectureArrows=new ArrayList<>();
   final ArrayList<View> lectureHeadings=new ArrayList<>();
-  final ArrayList<String> lectureTitles=new ArrayList<>();
+  final ArrayList<CharSequence> lectureTitles=new ArrayList<>();
 
   Button readerBack=action("‹",bar,()->{
    if(cleanReading){saveReaderPosition(key);prefs.edit().putBoolean("reader_clean_mode",false).apply();read(key);}
@@ -1757,7 +1757,7 @@ public class MainActivity extends Activity {
        expandButton.setText(opening?"⌃":"⌄");
       };
       lecturePanels.add(commentaryPanel);lectureArrows.add(expandButton);
-      lectureHeadings.add(itemRow);lectureTitles.add(value);
+      lectureHeadings.add(itemRow);lectureTitles.add(formattedReadingText(value));
       expandButton.setOnClickListener(toggleCommentary);
       medallion.setOnClickListener(toggleCommentary);
       medallion.setContentDescription("Buka atau tutup syarahan nombor "+marker);
@@ -1806,7 +1806,7 @@ public class MainActivity extends Activity {
        lectureArrows.get(j).setText(which==0?"⌃":"⌄");
       }
      }else if(lectureTitles.isEmpty())Toast.makeText(this,"Tiada tajuk bernombor",Toast.LENGTH_SHORT).show();
-     else new AlertDialog.Builder(this).setTitle("Indeks kuliah").setItems(lectureTitles.toArray(new String[0]),(dialog,index)->{
+     else new AlertDialog.Builder(this).setTitle("Indeks kuliah").setItems(lectureTitles.toArray(new CharSequence[0]),(dialog,index)->{
       android.graphics.Rect rect=new android.graphics.Rect();
       lectureHeadings.get(index).getDrawingRect(rect);
       scroll.offsetDescendantRectToMyCoords(lectureHeadings.get(index),rect);
