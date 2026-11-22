@@ -1695,13 +1695,12 @@ public class MainActivity extends Activity {
    floatingBack.setAlpha(0.65f);
    FrameLayout.LayoutParams floatingParams=new FrameLayout.LayoutParams(dp(30),dp(30),Gravity.BOTTOM|Gravity.LEFT);
    floatingParams.setMargins(dp(5),0,0,dp(8));
-   lectureSurface.addView(floatingBack,floatingParams);
-   floatingBack.setVisibility(View.GONE);
-   final Runnable hideLectureBack=()->floatingBack.setVisibility(View.GONE);
+   // Do not attach the Back control until a deliberate double tap.
+   final Runnable hideLectureBack=()->lectureSurface.removeView(floatingBack);
    lectureBackReveal=()->{
-    floatingBack.removeCallbacks(hideLectureBack);
-    floatingBack.setVisibility(View.VISIBLE);
-    floatingBack.postDelayed(hideLectureBack,3000);
+    lectureSurface.removeCallbacks(hideLectureBack);
+    if(floatingBack.getParent()==null)lectureSurface.addView(floatingBack,floatingParams);
+    lectureSurface.postDelayed(hideLectureBack,3000);
    };
    root.addView(lectureSurface,new LinearLayout.LayoutParams(-1,0,1));
   }else root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
