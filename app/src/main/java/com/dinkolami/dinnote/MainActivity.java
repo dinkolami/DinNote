@@ -388,7 +388,7 @@ public class MainActivity extends Activity {
    final boolean isBook=j==1;
    LinearLayout tile=new LinearLayout(this);tile.setGravity(Gravity.CENTER_VERTICAL);
    tile.setPadding(dp(8),0,dp(8),0);
-   tile.setBackground(dashboardTileSurface(isBook));tile.setElevation(0);
+   tile.setBackground(dashboardTileSurface(false));tile.setElevation(0);
    TextView symbol=dashboardText(isBook?"▤":"✎",20,false);
    symbol.setTextColor(0xff528069);symbol.setPadding(0,0,dp(5),0);tile.addView(symbol);
    TextView label=dashboardText(isBook?"Maktabah":"Nota",12,true);
@@ -398,7 +398,7 @@ public class MainActivity extends Activity {
    count.setTextColor(0xff52725e);count.setGravity(Gravity.CENTER);count.setPadding(dp(5),0,dp(5),0);
    count.setBackground(rounded(isBook?0xffe0e5e1:0xffd0e0d5,isBook?0xffd7ded9:0xffcbdcd0,8));
    tile.addView(count,new LinearLayout.LayoutParams(-2,dp(24)));
-   LinearLayout.LayoutParams tp=new LinearLayout.LayoutParams(0,dp(42),1);
+   LinearLayout.LayoutParams tp=new LinearLayout.LayoutParams(0,dp(38),1);
    if(isBook)tp.leftMargin=dp(4);else tp.rightMargin=dp(4);
    tiles.addView(tile,tp);tile.setFocusable(true);
    tile.setContentDescription((isBook?"Maktabah, ":"Nota, ")+(isBook?bookCount:noteCount)+" topik");
@@ -690,7 +690,7 @@ public class MainActivity extends Activity {
   return layers;
  }
  android.graphics.drawable.Drawable dashboardTileSurface(boolean pearl){
-  return homeInsetSurface(pearl?0xffffffff:0xfffafffb,pearl?0xffe9edeb:0xffddece2,pearl?0xffb9c5be:0xffa9beb0,12);
+  return homeInsetSurface(0xfffdfefe,0xfffdfefe,0xffc1ccc8,10);
  }
  int homeWindowWidthDp(){
   // Configuration width tracks the current Android multi-window bounds.
