@@ -447,11 +447,11 @@ public class MainActivity extends Activity {
    sectionColumns.addView(pinnedColumn,pinnedParams);
    sectionColumns.addView(updatedColumn,updatedParams);
    shortcuts.addView(sectionColumns,new LinearLayout.LayoutParams(-1,-2));
-   dashboardSection(pinnedColumn,"Nota disemat",dashboardKeys("pinned_",false),true);
-   dashboardSection(updatedColumn,"Terakhir dikemaskini",dashboardKeys("updated_",false),false);
+   dashboardSection(pinnedColumn,"Nota Disematkan",dashboardKeys("pinned_",false),true);
+   dashboardSection(updatedColumn,"Terakhir Dikemaskini",dashboardKeys("updated_",false),false);
   }else{
-   dashboardSection(shortcuts,"Nota disemat",dashboardKeys("pinned_",false),true);
-   dashboardSection(shortcuts,"Terakhir dikemaskini",dashboardKeys("updated_",false),false);
+   dashboardSection(shortcuts,"Nota Disematkan",dashboardKeys("pinned_",false),true);
+   dashboardSection(shortcuts,"Terakhir Dikemaskini",dashboardKeys("updated_",false),false);
   }
   String resume=prefs.getString("last_edited_key","");
   // Resume editing is available as a compact icon between the home actions.
@@ -468,7 +468,7 @@ public class MainActivity extends Activity {
   LinearLayout.LayoutParams latestAccentParams=new LinearLayout.LayoutParams(dp(1),dp(15));
   latestAccentParams.leftMargin=dp(5);latestHeader.addView(latestAccent,latestAccentParams);
   boolean latestCollapsed=prefs.getBoolean("home_latest_collapsed",false);
-  TextView latestHeading=dashboardText("5 Terkini  "+(latestCollapsed?"▸":"▾"),15,true);
+  TextView latestHeading=dashboardText("Terkini Dimasukkan  "+(latestCollapsed?"▸":"▾"),15,true);
   latestHeading.setTextColor(0xff365c48);
   latestHeading.setIncludeFontPadding(false);
   latestHeading.setPadding(dp(8),dp(homeWindowWidthDp()<440?6:8),dp(8),dp(homeWindowWidthDp()<440?6:8));
