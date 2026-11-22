@@ -2807,17 +2807,17 @@ public class MainActivity extends Activity {
     medallion.setBackground(ring);
     TextView numeral=new TextView(this);numeral.setText(numbered.group(1));numeral.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP,13);numeral.setTypeface(android.graphics.Typeface.create("sans-serif-medium",android.graphics.Typeface.NORMAL));numeral.setGravity(Gravity.CENTER);numeral.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);numeral.setTextColor(0xff176b47);numeral.setIncludeFontPadding(false);numeral.setPadding(0,0,0,0);numeral.setSingleLine(true);numeral.setMinHeight(0);numeral.setMinimumHeight(0);numeral.setMinWidth(0);numeral.setMinimumWidth(0);
     FrameLayout.LayoutParams numeralParams=new FrameLayout.LayoutParams(-1,-1);medallion.addView(numeral,numeralParams);
-    LinearLayout.LayoutParams medalParams=new LinearLayout.LayoutParams(dp(23),dp(23));medalParams.setMargins(dp(4),0,dp(5),0);heading.addView(medallion,medalParams);
+    LinearLayout.LayoutParams medalParams=new LinearLayout.LayoutParams(dp(23),dp(23));medalParams.setMargins(dp(4),0,dp(1),0);heading.addView(medallion,medalParams);
     TextView title=text(numbered.group(2),fontSize);title.setTextColor(0xff303c43);title.setPadding(0,dp(2),dp(3),dp(2));heading.addView(title,new LinearLayout.LayoutParams(0,-2,1));
-    TextView arrow=text("⌄",18);arrow.setTextColor(0xff176b47);arrow.setGravity(Gravity.CENTER);arrow.setContentDescription("Buka atau tutup huraian nombor "+numbered.group(1));heading.addView(arrow,new LinearLayout.LayoutParams(dp(40),dp(36)));
+    medallion.setContentDescription("Buka atau tutup huraian nombor "+numbered.group(1));
     wrapper.addView(heading);
     LinearLayout details=new LinearLayout(this);details.setOrientation(1);details.setPadding(dp(10),dp(4),dp(10),dp(6));details.setBackground(rounded(0xfff8faf5,0xffd9e4d6,10));details.setVisibility(View.GONE);
     TextView label=text("Syarahan / Huraian",13);label.setTextColor(0xff176b47);details.addView(label);
     EditText note=new EditText(this);note.setTextSize(15);note.setHint("Tulis huraian di sini…");note.setMinLines(2);note.setText(prefs.getString(commentaryKey,""));details.addView(note);
     note.addTextChangedListener(new TextWatcher(){public void beforeTextChanged(CharSequence t,int a,int c,int f){}public void onTextChanged(CharSequence t,int a,int b,int c){prefs.edit().putString(commentaryKey,t.toString()).apply();}public void afterTextChanged(Editable e){}});
     wrapper.addView(details);
-    View.OnClickListener toggle=v->{boolean open=details.getVisibility()!=View.VISIBLE;details.setVisibility(open?View.VISIBLE:View.GONE);arrow.setText(open?"⌃":"⌄");};
-    heading.setOnClickListener(toggle);arrow.setOnClickListener(toggle);
+    View.OnClickListener toggle=v->{boolean open=details.getVisibility()!=View.VISIBLE;details.setVisibility(open?View.VISIBLE:View.GONE);};
+    heading.setOnClickListener(toggle);medallion.setOnClickListener(toggle);
     body.addView(wrapper);
    }else{paragraph.append(line);if(i<lines.length-1)paragraph.append('\n');}
   }
