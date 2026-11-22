@@ -2797,7 +2797,10 @@ public class MainActivity extends Activity {
    }else panel.addView(label,new LinearLayout.LayoutParams(-2,-2));
    TextView value=text("",fontSize);String boxContent=m.group(2).replaceFirst("^\\n","").replaceFirst("\\n$","");value.setText(readerLabelText(boxContent));applySharedTextMetrics(value);value.setTextColor(0xff303c43);
    value.setPadding(0,0,0,0);value.setIncludeFontPadding(true);value.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);value.setTextIsSelectable(true);value.setGravity(Gravity.START);value.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START);panel.addView(value);
-   LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);lp.setMargins(dp(4),dp(1),dp(4),dp(1));body.addView(panel,lp);
+   LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);
+   // Add a small breathing gap whenever two box blocks meet, regardless of their types.
+   boolean adjacentBox=previous>0&&source.substring(previous,m.start()).trim().isEmpty();
+   lp.setMargins(dp(4),dp(adjacentBox?7:1),dp(4),dp(1));body.addView(panel,lp);
    previous=m.end();
   }
   addBoxParagraph(body,source.substring(previous),fontSize,key,source.substring(0,previous).split("\\n",-1).length-1);
