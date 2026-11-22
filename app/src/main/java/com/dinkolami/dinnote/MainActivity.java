@@ -770,9 +770,9 @@ public class MainActivity extends Activity {
   });
  }
  void markLectureParagraph(View paragraph){
-  if(lectureHighlighted!=null)lectureHighlighted.setBackgroundColor(Color.TRANSPARENT);
+  if(lectureHighlighted!=null)lectureHighlighted.setBackgroundColor(lectureDark()?0xff202824:Color.TRANSPARENT);
   if(lectureHighlighted==paragraph){lectureHighlighted=null;return;}
-  lectureHighlighted=paragraph;paragraph.setBackgroundColor(0xffe3f2e7);
+  lectureHighlighted=paragraph;paragraph.setBackgroundColor(lectureDark()?0xff365746:0xffe3f2e7);
  }
 
  void cleanBase(){
@@ -830,9 +830,14 @@ public class MainActivity extends Activity {
   clock.setText(String.format(java.util.Locale.ROOT,"%02d:%02d:%02d",sec/3600,(sec/60)%60,sec%60));
   if(clock.getParent()==null){FrameLayout.LayoutParams p=new FrameLayout.LayoutParams(dp(100),dp(32),Gravity.CENTER);p.bottomMargin=dp(130);frame.addView(clock,p);}
  }
- int lecturePaper(){return new int[]{0xffffffff,0xfffffefd,0xfff8eed8}[Math.max(0,Math.min(2,prefs.getInt("lecture_paper",0)))];}
+ int lecturePaper(){return new int[]{0xffffffff,0xfffffefd,0xfff8eed8,0xff202824}[Math.max(0,Math.min(3,prefs.getInt("lecture_paper",0)))];}
+ boolean lectureDark(){return prefs.getInt("lecture_paper",0)==3;}
+ void applyLectureDark(View v){
+  if(v instanceof TextView){TextView t=(TextView)v;t.setTextColor(0xffe5ece7);t.setBackgroundColor(0xff202824);if(t instanceof EditText)t.setHintTextColor(0xffaebdb3);}
+  else if(v instanceof android.view.ViewGroup){v.setBackgroundColor(0xff202824);android.view.ViewGroup g=(android.view.ViewGroup)v;for(int i=0;i<g.getChildCount();i++)applyLectureDark(g.getChildAt(i));}
+ }
  void chooseLecturePaper(String key){
-  new AlertDialog.Builder(this).setTitle("Warna kertas").setSingleChoiceItems(new String[]{"Putih","Mutiara","Krim"},Math.max(0,Math.min(2,prefs.getInt("lecture_paper",0))),(d,w)->{saveReaderPosition(key);prefs.edit().putInt("lecture_paper",w).apply();d.dismiss();read(key);}).setNegativeButton("Tutup",null).show();
+  new AlertDialog.Builder(this).setTitle("Warna kertas").setSingleChoiceItems(new String[]{"Putih","Mutiara","Krim","Gelap"},Math.max(0,Math.min(3,prefs.getInt("lecture_paper",0))),(d,w)->{saveReaderPosition(key);prefs.edit().putInt("lecture_paper",w).apply();d.dismiss();read(key);}).setNegativeButton("Tutup",null).show();
  }
  Button lectureSettingsButton(){
   Button b=new Button(this);b.setText("⚙");b.setTextSize(22);b.setPadding(0,0,0,0);b.setMinWidth(0);b.setMinHeight(0);b.setBackground(rounded(0xfff3f7f3,0xffbed2c5,50));b.setElevation(dp(5));b.setContentDescription("Kawalan kuliah");return b;
@@ -1013,16 +1018,16 @@ public class MainActivity extends Activity {
         CharSequence visible=parts.get(pageNumber);
         int repeated=Math.min(visible.length(),repeatedPrefixLengths.get(pageNumber));
         android.text.SpannableString marked=new android.text.SpannableString(visible);
-        marked.setSpan(new android.text.style.BackgroundColorSpan(0xfffff0bd),0,repeated,android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        marked.setSpan(new android.text.style.BackgroundColorSpan(lectureDark()?0xff596044:0xfffff0bd),0,repeated,android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         marked.setSpan(new android.text.style.UnderlineSpan(),0,repeated,android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         page.setText(marked);
        }
-      page.setTextColor(0xff303c43);page.setGravity(Gravity.TOP);
+      page.setTextColor(lectureDark()?0xffe5ece7:0xff303c43);page.setGravity(Gravity.TOP);
       page.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
       if(arabic&&prefs.getBoolean("reader_arabic_clear_font",false))page.setTypeface(android.graphics.Typeface.create("serif",android.graphics.Typeface.NORMAL));
       page.setLineSpacing(extraLine,lineMultiplier);
       page.setPadding(dp(12),dp(10),dp(12),dp(10));
-      page.setBackground(rounded(paper,0xffd3c197,5));page.setElevation(0);
+      page.setBackground(rounded(paper,lectureDark()?0xff53665a:0xffd3c197,5));page.setElevation(0);
       LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(0,-1,1);
       if(i>0)lp.leftMargin=dp(8);
       pageRow.addView(page,lp);
@@ -1784,6 +1789,7 @@ public class MainActivity extends Activity {
   if(cleanReading){
    startLectureTimer(key);
    body.setBackgroundColor(lecturePaper());
+   if(lectureDark())applyLectureDark(body);
    body.setPadding(dp(3),dp(4),dp(3),dp(3));
    readingFrame.setMargins(0,0,0,0);
    FrameLayout lectureSurface=new FrameLayout(this);
