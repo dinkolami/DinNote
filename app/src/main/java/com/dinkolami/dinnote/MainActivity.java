@@ -2296,7 +2296,9 @@ public class MainActivity extends Activity {
    metadataTitle.setVisibility(metadataExpanded[0]?View.VISIBLE:View.GONE);
    metadataToggle.setText(metadataExpanded[0]?"⌃":"⌄");
    metadataToggle.setContentDescription(metadataExpanded[0]?"Sembunyikan kategori dan tajuk":"Buka kategori dan tajuk");
-  });final Runnable[] formatRefresh={null};editor=new EditText(this){
+  });final Runnable[] formatRefresh={null};final android.widget.OverScroller editorMomentum=new android.widget.OverScroller(this);
+  editor=new EditText(this){
+   @Override public void computeScroll(){super.computeScroll();if(editorMomentum.computeScrollOffset()){scrollTo(getScrollX(),editorMomentum.getCurrY());postInvalidateOnAnimation();}}
    @Override public boolean onTextContextMenuItem(int id){
     if(id==android.R.id.copy&&getSelectionStart()>=0&&getSelectionEnd()>=0&&getSelectionStart()!=getSelectionEnd()){
      int a=Math.min(getSelectionStart(),getSelectionEnd()),b=Math.max(getSelectionStart(),getSelectionEnd());
@@ -2431,7 +2433,19 @@ public class MainActivity extends Activity {
   LinearLayout.LayoutParams editBodyFrame=new LinearLayout.LayoutParams(-1,0,1);editBodyFrame.setMargins(dp(4),0,dp(4),0);root.addView(editor,editBodyFrame);
   // Keep normal Android double-tap text selection while editing.
   // Never navigate away while EditText is handling touch/selection events.
-  editor.setOnTouchListener(null);
+  // Let EditText handle selection and cursor gestures; observe swipes for inertial scrolling.
+  final android.view.GestureDetector editorSwipe=new android.view.GestureDetector(this,new android.view.GestureDetector.SimpleOnGestureListener(){
+   @Override public boolean onDown(android.view.MotionEvent e){editorMomentum.forceFinished(true);return false;}
+   @Override public boolean onFling(android.view.MotionEvent start,android.view.MotionEvent end,float vx,float vy){
+    if(start==null||end==null||Math.abs(end.getY()-start.getY())<dp(28)||Math.abs(vy)<dp(400)||Math.abs(vy)<Math.abs(vx))return false;
+    android.text.Layout layout=editor.getLayout();if(layout==null)return false;
+    int viewport=editor.getHeight()-editor.getTotalPaddingTop()-editor.getTotalPaddingBottom();
+    int maxY=Math.max(0,layout.getHeight()-Math.max(1,viewport));if(maxY==0)return false;
+    editorMomentum.fling(0,editor.getScrollY(),0,-Math.round(vy),0,0,0,maxY);
+    editor.postInvalidateOnAnimation();return false;
+   }
+  });
+  editor.setOnTouchListener((v,event)->{editorSwipe.onTouchEvent(event);return false;});
   if(key!=null){int remembered=prefs.getInt("edit_cursor_"+key,0);editor.setText(formattedReadingText(repairBoxStructure(normalizeStructuralMarkers(prefs.getString(key,"")))));editor.setSelection(Math.max(0,Math.min(remembered,editor.length())));}
   final EditText activeBody=editor;
   activeBody.post(()->revealEditorCursor(activeBody));
