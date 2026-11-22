@@ -1756,11 +1756,11 @@ public class MainActivity extends Activity {
   readerScroll=scroll;
   LinearLayout body=new LinearLayout(this);body.setOrientation(1);
   int paperColor=0xfffffefd;body.setBackground(rounded(paperColor,0xffb8c2ca,12));
-  body.setPadding(dp(8),dp(6),dp(8),dp(8));body.setClipChildren(true);body.setClipToPadding(true);
+  body.setPadding(dp(8),dp(2),dp(8),dp(8));body.setClipChildren(true);body.setClipToPadding(true);
   LinearLayout.LayoutParams readingFrame=new LinearLayout.LayoutParams(-1,-2);
   readingFrame.setMargins(dp(4),dp(4),dp(4),dp(2));scroll.addView(body,readingFrame);
   LinearLayout metaRow=new LinearLayout(this);metaRow.setOrientation(LinearLayout.HORIZONTAL);
-  metaRow.setGravity(Gravity.CENTER_VERTICAL);metaRow.setPadding(dp(16),dp(4),dp(16),dp(4));
+  metaRow.setGravity(Gravity.CENTER_VERTICAL);metaRow.setPadding(dp(16),dp(1),dp(16),dp(4));
   TextView sectionLabel=text(key.startsWith("m_")?"▤  Maktabah":"✎  Nota",12);
   sectionLabel.setTextColor(0xff5b7077);sectionLabel.setSingleLine(true);
   sectionLabel.setIncludeFontPadding(false);
