@@ -815,7 +815,7 @@ public class MainActivity extends Activity {
   setContentView(root);applySystemBarInsets(root);
  }
  Button action(String label,LinearLayout bar,Runnable callback){Button b=new Button(this);b.setText(label);b.setAllCaps(false);b.setTextSize(13);b.setMinWidth(0);b.setMinimumWidth(0);b.setMinHeight(0);b.setMinimumHeight(0);b.setPadding(dp(12),dp(8),dp(12),dp(8));b.setBackground(rounded(0xfff6f8fa,0xffe1e7e3,12));LinearLayout.LayoutParams buttonParams=new LinearLayout.LayoutParams(-2,dp("reader_toolbar".equals(bar.getTag())?34:42));buttonParams.setMargins(dp(3),dp("reader_toolbar".equals(bar.getTag())?3:5),dp(3),dp("reader_toolbar".equals(bar.getTag())?3:5));bar.addView(b,buttonParams);if("reader_toolbar".equals(bar.getTag())){android.graphics.drawable.GradientDrawable emerald=new android.graphics.drawable.GradientDrawable(android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,new int[]{0xffffffff,0xffedf7f0});emerald.setCornerRadius(dp(13));emerald.setStroke(dp(1),0xffb6cdbd);b.setBackground(emerald);b.setTextColor(0xff566a70);b.setElevation(dp(2));b.setTypeface(android.graphics.Typeface.DEFAULT,android.graphics.Typeface.BOLD);}b.setOnClickListener(v->callback.run());return b;}
- void returnFromReader(){lectureStarted=0;lectureTimerKey=null;if(selected!=null)saveReaderPosition(selected);getWindow().clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);prefs.edit().putBoolean("reader_clean_mode",false).apply();selected=null;if(sectionOpen)notesPage();else home();}
+ void returnFromReader(){stopAutoReading();lectureStarted=0;lectureTimerKey=null;if(selected!=null)saveReaderPosition(selected);getWindow().clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);prefs.edit().putBoolean("reader_clean_mode",false).apply();selected=null;if(sectionOpen)notesPage();else home();}
 
 
  long lectureStarted=0;
@@ -1399,6 +1399,28 @@ public class MainActivity extends Activity {
   }else group.addView(value);
   return group;
  }
+ int autoReadingToken=0;
+ boolean autoReadingActive=false;
+ void stopAutoReading(){autoReadingActive=false;autoReadingToken++;}
+ void showAutoReading(String key){
+  if(readerScroll==null){Toast.makeText(this,"Auto scroll tersedia dalam mod bacaan scroll",Toast.LENGTH_LONG).show();return;}
+  if(autoReadingActive){stopAutoReading();Toast.makeText(this,"Auto scroll dihentikan",Toast.LENGTH_SHORT).show();return;}
+  String[] speeds={"Perlahan","Sederhana","Laju"};
+  new AlertDialog.Builder(this).setTitle("Auto Scroll Pintar").setSingleChoiceItems(speeds,Math.max(0,Math.min(2,prefs.getInt("auto_read_speed",0))),(d,i)->{
+   prefs.edit().putInt("auto_read_speed",i).apply();d.dismiss();startAutoReading(key,i);
+  }).setNegativeButton("Batal",null).show();
+ }
+ void startAutoReading(String key,int speed){
+  stopAutoReading();final int token=autoReadingToken;final ScrollView target=readerScroll;
+  if(target==null)return;autoReadingActive=true;
+  Toast.makeText(this,"Auto scroll bermula · buka menu untuk berhenti",Toast.LENGTH_LONG).show();
+  target.postDelayed(new Runnable(){public void run(){
+   if(token!=autoReadingToken)return;
+   if(!key.equals(selected)||readerScroll!=target||!target.isAttachedToWindow()||editor!=null||!hasWindowFocus()){stopAutoReading();return;}
+   if(!target.canScrollVertically(1)){stopAutoReading();return;}
+   target.scrollBy(0,Math.max(1,dp(speed+1)));target.postDelayed(this,40);
+  }},500);
+ }
  void showReaderActions(String key,boolean compact){
   boolean book=key.startsWith("m_");
   String noun=book?"kitab":"nota";
@@ -1438,6 +1460,12 @@ public class MainActivity extends Activity {
    labels=java.util.Arrays.copyOf(labels,n+1);icons=java.util.Arrays.copyOf(icons,n+1);descriptions=java.util.Arrays.copyOf(descriptions,n+1);
    labels[n]=labels[n-1];icons[n]=icons[n-1];descriptions[n]=descriptions[n-1];
    labels[n-1]="Syarahan Bertingkat";icons[n-1]="▾";descriptions[n-1]="Buka atau tutup syarahan dan hasyiah";
+  }
+  {
+   int n=labels.length;
+   labels=java.util.Arrays.copyOf(labels,n+1);icons=java.util.Arrays.copyOf(icons,n+1);descriptions=java.util.Arrays.copyOf(descriptions,n+1);
+   labels[n]=labels[n-1];icons[n]=icons[n-1];descriptions[n]=descriptions[n-1];
+   labels[n-1]="Auto Scroll Pintar";icons[n-1]="↓";descriptions[n-1]="Mula, berhenti dan laraskan kelajuan bacaan";
   }
   int beforePdf=labels.length;
   labels=java.util.Arrays.copyOf(labels,beforePdf+1);icons=java.util.Arrays.copyOf(icons,beforePdf+1);descriptions=java.util.Arrays.copyOf(descriptions,beforePdf+1);
@@ -1487,7 +1515,8 @@ public class MainActivity extends Activity {
     else if(book&&option==(compact?10:8))showBookFootnotes(key);
     else if(option==(book?(compact?11:9):(compact?7:5)))showSelectedReading(key);
     else if(option==(book?(compact?12:10):(compact?8:6)))showLayeredCommentary(key);
-    else if(option==(book?(compact?13:11):(compact?9:7)))printReaderAsPdf(key);
+    else if(option==(book?(compact?13:11):(compact?9:7)))showAutoReading(key);
+    else if(option==(book?(compact?14:12):(compact?10:8)))printReaderAsPdf(key);
     else confirmDelete(key);
    });
   }
@@ -1535,6 +1564,7 @@ public class MainActivity extends Activity {
   if(dialog.getWindow()!=null)dialog.getWindow().setLayout(-1,(int)(getResources().getDisplayMetrics().heightPixels*0.82f));
  }
  void read(String key){
+  stopAutoReading();
   // Use the actual DinNote window width: Fold6 split-screen may be narrower than the display.
   int windowWidthPx=root!=null&&root.getWidth()>0?root.getWidth():getWindow().getDecorView().getWidth();
   final int availableReaderWidthDp=windowWidthPx>0?Math.round(windowWidthPx/getResources().getDisplayMetrics().density):getResources().getConfiguration().screenWidthDp;
