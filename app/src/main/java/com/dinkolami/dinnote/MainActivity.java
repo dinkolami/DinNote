@@ -1686,15 +1686,14 @@ public class MainActivity extends Activity {
    FrameLayout lectureSurface=new FrameLayout(this);
    lectureSurface.addView(scroll,new FrameLayout.LayoutParams(-1,-1));
    Button floatingBack=new Button(this);
-   floatingBack.setText("‹");floatingBack.setTextSize(25);floatingBack.setAllCaps(false);
+   floatingBack.setText("‹");floatingBack.setTextSize(48);floatingBack.setAllCaps(false);
    floatingBack.setPadding(0,0,0,0);floatingBack.setMinWidth(0);floatingBack.setMinHeight(0);
    floatingBack.setBackground(rounded(0xfff3f7f3,0xffbed2c5,50));
    floatingBack.setContentDescription("Kembali ke paparan bacaan biasa");
    floatingBack.setElevation(dp(5));
    floatingBack.setOnClickListener(v->{saveReaderPosition(key);prefs.edit().putBoolean("reader_clean_mode",false).apply();read(key);});
-   floatingBack.setAlpha(0.65f);
-   FrameLayout.LayoutParams floatingParams=new FrameLayout.LayoutParams(dp(30),dp(30),Gravity.BOTTOM|Gravity.LEFT);
-   floatingParams.setMargins(dp(5),0,0,dp(8));
+   floatingBack.setAlpha(0.95f);
+   FrameLayout.LayoutParams floatingParams=new FrameLayout.LayoutParams(dp(76),dp(76),Gravity.CENTER);
    // Do not attach the Back control until a deliberate double tap.
    final Runnable hideLectureBack=()->lectureSurface.removeView(floatingBack);
    lectureBackReveal=()->{
