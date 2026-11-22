@@ -2159,7 +2159,7 @@ public class MainActivity extends Activity {
        .setPositiveButton("Padam kekal",(a,b)->{
         android.content.SharedPreferences.Editor tx=prefs.edit().remove(k).remove("title_"+k)
          .remove("cat_"+k).remove("viewed_"+k).remove("updated_"+k).remove("pinned_"+k)
-         .remove("trashed_at_"+k);
+         .remove("trashed_at_"+k).remove("pdf_original_"+k).remove("pdf_page_"+k);
         if(!k.contains("_sample_"))tx.remove("deleted_"+k);
         if(tx.commit())Toast.makeText(this,"Dipadam kekal",Toast.LENGTH_SHORT).show();
         else Toast.makeText(this,"Gagal memadam",Toast.LENGTH_LONG).show();
@@ -3218,9 +3218,25 @@ public class MainActivity extends Activity {
    };
    prev.setOnClickListener(v->{if(index[0]>0){index[0]--;draw.run();}});
    next.setOnClickListener(v->{if(index[0]+1<pdf.getPageCount()){index[0]++;draw.run();}});
-   AlertDialog dialog=new AlertDialog.Builder(this).setTitle(prefs.getString("title_"+key,"PDF asal")).setView(panel).setPositiveButton("Tutup",null).create();
-   dialog.setOnDismissListener(d->{image.setImageDrawable(null);if(current[0]!=null)current[0].recycle();pdf.close();cache.delete();});
-   dialog.show();draw.run();
+   stopAutoReading();editor=null;titleEditor=null;readerScroll=null;sectionOpen=true;maktabah=true;selected=key;
+   base("DinNote");
+   LinearLayout bar=new LinearLayout(this);bar.setGravity(Gravity.CENTER_VERTICAL);
+   Button back=new Button(this),menu=new Button(this);back.setText("‹");menu.setText("⋮");
+   TextView title=text(prefs.getString("title_"+key,"PDF asal"),16);title.setTypeface(null,android.graphics.Typeface.BOLD);
+   bar.addView(back);bar.addView(title,new LinearLayout.LayoutParams(0,-2,1));bar.addView(menu);root.addView(bar);
+   back.setOnClickListener(v->returnFromReader());
+   menu.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Urus PDF").setItems(new String[]{"Ubah tajuk","Ubah kategori","Alih ke tong sampah"},(d,w)->{
+    if(w==0){EditText input=new EditText(this);input.setSingleLine(true);input.setText(prefs.getString("title_"+key,""));new AlertDialog.Builder(this).setTitle("Ubah tajuk").setView(input).setNegativeButton("Batal",null).setPositiveButton("Simpan",(x,y)->{prefs.edit().putString("title_"+key,input.getText().toString().trim()).apply();title.setText(input.getText().toString().trim());}).show();}
+    else if(w==1){ArrayList<String> cats=new ArrayList<>(categories());if(!cats.contains("Tanpa kategori"))cats.add(0,"Tanpa kategori");new AlertDialog.Builder(this).setTitle("Ubah kategori").setItems(cats.toArray(new String[0]),(x,y)->prefs.edit().putString("cat_"+key,cats.get(y)).apply()).show();}
+    else confirmDelete(key);
+   }).show());
+   scroll.setLayoutParams(new LinearLayout.LayoutParams(-1,0,1));
+   root.addView(panel,new LinearLayout.LayoutParams(-1,0,1));
+   panel.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener(){
+    public void onViewAttachedToWindow(View v){}
+    public void onViewDetachedFromWindow(View v){image.setImageDrawable(null);if(current[0]!=null){current[0].recycle();current[0]=null;}pdf.close();cache.delete();v.removeOnAttachStateChangeListener(this);}
+   });
+   draw.run();
   }catch(Exception e){if(renderer!=null)renderer.close();if(fd!=null)try{fd.close();}catch(Exception ignored){}if(tmp!=null)tmp.delete();Toast.makeText(this,"PDF gagal dibuka: "+e.getMessage(),Toast.LENGTH_LONG).show();}
  }
  void importBookText(android.net.Uri uri){importBookText(uri,false);}
