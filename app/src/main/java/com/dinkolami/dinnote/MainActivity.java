@@ -1772,6 +1772,9 @@ public class MainActivity extends Activity {
   categoryLine.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_END);
   categoryLine.setIncludeFontPadding(false);
   metaRow.addView(categoryLine,new LinearLayout.LayoutParams(0,-2,1));
+  // Lift the two metadata labels visibly without changing the title or reading boxes.
+  sectionLabel.setTranslationY(-dp(7));
+  categoryLine.setTranslationY(-dp(7));
   if(!cleanReading)body.addView(metaRow,new LinearLayout.LayoutParams(-1,-2));
   TextView title=text(heading,20);title.setMaxLines(3);
   title.setEllipsize(android.text.TextUtils.TruncateAt.END);
