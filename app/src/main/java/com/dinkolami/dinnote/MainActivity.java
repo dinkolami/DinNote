@@ -532,13 +532,13 @@ public class MainActivity extends Activity {
   if(homeWindowWidthDp()<440){
    final java.util.ArrayList<String> sampleWisdom=homeWisdomEntries();
    LinearLayout wisdomCard=new LinearLayout(this);wisdomCard.setOrientation(LinearLayout.VERTICAL);
-   wisdomCard.setPadding(dp(12),dp(30),dp(12),dp(31));
+   wisdomCard.setPadding(dp(12),dp(23),dp(12),dp(38));
    final int[] wisdomBorders={0xffd8c69c,0xffb7d2be,0xffd4c5df};
    final int wisdomStyle=new java.util.Random().nextInt(wisdomBorders.length);
    wisdomCard.setBackground(rounded(0xfffdfcf7,wisdomBorders[wisdomStyle],11));
    LinearLayout.LayoutParams wisdomParams=new LinearLayout.LayoutParams(-1,-2);
    wisdomParams.bottomMargin=dp(5);footer.addView(wisdomCard,wisdomParams);
-   TextView wisdomHeading=dashboardText("❀  Mutiara Hikmah  ❀",12,true);
+   TextView wisdomHeading=dashboardText("❀  Mutiara Hikmah  ❀",14,true);
    wisdomHeading.setTextColor(0xff47745d);wisdomHeading.setGravity(Gravity.CENTER);
    wisdomCard.addView(wisdomHeading);
    TextView wisdomBody=dashboardText("",13,false);wisdomBody.setTextColor(0xff35453c);
