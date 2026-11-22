@@ -736,7 +736,7 @@ public class MainActivity extends Activity {
  String cardTitle=(prefs.getBoolean("pinned_"+k,false)?"📌  ":"")+(maktabah?"▤  ":"✎  ")+shown;
  LinearLayout card=new LinearLayout(this);card.setOrientation(LinearLayout.VERTICAL);
  card.setBackground(homeInsetSurface(k.equals(lastOpenedCard)?0xfff2faf5:0xffffffff,k.equals(lastOpenedCard)?0xfff2faf5:0xffffffff,k.equals(lastOpenedCard)?0xffb7d8c2:0xffd4ddd7,16));
- card.setElevation(0);card.setPadding(dp(twoColumnList?12:16),dp(7),dp(twoColumnList?12:16),dp(7));
+ card.setElevation(0);card.setPadding(dp(twoColumnList?12:16),dp(3),dp(twoColumnList?12:16),dp(3));
  TextView headingView=text(cardTitle,15);headingView.setTypeface(null,android.graphics.Typeface.BOLD);
  headingView.setSingleLine(true);headingView.setEllipsize(android.text.TextUtils.TruncateAt.END);headingView.setTextColor(0xff30343b);
  card.addView(headingView,new LinearLayout.LayoutParams(-1,-2));
@@ -752,7 +752,7 @@ public class MainActivity extends Activity {
  dateView.setSingleLine(true);dateView.setEllipsize(android.text.TextUtils.TruncateAt.END);
  meta.addView(dateView,new LinearLayout.LayoutParams(-2,-2));
  card.addView(meta,new LinearLayout.LayoutParams(-1,-2));
- LinearLayout.LayoutParams noteCardParams=new LinearLayout.LayoutParams(twoColumnList?0:-1,-2,twoColumnList?1f:0f);noteCardParams.setMargins(dp(twoColumnList?4:12),dp(4),dp(twoColumnList?4:12),dp(4));card.setContentDescription((prefs.getBoolean("pinned_"+k,false)?"Disemat. ":"")+(maktabah?"Buka kitab: ":"Buka nota: ")+shown+", kategori "+cat+", "+date);applyTouchFeedback(card);card.setFocusable(true);
+ LinearLayout.LayoutParams noteCardParams=new LinearLayout.LayoutParams(twoColumnList?0:-1,-2,twoColumnList?1f:0f);noteCardParams.setMargins(dp(twoColumnList?4:12),dp(2),dp(twoColumnList?4:12),dp(2));card.setContentDescription((prefs.getBoolean("pinned_"+k,false)?"Disemat. ":"")+(maktabah?"Buka kitab: ":"Buka nota: ")+shown+", kategori "+cat+", "+date);applyTouchFeedback(card);card.setFocusable(true);
  if(twoColumnList){
   if(visibleCards%2==0){cardRow=new LinearLayout(this);cardRow.setOrientation(LinearLayout.HORIZONTAL);cardRow.setPadding(dp(8),0,dp(8),0);items.addView(cardRow,new LinearLayout.LayoutParams(-1,-2));}
   cardRow.addView(card,noteCardParams);
