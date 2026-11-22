@@ -814,9 +814,26 @@ public class MainActivity extends Activity {
   setContentView(root);applySystemBarInsets(root);
  }
  Button action(String label,LinearLayout bar,Runnable callback){Button b=new Button(this);b.setText(label);b.setAllCaps(false);b.setTextSize(13);b.setMinWidth(0);b.setMinimumWidth(0);b.setMinHeight(0);b.setMinimumHeight(0);b.setPadding(dp(12),dp(8),dp(12),dp(8));b.setBackground(rounded(0xfff6f8fa,0xffe1e7e3,12));LinearLayout.LayoutParams buttonParams=new LinearLayout.LayoutParams(-2,dp("reader_toolbar".equals(bar.getTag())?34:42));buttonParams.setMargins(dp(3),dp("reader_toolbar".equals(bar.getTag())?3:5),dp(3),dp("reader_toolbar".equals(bar.getTag())?3:5));bar.addView(b,buttonParams);if("reader_toolbar".equals(bar.getTag())){android.graphics.drawable.GradientDrawable emerald=new android.graphics.drawable.GradientDrawable(android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,new int[]{0xffffffff,0xffedf7f0});emerald.setCornerRadius(dp(13));emerald.setStroke(dp(1),0xffb6cdbd);b.setBackground(emerald);b.setTextColor(0xff566a70);b.setElevation(dp(2));b.setTypeface(android.graphics.Typeface.DEFAULT,android.graphics.Typeface.BOLD);}b.setOnClickListener(v->callback.run());return b;}
- void returnFromReader(){if(selected!=null)saveReaderPosition(selected);getWindow().clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);prefs.edit().putBoolean("reader_clean_mode",false).apply();selected=null;if(sectionOpen)notesPage();else home();}
+ void returnFromReader(){lectureStarted=0;lectureTimerKey=null;if(selected!=null)saveReaderPosition(selected);getWindow().clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);prefs.edit().putBoolean("reader_clean_mode",false).apply();selected=null;if(sectionOpen)notesPage();else home();}
 
 
+ long lectureStarted=0;
+ String lectureTimerKey=null;
+ void startLectureTimer(String key){
+  if(!key.equals(lectureTimerKey)||lectureStarted==0){lectureTimerKey=key;lectureStarted=android.os.SystemClock.elapsedRealtime();}
+ }
+ TextView lectureClock(){
+  TextView t=text("",13);t.setGravity(Gravity.CENTER);t.setTextColor(0xff254c39);t.setBackground(rounded(0xfff3f7f3,0xffbed2c5,20));t.setElevation(dp(5));return t;
+ }
+ void revealLectureClock(FrameLayout frame,TextView clock){
+  long sec=Math.max(0,(android.os.SystemClock.elapsedRealtime()-lectureStarted)/1000);
+  clock.setText(String.format(java.util.Locale.ROOT,"%02d:%02d:%02d",sec/3600,(sec/60)%60,sec%60));
+  if(clock.getParent()==null){FrameLayout.LayoutParams p=new FrameLayout.LayoutParams(dp(100),dp(32),Gravity.CENTER);p.bottomMargin=dp(130);frame.addView(clock,p);}
+ }
+ int lecturePaper(){return new int[]{0xffffffff,0xfffffefd,0xfff8eed8}[Math.max(0,Math.min(2,prefs.getInt("lecture_paper",0)))];}
+ void chooseLecturePaper(String key){
+  new AlertDialog.Builder(this).setTitle("Warna kertas").setSingleChoiceItems(new String[]{"Putih","Mutiara","Krim"},Math.max(0,Math.min(2,prefs.getInt("lecture_paper",0))),(d,w)->{saveReaderPosition(key);prefs.edit().putInt("lecture_paper",w).apply();d.dismiss();read(key);}).setNegativeButton("Tutup",null).show();
+ }
  Button lectureSettingsButton(){
   Button b=new Button(this);b.setText("⚙");b.setTextSize(22);b.setPadding(0,0,0,0);b.setMinWidth(0);b.setMinHeight(0);b.setBackground(rounded(0xfff3f7f3,0xffbed2c5,50));b.setElevation(dp(5));b.setContentDescription("Kawalan kuliah");return b;
  }
@@ -824,13 +841,13 @@ public class MainActivity extends Activity {
   FrameLayout.LayoutParams p=new FrameLayout.LayoutParams(dp(44),dp(44),Gravity.CENTER);p.topMargin=dp(140);return p;
  }
  void showPagedReader(String key){
-  enableLectureZoom(key);
+  enableLectureZoom(key);startLectureTimer(key);
   final CharSequence source=formattedReadingText(prefs.getString(key,""));
   final int availableWidthDp=Math.round(getResources().getDisplayMetrics().widthPixels/getResources().getDisplayMetrics().density);
   final boolean spread=availableWidthDp>=500&&prefs.getBoolean("reader_two_columns",true);
   final int fontLevel=Math.max(0,Math.min(3,prefs.getInt("reader_font_level",1)));
   final int fontSize=new int[]{13,15,16,18}[fontLevel];
-  final int paper=0xfffffefd;
+  final int paper=lecturePaper();
   final String heading=prefs.getString("title_"+key,"");
   TextView headingView=text(heading,17);headingView.setGravity(Gravity.CENTER);headingView.setTypeface(null,android.graphics.Typeface.BOLD);headingView.setMaxLines(2);
   headingView.setEllipsize(android.text.TextUtils.TruncateAt.END);
@@ -895,11 +912,13 @@ public class MainActivity extends Activity {
    else returnFromReader();
   });
   Button pageSettings=lectureSettingsButton();
-  pageSettings.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Kawalan kuliah").setItems(new String[]{"Bacaan scroll dan syarahan","Saiz tulisan"},(d,w)->{
+  pageSettings.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Kawalan kuliah").setItems(new String[]{"Bacaan scroll dan syarahan","Saiz tulisan","Warna kertas"},(d,w)->{
+   if(w==2){chooseLecturePaper(key);return;}
    if(w==0){prefs.edit().putBoolean("reader_swipe_mode",false).putBoolean("reader_clean_mode",true).apply();read(key);}
    else new AlertDialog.Builder(this).setTitle("Saiz tulisan").setItems(new String[]{"Kecil","Biasa","Besar","Lebih besar"},(dialog,size)->{prefs.edit().putInt("reader_font_level",size).apply();read(key);}).show();
   }).show());
-  final Runnable hidePageBack=()->{readingFrame.removeView(pageBack);readingFrame.removeView(pageSettings);};
+  final TextView pageClock=lectureClock();
+  final Runnable hidePageBack=()->{readingFrame.removeView(pageBack);readingFrame.removeView(pageSettings);readingFrame.removeView(pageClock);};
   readerDetector=new android.view.GestureDetector(this,new android.view.GestureDetector.SimpleOnGestureListener(){
    @Override public boolean onDown(android.view.MotionEvent e){return true;}
    @Override public boolean onDoubleTap(android.view.MotionEvent e){
@@ -907,6 +926,7 @@ public class MainActivity extends Activity {
     if(pageBack.getParent()==null)readingFrame.addView(pageBack,new FrameLayout.LayoutParams(dp(76),dp(76),Gravity.CENTER));
     pageBack.bringToFront();
     if(pageSettings.getParent()==null)readingFrame.addView(pageSettings,lectureSettingsParams());
+    revealLectureClock(readingFrame,pageClock);
     readingFrame.postDelayed(hidePageBack,3000);
     return true;
    }
@@ -1745,7 +1765,8 @@ public class MainActivity extends Activity {
   wordCounter.setPadding(dp(20),dp(6),dp(20),dp(6));
   if(!cleanReading)body.addView(wordCounter);
   if(cleanReading){
-   body.setBackgroundColor(Color.WHITE);
+   startLectureTimer(key);
+   body.setBackgroundColor(lecturePaper());
    body.setPadding(dp(3),dp(4),dp(3),dp(3));
    readingFrame.setMargins(0,0,0,0);
    FrameLayout lectureSurface=new FrameLayout(this);
@@ -1760,7 +1781,8 @@ public class MainActivity extends Activity {
    floatingBack.setAlpha(0.95f);
    FrameLayout.LayoutParams floatingParams=new FrameLayout.LayoutParams(dp(76),dp(76),Gravity.CENTER);
    floatingBack.setOnLongClickListener(v->{
-    new AlertDialog.Builder(this).setTitle("Kawalan kuliah").setItems(new String[]{"Buka semua syarahan","Tutup semua syarahan","Indeks kuliah"},(d,which)->{
+    new AlertDialog.Builder(this).setTitle("Kawalan kuliah").setItems(new String[]{"Buka semua syarahan","Tutup semua syarahan","Indeks kuliah","Warna kertas"},(d,which)->{
+     if(which==3){chooseLecturePaper(key);return;}
      if(which<2){
       for(int j=0;j<lecturePanels.size();j++){
        lecturePanels.get(j).setVisibility(which==0?View.VISIBLE:View.GONE);
@@ -1779,11 +1801,13 @@ public class MainActivity extends Activity {
    // Do not attach the Back control until a deliberate double tap.
    Button settings=lectureSettingsButton();
    settings.setOnClickListener(v->floatingBack.performLongClick());
-   final Runnable hideLectureBack=()->{lectureSurface.removeView(floatingBack);lectureSurface.removeView(settings);};
+   final TextView scrollClock=lectureClock();
+   final Runnable hideLectureBack=()->{lectureSurface.removeView(floatingBack);lectureSurface.removeView(settings);lectureSurface.removeView(scrollClock);};
    lectureBackReveal=()->{
     lectureSurface.removeCallbacks(hideLectureBack);
     if(floatingBack.getParent()==null)lectureSurface.addView(floatingBack,floatingParams);
     if(settings.getParent()==null)lectureSurface.addView(settings,lectureSettingsParams());
+    revealLectureClock(lectureSurface,scrollClock);
     lectureSurface.postDelayed(hideLectureBack,3000);
    };
    root.addView(lectureSurface,new LinearLayout.LayoutParams(-1,0,1));
