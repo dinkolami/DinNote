@@ -848,7 +848,7 @@ public class MainActivity extends Activity {
  }
  void showPagedReader(String key){
   enableLectureZoom(key);startLectureTimer(key);
-  final CharSequence source=formattedReadingText(prefs.getString(key,""));
+  final CharSequence source=formattedReadingText(selectedReadingText(key));
   final int availableWidthDp=Math.round(readerBuiltWidthPx/getResources().getDisplayMetrics().density);
   final boolean spread=availableWidthDp>=500&&prefs.getBoolean("reader_two_columns",true);
   final int fontLevel=Math.max(0,Math.min(3,prefs.getInt("reader_font_level",1)));
@@ -1326,6 +1326,32 @@ public class MainActivity extends Activity {
    }catch(Exception e){Toast.makeText(this,"Simpan gagal",Toast.LENGTH_SHORT).show();}
   }));dialog.show();
  }
+ String selectedReadingText(String key,int mode){
+  String raw=prefs.getString(key,"");
+  StringBuilder out=new StringBuilder();int type=0;
+  for(String line:raw.split("\\r?\\n",-1)){
+   String marker=line.trim();
+   if(marker.equals("---MATAN---")){type=1;continue;}
+   if(marker.equals("---SYARAHAN---")){type=2;continue;}
+   if(marker.equals("---DALIL---")){type=3;continue;}
+   if(marker.equals("---TERJEMAHAN---")){type=4;continue;}
+   if(marker.equals("---TAMAT---")){type=0;continue;}
+   if(marker.equals("---KOTAKDALIL---")||marker.equals("---KOTAKFIRMAN---")||marker.equals("---KOTAKSABDA---"))type=3;
+   if(mode==0||type==mode)out.append(line).append('\n');
+   if(marker.equals("---KOTAKTAMAT---"))type=0;
+  }
+  return out.toString().trim();
+ }
+ String selectedReadingText(String key){
+  return selectedReadingText(key,key.startsWith("m_")?prefs.getInt("reading_filter_"+key,0):0);
+ }
+ void showSelectedReading(String key){
+  String[] names={"Teks lengkap","Matan sahaja","Syarahan sahaja","Dalil sahaja","Terjemahan sahaja"};
+  new AlertDialog.Builder(this).setTitle("Mod Bacaan Terpilih").setSingleChoiceItems(names,Math.max(0,Math.min(4,prefs.getInt("reading_filter_"+key,0))),(d,i)->{
+   if(i>0&&selectedReadingText(key,i).isEmpty()){Toast.makeText(this,"Tiada teks bertanda untuk pilihan ini",Toast.LENGTH_LONG).show();return;}
+   prefs.edit().putInt("reading_filter_"+key,i).apply();d.dismiss();read(key);
+  }).setNeutralButton("Panduan tanda",(d,w)->new AlertDialog.Builder(this).setTitle("Penandaan dalam editor").setMessage("Letakkan tanda pada baris berasingan sebelum teks: ---MATAN---, ---SYARAHAN---, ---DALIL--- atau ---TERJEMAHAN---. Akhiri bahagian dengan ---TAMAT---. Teks tanpa tanda kekal dalam mod lengkap.").setPositiveButton("OK",null).show()).setNegativeButton("Batal",null).show();
+ }
  void showReaderActions(String key,boolean compact){
   boolean book=key.startsWith("m_");
   String noun=book?"kitab":"nota";
@@ -1353,6 +1379,12 @@ public class MainActivity extends Activity {
    labels=java.util.Arrays.copyOf(labels,n+1);icons=java.util.Arrays.copyOf(icons,n+1);descriptions=java.util.Arrays.copyOf(descriptions,n+1);
    labels[n]=labels[n-1];icons[n]=icons[n-1];descriptions[n]=descriptions[n-1];
    labels[n-1]="Catatan Kaki (الحواشي)";icons[n-1]="¹";descriptions[n-1]="Catatan bernombor dan rujukan kitab";
+  }
+  if(book){
+   int n=labels.length;
+   labels=java.util.Arrays.copyOf(labels,n+1);icons=java.util.Arrays.copyOf(icons,n+1);descriptions=java.util.Arrays.copyOf(descriptions,n+1);
+   labels[n]=labels[n-1];icons[n]=icons[n-1];descriptions[n]=descriptions[n-1];
+   labels[n-1]="Mod Bacaan Terpilih";icons[n-1]="▤";descriptions[n-1]="Lengkap, matan, syarahan, dalil atau terjemahan";
   }
   int beforePdf=labels.length;
   labels=java.util.Arrays.copyOf(labels,beforePdf+1);icons=java.util.Arrays.copyOf(icons,beforePdf+1);descriptions=java.util.Arrays.copyOf(descriptions,beforePdf+1);
@@ -1400,7 +1432,8 @@ public class MainActivity extends Activity {
      Toast.makeText(this,next?"Paparan Arab–Melayu diaktifkan":"Paparan Arab–Melayu dimatikan",Toast.LENGTH_SHORT).show();read(key);
     }
     else if(book&&option==(compact?10:8))showBookFootnotes(key);
-    else if(option==(book?(compact?11:9):(compact?7:5)))printReaderAsPdf(key);
+    else if(book&&option==(compact?11:9))showSelectedReading(key);
+    else if(option==(book?(compact?12:10):(compact?7:5)))printReaderAsPdf(key);
     else confirmDelete(key);
    });
   }
@@ -1516,7 +1549,7 @@ public class MainActivity extends Activity {
   }
   }
   // Page-by-page reader for long Nota and Maktabah content.
-  if(prefs.getString(key,"").length()>=100 && availableReaderWidthDp>=500 && prefs.getBoolean("reader_swipe_mode",false)){ // Optional unfolded swipe reader.
+  if(selectedReadingText(key).length()>=100 && availableReaderWidthDp>=500 && prefs.getBoolean("reader_swipe_mode",false)){ // Optional unfolded swipe reader.
    try{showPagedReader(key);return;}
    catch(RuntimeException problem){
     android.util.Log.e("DinNote","Paged reader failed; using safe scrolling",problem);
@@ -1528,7 +1561,7 @@ public class MainActivity extends Activity {
   String heading=prefs.getString("title_"+key,"");
   String readingCategory=prefs.getString("cat_"+key,"Tanpa kategori");
   if(readingCategory.trim().isEmpty())readingCategory="Tanpa kategori";
-  String fullReadingText=prefs.getString(key,"");
+  String fullReadingText=selectedReadingText(key);
   ScrollView scroll=new ScrollView(this);scroll.setFillViewport(false);scroll.setOverScrollMode(View.OVER_SCROLL_NEVER);
   readerScroll=scroll;
   LinearLayout body=new LinearLayout(this);body.setOrientation(1);
@@ -1566,7 +1599,7 @@ public class MainActivity extends Activity {
   }
   int fontLevel=Math.max(0,Math.min(3,prefs.getInt("reader_font_level",1)));
   int[] readingSizes=new int[]{13,15,16,18}; // Match editor for both Nota and Maktabah.
-  TextView content=text("",readingSizes[fontLevel]);content.setText(formattedReadingText(prefs.getString(key,"")));boolean containsArabic=java.util.regex.Pattern.compile("[\\u0600-\\u06FF]").matcher(fullReadingText).find();if(containsArabic){if(prefs.getBoolean("reader_arabic_clear_font",false))content.setTypeface(android.graphics.Typeface.create("serif",android.graphics.Typeface.NORMAL));}
+  TextView content=text("",readingSizes[fontLevel]);content.setText(formattedReadingText(fullReadingText));boolean containsArabic=java.util.regex.Pattern.compile("[\\u0600-\\u06FF]").matcher(fullReadingText).find();if(containsArabic){if(prefs.getBoolean("reader_arabic_clear_font",false))content.setTypeface(android.graphics.Typeface.create("serif",android.graphics.Typeface.NORMAL));}
   content.setTextColor(0xff303c43);content.setGravity(Gravity.TOP);content.setBreakStrategy(android.text.Layout.BREAK_STRATEGY_SIMPLE);content.setHyphenationFrequency(android.text.Layout.HYPHENATION_FREQUENCY_NONE);content.setTextIsSelectable(true);content.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);int readingSide=dp(4); // 12dp frame + 8dp body + 4dp content = 24dp editor inset.
   content.setPadding(readingSide,dp(10),readingSide,dp(12));if(prefs.getBoolean("reader_wide_spacing",false))content.setLineSpacing(dp(5),1.15f);else content.setLineSpacing(dp(1),1.0f);content.setIncludeFontPadding(true);applySharedTextMetrics(content);
   // Display list rows with subtle mint dividers; preserve the original stored text.
