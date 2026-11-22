@@ -2800,7 +2800,9 @@ public class MainActivity extends Activity {
    LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);
    // Add a small breathing gap whenever two box blocks meet, regardless of their types.
    boolean adjacentBox=previous>0&&source.substring(previous,m.start()).trim().isEmpty();
-   lp.setMargins(dp(4),dp(adjacentBox?7:1),dp(4),dp(1));body.addView(panel,lp);
+   // Give prose before and after a box a little more breathing room.
+   // Adjacent boxes retain a compact separation rather than doubling the gap.
+   lp.setMargins(dp(4),dp(adjacentBox?2:6),dp(4),dp(5));body.addView(panel,lp);
    previous=m.end();
   }
   addBoxParagraph(body,source.substring(previous),fontSize,key,source.substring(0,previous).split("\\n",-1).length-1);
