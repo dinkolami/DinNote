@@ -1421,6 +1421,35 @@ public class MainActivity extends Activity {
    target.scrollBy(0,Math.max(1,dp(speed+1)));target.postDelayed(this,40);
   }},500);
  }
+ void showNamedStops(String key){
+  stopAutoReading();
+  final ScrollView target=readerScroll;
+  if(target==null||!target.isAttachedToWindow()){Toast.makeText(this,"Gunakan mod bacaan scroll",Toast.LENGTH_SHORT).show();return;}
+  final String storage="named_stops_"+key;
+  org.json.JSONArray loaded;
+  try{loaded=new org.json.JSONArray(prefs.getString(storage,"[]"));}catch(Exception ex){loaded=new org.json.JSONArray();}
+  final org.json.JSONArray marks=loaded;
+  String[] names=new String[marks.length()+1];names[0]="+ Simpan tempat semasa";
+  for(int i=0;i<marks.length();i++){org.json.JSONObject m=marks.optJSONObject(i);names[i+1]=m==null?"Penanda":m.optString("name");}
+  new AlertDialog.Builder(this).setTitle("علامة الوقف · Penanda kitab").setItems(names,(dlg,index)->{
+   if(index==0){
+    if(marks.length()>=100){Toast.makeText(this,"Had 100 penanda setiap kitab",Toast.LENGTH_SHORT).show();return;}
+    final int y=target.getScrollY(),range=Math.max(1,target.getChildAt(0).getHeight()-target.getHeight());
+    EditText name=new EditText(this);name.setSingleLine(true);name.setHint("Contoh: Kuliah hari Ahad");
+    new AlertDialog.Builder(this).setTitle("Nama penanda").setView(name).setPositiveButton("Simpan",(nd,w)->{
+     String label=name.getText().toString().trim();if(label.isEmpty())return;
+     try{org.json.JSONObject m=new org.json.JSONObject();m.put("name",label);m.put("fraction",Math.min(1.0,(double)y/range));m.put("filter",prefs.getInt("reading_filter_"+key,0));marks.put(m);prefs.edit().putString(storage,marks.toString()).apply();Toast.makeText(this,"Penanda disimpan",Toast.LENGTH_SHORT).show();}catch(Exception ex){Toast.makeText(this,"Penanda gagal disimpan",Toast.LENGTH_SHORT).show();}
+    }).setNegativeButton("Batal",null).show();return;
+   }
+   int pos=index-1;org.json.JSONObject mark=marks.optJSONObject(pos);if(mark==null)return;
+   new AlertDialog.Builder(this).setTitle(mark.optString("name")).setItems(new String[]{"Pergi ke penanda","Padam penanda"},(md,choice)->{
+    if(choice==0){
+     prefs.edit().putInt("reading_filter_"+key,mark.optInt("filter",0)).apply();read(key);
+     ScrollView next=readerScroll;if(next!=null)next.post(()->{if(next.isAttachedToWindow()&&key.equals(selected)&&next.getChildCount()>0)next.scrollTo(0,(int)(Math.max(0,next.getChildAt(0).getHeight()-next.getHeight())*mark.optDouble("fraction",0)));});
+    }else new AlertDialog.Builder(this).setTitle("Padam penanda ini?").setPositiveButton("Padam",(dd,w)->{marks.remove(pos);prefs.edit().putString(storage,marks.toString()).apply();}).setNegativeButton("Batal",null).show();
+   }).show();
+  }).setNegativeButton("Tutup",null).show();
+ }
  void showReaderActions(String key,boolean compact){
   boolean book=key.startsWith("m_");
   String noun=book?"kitab":"nota";
@@ -1466,6 +1495,11 @@ public class MainActivity extends Activity {
    labels=java.util.Arrays.copyOf(labels,n+1);icons=java.util.Arrays.copyOf(icons,n+1);descriptions=java.util.Arrays.copyOf(descriptions,n+1);
    labels[n]=labels[n-1];icons[n]=icons[n-1];descriptions[n]=descriptions[n-1];
    labels[n-1]="Auto Scroll Pintar";icons[n-1]="↓";descriptions[n-1]="Mula, berhenti dan laraskan kelajuan bacaan";
+  }
+  if(book){
+   int n=labels.length;labels=java.util.Arrays.copyOf(labels,n+1);icons=java.util.Arrays.copyOf(icons,n+1);descriptions=java.util.Arrays.copyOf(descriptions,n+1);
+   labels[n]=labels[n-1];icons[n]=icons[n-1];descriptions[n]=descriptions[n-1];
+   labels[n-1]="Penanda Tempat Berhenti";icons[n-1]="♧";descriptions[n-1]="Simpan beberapa lokasi bacaan bernama";
   }
   int beforePdf=labels.length;
   labels=java.util.Arrays.copyOf(labels,beforePdf+1);icons=java.util.Arrays.copyOf(icons,beforePdf+1);descriptions=java.util.Arrays.copyOf(descriptions,beforePdf+1);
@@ -1516,7 +1550,8 @@ public class MainActivity extends Activity {
     else if(option==(book?(compact?11:9):(compact?7:5)))showSelectedReading(key);
     else if(option==(book?(compact?12:10):(compact?8:6)))showLayeredCommentary(key);
     else if(option==(book?(compact?13:11):(compact?9:7)))showAutoReading(key);
-    else if(option==(book?(compact?14:12):(compact?10:8)))printReaderAsPdf(key);
+    else if(book&&option==(compact?14:12))showNamedStops(key);
+    else if(option==(book?(compact?15:13):(compact?10:8)))printReaderAsPdf(key);
     else confirmDelete(key);
    });
   }
