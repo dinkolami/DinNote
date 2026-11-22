@@ -498,6 +498,31 @@ public class MainActivity extends Activity {
   root.addView(footer,new LinearLayout.LayoutParams(-1,-2));
   LinearLayout.LayoutParams ap=new LinearLayout.LayoutParams(-1,dp(42));
   LinearLayout actions=new LinearLayout(this);actions.setOrientation(LinearLayout.HORIZONTAL);
+  // Compact Hikmah Ringkas preview: fixed above the home actions on the folded screen only.
+  // Use existing sample wisdom text for layout testing; do not touch user notes.
+  if(homeWindowWidthDp()<440){
+   final String[] sampleWisdom={
+    "Masa ialah amanah. Susunlah waktu untuk ilmu, ibadah dan tanggungjawab.",
+    "Ilmu menjadi lebih bermanfaat apabila dipelajari dengan adab dan diamalkan."
+   };
+   LinearLayout wisdomCard=new LinearLayout(this);wisdomCard.setOrientation(LinearLayout.VERTICAL);
+   wisdomCard.setPadding(dp(12),dp(6),dp(12),dp(7));
+   wisdomCard.setBackground(rounded(0xfffdfcf7,0xffd8c69c,11));
+   LinearLayout.LayoutParams wisdomParams=new LinearLayout.LayoutParams(-1,-2);
+   wisdomParams.bottomMargin=dp(5);footer.addView(wisdomCard,wisdomParams);
+   TextView wisdomHeading=dashboardText("✦  Hikmah Ringkas  ✦",12,true);
+   wisdomHeading.setTextColor(0xff47745d);wisdomHeading.setGravity(Gravity.CENTER);
+   wisdomCard.addView(wisdomHeading);
+   TextView wisdomBody=dashboardText("",13,false);wisdomBody.setTextColor(0xff35453c);
+   wisdomBody.setGravity(Gravity.CENTER);wisdomBody.setMaxLines(3);
+   LinearLayout.LayoutParams wisdomTextParams=new LinearLayout.LayoutParams(-1,-2);
+   wisdomTextParams.topMargin=dp(3);wisdomCard.addView(wisdomBody,wisdomTextParams);
+   final int[] wisdomIndex={new java.util.Random().nextInt(sampleWisdom.length)};
+   wisdomBody.setText(sampleWisdom[wisdomIndex[0]]);
+   wisdomCard.setContentDescription("Hikmah Ringkas. Ketik untuk hikmah lain");
+   wisdomCard.setOnClickListener(v->{wisdomIndex[0]=(wisdomIndex[0]+1)%sampleWisdom.length;wisdomBody.setText(sampleWisdom[wisdomIndex[0]]);});
+   applyTouchFeedback(wisdomCard);
+  }
   footer.addView(actions,new LinearLayout.LayoutParams(-1,dp(38)));
   LinearLayout.LayoutParams noteActionParams=new LinearLayout.LayoutParams(0,-1,1);noteActionParams.rightMargin=dp(4);
   actions.addView(add,noteActionParams);
