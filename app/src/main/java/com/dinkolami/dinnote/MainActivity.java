@@ -2428,14 +2428,18 @@ public class MainActivity extends Activity {
    }).show());
   toolsButton.setContentDescription("Alat penyuntingan tambahan");
 
-  LinearLayout readingTags=new LinearLayout(this);readingTags.setOrientation(LinearLayout.HORIZONTAL);readingTags.setPadding(dp(4),dp(2),dp(4),dp(2));root.addView(readingTags);
-  String[] tagLabels={"المتن · Matan","الشرح · Syarahan","الدليل · Dalil","الترجمة · Terjemahan"};
-  String[] tagCodes={"MATAN","SYARAHAN","DALIL","TERJEMAHAN"};
-  for(int j=0;j<tagLabels.length;j++){
-   final String code=tagCodes[j];Button tag=new Button(this);tag.setText(tagLabels[j]);tag.setTextSize(10);tag.setAllCaps(false);tag.setSingleLine(true);tag.setEllipsize(android.text.TextUtils.TruncateAt.END);if(android.os.Build.VERSION.SDK_INT>=26)tag.setAutoSizeTextTypeUniformWithConfiguration(7,10,1,android.util.TypedValue.COMPLEX_UNIT_SP);tag.setPadding(dp(2),0,dp(2),0);tag.setMinWidth(0);tag.setMinimumWidth(0);tag.setTextColor(0xff176b47);tag.setBackground(rounded(0xffedf5ee,0xffc6b582,9));
-   LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(0,dp(38),1);lp.setMargins(dp(2),0,dp(2),0);readingTags.addView(tag,lp);
-   tag.setOnClickListener(v->insertReadingTag(code));
-  }
+  // One compact selector replaces four wide tag buttons on folded displays.
+  LinearLayout readingTags=new LinearLayout(this);readingTags.setGravity(Gravity.CENTER_VERTICAL);
+  readingTags.setPadding(dp(6),dp(2),dp(6),dp(2));root.addView(readingTags);
+  final String[] tagLabels={"Matan · المتن","Syarahan · الشرح","Dalil · الدليل","Terjemahan · الترجمة"};
+  final String[] tagCodes={"MATAN","SYARAHAN","DALIL","TERJEMAHAN"};
+  Button readingTagPicker=action("§  Bahagian Teks ▾",readingTags,()->new AlertDialog.Builder(this)
+   .setTitle("Pilih bahagian teks")
+   .setItems(tagLabels,(dialog,index)->insertReadingTag(tagCodes[index]))
+   .show());
+  readingTagPicker.setTextColor(0xff176b47);
+  readingTagPicker.setBackground(rounded(0xffedf5ee,0xffc6b582,10));
+  readingTagPicker.setContentDescription("Pilih Matan, Syarahan, Dalil atau Terjemahan");
   LinearLayout.LayoutParams editBodyFrame=new LinearLayout.LayoutParams(-1,0,1);editBodyFrame.setMargins(dp(4),0,dp(4),0);root.addView(editor,editBodyFrame);
   // Keep normal Android double-tap text selection while editing.
   // Never navigate away while EditText is handling touch/selection events.
