@@ -18,7 +18,11 @@ public final class AutoCorrectDictionary {
  private boolean enabled = true;
  public AutoCorrectDictionary(Context context) {
   preferences = context.getSharedPreferences("dinnote_autocorrect", Context.MODE_PRIVATE);
+  reload();
+ }
+ private void reload(){
   enabled = preferences.getBoolean("enabled",true);
+  rules.clear();
   try {
    JSONArray array = new JSONArray(preferences.getString(KEY,"[]"));
    for(int i=0;i<array.length();i++){
@@ -28,7 +32,7 @@ public final class AutoCorrectDictionary {
    }
   }catch(Exception ignored){}
  }
- public Map<String,String> entries(){return new LinkedHashMap<>(rules);}
+ public Map<String,String> entries(){reload();return new LinkedHashMap<>(rules);}
  public boolean isEnabled(){return enabled;}
  public void setEnabled(boolean value){enabled=value;preferences.edit().putBoolean("enabled",value).apply();}
  public void put(String source,String target){
@@ -48,11 +52,21 @@ public final class AutoCorrectDictionary {
  public void attach(EditText edit){
   edit.addTextChangedListener(new TextWatcher(){
    boolean changing=false;
+   int cursor=-1;
+   boolean typedDelimiter=false;
    public void beforeTextChanged(CharSequence s,int start,int count,int after){}
-   public void onTextChanged(CharSequence s,int start,int before,int count){}
+   public void onTextChanged(CharSequence s,int start,int before,int count){
+    typedDelimiter=false;
+    if(changing||count!=1||before!=0||start<1||start>=s.length())return;
+    char c=s.charAt(start);
+    typedDelimiter=Character.isWhitespace(c)||",.;:!?،؛".indexOf(c)>=0;
+    cursor=start+1;
+   }
    public void afterTextChanged(Editable text){
-    if(changing||!enabled||text.length()==0)return;
-    int cursor=edit.getSelectionStart();
+    if(changing||!typedDelimiter||text.length()==0)return;
+    typedDelimiter=false;
+    reload();
+    if(!enabled)return;
     if(cursor<2||cursor>text.length())return;
     char delimiter=text.charAt(cursor-1);
     if(!Character.isWhitespace(delimiter)&&",.;:!?،؛".indexOf(delimiter)<0)return;
@@ -63,7 +77,7 @@ public final class AutoCorrectDictionary {
     String target=rules.get(source);
     if(target==null||target.equals(source))return;
     changing=true;
-    try{text.replace(start,end,target);edit.setSelection(start+target.length()+1);}finally{changing=false;}
+    try{text.replace(start,end,target);edit.setSelection(Math.min(text.length(),start+target.length()+1));}finally{changing=false;}
    }
   });
  }
