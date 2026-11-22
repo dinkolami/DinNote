@@ -1942,12 +1942,12 @@ public class MainActivity extends Activity {
      innerCircleParams.setMargins(dp(2),dp(2),dp(2),dp(2));
      medallion.addView(markerView,innerCircleParams);
      LinearLayout.LayoutParams medalParams=new LinearLayout.LayoutParams(dp(25),dp(25));
-     if(arabicHeading)medalParams.leftMargin=dp(3);else medalParams.rightMargin=dp(3);
+     if(arabicHeading)medalParams.leftMargin=dp(2);else medalParams.rightMargin=dp(1);
      if(!arabicHeading)itemRow.addView(medallion,medalParams);
      TextView valueView=text("",readingSizes[fontLevel]);valueView.setText(readerLabelText(value));applySharedTextMetrics(valueView);valueView.setTextColor(0xff303c43);
      valueView.setTextDirection(arabicHeading?View.TEXT_DIRECTION_RTL:View.TEXT_DIRECTION_FIRST_STRONG);valueView.setTextIsSelectable(true);
      valueView.setGravity((arabicHeading?Gravity.RIGHT:Gravity.LEFT)|Gravity.CENTER_VERTICAL);
-     valueView.setPadding(dp(4),0,dp(4),0);
+     valueView.setPadding(dp(1),0,dp(1),0);
      valueView.setLineSpacing(prefs.getBoolean("reader_wide_spacing",false)?dp(5):dp(1),prefs.getBoolean("reader_wide_spacing",false)?1.15f:1.0f);
      itemRow.addView(valueView,new LinearLayout.LayoutParams(0,-2,1));
      if(arabicHeading)itemRow.addView(medallion,medalParams);
@@ -2011,22 +2011,13 @@ public class MainActivity extends Activity {
       LinearLayout.LayoutParams commentaryParams=new LinearLayout.LayoutParams(-1,-2);
       commentaryParams.setMargins(dp(5),dp(2),dp(5),dp(5));
       commentaryPanel.setVisibility(View.GONE);
-      TextView expandButton=text("⌄",17);
-      expandButton.setGravity(Gravity.CENTER);
-      expandButton.setPadding(0,0,0,0);
-      expandButton.setTextColor(0xff176b47);
-      expandButton.setContentDescription("Buka atau tutup syarahan");
-      LinearLayout.LayoutParams expandParams=new LinearLayout.LayoutParams(dp(22),dp(25));
-      if(arabicHeading)itemRow.addView(expandButton,0,expandParams);
-      else itemRow.addView(expandButton,expandParams);
       View.OnClickListener toggleCommentary=v->{
        boolean opening=commentaryPanel.getVisibility()!=View.VISIBLE;
        commentaryPanel.setVisibility(opening?View.VISIBLE:View.GONE);
-       expandButton.setText(opening?"⌃":"⌄");
+
       };
-      lecturePanels.add(commentaryPanel);lectureArrows.add(expandButton);
+      lecturePanels.add(commentaryPanel);lectureArrows.add(markerView);
       lectureHeadings.add(itemRow);lectureTitles.add(readerLabelText(value));
-      expandButton.setOnClickListener(toggleCommentary);
       medallion.setOnClickListener(toggleCommentary);
       medallion.setContentDescription("Buka atau tutup syarahan nombor "+marker);
       readingRows.addView(itemRow);
@@ -2072,7 +2063,7 @@ public class MainActivity extends Activity {
      if(which<2){
       for(int j=0;j<lecturePanels.size();j++){
        lecturePanels.get(j).setVisibility(which==0?View.VISIBLE:View.GONE);
-       lectureArrows.get(j).setText(which==0?"⌃":"⌄");
+
       }
      }else if(lectureTitles.isEmpty())Toast.makeText(this,"Tiada tajuk bernombor",Toast.LENGTH_SHORT).show();
      else new AlertDialog.Builder(this).setTitle("Indeks kuliah").setItems(lectureTitles.toArray(new CharSequence[0]),(dialog,index)->{
