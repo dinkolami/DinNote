@@ -1790,7 +1790,7 @@ public class MainActivity extends Activity {
   boolean twoColumnReading=availableReaderWidthDp>=500&&prefs.getBoolean("reader_two_columns",true)&&fullReadingText.length()>=100;
   if(hasBoxes){
    if(bilingualReading){body.removeViewAt(body.getChildCount()-1);}
-   renderBoxReading(body,fullReadingText,readingSizes[fontLevel]);
+   renderBoxReading(body,fullReadingText,readingSizes[fontLevel],key);
   }
   else if(bilingualReading){}
   else if(!twoColumnReading&&!hasLists)body.addView(content,new LinearLayout.LayoutParams(-1,-2));
@@ -2677,12 +2677,12 @@ public class MainActivity extends Activity {
   if(out.length()>0)out.setLength(out.length()-1);
   return out.toString();
  }
- void renderBoxReading(LinearLayout body,String source,int fontSize){
+ void renderBoxReading(LinearLayout body,String source,int fontSize,String key){
   source=repairBoxStructure(normalizeStructuralMarkers(source));
   java.util.regex.Matcher m=java.util.regex.Pattern.compile("(?ms)^---KOTAK(DALIL|HIKMAH|CATATAN|FIRMAN|SABDA|SAHABAT|TABII|ULAMA)---[ \\t]*\\n(.*?)^---KOTAKTAMAT---[ \\t]*(?:\\n|$)").matcher(source);
   int previous=0;
   while(m.find()){
-   addBoxParagraph(body,source.substring(previous,m.start()),fontSize);
+   addBoxParagraph(body,source.substring(previous,m.start()),fontSize,key,source.substring(0,previous).split("\\n",-1).length-1);
    String type=m.group(1);
    LinearLayout panel=new LinearLayout(this){
     @Override protected void dispatchDraw(android.graphics.Canvas c){
@@ -2717,13 +2717,13 @@ public class MainActivity extends Activity {
    LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);lp.setMargins(dp(8),dp(3),dp(8),dp(3));body.addView(panel,lp);
    previous=m.end();
   }
-  addBoxParagraph(body,source.substring(previous),fontSize);
+  addBoxParagraph(body,source.substring(previous),fontSize,key,source.substring(0,previous).split("\\n",-1).length-1);
  }
- void addBoxParagraph(LinearLayout body,String value,int fontSize){
+ void addBoxParagraph(LinearLayout body,String value,int fontSize,String key,int baseLine){
   java.util.regex.Matcher ornaments=java.util.regex.Pattern.compile("(?m)^[ \\t]*\\*{0,2}---(FLOWER|GEOMETRIC|CLASSIC)---\\*{0,2}[ \\t]*$").matcher(value);
   int start=0;
   while(ornaments.find()){
-   addPlainBoxParagraph(body,value.substring(start,ornaments.start()),fontSize);
+   addPlainBoxParagraph(body,value.substring(start,ornaments.start()),fontSize,key,baseLine+value.substring(0,start).split("\\n",-1).length-1);
    LinearLayout row=new LinearLayout(this);row.setGravity(Gravity.CENTER_VERTICAL);row.setPadding(dp(12),0,dp(12),0);
    View left=new View(this);left.setBackgroundColor(0xff176b47);row.addView(left,new LinearLayout.LayoutParams(0,dp(1),1));
    TextView symbol=text(ornaments.group(1).equals("FLOWER")?"✿":ornaments.group(1).equals("GEOMETRIC")?"❖":"❧",19);
@@ -2731,10 +2731,37 @@ public class MainActivity extends Activity {
    View right=new View(this);right.setBackgroundColor(0xff176b47);row.addView(right,new LinearLayout.LayoutParams(0,dp(1),1));body.addView(row);
    start=ornaments.end();
   }
-  addPlainBoxParagraph(body,value.substring(start),fontSize);
+  addPlainBoxParagraph(body,value.substring(start),fontSize,key,baseLine+value.substring(0,start).split("\\n",-1).length-1);
  }
- void addPlainBoxParagraph(LinearLayout body,String value,int fontSize){
-  value=value.replaceAll("(?m)^[ \\t]*\\*{1,2}[ \\t]*$","").trim();
+ void addPlainBoxParagraph(LinearLayout body,String value,int fontSize,String key,int baseLine){
+  // Mixed numbered headings and decorative boxes must retain expandable
+  // per-heading commentary, rather than flattening every paragraph to a TextView.
+  String[] lines=value.split("\\n",-1);StringBuilder paragraph=new StringBuilder();
+  for(int i=0;i<lines.length;i++){
+   String line=lines[i];
+   java.util.regex.Matcher numbered=java.util.regex.Pattern.compile("^\\\\s*(\\\\d+)\\\\.\\\\s+(.*)$").matcher(line);
+   if(numbered.matches()){
+    addPlainBoxText(body,paragraph.toString(),fontSize);paragraph.setLength(0);
+    final String commentaryKey="syarahan_"+key+"_"+(baseLine+i);
+    LinearLayout wrapper=new LinearLayout(this);wrapper.setOrientation(1);
+    LinearLayout heading=new LinearLayout(this);heading.setOrientation(0);heading.setGravity(Gravity.CENTER_VERTICAL);
+    TextView title=text(line.trim(),fontSize);title.setTextColor(0xff303c43);title.setPadding(dp(8),dp(2),dp(3),dp(2));heading.addView(title,new LinearLayout.LayoutParams(0,-2,1));
+    TextView arrow=text("⌄",18);arrow.setTextColor(0xff176b47);arrow.setGravity(Gravity.CENTER);arrow.setContentDescription("Buka atau tutup huraian nombor "+numbered.group(1));heading.addView(arrow,new LinearLayout.LayoutParams(dp(40),dp(36)));
+    wrapper.addView(heading);
+    LinearLayout details=new LinearLayout(this);details.setOrientation(1);details.setPadding(dp(10),dp(4),dp(10),dp(6));details.setBackground(rounded(0xfff8faf5,0xffd9e4d6,10));details.setVisibility(View.GONE);
+    TextView label=text("Syarahan / Huraian",13);label.setTextColor(0xff176b47);details.addView(label);
+    EditText note=new EditText(this);note.setTextSize(15);note.setHint("Tulis huraian di sini…");note.setMinLines(2);note.setText(prefs.getString(commentaryKey,""));details.addView(note);
+    note.addTextChangedListener(new TextWatcher(){public void beforeTextChanged(CharSequence t,int a,int c,int f){}public void onTextChanged(CharSequence t,int a,int b,int c){prefs.edit().putString(commentaryKey,t.toString()).apply();}public void afterTextChanged(Editable e){}});
+    wrapper.addView(details);
+    View.OnClickListener toggle=v->{boolean open=details.getVisibility()!=View.VISIBLE;details.setVisibility(open?View.VISIBLE:View.GONE);arrow.setText(open?"⌃":"⌄");};
+    heading.setOnClickListener(toggle);arrow.setOnClickListener(toggle);
+    body.addView(wrapper);
+   }else{paragraph.append(line);if(i<lines.length-1)paragraph.append('\\n');}
+  }
+  addPlainBoxText(body,paragraph.toString(),fontSize);
+ }
+ void addPlainBoxText(LinearLayout body,String value,int fontSize){
+  value=value.replaceAll("(?m)^[ \\t]*\\\\*{1,2}[ \\t]*$","").trim();
   if(value.isEmpty())return;
   TextView t=text("",fontSize);t.setText(readerLabelText(value));applySharedTextMetrics(t);t.setTextColor(0xff303c43);t.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);t.setTextIsSelectable(true);t.setPadding(dp(8),dp(1),dp(8),dp(1));body.addView(t);
  }
