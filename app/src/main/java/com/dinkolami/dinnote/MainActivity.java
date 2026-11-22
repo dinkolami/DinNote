@@ -3,7 +3,7 @@ import android.app.*;import android.os.*;import android.graphics.Color;import an
 public class MainActivity extends Activity {
  LinearLayout root,items,compactSummary; ScrollView listScroll,readerScroll; int savedNotesScroll=0,savedBooksScroll=0; String lastOpenedCard=null; android.view.GestureDetector readerDetector; Runnable lectureBackReveal; EditText editor,titleEditor; TextView saveIndicator; Spinner categoryPicker; String categoryFilter="Semua"; String sortMode="Terbaru"; String selected=null; boolean maktabah=false, sectionOpen=false; android.content.SharedPreferences prefs;
  int green=Color.rgb(23,107,71), gold=Color.rgb(197,166,107); static final int BACKUP_CREATE=4201, BACKUP_OPEN=4202, CONTENT_IMPORT=4203, BOOK_TEXT_IMPORT=4204;
- public void onCreate(Bundle b){super.onCreate(b);prefs=getSharedPreferences("notes",0);if(!prefs.getBoolean("font_defaults_13_15_16_18_applied",false)){prefs.edit().putInt("reader_font_level",1).putInt("editor_font_level",1).putBoolean("font_defaults_13_15_16_18_applied",true).apply();}if(prefs.contains("security_pin_hash"))promptUnlock();else home();} // User content and categories are local; import them explicitly.}
+ public void onCreate(Bundle b){super.onCreate(b);prefs=getSharedPreferences("notes",0);if(!prefs.getBoolean("font_defaults_13_15_16_18_applied",false)){prefs.edit().putInt("reader_font_level",1).putInt("editor_font_level",1).putBoolean("font_defaults_13_15_16_18_applied",true).apply();}if(prefs.contains("security_pin_hash"))promptUnlock();else {home();receiveBookShare();}} // User content and categories are local; import them explicitly.}
  void applySystemBarInsets(LinearLayout view){
   // Keep Android's real clock, battery and network status bar visible.
   getWindow().clearFlags(android.view.WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -160,7 +160,7 @@ public class MainActivity extends Activity {
    .setPositiveButton("Buka",null)
    .setNegativeButton("Keluar",(d,w)->finish()).create();
   dialog.setOnShowListener(v->dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(w->{
-   if(verifyPin(input.getText().toString())){dialog.dismiss();home();}
+   if(verifyPin(input.getText().toString())){dialog.dismiss();home();receiveBookShare();}
    else{input.setText("");input.setError("PIN tidak tepat");}
   }));
   dialog.show();
@@ -2837,13 +2837,38 @@ public class MainActivity extends Activity {
   intent.putExtra(Intent.EXTRA_TITLE,"DinNote-backup.json");
   startActivityForResult(intent,BACKUP_CREATE);
  }
+ void receiveBookShare(){
+  Intent incoming=getIntent();
+  if(incoming==null||!Intent.ACTION_SEND.equals(incoming.getAction()))return;
+  CharSequence shared=incoming.getCharSequenceExtra(Intent.EXTRA_TEXT);
+  String subject=incoming.getStringExtra(Intent.EXTRA_SUBJECT);
+  incoming.setAction(Intent.ACTION_MAIN);incoming.removeExtra(Intent.EXTRA_TEXT);
+  if(shared!=null)showSharedBookImport(shared.toString(),subject);
+ }
+ void showSharedBookImport(String content,String subject){
+  LinearLayout panel=new LinearLayout(this);panel.setOrientation(LinearLayout.VERTICAL);panel.setPadding(dp(16),dp(8),dp(16),dp(8));
+  EditText title=new EditText(this);title.setSingleLine(true);title.setHint("Nama kitab");if(subject!=null)title.setText(subject);panel.addView(title);
+  EditText source=new EditText(this);source.setSingleLine(true);source.setHint("Sumber / URL / jilid / halaman");panel.addView(source);
+  EditText body=new EditText(this);body.setHint("Tampal teks kitab daripada Syamilah");body.setGravity(Gravity.TOP);body.setMinLines(5);body.setMaxLines(9);body.setText(content);panel.addView(body);
+  AlertDialog dialog=new AlertDialog.Builder(this).setTitle("Import teks kitab").setView(panel).setNegativeButton("Batal",null).setPositiveButton("Simpan",null).create();
+  dialog.setOnShowListener(v->dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(w->{
+   String value=body.getText().toString().trim(),name=title.getText().toString().trim(),ref=source.getText().toString().trim();
+   if(name.isEmpty()){title.setError("Masukkan nama kitab");return;}
+   if(value.isEmpty()||value.length()>500000||value.matches("https?://\\\\S+")){body.setError("Masukkan teks kitab, bukan pautan sahaja (maksimum 500,000 aksara)");return;}
+   String key="m_"+java.util.UUID.randomUUID().toString();
+   if(!ref.isEmpty())value+="\n\nSumber: "+ref;
+   boolean ok=prefs.edit().putString(key,value).putString("title_"+key,name).putString("cat_"+key,"Tanpa kategori").putLong("updated_"+key,System.currentTimeMillis()).commit();
+   if(ok){dialog.dismiss();openSection(true);}else Toast.makeText(this,"Simpan gagal",Toast.LENGTH_LONG).show();
+  }));dialog.show();
+ }
  void showBookAddMenu(){
-  new AlertDialog.Builder(this).setTitle("Tambah kitab").setItems(new String[]{"Tulis / tampal teks","Import TXT / HTML / DOCX / EPUB / PDF","Import DinNote JSON","Buka Maktabah Syamilah","Banding dua kitab"},(d,i)->{
+  new AlertDialog.Builder(this).setTitle("Tambah kitab").setItems(new String[]{"Tulis / tampal teks","Import TXT / HTML / DOCX / EPUB / PDF","Import DinNote JSON","Buka Maktabah Syamilah","Banding dua kitab","Tampal petikan Syamilah"},(d,i)->{
    if(i==0)edit(null);
    else if(i==1){Intent intent=new Intent(Intent.ACTION_OPEN_DOCUMENT);intent.addCategory(Intent.CATEGORY_OPENABLE);intent.setType("*/*");intent.putExtra(Intent.EXTRA_MIME_TYPES,new String[]{"text/plain","text/html","application/vnd.openxmlformats-officedocument.wordprocessingml.document","application/epub+zip","application/pdf","application/zip","application/octet-stream"});startActivityForResult(intent,BOOK_TEXT_IMPORT);}
    else if(i==2)startContentImport();
    else if(i==3){try{startActivity(new Intent(Intent.ACTION_VIEW,android.net.Uri.parse("https://shamela.ws/")));}catch(Exception e){Toast.makeText(this,"Pelayar tidak tersedia",Toast.LENGTH_SHORT).show();}}
-   else chooseComparison(null);
+   else if(i==4)chooseComparison(null);
+   else showSharedBookImport("",null);
   }).show();
  }
  String bookImportName(android.net.Uri uri){
