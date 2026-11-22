@@ -2777,12 +2777,12 @@ public class MainActivity extends Activity {
    int bg=type.equals("FIRMAN")?0xffedf5ee:type.equals("SABDA")?0xfffaf5e8:type.equals("DALIL")?0xffedf4fa:type.equals("HIKMAH")?0xfff5eff9:type.equals("SAHABAT")?0xfff1f6ec:type.equals("TABII")?0xfff1f4fa:type.equals("ULAMA")?0xfffaf1ed:0xfffcf0f2;
    int border=type.equals("FIRMAN")?0xffa5c3aa:type.equals("SABDA")?0xffd6c7a4:type.equals("DALIL")?0xff8eb4d2:type.equals("HIKMAH")?0xffbca5d0:type.equals("SAHABAT")?0xffb6c9a3:type.equals("TABII")?0xffb0bfd9:type.equals("ULAMA")?0xffd6b7a5:0xffd7a0b2;
    border=Color.rgb((Color.red(border)+Color.red(bg))/2,(Color.green(border)+Color.green(bg))/2,(Color.blue(border)+Color.blue(bg))/2);
-   panel.setBackground(rounded(bg,border,8));panel.setPadding(dp(7),dp(2),dp(7),dp(3));
+   panel.setBackground(rounded(bg,border,10));panel.setPadding(dp(7),dp(3),dp(7),dp(4));
    TextView label=text(type.equals("FIRMAN")?"Firman Allah SWT:":type.equals("SABDA")?"Sabda Nabi SAW:":type.equals("DALIL")?"⚖  Dalil":type.equals("HIKMAH")?"✒  Kalam Hikmah":type.equals("SAHABAT")?"✦  Kata Sahabat Rdh.":type.equals("TABII")?"❖  Kata Tabi\u0027in Rhm.":type.equals("ULAMA")?"✧  Kata Ulama\u0027 Rhm.":"◎  Catatan Penting",13);
    label.setTextColor(type.equals("FIRMAN")?0xff176b47:type.equals("SABDA")?0xff96783e:type.equals("DALIL")?0xff426e96:type.equals("HIKMAH")?0xff79549b:type.equals("SAHABAT")?0xff607d42:type.equals("TABII")?0xff536f9b:type.equals("ULAMA")?0xff9b654b:0xff946176);
    label.setTypeface(null,android.graphics.Typeface.NORMAL);label.setIncludeFontPadding(false);
-   label.setPadding(dp(6),dp(2),dp(8),dp(2));
-   label.setBackground(rounded(bg,border,16));
+   label.setPadding(dp(5),dp(1),dp(7),dp(1));
+   label.setBackground(rounded(bg,border,12));
    if(type.equals("FIRMAN")||type.equals("SABDA")){
     final boolean book=type.equals("FIRMAN");
     final int ink=label.getCurrentTextColor();
@@ -2859,7 +2859,9 @@ public class MainActivity extends Activity {
  void addPlainBoxText(LinearLayout body,String value,int fontSize){
   value=value.replaceAll("(?m)^[ \\t]*\\*{1,2}[ \\t]*$","").trim();
   if(value.isEmpty())return;
-  TextView t=text("",fontSize);t.setText(readerLabelText(value));applySharedTextMetrics(t);t.setTextColor(0xff303c43);t.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);t.setTextIsSelectable(true);t.setPadding(dp(2),0,dp(2),0);body.addView(t);
+  TextView t=text("",fontSize);t.setText(readerLabelText(value));applySharedTextMetrics(t);t.setTextColor(0xff303c43);t.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);t.setTextIsSelectable(true);t.setPadding(dp(2),dp(2),dp(2),dp(2));
+  LinearLayout.LayoutParams paragraphParams=new LinearLayout.LayoutParams(-1,-2);
+  paragraphParams.setMargins(0,dp(3),0,dp(3));body.addView(t,paragraphParams);
  }
  boolean manageCurrentBox(){return manageCurrentBox(false);}
  boolean manageCurrentBox(boolean choose){
