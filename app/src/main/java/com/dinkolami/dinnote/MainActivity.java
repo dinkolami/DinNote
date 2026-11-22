@@ -491,6 +491,14 @@ public class MainActivity extends Activity {
   ArrayList<String> keys=new ArrayList<>();
   for(String k:prefs.getAll().keySet())if((k.startsWith("n_")||k.startsWith("m_"))&&prefs.getAll().get(k) instanceof String&&!prefs.getBoolean("deleted_"+k,false)&&prefs.getLong("viewed_"+k,0L)>0L)keys.add(k);
   Collections.sort(keys,(firstKey,secondKey)->{int order=Long.compare(prefs.getLong("viewed_"+secondKey,0L),prefs.getLong("viewed_"+firstKey,0L));return order!=0?order:firstKey.compareTo(secondKey);});
+  TextView latestCount=dashboardText(Math.min(5,keys.size())+" Topik",10,true);
+  latestCount.setTextColor(0xff416653);latestCount.setGravity(Gravity.CENTER);
+  latestCount.setPadding(dp(5),dp(3),dp(5),dp(3));
+  latestCount.setBackground(homeInsetSurface(0xffedf5ee,0xffe4efe7,0xffc1d4c5,9));
+  LinearLayout.LayoutParams latestCountParams=new LinearLayout.LayoutParams(-2,-2);
+  latestCountParams.rightMargin=dp(5);
+  latestHeader.addView(latestCount,latestCountParams);
+  latestCount.setOnClickListener(v->latestHeader.performClick());
   if(keys.isEmpty()){
    TextView create=dashboardText("＋  Cipta nota pertama",13,true);create.setGravity(Gravity.CENTER);create.setMinHeight(dp(48));create.setContentDescription("Cipta nota baharu");applyTouchFeedback(create);create.setOnClickListener(v->{maktabah=false;edit(null);});recentNotes.addView(create);
    TextView emblem=dashboardText("☪\n▤",36,true);emblem.setTextColor(0xff566a70);
