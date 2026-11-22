@@ -3534,7 +3534,9 @@ public class MainActivity extends Activity {
     if(in==null)throw new java.io.IOException("Fail tidak dapat dibaca");
     byte[] buf=new byte[8192];int n;while((n=in.read(buf))!=-1){if(out.size()+n>5*1024*1024)throw new java.io.IOException("Had fail 5 MB");out.write(buf,0,n);}
    }
-   byte[] bytes=out.toByteArray();String filename=bookImportName(uri);
+   byte[] bytes=out.toByteArray();
+   if(bytes.length==0)throw new java.io.IOException("Fail kosong; pilih dokumen yang mengandungi teks");
+   String filename=bookImportName(uri);
    String mime=getContentResolver().getType(uri);
    final String body;
    if(bytes.length>=5&&bytes[0]==37&&bytes[1]==80&&bytes[2]==68&&bytes[3]==70&&bytes[4]==45){
@@ -3544,6 +3546,7 @@ public class MainActivity extends Activity {
     com.tom_roush.pdfbox.android.PDFBoxResourceLoader.init(getApplicationContext());
     try(com.tom_roush.pdfbox.pdmodel.PDDocument doc=com.tom_roush.pdfbox.pdmodel.PDDocument.load(bytes)){
      if(!doc.getCurrentAccessPermission().canExtractContent())throw new java.io.IOException("PDF tidak membenarkan pengekstrakan teks");
+     if(doc.getNumberOfPages()==0)throw new java.io.IOException("PDF tidak mempunyai halaman");
      if(doc.getNumberOfPages()>300)throw new java.io.IOException("Had 300 halaman; pecahkan PDF dahulu");
      com.tom_roush.pdfbox.text.PDFTextStripper stripper=new com.tom_roush.pdfbox.text.PDFTextStripper();
      stripper.setSortByPosition(true);
