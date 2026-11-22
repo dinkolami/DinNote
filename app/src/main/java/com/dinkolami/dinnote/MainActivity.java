@@ -1691,8 +1691,9 @@ public class MainActivity extends Activity {
    floatingBack.setContentDescription("Kembali ke paparan bacaan biasa");
    floatingBack.setElevation(dp(5));
    floatingBack.setOnClickListener(v->{saveReaderPosition(key);prefs.edit().putBoolean("reader_clean_mode",false).apply();read(key);});
-   FrameLayout.LayoutParams floatingParams=new FrameLayout.LayoutParams(dp(38),dp(38),Gravity.TOP|Gravity.LEFT);
-   floatingParams.setMargins(dp(5),dp(5),0,0);
+   floatingBack.setAlpha(0.65f);
+   FrameLayout.LayoutParams floatingParams=new FrameLayout.LayoutParams(dp(30),dp(30),Gravity.BOTTOM|Gravity.RIGHT);
+   floatingParams.setMargins(0,0,dp(5),dp(8));
    lectureSurface.addView(floatingBack,floatingParams);
    root.addView(lectureSurface,new LinearLayout.LayoutParams(-1,0,1));
   }else root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
