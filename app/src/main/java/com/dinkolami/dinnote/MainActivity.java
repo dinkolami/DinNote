@@ -1776,8 +1776,9 @@ public class MainActivity extends Activity {
   sectionLabel.setTranslationY(-dp(7));
   categoryLine.setTranslationY(-dp(7));
   if(!cleanReading)body.addView(metaRow,new LinearLayout.LayoutParams(-1,-2));
-  TextView title=text(heading,20);title.setMaxLines(3);
-  title.setEllipsize(android.text.TextUtils.TruncateAt.END);
+  TextView title=text(heading,20);title.setMaxLines(Integer.MAX_VALUE);
+  // Preserve complete long titles, including multi-line Arabic, without clipping.
+  title.setEllipsize(null);title.setLineSpacing(dp(2),1.05f);
   // Minimal GitHub-inspired heading: no surrounding box, just a slim emerald rule.
   title.setBackgroundColor(Color.TRANSPARENT);
   title.setTextColor(0xff344054);title.setTypeface(null,android.graphics.Typeface.BOLD);
@@ -2859,7 +2860,9 @@ public class MainActivity extends Activity {
  void addPlainBoxText(LinearLayout body,String value,int fontSize){
   value=value.replaceAll("(?m)^[ \\t]*\\*{1,2}[ \\t]*$","").trim();
   if(value.isEmpty())return;
-  TextView t=text("",fontSize);t.setText(readerLabelText(value));applySharedTextMetrics(t);t.setTextColor(0xff303c43);t.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);t.setTextIsSelectable(true);t.setPadding(dp(2),dp(2),dp(2),dp(2));
+  TextView t=text("",fontSize);t.setText(readerLabelText(value));applySharedTextMetrics(t);
+  // Give mixed Arabic/Malay paragraphs comfortable baseline clearance.
+  if(value.matches("(?s).*\\p{InARABIC}.*"))t.setLineSpacing(dp(3),1.08f);t.setTextColor(0xff303c43);t.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);t.setTextIsSelectable(true);t.setPadding(dp(2),dp(2),dp(2),dp(2));
   LinearLayout.LayoutParams paragraphParams=new LinearLayout.LayoutParams(-1,-2);
   paragraphParams.setMargins(0,dp(3),0,dp(3));body.addView(t,paragraphParams);
  }
