@@ -342,7 +342,7 @@ public class MainActivity extends Activity {
   search.addTextChangedListener(new TextWatcher(){public void beforeTextChanged(CharSequence t,int st,int c,int a){}public void onTextChanged(CharSequence t,int st,int before,int count){clearSearch.setVisibility(t.length()>0?View.VISIBLE:View.GONE);}public void afterTextChanged(Editable e){}});
   search.setOnEditorActionListener((v,id,event)->{String q=search.getText().toString().trim();if(q.isEmpty()){search.setError("Masukkan kata carian");return true;}openSection(false);list(q);return true;});
   LinearLayout card=new LinearLayout(this);card.setOrientation(1);card.setClipToPadding(false);
-  card.setBackground(rounded(0xfffdfefe,0xffd0d8df,10));
+  card.setBackground(homeInsetSurface(0xfffdfefe,0xfffdfefe,0xffc1ccc8,10));
   LinearLayout.LayoutParams cp=new LinearLayout.LayoutParams(-1,-2);page.addView(card,cp);
   // The frontpage category tiles now begin directly beneath the search controls.
   int noteCount=0,bookCount=0;
@@ -356,7 +356,7 @@ public class MainActivity extends Activity {
    final boolean isBook=j==1;
    LinearLayout tile=new LinearLayout(this);tile.setGravity(Gravity.CENTER_VERTICAL);
    tile.setPadding(dp(8),0,dp(8),0);
-   tile.setBackground(dashboardTileSurface(isBook));tile.setElevation(dp(1));
+   tile.setBackground(dashboardTileSurface(isBook));tile.setElevation(0);
    TextView symbol=dashboardText(isBook?"▤":"✎",20,false);
    symbol.setTextColor(0xff528069);symbol.setPadding(0,0,dp(5),0);tile.addView(symbol);
    TextView label=dashboardText(isBook?"Maktabah":"Nota",12,true);
@@ -431,7 +431,7 @@ public class MainActivity extends Activity {
     if(t.trim().isEmpty())t="Tanpa tajuk";
     // Light emerald list: slightly larger titles, dates consistently aligned right.
     FrameLayout row=new FrameLayout(this);
-    row.setBackground(subtleNoteBorder(9));row.setMinimumHeight(dp(42));
+    row.setBackground(homeInsetSurface(0xffffffff,0xffffffff,0xffd4ddd7,9));row.setMinimumHeight(dp(42));
     TextView item=dashboardText((k.startsWith("m_")?"▱  ":"▤  ")+t,14,false);
     item.setTextColor(0xff303b42);item.setGravity(Gravity.CENTER_VERTICAL);
     item.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
@@ -542,13 +542,17 @@ public class MainActivity extends Activity {
   });
   return out;
  }
- android.graphics.drawable.GradientDrawable dashboardTileSurface(boolean pearl){
-  android.graphics.drawable.GradientDrawable surface=new android.graphics.drawable.GradientDrawable(
-   android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
-   pearl?new int[]{0xffffffff,0xffe9edeb}:new int[]{0xfffafffb,0xffddece2});
-  surface.setCornerRadius(dp(12));
-  surface.setStroke(Math.max(1,Math.round(getResources().getDisplayMetrics().density*0.6f)),pearl?0xffd2d9d5:0xffc3d3c8);
-  return surface;
+ android.graphics.drawable.Drawable homeInsetSurface(int top,int bottom,int border,int radius){
+  android.graphics.drawable.GradientDrawable surface=new android.graphics.drawable.GradientDrawable(android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,new int[]{top,bottom});
+  surface.setCornerRadius(dp(radius));
+  surface.setStroke(Math.max(1,dp(1)),border);
+  android.graphics.drawable.GradientDrawable inner=new android.graphics.drawable.GradientDrawable(android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,new int[]{0x18000000,0x00000000,0x10ffffff});
+  inner.setCornerRadius(dp(radius));
+  android.graphics.drawable.LayerDrawable layers=new android.graphics.drawable.LayerDrawable(new android.graphics.drawable.Drawable[]{surface,inner});
+  return layers;
+ }
+ android.graphics.drawable.Drawable dashboardTileSurface(boolean pearl){
+  return homeInsetSurface(pearl?0xffffffff:0xfffafffb,pearl?0xffe9edeb:0xffddece2,pearl?0xffb9c5be:0xffa9beb0,12);
  }
  int homeWindowWidthDp(){
   // Configuration width tracks the current Android multi-window bounds.
@@ -565,7 +569,7 @@ public class MainActivity extends Activity {
   boolean collapsed=prefs.getBoolean(pin?"home_pinned_collapsed":"home_updated_collapsed",false);
   TextView title=dashboardText((pin?"◆  ":"◷  ")+heading+"    "+Math.min(3,keys.size())+" Topik  "+(collapsed?"▸":"▾"),15,true);
   title.setTextColor(0xff365c48);
-  title.setBackground(dashboardTileSurface(!pin));title.setElevation(dp(1));title.setPadding(dp(10),dp(folded?6:8),dp(10),dp(folded?6:8));title.setIncludeFontPadding(false);title.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);title.setSingleLine(true);title.setEllipsize(android.text.TextUtils.TruncateAt.END);title.setContentDescription(heading+", ketik untuk buka atau lipat");title.setTooltipText(heading);title.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);LinearLayout.LayoutParams titleParams=new LinearLayout.LayoutParams(-1,-2);titleParams.topMargin=dp(5);titleParams.bottomMargin=dp(5);target.addView(title,titleParams);
+  title.setBackground(dashboardTileSurface(!pin));title.setElevation(0);title.setPadding(dp(10),dp(folded?6:8),dp(10),dp(folded?6:8));title.setIncludeFontPadding(false);title.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);title.setSingleLine(true);title.setEllipsize(android.text.TextUtils.TruncateAt.END);title.setContentDescription(heading+", ketik untuk buka atau lipat");title.setTooltipText(heading);title.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);LinearLayout.LayoutParams titleParams=new LinearLayout.LayoutParams(-1,-2);titleParams.topMargin=dp(5);titleParams.bottomMargin=dp(5);target.addView(title,titleParams);
   title.setFocusable(true);applyTouchFeedback(title);
   title.setOnClickListener(v->{prefs.edit().putBoolean(pin?"home_pinned_collapsed":"home_updated_collapsed",!collapsed).apply();home();});
   if(collapsed)return;
