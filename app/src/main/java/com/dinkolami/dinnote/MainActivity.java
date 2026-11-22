@@ -2313,6 +2313,8 @@ public class MainActivity extends Activity {
    metadataToggle.setText(metadataExpanded[0]?"⌃":"⌄");
    metadataToggle.setContentDescription(metadataExpanded[0]?"Sembunyikan kategori dan tajuk":"Buka kategori dan tajuk");
   });final Runnable[] formatRefresh={null};final android.widget.OverScroller editorMomentum=new android.widget.OverScroller(this);
+  // A little more friction keeps editor flings smooth without excessive travel.
+  editorMomentum.setFriction(android.view.ViewConfiguration.getScrollFriction()*1.35f);
   editor=new EditText(this){
    @Override public void computeScroll(){super.computeScroll();if(editorMomentum.computeScrollOffset()){scrollTo(getScrollX(),editorMomentum.getCurrY());postInvalidateOnAnimation();}}
    @Override public boolean onTextContextMenuItem(int id){
@@ -2457,7 +2459,7 @@ public class MainActivity extends Activity {
     android.text.Layout layout=editor.getLayout();if(layout==null)return false;
     int viewport=editor.getHeight()-editor.getTotalPaddingTop()-editor.getTotalPaddingBottom();
     int maxY=Math.max(0,layout.getHeight()-Math.max(1,viewport));if(maxY==0)return false;
-    editorMomentum.fling(0,editor.getScrollY(),0,-Math.round(vy*0.38f),0,0,0,maxY);
+    editorMomentum.fling(0,editor.getScrollY(),0,-Math.round(vy*0.32f),0,0,0,maxY);
     editor.postInvalidateOnAnimation();return false;
    }
   });
