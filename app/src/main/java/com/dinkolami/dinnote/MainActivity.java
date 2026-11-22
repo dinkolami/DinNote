@@ -245,6 +245,7 @@ public class MainActivity extends Activity {
  TextView quickCategory=text("⚙",19);quickCategory.setGravity(Gravity.CENTER);quickCategory.setTextColor(0xff596e75);quickCategory.setBackground(rounded(0xfff8faf8,0xffdce5df,12));quickCategory.setContentDescription("Urus kategori");quickCategory.setOnClickListener(v->manageCategories());applyTouchFeedback(quickCategory);
  LinearLayout.LayoutParams categoryButtonParams=new LinearLayout.LayoutParams(dp(43),dp(44));categoryButtonParams.rightMargin=dp(5);tabs.addView(quickCategory,categoryButtonParams);
  TextView sort=text("↕",20);sort.setGravity(Gravity.CENTER);sort.setTextColor(0xff566a70);sort.setPadding(dp(4),0,dp(4),0);sort.setBackground(rounded(0xfff8faf8,0xffdce5df,12));sort.setContentDescription("Susun: "+sortMode+". Tekan untuk ubah susunan");applyTouchFeedback(sort);tabs.addView(sort,new LinearLayout.LayoutParams(dp(43),dp(44)));root.addView(tabs);applyTouchFeedback(notes);applyTouchFeedback(books);notes.setOnClickListener(v->{if(maktabah)openSection(false);});books.setOnClickListener(v->{if(!maktabah)openSection(true);});EditText search=new EditText(this);search.setSingleLine(true);search.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);search.setSelectAllOnFocus(false);search.setMaxLines(1);search.setTextSize(14);search.setHint(maktabah?"Cari tajuk, isi atau kategori kitab":"Cari tajuk, isi atau kategori nota");search.setContentDescription(maktabah?"Carian kitab":"Carian nota");search.setPadding(dp(16),dp(10),dp(16),dp(10));search.setBackground(rounded(0xffffffff,0xffdce7df,12));LinearLayout.LayoutParams searchParams=new LinearLayout.LayoutParams(-1,-2);searchParams.setMargins(dp(12),dp(4),dp(12),dp(2));quickSearch.setOnClickListener(v->{
+  if(maktabah){showGlobalBookSearch();return;}
   EditText popupSearch=new EditText(this);popupSearch.setSingleLine(true);popupSearch.setTextSize(16);
   popupSearch.setHint(maktabah?"Cari tajuk, isi atau kategori kitab":"Cari tajuk, isi atau kategori nota");
   popupSearch.setText(search.getText());popupSearch.setSelection(popupSearch.length());
@@ -2971,6 +2972,55 @@ public class MainActivity extends Activity {
   if(keys.isEmpty()||(first==null&&keys.size()<2)){Toast.makeText(this,"Perlu sekurang-kurangnya dua kitab",Toast.LENGTH_SHORT).show();return;}
   for(String k:keys)names.add(prefs.getString("title_"+k,"Tanpa tajuk"));
   new AlertDialog.Builder(this).setTitle(first==null?"Pilih kitab pertama":"Pilih kitab kedua").setItems(names.toArray(new String[0]),(d,i)->{if(first==null)chooseComparison(keys.get(i));else showComparison(first,keys.get(i));}).show();
+ }
+ void showGlobalBookSearch(){
+  EditText query=new EditText(this);query.setSingleLine(true);query.setHint("Perkataan Arab atau Melayu");
+  new AlertDialog.Builder(this).setTitle("Carian seluruh Maktabah").setView(query).setNegativeButton("Batal",null).setPositiveButton("Cari",(d,w)->{
+   final String term=query.getText().toString().trim(),needle=normalizeCompareText(term);
+   if(needle.isEmpty())return;
+   final java.util.Map<String,?> snapshot=prefs.getAll();
+   final LinearLayout currentRoot=root;
+   final AlertDialog progress=new AlertDialog.Builder(this).setMessage("Mencari dalam semua kitab…").setCancelable(true).create();progress.show();
+   new Thread(()->{
+    ArrayList<String> keys=new ArrayList<>(),labels=new ArrayList<>();
+    ArrayList<Integer> offsets=new ArrayList<>();
+    ArrayList<String> sorted=new ArrayList<>(snapshot.keySet());java.util.Collections.sort(sorted);
+    for(String k:sorted){
+     if(!k.startsWith("m_")||!(snapshot.get(k) instanceof String)||Boolean.TRUE.equals(snapshot.get("deleted_"+k)))continue;
+     String source=formattedReadingText((String)snapshot.get(k)).toString();
+     StringBuilder normal=new StringBuilder();int[] map=new int[source.length()];int n=0;
+     for(int j=0;j<source.length();j++){
+      char c=source.charAt(j);if(c>=0x64b&&c<=0x65f||c==0x670||c==0x640)continue;
+      if(c=='أ'||c=='إ'||c=='آ'||c=='ٱ')c='ا';
+      normal.append(Character.toLowerCase(c));map[n++]=j;
+     }
+     String title=String.valueOf(snapshot.containsKey("title_"+k)?snapshot.get("title_"+k):"Tanpa tajuk");
+     int at=normal.indexOf(needle);
+     if(at<0){if(normalizeCompareText(title).contains(needle)){keys.add(k);offsets.add(-1);labels.add(title);}}
+     else{
+      int count=0;while(at>=0&&count<20&&keys.size()<500){
+       int pos=map[at];keys.add(k);offsets.add(pos);labels.add(title+"\n"+source.substring(Math.max(0,pos-25),Math.min(source.length(),pos+90)).replace('\n',' '));count++;at=normal.indexOf(needle,at+needle.length());
+      }
+     }
+     if(keys.size()>=500)break;
+    }
+    runOnUiThread(()->{
+     if(!progress.isShowing()||isFinishing()||isDestroyed()||root!=currentRoot)return;
+     progress.dismiss();
+     if(keys.isEmpty()){Toast.makeText(this,"Tiada padanan",Toast.LENGTH_SHORT).show();return;}
+     new AlertDialog.Builder(this).setTitle("Hasil Maktabah ("+keys.size()+")").setItems(labels.toArray(new String[0]),(d,i)->{
+      String key=keys.get(i);if(!prefs.contains(key)||prefs.getBoolean("deleted_"+key,false))return;
+      if(offsets.get(i)<0){read(key);return;}
+      showGlobalBookExcerpt(key,offsets.get(i));
+     }).setNegativeButton("Tutup",null).show();
+    });
+   }).start();
+  }).show();
+ }
+ void showGlobalBookExcerpt(String key,int offset){
+  CharSequence source=formattedReadingText(prefs.getString(key,""));
+  int pos=Math.min(offset,source.length());
+  new AlertDialog.Builder(this).setTitle(prefs.getString("title_"+key,"Kitab")).setMessage(source.subSequence(Math.max(0,pos-100),Math.min(source.length(),pos+250))).setNegativeButton("Tutup",null).setPositiveButton("Buka kitab",(d,w)->read(key)).show();
  }
  String normalizeCompareText(String value){
   return value.replaceAll("[\\u064B-\\u065F\\u0670\\u0640]","").replaceAll("[أإآٱ]","ا").toLowerCase(java.util.Locale.ROOT);
