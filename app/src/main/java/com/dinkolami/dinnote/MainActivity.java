@@ -341,7 +341,8 @@ public class MainActivity extends Activity {
   if(!translation.isEmpty()){
    styled.append("\n");
    int start=styled.length();styled.append(translation);
-   styled.setSpan(new android.text.style.RelativeSizeSpan(0.92f),start,styled.length(),android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+   styled.setSpan(new android.text.style.RelativeSizeSpan(1.06f),start,styled.length(),android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+   styled.setSpan(new android.text.style.TypefaceSpan("sans-serif-medium"),start,styled.length(),android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
   }
   if(!source.isEmpty()){
    styled.append("\n");
@@ -540,7 +541,7 @@ public class MainActivity extends Activity {
   if(homeWindowWidthDp()<440){
    final java.util.ArrayList<String> sampleWisdom=homeWisdomEntries();
    LinearLayout wisdomCard=new LinearLayout(this);wisdomCard.setOrientation(LinearLayout.VERTICAL);
-   wisdomCard.setPadding(dp(12),dp(23),dp(12),dp(38));
+   wisdomCard.setPadding(dp(12),dp(17),dp(12),dp(26));
    final int[] wisdomBorders={0xffd8c69c,0xffb7d2be,0xffd4c5df};
    final int wisdomStyle=new java.util.Random().nextInt(wisdomBorders.length);
    wisdomCard.setBackground(rounded(0xfffdfcf7,wisdomBorders[wisdomStyle],11));
