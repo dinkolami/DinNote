@@ -1778,12 +1778,22 @@ public class MainActivity extends Activity {
   if(!cleanReading)body.addView(metaRow,new LinearLayout.LayoutParams(-1,-2));
   TextView title=text(heading,20);title.setMaxLines(3);
   title.setEllipsize(android.text.TextUtils.TruncateAt.END);
-  title.setBackground(rounded(0xfffffefd,0xffb8c2ca,12));
-  title.setTextColor(0xff4d6068);title.setTypeface(null,android.graphics.Typeface.BOLD);
-  title.setPadding(dp(24),dp(8),dp(24),dp(8));
+  // Minimal GitHub-inspired heading: no surrounding box, just a slim emerald rule.
+  title.setBackgroundColor(Color.TRANSPARENT);
+  title.setTextColor(0xff344054);title.setTypeface(null,android.graphics.Typeface.BOLD);
+  title.setPadding(dp(12),dp(5),dp(8),dp(5));
   title.setGravity(Gravity.CENTER_VERTICAL|Gravity.START);title.setTextIsSelectable(true);
   title.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);title.setIncludeFontPadding(true);
-  if(!cleanReading&&!heading.isEmpty())body.addView(title);
+  if(!cleanReading&&!heading.isEmpty()){
+   LinearLayout titleRow=new LinearLayout(this);titleRow.setOrientation(LinearLayout.HORIZONTAL);
+   titleRow.setGravity(Gravity.CENTER_VERTICAL);
+   titleRow.setPadding(dp(12),dp(3),dp(8),dp(5));
+   View emeraldRule=new View(this);emeraldRule.setBackground(rounded(0xff216e4e,0xff216e4e,2));
+   LinearLayout.LayoutParams ruleParams=new LinearLayout.LayoutParams(dp(3),dp(30));
+   titleRow.addView(emeraldRule,ruleParams);
+   titleRow.addView(title,new LinearLayout.LayoutParams(0,-2,1));
+   body.addView(titleRow);
+  }
   String firstReadingLine=fullReadingText.split("\\R",2)[0].trim();
   if(!cleanReading&&firstReadingLine.matches("(?i)^(bab|الفصل|باب)\\b.*")&&firstReadingLine.length()<110){
    TextView chapterLabel=text(firstReadingLine,16);
