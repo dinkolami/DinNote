@@ -329,6 +329,20 @@ public class MainActivity extends Activity {
   if(entries.isEmpty())entries.add("Tambah teks Arab melalui posting Mutiara Hikmah dalam Maktabah.");
   return entries;
  }
+ void setHomeWisdomText(TextView target,String entry){
+  String[] parts=entry.trim().split("\\n",2);
+  String arabic=parts[0].trim();
+  String attribution=parts.length>1?parts[1].trim():"";
+  android.text.SpannableStringBuilder styled=new android.text.SpannableStringBuilder(arabic);
+  styled.setSpan(new android.text.style.RelativeSizeSpan(1.28f),0,arabic.length(),android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+  if(!attribution.isEmpty()){
+   int start=styled.length();
+   styled.append("\\n").append(attribution);
+   styled.setSpan(new android.text.style.RelativeSizeSpan(0.78f),start,styled.length(),android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+   styled.setSpan(new android.text.style.ForegroundColorSpan(0xff718075),start,styled.length(),android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+  }
+  target.setText(styled);
+ }
  void home(){
   items=null;sectionOpen=false;editor=null;titleEditor=null;categoryPicker=null;selected=null;maktabah=false;
   base("DinNote");
@@ -519,7 +533,9 @@ public class MainActivity extends Activity {
    final java.util.ArrayList<String> sampleWisdom=homeWisdomEntries();
    LinearLayout wisdomCard=new LinearLayout(this);wisdomCard.setOrientation(LinearLayout.VERTICAL);
    wisdomCard.setPadding(dp(12),dp(30),dp(12),dp(31));
-   wisdomCard.setBackground(rounded(0xfffdfcf7,0xffd8c69c,11));
+   final int[] wisdomBorders={0xffd8c69c,0xffb7d2be,0xffd4c5df};
+   final int wisdomStyle=new java.util.Random().nextInt(wisdomBorders.length);
+   wisdomCard.setBackground(rounded(0xfffdfcf7,wisdomBorders[wisdomStyle],11));
    LinearLayout.LayoutParams wisdomParams=new LinearLayout.LayoutParams(-1,-2);
    wisdomParams.bottomMargin=dp(5);footer.addView(wisdomCard,wisdomParams);
    TextView wisdomHeading=dashboardText("❀  Mutiara Hikmah  ❀",12,true);
@@ -530,9 +546,9 @@ public class MainActivity extends Activity {
    LinearLayout.LayoutParams wisdomTextParams=new LinearLayout.LayoutParams(-1,-2);
    wisdomTextParams.topMargin=dp(3);wisdomCard.addView(wisdomBody,wisdomTextParams);
    final int[] wisdomIndex={new java.util.Random().nextInt(sampleWisdom.size())};
-   wisdomBody.setText(sampleWisdom.get(wisdomIndex[0]));
+   setHomeWisdomText(wisdomBody,sampleWisdom.get(wisdomIndex[0]));
    wisdomCard.setContentDescription("Mutiara Hikmah. Ketik untuk petikan lain. Tekan lama untuk edit posting");
-   wisdomCard.setOnClickListener(v->{wisdomIndex[0]=(wisdomIndex[0]+1)%sampleWisdom.size();wisdomBody.setText(sampleWisdom.get(wisdomIndex[0]));});
+   wisdomCard.setOnClickListener(v->{wisdomIndex[0]=(wisdomIndex[0]+1)%sampleWisdom.size();setHomeWisdomText(wisdomBody,sampleWisdom.get(wisdomIndex[0]));});
    wisdomCard.setOnLongClickListener(v->{maktabah=true;edit("m_hikmah_ringkas");return true;});
    applyTouchFeedback(wisdomCard);
   }
