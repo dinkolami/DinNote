@@ -2272,7 +2272,15 @@ public class MainActivity extends Activity {
    new AlertDialog.Builder(this).setTitle(labels.get(which)).setView(detail).setPositiveButton("Simpan",(dd,w)->{prefs.edit().putString(commentaryKey,detail.getText().toString()).apply();Toast.makeText(this,"Huraian disimpan",Toast.LENGTH_SHORT).show();}).setNegativeButton("Batal",null).show();
   }).setNegativeButton("Tutup",null).show();
  }
- void edit(String key){readerDetector=null;if(key!=null){
+ void edit(String key){
+  try{editContentSafely(key);}
+  catch(Exception failure){
+   android.util.Log.e("DinNote","Editor failed to open "+key,failure);
+   // Do not delete or rewrite a damaged note. Offer recovery and backup.
+   showReaderRecovery(key,failure);
+  }
+ }
+ void editContentSafely(String key){readerDetector=null;if(key!=null){
   if(!prefs.contains(key)){
    Toast.makeText(this,"Nota tidak ditemui atau telah dipadam",Toast.LENGTH_LONG).show();
    selected=null;editor=null;titleEditor=null;categoryPicker=null;
