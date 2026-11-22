@@ -330,14 +330,14 @@ public class MainActivity extends Activity {
   return entries;
  }
  void setHomeWisdomText(TextView target,String entry){
-  String[] parts=entry.trim().split("\\n",2);
+  String[] parts=entry.trim().split("\n",2);
   String arabic=parts[0].trim();
   String attribution=parts.length>1?parts[1].trim():"";
   android.text.SpannableStringBuilder styled=new android.text.SpannableStringBuilder(arabic);
   styled.setSpan(new android.text.style.RelativeSizeSpan(1.28f),0,arabic.length(),android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
   if(!attribution.isEmpty()){
    int start=styled.length();
-   styled.append("\\n").append(attribution);
+   styled.append("\n").append(attribution);
    styled.setSpan(new android.text.style.RelativeSizeSpan(0.78f),start,styled.length(),android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
    styled.setSpan(new android.text.style.ForegroundColorSpan(0xff718075),start,styled.length(),android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
   }
