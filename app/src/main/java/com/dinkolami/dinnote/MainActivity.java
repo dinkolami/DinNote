@@ -1294,6 +1294,38 @@ public class MainActivity extends Activity {
   });
   web.loadDataWithBaseURL(null,html,"text/html","UTF-8",null);
  }
+ org.json.JSONArray loadBookFootnotes(String key){
+  try{return new org.json.JSONArray(prefs.getString("footnotes_"+key,"[]"));}catch(Exception e){return new org.json.JSONArray();}
+ }
+ void showBookFootnotes(String key){
+  org.json.JSONArray notes=loadBookFootnotes(key);
+  String[] rows=new String[notes.length()+1];rows[0]="+ Tambah catatan kaki";
+  for(int i=0;i<notes.length();i++){org.json.JSONObject item=notes.optJSONObject(i);String anchor=item==null?"":item.optString("anchor");rows[i+1]=(i+1)+". "+anchor.substring(0,Math.min(100,anchor.length()));}
+  new AlertDialog.Builder(this).setTitle("الحواشي · "+prefs.getString("title_"+key,"Kitab")).setItems(rows,(d,i)->editBookFootnote(key,i-1)).setNegativeButton("Tutup",null).show();
+ }
+ void editBookFootnote(String key,int index){
+  org.json.JSONArray notes=loadBookFootnotes(key);
+  org.json.JSONObject old=index<0?null:notes.optJSONObject(index);
+  LinearLayout panel=new LinearLayout(this);panel.setOrientation(1);panel.setPadding(dp(16),dp(8),dp(16),dp(8));
+  EditText anchor=new EditText(this);anchor.setHint("Petikan teks asal / halaman");anchor.setMaxLines(3);panel.addView(anchor);
+  EditText detail=new EditText(this);detail.setHint("Huraian / hasyiah");detail.setMinLines(3);detail.setMaxLines(6);panel.addView(detail);
+  EditText ref=new EditText(this);ref.setHint("Nama kitab, jilid, halaman");ref.setMaxLines(2);panel.addView(ref);
+  if(old!=null){anchor.setText(old.optString("anchor"));detail.setText(old.optString("detail"));ref.setText(old.optString("reference"));}
+  ScrollView scroll=new ScrollView(this);scroll.addView(panel);
+  AlertDialog.Builder builder=new AlertDialog.Builder(this).setTitle(index<0?"Tambah catatan kaki":"Catatan kaki "+(index+1)).setView(scroll).setNegativeButton("Batal",(d,w)->showBookFootnotes(key)).setPositiveButton("Simpan",null);
+  if(index>=0)builder.setNeutralButton("Padam",(d,w)->new AlertDialog.Builder(this).setMessage("Padam catatan kaki ini sahaja?").setNegativeButton("Batal",(dd,ww)->showBookFootnotes(key)).setPositiveButton("Padam",(dd,ww)->{notes.remove(index);prefs.edit().putString("footnotes_"+key,notes.toString()).apply();showBookFootnotes(key);}).show());
+  AlertDialog dialog=builder.create();
+  dialog.setOnShowListener(v->dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(w->{
+   String a=anchor.getText().toString().trim(),b=detail.getText().toString().trim();
+   if(a.isEmpty()){anchor.setError("Masukkan petikan atau halaman");return;}if(b.isEmpty()){detail.setError("Masukkan catatan");return;}
+   try{
+    org.json.JSONObject item=new org.json.JSONObject();item.put("anchor",a);item.put("detail",b);item.put("reference",ref.getText().toString().trim());
+    if(index<0)notes.put(item);else notes.put(index,item);
+    if(!prefs.edit().putString("footnotes_"+key,notes.toString()).commit())throw new java.io.IOException();
+    dialog.dismiss();showBookFootnotes(key);
+   }catch(Exception e){Toast.makeText(this,"Simpan gagal",Toast.LENGTH_SHORT).show();}
+  }));dialog.show();
+ }
  void showReaderActions(String key,boolean compact){
   boolean book=key.startsWith("m_");
   String noun=book?"kitab":"nota";
@@ -1315,6 +1347,12 @@ public class MainActivity extends Activity {
    labels[n]=labels[n-1];icons[n]=icons[n-1];descriptions[n]=descriptions[n-1];
    labels[n-1]="Arab–Melayu bersebelahan";icons[n-1]="▥";
    descriptions[n-1]="Baris Arab || Melayu pada skrin terbuka";
+  }
+  if(book){
+   int n=labels.length;
+   labels=java.util.Arrays.copyOf(labels,n+1);icons=java.util.Arrays.copyOf(icons,n+1);descriptions=java.util.Arrays.copyOf(descriptions,n+1);
+   labels[n]=labels[n-1];icons[n]=icons[n-1];descriptions[n]=descriptions[n-1];
+   labels[n-1]="Catatan Kaki (الحواشي)";icons[n-1]="¹";descriptions[n-1]="Catatan bernombor dan rujukan kitab";
   }
   int beforePdf=labels.length;
   labels=java.util.Arrays.copyOf(labels,beforePdf+1);icons=java.util.Arrays.copyOf(icons,beforePdf+1);descriptions=java.util.Arrays.copyOf(descriptions,beforePdf+1);
@@ -1361,7 +1399,8 @@ public class MainActivity extends Activity {
      prefs.edit().putBoolean("reader_bilingual_columns",next).apply();
      Toast.makeText(this,next?"Paparan Arab–Melayu diaktifkan":"Paparan Arab–Melayu dimatikan",Toast.LENGTH_SHORT).show();read(key);
     }
-    else if(option==(book?(compact?10:8):(compact?7:5)))printReaderAsPdf(key);
+    else if(book&&option==(compact?10:8))showBookFootnotes(key);
+    else if(option==(book?(compact?11:9):(compact?7:5)))printReaderAsPdf(key);
     else confirmDelete(key);
    });
   }
