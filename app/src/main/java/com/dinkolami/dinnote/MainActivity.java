@@ -753,9 +753,30 @@ public class MainActivity extends Activity {
   lastOpenedCard=k;read(k);
  });}}
 
+ android.view.ScaleGestureDetector lectureScale;
+ View lectureHighlighted;
  int readerBuiltWidthPx=0;
+ void enableLectureZoom(String key){
+  final View activeRoot=root;
+  lectureScale=new android.view.ScaleGestureDetector(this,new android.view.ScaleGestureDetector.SimpleOnScaleGestureListener(){
+   float scale=1f;
+   @Override public boolean onScaleBegin(android.view.ScaleGestureDetector d){scale=1f;return true;}
+   @Override public boolean onScale(android.view.ScaleGestureDetector d){scale*=d.getScaleFactor();return true;}
+   @Override public void onScaleEnd(android.view.ScaleGestureDetector d){
+    int old=prefs.getInt("reader_font_level",1);
+    int next=Math.max(0,Math.min(3,old+(scale>1.12f?1:scale<0.89f?-1:0)));
+    if(next!=old)activeRoot.post(()->{if(root==activeRoot&&key.equals(selected)){saveReaderPosition(key);prefs.edit().putInt("reader_font_level",next).apply();read(key);}});
+   }
+  });
+ }
+ void markLectureParagraph(View paragraph){
+  if(lectureHighlighted!=null)lectureHighlighted.setBackgroundColor(Color.TRANSPARENT);
+  if(lectureHighlighted==paragraph){lectureHighlighted=null;return;}
+  lectureHighlighted=paragraph;paragraph.setBackgroundColor(0xffe3f2e7);
+ }
+
  void cleanBase(){
-  readerDetector=null;root=new LinearLayout(this);root.setOrientation(1);root.setBackgroundColor(Color.WHITE);
+  readerDetector=null;lectureScale=null;lectureHighlighted=null;root=new LinearLayout(this);root.setOrientation(1);root.setBackgroundColor(Color.WHITE);
   final LinearLayout activeRoot=root;
   final int[] lastWidth={0};
   activeRoot.addOnLayoutChangeListener((v,left,top,right,bottom,oldLeft,oldTop,oldRight,oldBottom)->{
@@ -803,6 +824,7 @@ public class MainActivity extends Activity {
   FrameLayout.LayoutParams p=new FrameLayout.LayoutParams(dp(44),dp(44),Gravity.CENTER);p.topMargin=dp(140);return p;
  }
  void showPagedReader(String key){
+  enableLectureZoom(key);
   final CharSequence source=formattedReadingText(prefs.getString(key,""));
   final int availableWidthDp=Math.round(getResources().getDisplayMetrics().widthPixels/getResources().getDisplayMetrics().density);
   final boolean spread=availableWidthDp>=500&&prefs.getBoolean("reader_two_columns",true);
@@ -1359,6 +1381,7 @@ public class MainActivity extends Activity {
   editor=null;titleEditor=null;saveIndicator=null;selected=key;prefs.edit().putLong("viewed_"+key,System.currentTimeMillis()).putString(key.startsWith("m_")?"reading_last_m":"reading_last_n",key).apply();cleanBase();
   LinearLayout bar=new LinearLayout(this);bar.setGravity(Gravity.CENTER_VERTICAL);bar.setPadding(dp(8),dp(2),dp(8),dp(2));bar.setBackground(rounded(0xfffffefd,0xffb8c2ca,12));bar.setTag("reader_toolbar");root.addView(bar);
   boolean cleanReading=prefs.getBoolean("reader_clean_mode",false);
+  if(cleanReading)enableLectureZoom(key);
   final ArrayList<View> lecturePanels=new ArrayList<>();
   final ArrayList<TextView> lectureArrows=new ArrayList<>();
   final ArrayList<View> lectureHeadings=new ArrayList<>();
@@ -1709,7 +1732,7 @@ public class MainActivity extends Activity {
     }else{
      TextView paragraph=text("",readingSizes[fontLevel]);paragraph.setText(formattedReadingText(line.isEmpty()?" ":line));applySharedTextMetrics(paragraph);
      paragraph.setTextColor(0xff303c43);paragraph.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
-     paragraph.setTextIsSelectable(true);paragraph.setPadding(dp(4),dp(1),dp(4),dp(1));
+     paragraph.setTextIsSelectable(!cleanReading);if(cleanReading)paragraph.setOnClickListener(v->markLectureParagraph(paragraph));paragraph.setPadding(dp(4),dp(1),dp(4),dp(1));
      paragraph.setLineSpacing(prefs.getBoolean("reader_wide_spacing",false)?dp(5):dp(1),prefs.getBoolean("reader_wide_spacing",false)?1.15f:1.0f);readingRows.addView(paragraph);
     }
    }
@@ -1819,6 +1842,7 @@ public class MainActivity extends Activity {
   bar.setVisibility(View.VISIBLE);
  }
  @Override public boolean dispatchTouchEvent(android.view.MotionEvent event){
+  if(lectureScale!=null){lectureScale.onTouchEvent(event);if(lectureScale.isInProgress()||event.getPointerCount()>1)return true;}
   if(readerDetector!=null)readerDetector.onTouchEvent(event);
   return super.dispatchTouchEvent(event);
  }
