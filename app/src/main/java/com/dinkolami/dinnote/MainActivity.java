@@ -300,7 +300,7 @@ public class MainActivity extends Activity {
   scroll.setOverScrollMode(View.OVER_SCROLL_NEVER);scroll.setSmoothScrollingEnabled(true);
   root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
   LinearLayout page=new LinearLayout(this);page.setOrientation(1);
-  page.setPadding(dp(10),dp(6),dp(10),dp(3));page.setBackgroundColor(0xfffffefd);page.setTag("dinnote_home");
+  page.setPadding(dp(10),dp(6),dp(10),dp(3));page.setBackgroundColor(0xfff7f8f4);page.setTag("dinnote_home");
   // Use the actual measured dashboard height. Avoid scaleY, synthetic spacer
   // and fixed-height wrapper: all three created a scrollable empty tail.
   scroll.addView(page,new ScrollView.LayoutParams(-1,-2));
@@ -374,7 +374,7 @@ public class MainActivity extends Activity {
   }
   // Compact GitHub-style shortcuts, without changing the approved header.
   LinearLayout shortcuts=new LinearLayout(this);shortcuts.setOrientation(1);
-  shortcuts.setPadding(dp(2),dp(2),dp(2),dp(1));page.addView(shortcuts);
+  shortcuts.setPadding(0,0,0,dp(1));page.addView(shortcuts);
   if(homeWindowWidthDp()>=440){
    LinearLayout sectionColumns=new LinearLayout(this);
    sectionColumns.setOrientation(LinearLayout.HORIZONTAL);
@@ -431,8 +431,8 @@ public class MainActivity extends Activity {
     if(t.trim().isEmpty())t="Tanpa tajuk";
     // Light emerald list: slightly larger titles, dates consistently aligned right.
     FrameLayout row=new FrameLayout(this);
-    row.setBackground(homeInsetSurface(0xffffffff,0xffffffff,0xffd4ddd7,9));row.setMinimumHeight(dp(42));
-    TextView item=dashboardText((k.startsWith("m_")?"▱  ":"▤  ")+t,14,false);
+    row.setBackground(homeInsetSurface(0xffffffff,0xffffffff,0xffd4ddd7,10));row.setMinimumHeight(dp(42));
+    TextView item=dashboardText((k.startsWith("m_")?"▤  ":"✎  ")+t,14,false);
     item.setTextColor(0xff303b42);item.setGravity(Gravity.CENTER_VERTICAL);
     item.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
     item.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);
@@ -445,8 +445,8 @@ public class MainActivity extends Activity {
     long when=prefs.getLong("viewed_"+k,0L);
     if(when>0L){
      TextView date=dashboardText(new java.text.SimpleDateFormat("dd MMM",new java.util.Locale("ms","MY")).format(new java.util.Date(when)),12,false);
-     date.setTextColor(0xff60757b);date.setGravity(Gravity.CENTER);date.setSingleLine(true);date.setTextDirection(View.TEXT_DIRECTION_LTR);
-     date.setBackground(rounded(0xfffaf7ee,0xffe8d9b6,14));date.setIncludeFontPadding(false);date.setMaxLines(1);date.setEllipsize(android.text.TextUtils.TruncateAt.END);
+     date.setTextColor(0xff416653);date.setGravity(Gravity.CENTER);date.setSingleLine(true);date.setTextDirection(View.TEXT_DIRECTION_LTR);
+     date.setBackground(homeInsetSurface(0xffedf5ee,0xffe4efe7,0xffc1d4c5,9));date.setIncludeFontPadding(false);date.setMaxLines(1);date.setEllipsize(android.text.TextUtils.TruncateAt.END);
      date.setPadding(dp(7),dp(3),dp(7),dp(3));
      FrameLayout.LayoutParams dateParams=new FrameLayout.LayoutParams(-2,-2,Gravity.RIGHT|Gravity.CENTER_VERTICAL);
      dateParams.rightMargin=dp(8);row.addView(date,dateParams);date.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);date.setContentDescription("Dilihat pada "+new java.text.SimpleDateFormat("dd MMMM",new java.util.Locale("ms","MY")).format(new java.util.Date(when)));
@@ -469,7 +469,7 @@ public class MainActivity extends Activity {
    }
   }
   TextView add=dashboardText("＋  Nota baharu",15,true);add.setGravity(Gravity.CENTER);
-  add.setBackground(rounded(0xfff5f7f9,0xffd0d8df,9));add.setTextColor(0xff566a70);
+  add.setBackground(homeInsetSurface(0xfffafbfa,0xffeef2ef,0xffc1ccc8,10));add.setTextColor(0xff566a70);
   add.setPadding(dp(12),dp(8),dp(12),dp(8));
   // Fixed home footer: keep the primary action visible above Android navigation,
   // independent of dashboard scrolling and window size.
@@ -486,7 +486,7 @@ public class MainActivity extends Activity {
   actions.addView(add,noteActionParams);
   TextView addBook=dashboardText("＋  Kitab baharu",15,true);
   addBook.setGravity(Gravity.CENTER);addBook.setTextColor(0xff365c48);
-  addBook.setBackground(rounded(0xffeef5ef,0xffc4d8c8,9));
+  addBook.setBackground(homeInsetSurface(0xfff6fbf7,0xffe4efe6,0xffc4d8c8,10));
   LinearLayout.LayoutParams bookActionParams=new LinearLayout.LayoutParams(0,-1,1);bookActionParams.leftMargin=dp(4);
   actions.addView(addBook,bookActionParams);
   addBook.setContentDescription("Cipta kitab baharu");addBook.setOnClickListener(v->{maktabah=true;edit(null);});applyTouchFeedback(addBook);
@@ -568,14 +568,24 @@ public class MainActivity extends Activity {
   target.setBackground(homeInsetSurface(0xfffdfefe,0xfffdfefe,0xffc1ccc8,10));
   target.setPadding(dp(3),0,dp(3),0);
   LinearLayout.LayoutParams outerParams=new LinearLayout.LayoutParams(-1,-2);
-  outerParams.topMargin=dp(3);outerParams.bottomMargin=dp(2);
+  outerParams.topMargin=dp(2);outerParams.bottomMargin=dp(1);
   parent.addView(target,outerParams);
   // Keep folded rows compact; unfolded columns retain comfortable touch targets.
   boolean folded=homeWindowWidthDp()<440;
   boolean collapsed=prefs.getBoolean(pin?"home_pinned_collapsed":"home_updated_collapsed",false);
-  TextView title=dashboardText((pin?"◆  ":"◷  ")+heading+"    "+Math.min(3,keys.size())+" Topik  "+(collapsed?"▸":"▾"),15,true);
+  TextView title=dashboardText((pin?"◆  ":"◷  ")+heading+"  "+(collapsed?"▸":"▾"),15,true);
   title.setTextColor(0xff365c48);
-  title.setBackground(dashboardTileSurface(!pin));title.setElevation(0);title.setPadding(dp(10),dp(folded?6:8),dp(10),dp(folded?6:8));title.setIncludeFontPadding(false);title.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);title.setSingleLine(true);title.setEllipsize(android.text.TextUtils.TruncateAt.END);title.setContentDescription(heading+", ketik untuk buka atau lipat");title.setTooltipText(heading);title.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);LinearLayout.LayoutParams titleParams=new LinearLayout.LayoutParams(-1,-2);titleParams.topMargin=dp(3);titleParams.bottomMargin=dp(3);target.addView(title,titleParams);
+  title.setElevation(0);title.setPadding(dp(8),dp(folded?6:8),0,dp(folded?6:8));title.setIncludeFontPadding(false);title.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);title.setSingleLine(true);title.setEllipsize(android.text.TextUtils.TruncateAt.END);title.setContentDescription(heading+", ketik untuk buka atau lipat");title.setTooltipText(heading);title.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);LinearLayout.LayoutParams titleParams=new LinearLayout.LayoutParams(-1,-2);titleParams.topMargin=dp(2);titleParams.bottomMargin=dp(2);
+  LinearLayout headingRow=new LinearLayout(this);headingRow.setGravity(Gravity.CENTER_VERTICAL);
+  headingRow.setBackground(dashboardTileSurface(!pin));headingRow.setPadding(0,0,dp(5),0);
+  View goldAccent=new View(this);goldAccent.setBackgroundColor(0xffc6ad70);
+  LinearLayout.LayoutParams accentParams=new LinearLayout.LayoutParams(dp(1),dp(15));accentParams.leftMargin=dp(5);headingRow.addView(goldAccent,accentParams);
+  headingRow.addView(title,new LinearLayout.LayoutParams(0,-2,1));
+  TextView topicCount=dashboardText(Math.min(3,keys.size())+" Topik",10,true);
+  topicCount.setTextColor(0xff416653);topicCount.setGravity(Gravity.CENTER);topicCount.setPadding(dp(5),dp(3),dp(5),dp(3));
+  topicCount.setBackground(homeInsetSurface(0xffedf5ee,0xffe4efe7,0xffc1d4c5,9));
+  headingRow.addView(topicCount,new LinearLayout.LayoutParams(-2,-2));target.addView(headingRow,titleParams);
+  headingRow.setOnClickListener(v->title.performClick());topicCount.setOnClickListener(v->title.performClick());
   title.setFocusable(true);applyTouchFeedback(title);
   title.setOnClickListener(v->{prefs.edit().putBoolean(pin?"home_pinned_collapsed":"home_updated_collapsed",!collapsed).apply();home();});
   if(collapsed)return;
@@ -596,14 +606,14 @@ public class MainActivity extends Activity {
     String body=prefs.getString(key,"").trim();
     if(!body.isEmpty())label=body.split("\\n",2)[0].trim();
    }
-   TextView entry=dashboardText((key.startsWith("m_")?"▱  ":"▤  ")+(label.isEmpty()?"Tanpa tajuk":label),14,false);
+   TextView entry=dashboardText((key.startsWith("m_")?"▤  ":"✎  ")+(label.isEmpty()?"Tanpa tajuk":label),14,false);
    entry.setTextColor(0xff303b42);entry.setGravity(Gravity.CENTER_VERTICAL);
    entry.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
    entry.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);
    entry.setSingleLine(true);entry.setEllipsize(android.text.TextUtils.TruncateAt.END);
    entry.setIncludeFontPadding(false);entry.setPadding(0,0,0,0);entry.setMinWidth(0);
    LinearLayout line=new LinearLayout(this);line.setOrientation(LinearLayout.HORIZONTAL);line.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);line.setGravity(Gravity.CENTER_VERTICAL);
-   line.setPadding(dp(7),dp(3),dp(7),dp(3));line.setBackground(subtleNoteBorder(9));line.setMinimumHeight(dp(folded?38:42));
+   line.setPadding(dp(7),dp(3),dp(7),dp(3));line.setBackground(homeInsetSurface(0xffffffff,0xffffffff,0xffd4ddd7,10));line.setMinimumHeight(dp(folded?38:42));
    if(pin){entry.setCompoundDrawablePadding(dp(5));entry.setTextColor(0xff8b6925);}
    line.addView(entry,new LinearLayout.LayoutParams(0,-2,1));
    Object rawStamp=prefs.getAll().get("updated_"+key);
@@ -614,12 +624,12 @@ public class MainActivity extends Activity {
     String date=cal.get(java.util.Calendar.DAY_OF_MONTH)+" "+months[cal.get(java.util.Calendar.MONTH)];
     if(!pin)date+=" · "+new java.text.SimpleDateFormat("HHmm",java.util.Locale.ROOT).format(new java.util.Date(stamp));
     TextView time=dashboardText(date,10,true);time.setTextColor(0xff68756c);time.setSingleLine(true);time.setTextDirection(View.TEXT_DIRECTION_LTR);time.setIncludeFontPadding(false);time.setGravity(Gravity.RIGHT|Gravity.CENTER_VERTICAL);time.setPadding(dp(5),0,0,0);
-    time.setBackground(rounded(pin?0xffb8d8c5:0xffd1e4d8,pin?0xff81ae93:0xff9bbba7,8));
+    time.setBackground(homeInsetSurface(0xffedf5ee,0xffe4efe7,0xffc1d4c5,9));
     time.setTextColor(0xff174d37);time.setTypeface(android.graphics.Typeface.create("sans-serif-medium",android.graphics.Typeface.NORMAL));time.setGravity(Gravity.CENTER);time.setPadding(dp(5),0,dp(5),0);
     LinearLayout.LayoutParams dateParams=new LinearLayout.LayoutParams(-2,dp(24));dateParams.leftMargin=dp(4);
     line.addView(time,dateParams);
    }
-   LinearLayout.LayoutParams ep=new LinearLayout.LayoutParams(-1,dp(folded?38:42));ep.bottomMargin=dp(4);target.addView(line,ep);applyTouchFeedback(line);
+   LinearLayout.LayoutParams ep=new LinearLayout.LayoutParams(-1,dp(folded?38:42));ep.bottomMargin=dp(3);target.addView(line,ep);applyTouchFeedback(line);
    line.setFocusable(true);line.setContentDescription("Buka "+(key.startsWith("m_")?"kitab ":"nota ")+(label.isEmpty()?"Tanpa tajuk":label));line.setTooltipText(label.isEmpty()?"Tanpa tajuk":label);
    line.setOnClickListener(v->{maktabah=key.startsWith("m_");read(key);});
    line.setOnLongClickListener(v->{showDashboardActions(key);return true;});
