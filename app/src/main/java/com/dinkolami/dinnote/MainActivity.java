@@ -2868,7 +2868,9 @@ public class MainActivity extends Activity {
   // Give mixed Arabic/Malay paragraphs comfortable baseline clearance.
   if(value.codePoints().anyMatch(cp->cp>=0x0600&&cp<=0x06ff))t.setLineSpacing(dp(3),1.08f);t.setTextColor(0xff303c43);t.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);t.setTextIsSelectable(true);t.setPadding(dp(2),dp(2),dp(2),dp(2));
   LinearLayout.LayoutParams paragraphParams=new LinearLayout.LayoutParams(-1,-2);
-  paragraphParams.setMargins(0,dp(3),0,dp(3));body.addView(t,paragraphParams);
+  // Keep Arabic paragraphs spacious; tighten Malay-only prose slightly.
+  boolean containsArabic=value.codePoints().anyMatch(cp->cp>=0x0600&&cp<=0x06ff);
+  paragraphParams.setMargins(0,dp(containsArabic?3:2),0,dp(containsArabic?3:2));body.addView(t,paragraphParams);
  }
  boolean manageCurrentBox(){return manageCurrentBox(false);}
  boolean manageCurrentBox(boolean choose){
