@@ -2392,6 +2392,15 @@ public class MainActivity extends Activity {
   Button checklistButton=action("☑",formatBar,()->insertEditorText("☐ "));
   checklistButton.setContentDescription("Masukkan kotak semak");
     underlineButton.setContentDescription("Garis bawah teks terpilih");
+  // Compact reading-section picker shares the formatting row; no extra toolbar row.
+  final String[] tagLabels={"Matan · المتن","Syarahan · الشرح","Dalil · الدليل","Terjemahan · الترجمة"};
+  final String[] tagCodes={"MATAN","SYARAHAN","DALIL","TERJEMAHAN"};
+  Button readingTagPicker=action("§",formatBar,()->new AlertDialog.Builder(this)
+   .setTitle("Bahagian Teks")
+   .setItems(tagLabels,(dialog,index)->insertReadingTag(tagCodes[index]))
+   .show());
+  readingTagPicker.setTextColor(0xff176b47);
+  readingTagPicker.setContentDescription("Bahagian Teks: Matan, Syarahan, Dalil, Terjemahan");
   Button dividerButton=action("✿",formatBar,()->showDividerPicker());
   dividerButton.setTextColor(0xff176b47);dividerButton.setContentDescription("Pilih pemisah perenggan Islamik");
   Button boxButton=action("▣",formatBar,()->showTextBoxPicker());
@@ -2428,18 +2437,6 @@ public class MainActivity extends Activity {
    }).show());
   toolsButton.setContentDescription("Alat penyuntingan tambahan");
 
-  // One compact selector replaces four wide tag buttons on folded displays.
-  LinearLayout readingTags=new LinearLayout(this);readingTags.setGravity(Gravity.CENTER_VERTICAL);
-  readingTags.setPadding(dp(6),dp(2),dp(6),dp(2));root.addView(readingTags);
-  final String[] tagLabels={"Matan · المتن","Syarahan · الشرح","Dalil · الدليل","Terjemahan · الترجمة"};
-  final String[] tagCodes={"MATAN","SYARAHAN","DALIL","TERJEMAHAN"};
-  Button readingTagPicker=action("§  Bahagian Teks ▾",readingTags,()->new AlertDialog.Builder(this)
-   .setTitle("Pilih bahagian teks")
-   .setItems(tagLabels,(dialog,index)->insertReadingTag(tagCodes[index]))
-   .show());
-  readingTagPicker.setTextColor(0xff176b47);
-  readingTagPicker.setBackground(rounded(0xffedf5ee,0xffc6b582,10));
-  readingTagPicker.setContentDescription("Pilih Matan, Syarahan, Dalil atau Terjemahan");
   LinearLayout.LayoutParams editBodyFrame=new LinearLayout.LayoutParams(-1,0,1);editBodyFrame.setMargins(dp(4),0,dp(4),0);root.addView(editor,editBodyFrame);
   // Keep normal Android double-tap text selection while editing.
   // Never navigate away while EditText is handling touch/selection events.
