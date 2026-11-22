@@ -2838,27 +2838,84 @@ public class MainActivity extends Activity {
   startActivityForResult(intent,BACKUP_CREATE);
  }
  void showBookAddMenu(){
-  new AlertDialog.Builder(this).setTitle("Tambah kitab").setItems(new String[]{"Tulis / tampal teks","Import TXT / HTML","Import DinNote JSON","Buka Maktabah Syamilah","Banding dua kitab"},(d,i)->{
+  new AlertDialog.Builder(this).setTitle("Tambah kitab").setItems(new String[]{"Tulis / tampal teks","Import TXT / HTML / DOCX / EPUB","Import DinNote JSON","Buka Maktabah Syamilah","Banding dua kitab"},(d,i)->{
    if(i==0)edit(null);
-   else if(i==1){Intent intent=new Intent(Intent.ACTION_OPEN_DOCUMENT);intent.addCategory(Intent.CATEGORY_OPENABLE);intent.setType("*/*");intent.putExtra(Intent.EXTRA_MIME_TYPES,new String[]{"text/plain","text/html"});startActivityForResult(intent,BOOK_TEXT_IMPORT);}
+   else if(i==1){Intent intent=new Intent(Intent.ACTION_OPEN_DOCUMENT);intent.addCategory(Intent.CATEGORY_OPENABLE);intent.setType("*/*");intent.putExtra(Intent.EXTRA_MIME_TYPES,new String[]{"text/plain","text/html","application/vnd.openxmlformats-officedocument.wordprocessingml.document","application/epub+zip","application/zip","application/octet-stream"});startActivityForResult(intent,BOOK_TEXT_IMPORT);}
    else if(i==2)startContentImport();
    else if(i==3){try{startActivity(new Intent(Intent.ACTION_VIEW,android.net.Uri.parse("https://shamela.ws/")));}catch(Exception e){Toast.makeText(this,"Pelayar tidak tersedia",Toast.LENGTH_SHORT).show();}}
    else chooseComparison(null);
   }).show();
+ }
+ String bookImportName(android.net.Uri uri){
+  try(android.database.Cursor c=getContentResolver().query(uri,new String[]{android.provider.OpenableColumns.DISPLAY_NAME},null,null,null)){
+   if(c!=null&&c.moveToFirst())return c.getString(0);
+  }catch(Exception ignored){}
+  return "";
+ }
+ java.util.Map<String,byte[]> readBookZip(byte[] raw)throws Exception{
+  java.util.Map<String,byte[]> entries=new java.util.LinkedHashMap<>();int total=0,count=0;
+  try(java.util.zip.ZipInputStream zip=new java.util.zip.ZipInputStream(new java.io.ByteArrayInputStream(raw))){
+   java.util.zip.ZipEntry entry;byte[] buf=new byte[8192];
+   while((entry=zip.getNextEntry())!=null){
+    if(++count>3000)throw new java.io.IOException("Terlalu banyak fail");
+    java.io.ByteArrayOutputStream out=new java.io.ByteArrayOutputStream();int n;
+    while((n=zip.read(buf))!=-1){total+=n;if(total>20*1024*1024)throw new java.io.IOException("Kandungan melebihi 20 MB");out.write(buf,0,n);}
+    if(!entry.isDirectory())entries.put(entry.getName(),out.toByteArray());zip.closeEntry();
+   }
+  }return entries;
+ }
+ org.xmlpull.v1.XmlPullParser bookXml(byte[] data)throws Exception{
+  if(data==null)throw new java.io.IOException("Struktur kitab tidak lengkap");
+  org.xmlpull.v1.XmlPullParser p=android.util.Xml.newPullParser();p.setFeature(org.xmlpull.v1.XmlPullParser.FEATURE_PROCESS_NAMESPACES,true);p.setInput(new java.io.ByteArrayInputStream(data),null);return p;
+ }
+ String extractDocx(java.util.Map<String,byte[]> entries)throws Exception{
+  org.xmlpull.v1.XmlPullParser p=bookXml(entries.get("word/document.xml"));StringBuilder out=new StringBuilder();
+  for(int e=p.getEventType();e!=org.xmlpull.v1.XmlPullParser.END_DOCUMENT;e=p.next()){
+   if(e==org.xmlpull.v1.XmlPullParser.START_TAG&&"t".equals(p.getName()))out.append(p.nextText());
+   else if(e==org.xmlpull.v1.XmlPullParser.START_TAG&&"tab".equals(p.getName()))out.append('\t');
+   else if(e==org.xmlpull.v1.XmlPullParser.START_TAG&&"br".equals(p.getName()))out.append('\n');
+   else if(e==org.xmlpull.v1.XmlPullParser.END_TAG&&"p".equals(p.getName()))out.append('\n');
+  }return out.toString();
+ }
+ String extractEpub(java.util.Map<String,byte[]> entries)throws Exception{
+  org.xmlpull.v1.XmlPullParser p=bookXml(entries.get("META-INF/container.xml"));String opf=null;
+  for(int e=p.getEventType();e!=org.xmlpull.v1.XmlPullParser.END_DOCUMENT;e=p.next())if(e==org.xmlpull.v1.XmlPullParser.START_TAG&&"rootfile".equals(p.getName())){opf=p.getAttributeValue(null,"full-path");break;}
+  p=bookXml(entries.get(opf));java.util.Map<String,String> manifest=new java.util.HashMap<>();ArrayList<String> spine=new ArrayList<>();
+  for(int e=p.getEventType();e!=org.xmlpull.v1.XmlPullParser.END_DOCUMENT;e=p.next())if(e==org.xmlpull.v1.XmlPullParser.START_TAG){
+   if("item".equals(p.getName()))manifest.put(p.getAttributeValue(null,"id"),p.getAttributeValue(null,"href"));
+   if("itemref".equals(p.getName()))spine.add(p.getAttributeValue(null,"idref"));
+  }
+  StringBuilder out=new StringBuilder();
+  for(String id:spine){String href=manifest.get(id);if(href==null)throw new java.io.IOException("Bab EPUB tidak lengkap");
+   String resolved=new java.net.URI(null,null,"/"+opf,null).resolve(href).normalize().getPath();
+   byte[] chapter=entries.get(resolved.substring(1));if(chapter==null)throw new java.io.IOException("Bab EPUB tidak dapat dibaca");
+   out.append(android.text.Html.fromHtml(new String(chapter,java.nio.charset.StandardCharsets.UTF_8),0).toString()).append("\n\n");
+   if(out.length()>500000)throw new java.io.IOException("Pecahkan kitab kepada jilid lebih kecil");
+  }return out.toString();
  }
  void importBookText(android.net.Uri uri){
   try{
    java.io.ByteArrayOutputStream out=new java.io.ByteArrayOutputStream();
    try(java.io.InputStream in=getContentResolver().openInputStream(uri)){
     if(in==null)throw new java.io.IOException("Fail tidak dapat dibaca");
-    byte[] buf=new byte[8192];int n;while((n=in.read(buf))!=-1){if(out.size()+n>1024*1024)throw new java.io.IOException("Had fail 1 MB");out.write(buf,0,n);}
+    byte[] buf=new byte[8192];int n;while((n=in.read(buf))!=-1){if(out.size()+n>5*1024*1024)throw new java.io.IOException("Had fail 5 MB");out.write(buf,0,n);}
    }
-   String raw=new String(out.toByteArray(),java.nio.charset.StandardCharsets.UTF_8);
-   if(raw.indexOf(0)>=0||raw.indexOf('\uFFFD')>=0)throw new java.io.IOException("Gunakan teks UTF-8");
+   byte[] bytes=out.toByteArray();String filename=bookImportName(uri);
    String mime=getContentResolver().getType(uri);
-   final String body="text/html".equals(mime)?android.text.Html.fromHtml(raw,0).toString():raw;
+   final String body;
+   if(bytes.length>=4&&bytes[0]==80&&bytes[1]==75){
+    java.util.Map<String,byte[]> entries=readBookZip(bytes);
+    if(entries.containsKey("word/document.xml"))body=extractDocx(entries);
+    else if(entries.containsKey("META-INF/container.xml"))body=extractEpub(entries);
+    else throw new java.io.IOException("Fail ZIP bukan DOCX atau EPUB");
+   }else{
+    String raw=new String(bytes,java.nio.charset.StandardCharsets.UTF_8);
+    if(raw.indexOf(0)>=0||raw.indexOf('\uFFFD')>=0||raw.startsWith("%PDF"))throw new java.io.IOException("Format tidak disokong");
+    body="text/html".equals(mime)||filename.toLowerCase(java.util.Locale.ROOT).endsWith(".html")?android.text.Html.fromHtml(raw,0).toString():raw;
+   }
+   if(body.length()>500000)throw new java.io.IOException("Pecahkan kitab kepada jilid lebih kecil");
    if(body.trim().isEmpty())throw new java.io.IOException("Teks kosong");
-   EditText name=new EditText(this);name.setHint("Nama kitab");name.setSingleLine(true);
+   EditText name=new EditText(this);name.setHint("Nama kitab");name.setSingleLine(true);name.setText(filename.replaceFirst("\\.[^.]+$",""));
    new AlertDialog.Builder(this).setTitle("Import kitab").setView(name).setNegativeButton("Batal",null).setPositiveButton("Simpan",(d,w)->{
     String key="m_"+java.util.UUID.randomUUID().toString();
     boolean ok=prefs.edit().putString(key,body).putString("title_"+key,name.getText().toString().trim().isEmpty()?"Kitab import":name.getText().toString().trim()).putString("cat_"+key,"Tanpa kategori").putLong("updated_"+key,System.currentTimeMillis()).commit();
