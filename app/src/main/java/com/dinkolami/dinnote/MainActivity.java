@@ -2430,7 +2430,7 @@ public class MainActivity extends Activity {
   String[] tagLabels={"المتن · Matan","الشرح · Syarahan","الدليل · Dalil","الترجمة · Terjemahan"};
   String[] tagCodes={"MATAN","SYARAHAN","DALIL","TERJEMAHAN"};
   for(int j=0;j<tagLabels.length;j++){
-   final String code=tagCodes[j];Button tag=new Button(this);tag.setText(tagLabels[j]);tag.setTextSize(10);tag.setAllCaps(false);tag.setPadding(dp(2),0,dp(2),0);tag.setMinWidth(0);tag.setMinimumWidth(0);tag.setTextColor(0xff176b47);tag.setBackground(rounded(0xffedf5ee,0xffc6b582,9));
+   final String code=tagCodes[j];Button tag=new Button(this);tag.setText(tagLabels[j]);tag.setTextSize(10);tag.setAllCaps(false);tag.setSingleLine(true);tag.setEllipsize(android.text.TextUtils.TruncateAt.END);if(android.os.Build.VERSION.SDK_INT>=26)tag.setAutoSizeTextTypeUniformWithConfiguration(7,10,1,android.util.TypedValue.COMPLEX_UNIT_SP);tag.setPadding(dp(2),0,dp(2),0);tag.setMinWidth(0);tag.setMinimumWidth(0);tag.setTextColor(0xff176b47);tag.setBackground(rounded(0xffedf5ee,0xffc6b582,9));
    LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(0,dp(38),1);lp.setMargins(dp(2),0,dp(2),0);readingTags.addView(tag,lp);
    tag.setOnClickListener(v->insertReadingTag(code));
   }
