@@ -2783,7 +2783,7 @@ public class MainActivity extends Activity {
    panel.setBackground(rounded(bg,border,10));panel.setPadding(dp(7),dp(3),dp(7),dp(4));
    TextView label=text(type.equals("FIRMAN")?"Firman Allah SWT:":type.equals("SABDA")?"Sabda Nabi SAW:":type.equals("DALIL")?"⚖  Dalil":type.equals("HIKMAH")?"✒  Kalam Hikmah":type.equals("SAHABAT")?"✦  Kata Sahabat Rdh.":type.equals("TABII")?"❖  Kata Tabi\u0027in Rhm.":type.equals("ULAMA")?"✧  Kata Ulama\u0027 Rhm.":"◎  Catatan Penting",13);
    label.setTextColor(type.equals("FIRMAN")?0xff176b47:type.equals("SABDA")?0xff96783e:type.equals("DALIL")?0xff426e96:type.equals("HIKMAH")?0xff79549b:type.equals("SAHABAT")?0xff607d42:type.equals("TABII")?0xff536f9b:type.equals("ULAMA")?0xff9b654b:0xff946176);
-   label.setTypeface(null,android.graphics.Typeface.NORMAL);label.setIncludeFontPadding(false);
+   label.setTypeface(android.graphics.Typeface.create("sans-serif",android.graphics.Typeface.NORMAL));label.setIncludeFontPadding(false);
    label.setPadding(dp(5),dp(1),dp(7),dp(1));
    label.setBackground(rounded(bg,border,12));
    if(type.equals("FIRMAN")||type.equals("SABDA")){
