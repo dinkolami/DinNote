@@ -542,6 +542,10 @@ public class MainActivity extends Activity {
    wisdomHeading.setTextColor(0xff47745d);wisdomHeading.setGravity(Gravity.CENTER);
    wisdomCard.addView(wisdomHeading);
    TextView wisdomBody=dashboardText("",13,false);wisdomBody.setTextColor(0xff35453c);
+   // Rotate available Android Arabic typeface styles until dedicated font assets are bundled.
+   String[] wisdomFamilies={"serif","sans-serif","casual","serif-monospace"};
+   String family=wisdomFamilies[new java.util.Random().nextInt(wisdomFamilies.length)];
+   wisdomBody.setTypeface(android.graphics.Typeface.create(family,android.graphics.Typeface.NORMAL));
    wisdomBody.setGravity(Gravity.CENTER);wisdomBody.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);wisdomBody.setMaxLines(4);
    LinearLayout.LayoutParams wisdomTextParams=new LinearLayout.LayoutParams(-1,-2);
    wisdomTextParams.topMargin=dp(3);wisdomCard.addView(wisdomBody,wisdomTextParams);
