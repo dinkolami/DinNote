@@ -2513,7 +2513,7 @@ public class MainActivity extends Activity {
   }
   @Override public void draw(android.graphics.Canvas c,CharSequence t,int a,int b,float x,int top,int y,int bottom,android.graphics.Paint p){
    if(title.isEmpty())return;
-   android.graphics.Paint q=new android.graphics.Paint(p);q.setAntiAlias(true);q.setColor(ink);q.setAlpha(22);c.drawRoundRect(x+dp(3),top+dp(2),x+getSize(p,t,a,b,null),bottom-dp(1),dp(12),dp(12),q);q.setAlpha(45);c.drawCircle(x+dp(13),(top+bottom)/2f,dp(10),q);
+   android.graphics.Paint q=new android.graphics.Paint(p);q.setAntiAlias(true);q.setColor(ink);q.setAlpha(22);c.drawRoundRect(x+dp(7),top+dp(4),x+getSize(p,t,a,b,null)-dp(4),bottom-dp(3),dp(12),dp(12),q);q.setAlpha(45);c.drawCircle(x+dp(13),(top+bottom)/2f,dp(10),q);
    q.setAlpha(255);q.setColor(ink);q.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);q.setTextSize(dp(13));
    String mark=title.startsWith("Firman")?"":title.startsWith("Sabda")?"":title.startsWith("Kalam")?"✒":title.startsWith("Dalil")?"⚖":"◎";
    q.setTextAlign(android.graphics.Paint.Align.CENTER);c.drawText(mark,x+dp(13),(top+bottom)/2f-(q.ascent()+q.descent())/2,q);
