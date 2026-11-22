@@ -3068,7 +3068,7 @@ public class MainActivity extends Activity {
   }));dialog.show();
  }
  void showBookAddMenu(){
-  new AlertDialog.Builder(this).setTitle("Tambah kitab").setItems(new String[]{"Tulis / tampal teks","Import TXT / HTML / DOCX / EPUB / PDF","Import DinNote JSON","Buka Maktabah Syamilah","Banding dua kitab","Tampal petikan Syamilah","Koleksi petikan ulama","Penyusun Kuliah Pintar"},(d,i)->{
+  new AlertDialog.Builder(this).setTitle("Tambah kitab").setItems(new String[]{"Tulis / tampal teks","Import TXT / HTML / DOCX / EPUB / PDF","Import DinNote JSON","Buka Maktabah Syamilah","Banding dua kitab","Tampal petikan Syamilah","Koleksi petikan ulama","Penyusun Kuliah Pintar","Indeks Tematik Pintar"},(d,i)->{
    if(i==0)edit(null);
    else if(i==1){Intent intent=new Intent(Intent.ACTION_OPEN_DOCUMENT);intent.addCategory(Intent.CATEGORY_OPENABLE);intent.setType("*/*");intent.putExtra(Intent.EXTRA_MIME_TYPES,new String[]{"text/plain","text/html","application/vnd.openxmlformats-officedocument.wordprocessingml.document","application/epub+zip","application/pdf","application/zip","application/octet-stream"});startActivityForResult(intent,BOOK_TEXT_IMPORT);}
    else if(i==2)startContentImport();
@@ -3076,7 +3076,8 @@ public class MainActivity extends Activity {
    else if(i==4)chooseComparison(null);
    else if(i==5)showSharedBookImport("",null);
    else if(i==6)showQuoteCollection();
-   else showLectureComposer();
+   else if(i==7)showLectureComposer();
+   else showThematicIndex();
   }).show();
  }
  String bookImportName(android.net.Uri uri){
@@ -3271,6 +3272,32 @@ public class MainActivity extends Activity {
     if(ok){confirm.dismiss();openSection(false);edit(key);}else Toast.makeText(this,"Simpan gagal",Toast.LENGTH_SHORT).show();
    }));confirm.show();
   }).show();
+ }
+ void showThematicIndex(){
+  java.util.TreeMap<String,ArrayList<String>> topics=new java.util.TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+  for(String id:prefs.getAll().keySet())if(id.startsWith("quote_"))try{
+   org.json.JSONObject q=new org.json.JSONObject(prefs.getString(id,""));String topic=q.optString("topic").trim();if(topic.isEmpty())topic="Tanpa tajuk";
+   if(!topics.containsKey(topic))topics.put(topic,new ArrayList<>());topics.get(topic).add(id);
+  }catch(Exception ignored){}
+  if(topics.isEmpty()){new AlertDialog.Builder(this).setTitle("الفهرس الموضوعي").setMessage("Simpan petikan bertopik daripada carian Maktabah terlebih dahulu.").setPositiveButton("Cari petikan",(dg,w)->showGlobalBookSearch()).setNegativeButton("Tutup",null).show();return;}
+  LinearLayout panel=new LinearLayout(this);panel.setOrientation(1);panel.setPadding(dp(16),dp(8),dp(16),dp(8));
+  EditText query=new EditText(this);query.setSingleLine(true);query.setHint("Cari topik Arab atau Melayu");panel.addView(query);
+  ScrollView scroll=new ScrollView(this);LinearLayout rows=new LinearLayout(this);rows.setOrientation(1);scroll.addView(rows);panel.addView(scroll,new LinearLayout.LayoutParams(-1,dp(330)));
+  final AlertDialog dialog=new AlertDialog.Builder(this).setTitle("الفهرس الموضوعي · Indeks Tematik").setView(panel).setNegativeButton("Tutup",null).create();
+  Runnable render=()->{rows.removeAllViews();String filter=normalizeCompareText(query.getText().toString().trim());
+   for(String topic:topics.keySet()){if(!normalizeCompareText(topic).contains(filter))continue;
+    ArrayList<String> ids=topics.get(topic);java.util.HashSet<String> books=new java.util.HashSet<>();for(String id:ids)try{books.add(new org.json.JSONObject(prefs.getString(id,"")).optString("book"));}catch(Exception ignored){}
+    TextView row=text(topic+"   ·   "+ids.size()+" petikan / "+books.size()+" kitab",15);row.setPadding(dp(12),dp(14),dp(12),dp(14));row.setTextColor(0xff176b47);rows.addView(row);row.setOnClickListener(v->{dialog.dismiss();showThematicTopic(topic,ids);});
+   }
+  };
+  query.addTextChangedListener(new android.text.TextWatcher(){public void beforeTextChanged(CharSequence c,int a,int n,int f){}public void onTextChanged(CharSequence c,int a,int b,int n){render.run();}public void afterTextChanged(android.text.Editable e){}});
+  render.run();dialog.show();
+ }
+ void showThematicTopic(String topic,ArrayList<String> ids){
+  ArrayList<org.json.JSONObject> quotes=new ArrayList<>();ArrayList<String> valid=new ArrayList<>();
+  for(String id:ids)try{quotes.add(new org.json.JSONObject(prefs.getString(id,"")));valid.add(id);}catch(Exception ignored){}
+  String[] labels=new String[quotes.size()];for(int i=0;i<labels.length;i++){org.json.JSONObject q=quotes.get(i);String body=q.optString("text");labels[i]=q.optString("title")+" · "+q.optString("reference")+"\n"+body.substring(0,Math.min(120,body.length()));}
+  new AlertDialog.Builder(this).setTitle(topic).setItems(labels,(dg,i)->showSavedQuote(valid.get(i),quotes.get(i))).setNegativeButton("Kembali",(dg,w)->showThematicIndex()).show();
  }
  void showQuoteCollection(){
   ArrayList<String> ids=new ArrayList<>();for(String k:prefs.getAll().keySet())if(k.startsWith("quote_"))ids.add(k);
