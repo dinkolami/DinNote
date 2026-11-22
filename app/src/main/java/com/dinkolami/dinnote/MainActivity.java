@@ -556,13 +556,11 @@ public class MainActivity extends Activity {
    String family=wisdomFamilies[new java.util.Random().nextInt(wisdomFamilies.length)];
    wisdomBody.setTypeface(android.graphics.Typeface.create(family,android.graphics.Typeface.NORMAL));
    wisdomBody.setGravity(Gravity.CENTER);wisdomBody.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
-   ScrollView wisdomScroll=new ScrollView(this);
-   wisdomScroll.setFillViewport(false);wisdomScroll.setVerticalScrollBarEnabled(false);
    LinearLayout.LayoutParams wisdomTextParams=new LinearLayout.LayoutParams(-1,0,1);
-   wisdomTextParams.topMargin=dp(0);wisdomCard.addView(wisdomScroll,wisdomTextParams);
-   wisdomScroll.addView(wisdomBody,new ScrollView.LayoutParams(-1,-2));
-   wisdomScroll.setOnLongClickListener(v->{maktabah=true;edit("m_hikmah_ringkas");return true;});
+   wisdomTextParams.topMargin=dp(0);wisdomCard.addView(wisdomBody,wisdomTextParams);
    final int[] wisdomIndex={new java.util.Random().nextInt(sampleWisdom.size())};
+   wisdomBody.setOnClickListener(v->{wisdomIndex[0]=(wisdomIndex[0]+1)%sampleWisdom.size();setHomeWisdomText(wisdomBody,sampleWisdom.get(wisdomIndex[0]));});
+   wisdomBody.setOnLongClickListener(v->{maktabah=true;edit("m_hikmah_ringkas");return true;});
    setHomeWisdomText(wisdomBody,sampleWisdom.get(wisdomIndex[0]));
    wisdomCard.setContentDescription("Mutiara Hikmah. Ketik untuk petikan lain. Tekan lama untuk edit posting");
    wisdomCard.setOnClickListener(v->{wisdomIndex[0]=(wisdomIndex[0]+1)%sampleWisdom.size();setHomeWisdomText(wisdomBody,sampleWisdom.get(wisdomIndex[0]));});
