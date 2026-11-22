@@ -330,15 +330,23 @@ public class MainActivity extends Activity {
   return entries;
  }
  void setHomeWisdomText(TextView target,String entry){
-  String[] parts=entry.trim().split("\n",2);
-  String arabic=parts[0].trim();
-  String attribution=parts.length>1?parts[1].trim():"";
+  // Three-line format: Arabic, Malay translation, source. Older two-line
+  // entries remain readable; their second line is treated as a source.
+  String[] lines=entry.trim().split("\n",3);
+  String arabic=lines[0].trim();
+  String translation=lines.length>=3?lines[1].trim():"";
+  String source=lines.length>=3?lines[2].trim():(lines.length==2?lines[1].trim():"");
   android.text.SpannableStringBuilder styled=new android.text.SpannableStringBuilder(arabic);
-  styled.setSpan(new android.text.style.RelativeSizeSpan(1.28f),0,arabic.length(),android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-  if(!attribution.isEmpty()){
-   int start=styled.length();
-   styled.append("\n").append(attribution);
+  if(!arabic.isEmpty())styled.setSpan(new android.text.style.RelativeSizeSpan(1.28f),0,arabic.length(),android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+  if(!translation.isEmpty()){
+   styled.append("\n");
+   int start=styled.length();styled.append(translation);
    styled.setSpan(new android.text.style.RelativeSizeSpan(0.92f),start,styled.length(),android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+  }
+  if(!source.isEmpty()){
+   styled.append("\n");
+   int start=styled.length();styled.append(source);
+   styled.setSpan(new android.text.style.RelativeSizeSpan(0.76f),start,styled.length(),android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
    styled.setSpan(new android.text.style.ForegroundColorSpan(0xff718075),start,styled.length(),android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
   }
   target.setText(styled);
@@ -546,7 +554,7 @@ public class MainActivity extends Activity {
    String[] wisdomFamilies={"serif","sans-serif","casual","serif-monospace"};
    String family=wisdomFamilies[new java.util.Random().nextInt(wisdomFamilies.length)];
    wisdomBody.setTypeface(android.graphics.Typeface.create(family,android.graphics.Typeface.NORMAL));
-   wisdomBody.setGravity(Gravity.CENTER);wisdomBody.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);wisdomBody.setMaxLines(4);
+   wisdomBody.setGravity(Gravity.CENTER);wisdomBody.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);wisdomBody.setMaxLines(6);
    LinearLayout.LayoutParams wisdomTextParams=new LinearLayout.LayoutParams(-1,-2);
    wisdomTextParams.topMargin=dp(3);wisdomCard.addView(wisdomBody,wisdomTextParams);
    final int[] wisdomIndex={new java.util.Random().nextInt(sampleWisdom.size())};
