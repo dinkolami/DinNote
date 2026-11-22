@@ -2972,16 +2972,53 @@ public class MainActivity extends Activity {
   for(String k:keys)names.add(prefs.getString("title_"+k,"Tanpa tajuk"));
   new AlertDialog.Builder(this).setTitle(first==null?"Pilih kitab pertama":"Pilih kitab kedua").setItems(names.toArray(new String[0]),(d,i)->{if(first==null)chooseComparison(keys.get(i));else showComparison(first,keys.get(i));}).show();
  }
+ String normalizeCompareText(String value){
+  return value.replaceAll("[\\u064B-\\u065F\\u0670\\u0640]","").replaceAll("[أإآٱ]","ا").toLowerCase(java.util.Locale.ROOT);
+ }
  void showComparison(String a,String b){
   LinearLayout panel=new LinearLayout(this);panel.setOrientation(LinearLayout.HORIZONTAL);panel.setBackgroundColor(0xfff8f7f0);
-  for(String k:new String[]{a,b}){
-   LinearLayout column=new LinearLayout(this);column.setOrientation(LinearLayout.VERTICAL);column.setPadding(dp(8),dp(8),dp(8),dp(8));panel.addView(column,new LinearLayout.LayoutParams(0,-1,1));
-   TextView title=text(prefs.getString("title_"+k,"Tanpa tajuk"),16);title.setTextColor(0xff176b47);title.setGravity(Gravity.CENTER);title.setTypeface(null,android.graphics.Typeface.BOLD);column.addView(title);
+  final String[] active={a,b};
+  for(int side=0;side<2;side++){
+   final int index=side;
+   LinearLayout column=new LinearLayout(this);column.setOrientation(LinearLayout.VERTICAL);column.setPadding(dp(6),dp(6),dp(6),dp(6));panel.addView(column,new LinearLayout.LayoutParams(0,-1,1));
+   TextView title=text("",15);title.setTextColor(0xff176b47);title.setGravity(Gravity.CENTER);title.setTypeface(null,android.graphics.Typeface.BOLD);title.setMaxLines(2);column.addView(title);
+   LinearLayout tools=new LinearLayout(this);column.addView(tools);
+   Button change=new Button(this);change.setText("Tukar");tools.addView(change,new LinearLayout.LayoutParams(0,-2,1));
+   Button find=new Button(this);find.setText("Cari");tools.addView(find,new LinearLayout.LayoutParams(0,-2,1));
    ScrollView scroll=new ScrollView(this);column.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
-   TextView content=text("",15);applySharedTextMetrics(content);content.setText(formattedReadingText(prefs.getString(k,"")));content.setTextColor(0xff26352d);content.setGravity(Gravity.START);content.setTextIsSelectable(true);scroll.addView(content);
-   scroll.post(()->scroll.scrollTo(0,prefs.getInt("compare_y_"+k,0)));
-   scroll.setOnScrollChangeListener((v,x,y,ox,oy)->prefs.edit().putInt("compare_y_"+k,y).apply());
-   if(k.equals(a)){View divider=new View(this);divider.setBackgroundColor(0xffc5a66b);panel.addView(divider,new LinearLayout.LayoutParams(dp(1),-1));}
+   TextView content=text("",15);applySharedTextMetrics(content);content.setTextColor(0xff26352d);content.setGravity(Gravity.START);content.setTextIsSelectable(true);scroll.addView(content);
+   final boolean[] restoring={false};
+   Runnable load=()->{
+    restoring[0]=true;
+    String key=active[index];int saved=prefs.getInt("compare_y_"+key,0);
+    title.setText(prefs.getString("title_"+key,"Tanpa tajuk"));content.setText(formattedReadingText(prefs.getString(key,"")));
+    scroll.post(()->{if(key.equals(active[index])){scroll.scrollTo(0,saved);restoring[0]=false;}});
+   };
+   scroll.setOnScrollChangeListener((v,x,y,ox,oy)->{if(!restoring[0])prefs.edit().putInt("compare_y_"+active[index],y).apply();});
+   change.setOnClickListener(v->{
+    ArrayList<String> keys=new ArrayList<>(),names=new ArrayList<>();
+    for(String k:prefs.getAll().keySet())if(k.startsWith("m_")&&prefs.getAll().get(k) instanceof String&&!prefs.getBoolean("deleted_"+k,false)&&!k.equals(active[1-index]))keys.add(k);
+    java.util.Collections.sort(keys,(x,y)->prefs.getString("title_"+x,"").compareToIgnoreCase(prefs.getString("title_"+y,"")));
+    for(String k:keys)names.add(prefs.getString("title_"+k,"Tanpa tajuk"));
+    new AlertDialog.Builder(this).setTitle("Tukar kitab").setItems(names.toArray(new String[0]),(d,i)->{active[index]=keys.get(i);load.run();}).show();
+   });
+   find.setOnClickListener(v->{
+    EditText term=new EditText(this);term.setSingleLine(true);term.setHint("Arab atau Melayu");
+    new AlertDialog.Builder(this).setTitle("Cari dalam kitab ini").setView(term).setNegativeButton("Batal",null).setPositiveButton("Cari",(d,w)->{
+     String q=normalizeCompareText(term.getText().toString().trim());if(q.isEmpty())return;
+     CharSequence original=formattedReadingText(prefs.getString(active[index],""));
+     StringBuilder normalized=new StringBuilder();ArrayList<Integer> offsets=new ArrayList<>();
+     for(int j=0;j<original.length();j++){String ch=normalizeCompareText(original.subSequence(j,j+1).toString());for(int z=0;z<ch.length();z++){normalized.append(ch.charAt(z));offsets.add(j);}}
+     android.text.SpannableString marked=new android.text.SpannableString(original);ArrayList<Integer> hits=new ArrayList<>();int at=0;
+     while((at=normalized.indexOf(q,at))>=0&&hits.size()<1000){int first=offsets.get(at),last=offsets.get(at+q.length()-1)+1;hits.add(first);marked.setSpan(new android.text.style.BackgroundColorSpan(0xffffe39b),first,last,android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);at+=q.length();}
+     if(hits.isEmpty()){Toast.makeText(this,"Tiada padanan",Toast.LENGTH_SHORT).show();return;}
+     content.setText(marked);String[] results=new String[hits.size()];
+     for(int j=0;j<hits.size();j++){int offset=hits.get(j);results[j]=original.subSequence(Math.max(0,offset-20),Math.min(original.length(),offset+70)).toString().replace('\n',' ');}
+     new AlertDialog.Builder(this).setTitle("Padanan: "+hits.size()).setItems(results,(dialog,i)->content.post(()->{android.text.Layout layout=content.getLayout();if(layout!=null)scroll.scrollTo(0,layout.getLineTop(layout.getLineForOffset(hits.get(i)))+content.getTotalPaddingTop());})).show();
+    }).show();
+   });
+   load.run();
+   if(side==0){View divider=new View(this);divider.setBackgroundColor(0xffc5a66b);panel.addView(divider,new LinearLayout.LayoutParams(dp(1),-1));}
   }
   AlertDialog dialog=new AlertDialog.Builder(this).setTitle("Perbandingan dua kitab").setView(panel).setPositiveButton("Tutup",null).create();
   dialog.show();if(dialog.getWindow()!=null)dialog.getWindow().setLayout(-1,-1);
