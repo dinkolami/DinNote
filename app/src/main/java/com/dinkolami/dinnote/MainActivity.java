@@ -2487,9 +2487,8 @@ public class MainActivity extends Activity {
    save();
    if(active!=null)active.post(()->{
     if(active!=editor)return;
-    android.text.Editable latest=active.getText();
-    if(android.view.inputmethod.BaseInputConnection.getComposingSpanStart(latest)<0)refreshEditorBoxes(latest);
-    revealEditorCursor(active);
+    // Spans were already refreshed above; avoid scanning the full note twice per edit.
+     revealEditorCursor(active);
    });}};editor.addTextChangedListener(bodyWatcher);refreshEditorBoxes(editor.getText());editor.addOnLayoutChangeListener((v,l,t,rr,bb,ol,ot,orr,ob)->{if(rr-l!=orr-ol&&v==editor)refreshEditorBoxes(editor.getText());});categoryPicker.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener(){public void onNothingSelected(android.widget.AdapterView<?> p){}public void onItemSelected(android.widget.AdapterView<?> p,View v,int position,long id){save();}});}
 
  
