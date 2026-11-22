@@ -2343,11 +2343,14 @@ public class MainActivity extends Activity {
     android.text.Layout layout=getLayout();if(layout==null)return;
     int offset=Math.min(getSelectionStart(),length());
     int line=layout.getLineForOffset(offset);
-    float x=getTotalPaddingLeft()+layout.getPrimaryHorizontal(offset)-getScrollX();
-    float top=getTotalPaddingTop()+layout.getLineTop(line)-getScrollY();
-    float bottom=getTotalPaddingTop()+layout.getLineBottom(line)-getScrollY();
-    if(x<0||x>getWidth()||bottom<0||top>getHeight())return;
-    top=Math.max(0,top);bottom=Math.min(getHeight(),bottom);
+    // onDrawForeground's canvas is already in the view's scrolled content coordinates.
+    // Subtracting scroll offsets here displaced the caret from Samsung's insertion handle.
+    float x=getTotalPaddingLeft()+layout.getPrimaryHorizontal(offset);
+    float top=getTotalPaddingTop()+layout.getLineTop(line);
+    float bottom=getTotalPaddingTop()+layout.getLineBottom(line);
+    int sx=getScrollX(),sy=getScrollY();
+    if(x<sx||x>sx+getWidth()||bottom<sy||top>sy+getHeight())return;
+    top=Math.max(sy,top);bottom=Math.min(sy+getHeight(),bottom);
     if(bottom-top<dp(3))return;
     android.graphics.Paint caret=new android.graphics.Paint(3);
     caret.setColor(0xff087b4c);caret.setStrokeWidth(dp(3));
