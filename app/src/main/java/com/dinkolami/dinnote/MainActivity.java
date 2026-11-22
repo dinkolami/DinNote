@@ -486,7 +486,7 @@ public class MainActivity extends Activity {
   latestHeader.setFocusable(true);applyTouchFeedback(latestHeader);
   latestHeader.setOnClickListener(v->{prefs.edit().putBoolean("home_latest_collapsed",!latestCollapsed).apply();home();});
   LinearLayout recentNotes=new LinearLayout(this);recentNotes.setOrientation(1);
-  recentNotes.setPadding(dp(10),dp(4),dp(10),dp(7));card.addView(recentNotes);
+  recentNotes.setPadding(0,dp(4),0,dp(5));card.addView(recentNotes);
   recentNotes.setVisibility(latestCollapsed?View.GONE:View.VISIBLE);
   ArrayList<String> keys=new ArrayList<>();
   for(String k:prefs.getAll().keySet())if((k.startsWith("n_")||k.startsWith("m_"))&&prefs.getAll().get(k) instanceof String&&!prefs.getBoolean("deleted_"+k,false)&&prefs.getLong("viewed_"+k,0L)>0L)keys.add(k);
@@ -538,8 +538,8 @@ public class MainActivity extends Activity {
      dateParams.rightMargin=dp(8);row.addView(date,dateParams);date.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);date.setContentDescription("Dilihat pada "+new java.text.SimpleDateFormat("dd MMMM",new java.util.Locale("ms","MY")).format(new java.util.Date(when)));
     }
     LinearLayout.LayoutParams itemParams=new LinearLayout.LayoutParams(-1,-2);
-    itemParams.bottomMargin=dp(5);
-    itemParams.leftMargin=dp(3);itemParams.rightMargin=dp(3);
+    itemParams.bottomMargin=dp(3);
+    itemParams.leftMargin=0;itemParams.rightMargin=0;
     if(wide)(i<5?left:right).addView(row,itemParams);else recentNotes.addView(row,itemParams);
     applyTouchFeedback(row);row.setFocusable(true);
     row.setContentDescription("Buka "+(k.startsWith("m_")?"kitab ":"nota ")+t);
