@@ -556,8 +556,13 @@ public class MainActivity extends Activity {
    String family=wisdomFamilies[new java.util.Random().nextInt(wisdomFamilies.length)];
    wisdomBody.setTypeface(android.graphics.Typeface.create(family,android.graphics.Typeface.NORMAL));
    wisdomBody.setGravity(Gravity.CENTER);wisdomBody.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
+   ScrollView wisdomScroll=new ScrollView(this);
+   wisdomScroll.setFillViewport(false);
+   wisdomScroll.setVerticalScrollBarEnabled(false);
+   wisdomScroll.setNestedScrollingEnabled(true);
    LinearLayout.LayoutParams wisdomTextParams=new LinearLayout.LayoutParams(-1,0,1);
-   wisdomTextParams.topMargin=dp(0);wisdomCard.addView(wisdomBody,wisdomTextParams);
+   wisdomTextParams.topMargin=dp(0);wisdomCard.addView(wisdomScroll,wisdomTextParams);
+   wisdomScroll.addView(wisdomBody,new ScrollView.LayoutParams(-1,-2));
    final int[] wisdomIndex={new java.util.Random().nextInt(sampleWisdom.size())};
    final long[] wisdomLastTap={0L};
    View.OnClickListener wisdomTap=v->{
@@ -571,8 +576,25 @@ public class MainActivity extends Activity {
      setHomeWisdomText(wisdomBody,sampleWisdom.get(wisdomIndex[0]));
     }
    };
-   wisdomBody.setOnClickListener(wisdomTap);
-   wisdomBody.setOnLongClickListener(v->{maktabah=true;edit("m_hikmah_ringkas");return true;});
+   android.view.GestureDetector wisdomGestures=new android.view.GestureDetector(this,new android.view.GestureDetector.SimpleOnGestureListener(){
+    @Override public boolean onDown(android.view.MotionEvent e){return true;}
+    @Override public boolean onSingleTapConfirmed(android.view.MotionEvent e){
+     wisdomIndex[0]=(wisdomIndex[0]+1)%sampleWisdom.size();
+     setHomeWisdomText(wisdomBody,sampleWisdom.get(wisdomIndex[0]));
+     wisdomScroll.scrollTo(0,0);
+     return true;
+    }
+    @Override public boolean onDoubleTap(android.view.MotionEvent e){maktabah=true;read("m_hikmah_ringkas");return true;}
+    @Override public void onLongPress(android.view.MotionEvent e){maktabah=true;edit("m_hikmah_ringkas");}
+   });
+   wisdomScroll.setOnTouchListener((v,event)->{
+    if(event.getActionMasked()==android.view.MotionEvent.ACTION_DOWN)
+     v.getParent().requestDisallowInterceptTouchEvent(true);
+    wisdomGestures.onTouchEvent(event);
+    if(event.getActionMasked()==android.view.MotionEvent.ACTION_UP||event.getActionMasked()==android.view.MotionEvent.ACTION_CANCEL)
+     v.getParent().requestDisallowInterceptTouchEvent(false);
+    return false;
+   });
    setHomeWisdomText(wisdomBody,sampleWisdom.get(wisdomIndex[0]));
    wisdomCard.setContentDescription("Mutiara Hikmah. Ketik untuk petikan lain. Ketik dua kali untuk buka topik. Tekan lama untuk edit posting");
    wisdomCard.setOnClickListener(wisdomTap);
