@@ -563,13 +563,19 @@ public class MainActivity extends Activity {
   int widthPx=root!=null&&root.getWidth()>0?root.getWidth():getWindow().getDecorView().getWidth();
   return widthPx>0?Math.round(widthPx/getResources().getDisplayMetrics().density):0;
  }
- void dashboardSection(LinearLayout target,String heading,ArrayList<String> keys,boolean pin){
+ void dashboardSection(LinearLayout parent,String heading,ArrayList<String> keys,boolean pin){
+  LinearLayout target=new LinearLayout(this);target.setOrientation(LinearLayout.VERTICAL);
+  target.setBackground(homeInsetSurface(0xfffdfefe,0xfffdfefe,0xffc1ccc8,10));
+  target.setPadding(dp(3),0,dp(3),0);
+  LinearLayout.LayoutParams outerParams=new LinearLayout.LayoutParams(-1,-2);
+  outerParams.topMargin=dp(3);outerParams.bottomMargin=dp(2);
+  parent.addView(target,outerParams);
   // Keep folded rows compact; unfolded columns retain comfortable touch targets.
   boolean folded=homeWindowWidthDp()<440;
   boolean collapsed=prefs.getBoolean(pin?"home_pinned_collapsed":"home_updated_collapsed",false);
   TextView title=dashboardText((pin?"◆  ":"◷  ")+heading+"    "+Math.min(3,keys.size())+" Topik  "+(collapsed?"▸":"▾"),15,true);
   title.setTextColor(0xff365c48);
-  title.setBackground(dashboardTileSurface(!pin));title.setElevation(0);title.setPadding(dp(10),dp(folded?6:8),dp(10),dp(folded?6:8));title.setIncludeFontPadding(false);title.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);title.setSingleLine(true);title.setEllipsize(android.text.TextUtils.TruncateAt.END);title.setContentDescription(heading+", ketik untuk buka atau lipat");title.setTooltipText(heading);title.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);LinearLayout.LayoutParams titleParams=new LinearLayout.LayoutParams(-1,-2);titleParams.topMargin=dp(5);titleParams.bottomMargin=dp(5);target.addView(title,titleParams);
+  title.setBackground(dashboardTileSurface(!pin));title.setElevation(0);title.setPadding(dp(10),dp(folded?6:8),dp(10),dp(folded?6:8));title.setIncludeFontPadding(false);title.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);title.setSingleLine(true);title.setEllipsize(android.text.TextUtils.TruncateAt.END);title.setContentDescription(heading+", ketik untuk buka atau lipat");title.setTooltipText(heading);title.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);LinearLayout.LayoutParams titleParams=new LinearLayout.LayoutParams(-1,-2);titleParams.topMargin=dp(3);titleParams.bottomMargin=dp(3);target.addView(title,titleParams);
   title.setFocusable(true);applyTouchFeedback(title);
   title.setOnClickListener(v->{prefs.edit().putBoolean(pin?"home_pinned_collapsed":"home_updated_collapsed",!collapsed).apply();home();});
   if(collapsed)return;
