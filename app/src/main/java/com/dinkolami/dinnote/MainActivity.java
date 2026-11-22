@@ -376,9 +376,6 @@ public class MainActivity extends Activity {
      if(actualDp>0&&(actualDp>=440)!=builtWide)home();
     });
    });
-  LinearLayout card=new LinearLayout(this);card.setOrientation(1);card.setClipToPadding(false);
-  card.setBackground(homeInsetSurface(0xfffdfefe,0xfffdfefe,0xffc1ccc8,10));
-  LinearLayout.LayoutParams cp=new LinearLayout.LayoutParams(-1,-2);page.addView(card,cp);
   // The frontpage category tiles now begin directly beneath the search controls.
   int noteCount=0,bookCount=0;
   for(String postingKey:prefs.getAll().keySet()){
@@ -386,7 +383,7 @@ public class MainActivity extends Activity {
    if(postingKey.startsWith("n_"))noteCount++;
    else if(postingKey.startsWith("m_"))bookCount++;
   }
-  LinearLayout tiles=new LinearLayout(this);tiles.setPadding(dp(8),dp(3),dp(8),dp(5));card.addView(tiles);
+  LinearLayout tiles=new LinearLayout(this);tiles.setGravity(Gravity.CENTER_VERTICAL);tiles.setPadding(dp(10),dp(2),dp(10),dp(3));tiles.setBackgroundColor(0xfff7f8f4);root.addView(tiles,1,new LinearLayout.LayoutParams(-1,dp(48)));
   for(int j=0;j<2;j++){
    final boolean isBook=j==1;
    LinearLayout tile=new LinearLayout(this);tile.setGravity(Gravity.CENTER_VERTICAL);
@@ -401,24 +398,24 @@ public class MainActivity extends Activity {
    count.setTextColor(0xff52725e);count.setGravity(Gravity.CENTER);count.setPadding(dp(5),0,dp(5),0);
    count.setBackground(rounded(isBook?0xffe0e5e1:0xffd0e0d5,isBook?0xffd7ded9:0xffcbdcd0,8));
    tile.addView(count,new LinearLayout.LayoutParams(-2,dp(24)));
-   LinearLayout.LayoutParams tp=new LinearLayout.LayoutParams(0,dp(54),1);
+   LinearLayout.LayoutParams tp=new LinearLayout.LayoutParams(0,dp(42),1);
    if(isBook)tp.leftMargin=dp(4);else tp.rightMargin=dp(4);
    tiles.addView(tile,tp);tile.setFocusable(true);
    tile.setContentDescription((isBook?"Maktabah, ":"Nota, ")+(isBook?bookCount:noteCount)+" topik");
    tile.setOnClickListener(v->openSection(isBook));applyTouchFeedback(tile);
   }
   // Scrollable home shortcuts beside the Nota/Maktabah summary tiles.
-  TextView recentIcon=dashboardText("◷",22,true);
+  TextView recentIcon=dashboardText("◷",19,true);
   recentIcon.setGravity(Gravity.CENTER);recentIcon.setTextColor(0xff47745d);
-  recentIcon.setBackground(rounded(0xfffdfcf7,0xffd8c69c,9));
+  recentIcon.setBackground(rounded(0xfffdfefe,0xffcdd6df,9));
   recentIcon.setContentDescription("Baru dilihat: pilih paparan");
-  LinearLayout.LayoutParams recentIconParams=new LinearLayout.LayoutParams(dp(36),dp(42));
+  LinearLayout.LayoutParams recentIconParams=new LinearLayout.LayoutParams(dp(36),dp(38));
   recentIconParams.leftMargin=dp(5);tiles.addView(recentIcon,recentIconParams);
   recentIcon.setOnClickListener(v->new AlertDialog.Builder(this).setItems(new String[]{"Baru dilihat","Semua nota","Maktabah"},(d,i)->{if(i==2)openSection(true);else openSection(false);}).show());
   applyTouchFeedback(recentIcon);
-  TextView searchIcon=dashboardText("⌕",25,true);
+  TextView searchIcon=dashboardText("⌕",22,true);
   searchIcon.setGravity(Gravity.CENTER);searchIcon.setTextColor(0xff47745d);
-  searchIcon.setBackground(rounded(0xfffdfcf7,0xffd8c69c,9));
+  searchIcon.setBackground(rounded(0xfffdfefe,0xffcdd6df,9));
   searchIcon.setContentDescription("Cari nota atau kitab");
   LinearLayout.LayoutParams searchIconParams=new LinearLayout.LayoutParams(dp(36),dp(42));
   searchIconParams.leftMargin=dp(4);tiles.addView(searchIcon,searchIconParams);
