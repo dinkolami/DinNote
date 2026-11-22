@@ -793,7 +793,7 @@ public class MainActivity extends Activity {
   setContentView(root);applySystemBarInsets(root);
  }
  Button action(String label,LinearLayout bar,Runnable callback){Button b=new Button(this);b.setText(label);b.setAllCaps(false);b.setTextSize(13);b.setMinWidth(0);b.setMinimumWidth(0);b.setMinHeight(0);b.setMinimumHeight(0);b.setPadding(dp(12),dp(8),dp(12),dp(8));b.setBackground(rounded(0xfff6f8fa,0xffe1e7e3,12));LinearLayout.LayoutParams buttonParams=new LinearLayout.LayoutParams(-2,dp("reader_toolbar".equals(bar.getTag())?34:42));buttonParams.setMargins(dp(3),dp("reader_toolbar".equals(bar.getTag())?3:5),dp(3),dp("reader_toolbar".equals(bar.getTag())?3:5));bar.addView(b,buttonParams);if("reader_toolbar".equals(bar.getTag())){android.graphics.drawable.GradientDrawable emerald=new android.graphics.drawable.GradientDrawable(android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,new int[]{0xffffffff,0xffedf7f0});emerald.setCornerRadius(dp(13));emerald.setStroke(dp(1),0xffb6cdbd);b.setBackground(emerald);b.setTextColor(0xff566a70);b.setElevation(dp(2));b.setTypeface(android.graphics.Typeface.DEFAULT,android.graphics.Typeface.BOLD);}b.setOnClickListener(v->callback.run());return b;}
- void returnFromReader(){selected=null;if(sectionOpen)notesPage();else home();}
+ void returnFromReader(){if(selected!=null)saveReaderPosition(selected);getWindow().clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);prefs.edit().putBoolean("reader_clean_mode",false).apply();selected=null;if(sectionOpen)notesPage();else home();}
 
 
  void showPagedReader(String key){
@@ -3086,6 +3086,13 @@ public class MainActivity extends Activity {
   if(editor!=null&&!prefs.edit().commit())
    android.util.Log.e("DinNote","Failed to flush editor data on stop");
   super.onStop();
+ }
+ @Override public boolean onKeyDown(int keyCode,android.view.KeyEvent event){
+  if(editor==null&&selected!=null&&readerScroll!=null&&readerScroll.isAttachedToWindow()&&prefs.getBoolean("reader_clean_mode",false)&&(keyCode==KeyEvent.KEYCODE_VOLUME_UP||keyCode==KeyEvent.KEYCODE_VOLUME_DOWN)){
+   readerScroll.smoothScrollBy(0,(keyCode==KeyEvent.KEYCODE_VOLUME_DOWN?1:-1)*Math.max(dp(80),readerScroll.getHeight()*2/3));
+   return true;
+  }
+  return super.onKeyDown(keyCode,event);
  }
  public void onBackPressed(){if(editor!=null){finishEditingSafely();}else if(selected!=null){returnFromReader();}else if(sectionOpen){home();}else super.onBackPressed();}
 }
