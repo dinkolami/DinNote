@@ -2796,7 +2796,15 @@ public class MainActivity extends Activity {
     final String commentaryKey="syarahan_"+key+"_"+(baseLine+i);
     LinearLayout wrapper=new LinearLayout(this);wrapper.setOrientation(1);
     LinearLayout heading=new LinearLayout(this);heading.setOrientation(0);heading.setGravity(Gravity.CENTER_VERTICAL);
-    TextView title=text(line.trim(),fontSize);title.setTextColor(0xff303c43);title.setPadding(dp(8),dp(2),dp(3),dp(2));heading.addView(title,new LinearLayout.LayoutParams(0,-2,1));
+    // Match the original pearl-and-gold numbered medallion in the normal reader.
+    FrameLayout medallion=new FrameLayout(this);
+    android.graphics.drawable.GradientDrawable ring=new android.graphics.drawable.GradientDrawable();
+    ring.setShape(android.graphics.drawable.GradientDrawable.OVAL);ring.setColor(0xfffcf8ed);ring.setStroke(dp(1),0xffc3a35a);
+    medallion.setBackground(ring);
+    TextView numeral=text(numbered.group(1),17);numeral.setGravity(Gravity.CENTER);numeral.setTextColor(0xff176b47);numeral.setIncludeFontPadding(false);
+    FrameLayout.LayoutParams numeralParams=new FrameLayout.LayoutParams(-1,-1);medallion.addView(numeral,numeralParams);
+    LinearLayout.LayoutParams medalParams=new LinearLayout.LayoutParams(dp(34),dp(34));medalParams.setMargins(dp(4),0,dp(9),0);heading.addView(medallion,medalParams);
+    TextView title=text(numbered.group(2),fontSize);title.setTextColor(0xff303c43);title.setPadding(0,dp(2),dp(3),dp(2));heading.addView(title,new LinearLayout.LayoutParams(0,-2,1));
     TextView arrow=text("⌄",18);arrow.setTextColor(0xff176b47);arrow.setGravity(Gravity.CENTER);arrow.setContentDescription("Buka atau tutup huraian nombor "+numbered.group(1));heading.addView(arrow,new LinearLayout.LayoutParams(dp(40),dp(36)));
     wrapper.addView(heading);
     LinearLayout details=new LinearLayout(this);details.setOrientation(1);details.setPadding(dp(10),dp(4),dp(10),dp(6));details.setBackground(rounded(0xfff8faf5,0xffd9e4d6,10));details.setVisibility(View.GONE);
