@@ -577,6 +577,8 @@ public class MainActivity extends Activity {
    final int[] wisdomBorders={0xffd8c69c,0xffb7d2be,0xffd4c5df};
    final int wisdomStyle=new java.util.Random().nextInt(wisdomBorders.length);
    wisdomCard.setBackground(rounded(0xfffdfcf7,wisdomBorders[wisdomStyle],11));
+   wisdomCard.setClipToOutline(true);
+   wisdomCard.setClipChildren(true);
    LinearLayout.LayoutParams wisdomParams=new LinearLayout.LayoutParams(-1,dp(126));
    wisdomParams.bottomMargin=dp(5);footer.addView(wisdomCard,wisdomParams);
    TextView wisdomHeading=dashboardText("❀  Mutiara Hikmah  ❀",14,true);
