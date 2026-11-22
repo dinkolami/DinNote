@@ -1695,6 +1695,34 @@ public class MainActivity extends Activity {
    FrameLayout.LayoutParams floatingParams=new FrameLayout.LayoutParams(dp(30),dp(30),Gravity.BOTTOM|Gravity.LEFT);
    floatingParams.setMargins(dp(5),0,0,dp(8));
    lectureSurface.addView(floatingBack,floatingParams);
+   floatingBack.setOnTouchListener(new View.OnTouchListener(){
+    float downX,downY,initialX,initialY;
+    boolean dragging;
+    public boolean onTouch(View v,android.view.MotionEvent event){
+     switch(event.getActionMasked()){
+      case android.view.MotionEvent.ACTION_DOWN:
+       downX=event.getRawX();downY=event.getRawY();
+       initialX=v.getX();initialY=v.getY();dragging=false;
+       v.getParent().requestDisallowInterceptTouchEvent(true);
+       return true;
+      case android.view.MotionEvent.ACTION_MOVE:
+       float dx=event.getRawX()-downX,dy=event.getRawY()-downY;
+       if(Math.hypot(dx,dy)>android.view.ViewConfiguration.get(MainActivity.this).getScaledTouchSlop())dragging=true;
+       if(dragging){
+        v.setX(Math.max(0,Math.min(lectureSurface.getWidth()-v.getWidth(),initialX+dx)));
+        v.setY(Math.max(0,Math.min(lectureSurface.getHeight()-v.getHeight(),initialY+dy)));
+       }
+       return true;
+      case android.view.MotionEvent.ACTION_UP:
+       v.getParent().requestDisallowInterceptTouchEvent(false);
+       if(!dragging)v.performClick();
+       return true;
+      case android.view.MotionEvent.ACTION_CANCEL:
+       v.getParent().requestDisallowInterceptTouchEvent(false);return true;
+     }
+     return false;
+    }
+   });
    root.addView(lectureSurface,new LinearLayout.LayoutParams(-1,0,1));
   }else root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
    // Compact reading progress indicator shared by Nota and Maktabah.
