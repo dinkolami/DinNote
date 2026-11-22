@@ -376,30 +376,6 @@ public class MainActivity extends Activity {
      if(actualDp>0&&(actualDp>=440)!=builtWide)home();
     });
    });
-  TextView recent=dashboardText("◷",22,true);
-  recent.setBackground(rounded(0xfffdfefe,0xffcdd6df,9));recent.setTextColor(0xff566a70);recent.setIncludeFontPadding(false);
-  LinearLayout quickTools=new LinearLayout(this);quickTools.setOrientation(LinearLayout.HORIZONTAL);quickTools.setGravity(Gravity.CENTER_VERTICAL);
-  LinearLayout.LayoutParams quickParams=new LinearLayout.LayoutParams(-1,-2);quickParams.bottomMargin=dp(1);
-  quickTools.setPadding(dp(10),dp(4),dp(10),dp(6));quickTools.setBackgroundColor(0xfffffefd);quickTools.setElevation(dp(1));
-  // Keep dashboard search and view selector visible while the note list scrolls.
-  root.addView(quickTools,2,quickParams);
-  LinearLayout.LayoutParams rp=new LinearLayout.LayoutParams(dp(42),dp(42));rp.rightMargin=dp(6);
-  recent.setGravity(Gravity.CENTER);recent.setPadding(0,0,0,0);
-  quickTools.addView(recent,rp);
-  recent.setContentDescription("Pilih paparan: baru dilihat, semua nota atau Maktabah");recent.setFocusable(true);applyTouchFeedback(recent);
-  recent.setOnClickListener(v->new AlertDialog.Builder(this).setItems(new String[]{"Baru dilihat","Semua nota","Maktabah"},(d,i)->{if(i==2)openSection(true);else openSection(false);}).show());
-  EditText search=new EditText(this);search.setSingleLine(true);search.setTextSize(14);
-  search.setHint("⌕");search.setContentDescription("Cari nota atau kitab");
-  search.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);
-  search.setInputType(android.text.InputType.TYPE_CLASS_TEXT);
-  search.setPadding(dp(12),dp(6),dp(12),dp(6));
-  search.setBackground(rounded(0xffffffff,0xffcdd6df,9));
-  LinearLayout.LayoutParams sp=new LinearLayout.LayoutParams(0,dp(42),1);
-  quickTools.addView(search,sp);
-  search.addTextChangedListener(new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){String q=s.toString().trim();if(!q.isEmpty())showHomeSearchResults(q);}public void afterTextChanged(Editable e){}});
-  TextView clearSearch=dashboardText("×",22,true);clearSearch.setGravity(Gravity.CENTER);clearSearch.setTextColor(0xff587463);clearSearch.setContentDescription("Padam carian");clearSearch.setVisibility(View.GONE);quickTools.addView(clearSearch,new LinearLayout.LayoutParams(dp(34),dp(42)));clearSearch.setOnClickListener(v->search.setText(""));applyTouchFeedback(clearSearch);
-  search.addTextChangedListener(new TextWatcher(){public void beforeTextChanged(CharSequence t,int st,int c,int a){}public void onTextChanged(CharSequence t,int st,int before,int count){clearSearch.setVisibility(t.length()>0?View.VISIBLE:View.GONE);}public void afterTextChanged(Editable e){}});
-  search.setOnEditorActionListener((v,id,event)->{String q=search.getText().toString().trim();if(q.isEmpty()){search.setError("Masukkan kata carian");return true;}openSection(false);list(q);return true;});
   LinearLayout card=new LinearLayout(this);card.setOrientation(1);card.setClipToPadding(false);
   card.setBackground(homeInsetSurface(0xfffdfefe,0xfffdfefe,0xffc1ccc8,10));
   LinearLayout.LayoutParams cp=new LinearLayout.LayoutParams(-1,-2);page.addView(card,cp);
@@ -431,6 +407,34 @@ public class MainActivity extends Activity {
    tile.setContentDescription((isBook?"Maktabah, ":"Nota, ")+(isBook?bookCount:noteCount)+" topik");
    tile.setOnClickListener(v->openSection(isBook));applyTouchFeedback(tile);
   }
+  // Scrollable home shortcuts beside the Nota/Maktabah summary tiles.
+  TextView recentIcon=dashboardText("◷",22,true);
+  recentIcon.setGravity(Gravity.CENTER);recentIcon.setTextColor(0xff47745d);
+  recentIcon.setBackground(rounded(0xfffdfcf7,0xffd8c69c,9));
+  recentIcon.setContentDescription("Baru dilihat: pilih paparan");
+  LinearLayout.LayoutParams recentIconParams=new LinearLayout.LayoutParams(dp(36),dp(42));
+  recentIconParams.leftMargin=dp(5);tiles.addView(recentIcon,recentIconParams);
+  recentIcon.setOnClickListener(v->new AlertDialog.Builder(this).setItems(new String[]{"Baru dilihat","Semua nota","Maktabah"},(d,i)->{if(i==2)openSection(true);else openSection(false);}).show());
+  applyTouchFeedback(recentIcon);
+  TextView searchIcon=dashboardText("⌕",25,true);
+  searchIcon.setGravity(Gravity.CENTER);searchIcon.setTextColor(0xff47745d);
+  searchIcon.setBackground(rounded(0xfffdfcf7,0xffd8c69c,9));
+  searchIcon.setContentDescription("Cari nota atau kitab");
+  LinearLayout.LayoutParams searchIconParams=new LinearLayout.LayoutParams(dp(36),dp(42));
+  searchIconParams.leftMargin=dp(4);tiles.addView(searchIcon,searchIconParams);
+  searchIcon.setOnClickListener(v->{
+   EditText queryInput=new EditText(this);
+   queryInput.setSingleLine(true);queryInput.setTextSize(15);queryInput.setHint("Cari nota atau kitab");
+   queryInput.setInputType(android.text.InputType.TYPE_CLASS_TEXT);
+   LinearLayout searchContainer=new LinearLayout(this);searchContainer.setPadding(dp(16),dp(4),dp(16),0);
+   searchContainer.addView(queryInput,new LinearLayout.LayoutParams(-1,-2));
+   new AlertDialog.Builder(this).setTitle("Carian").setView(searchContainer)
+    .setPositiveButton("Cari",(dialog,which)->{
+     String q=queryInput.getText().toString().trim();
+     if(!q.isEmpty()){openSection(false);list(q);}
+    }).setNegativeButton("Batal",null).show();
+  });
+  applyTouchFeedback(searchIcon);
   // Compact GitHub-style shortcuts, without changing the approved header.
   LinearLayout shortcuts=new LinearLayout(this);shortcuts.setOrientation(1);
   shortcuts.setPadding(0,0,0,dp(1));page.addView(shortcuts);
