@@ -3634,14 +3634,14 @@ public class MainActivity extends Activity {
   final StringBuilder credits=new StringBuilder();
   int total=0;boolean valid=true;
   for(String line:lines){
-   if(line.startsWith("#")){credits.append(line).append('\\n');continue;}
+   if(line.startsWith("#")){credits.append(line).append('\n');continue;}
    if(line.trim().isEmpty())continue;
    int p=line.indexOf('|'),q=p<0?-1:line.indexOf('|',p+1);
    try{
     int chapter=Integer.parseInt(line.substring(0,p)),verse=Integer.parseInt(line.substring(p+1,q));
     if(chapter<1||chapter>114||verse!=counts[chapter-1]+1||q+1>=line.length())throw new IllegalArgumentException();
     if(chapters[chapter-1]==null)chapters[chapter-1]=new StringBuilder();
-    chapters[chapter-1].append(verse).append("  ").append(line.substring(q+1)).append('\\n');
+    chapters[chapter-1].append(verse).append("  ").append(line.substring(q+1)).append('\n');
     counts[chapter-1]++;total++;
    }catch(Exception e){valid=false;break;}
   }
