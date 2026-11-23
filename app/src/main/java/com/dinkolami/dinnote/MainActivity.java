@@ -2136,7 +2136,9 @@ public class MainActivity extends Activity {
       commentaryEditor.setHint("Tulis syarahan di sini…");
       commentaryEditor.setTextSize(15);
       commentaryEditor.setTextColor(0xff303c43);
-      commentaryEditor.setMinLines(2);
+      // Compact empty commentary fields; keep populated commentary at its original size.
+      if(commentaryEditor.length()==0){commentaryEditor.setMinLines(1);commentaryEditor.setPadding(dp(4),0,dp(4),dp(2));}
+      else commentaryEditor.setMinLines(2);
       commentaryEditor.setInputType(android.text.InputType.TYPE_CLASS_TEXT|android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE|android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
       // Commentary may mix Arabic and Rumi in one line: keep the paragraph
       // anchored to the left while Android still shapes Arabic glyphs correctly.
