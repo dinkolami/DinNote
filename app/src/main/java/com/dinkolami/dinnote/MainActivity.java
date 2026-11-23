@@ -3635,7 +3635,7 @@ public class MainActivity extends Activity {
   String[] lines=raw.split("\\r?\\n");int found=0;
   for(String line:lines){
    if(line.startsWith("#")||line.trim().isEmpty())continue;
-   if(!line.matches("[0-9]{1,3}\\\\|[0-9]{1,3}\\\\|.+"))return false;
+   if(!line.matches("[0-9]{1,3}\\|[0-9]{1,3}\\|.+"))return false;
    found++;
   }
   return found==6236;
