@@ -3615,6 +3615,9 @@ public class MainActivity extends Activity {
     if(raw.indexOf(0)>=0||raw.indexOf('\uFFFD')>=0||raw.startsWith("%PDF"))throw new java.io.IOException("Format tidak disokong");
     body="text/html".equals(mime)||filename.toLowerCase(java.util.Locale.ROOT).endsWith(".html")?android.text.Html.fromHtml(raw,0).toString():raw;
    }
+   if(filename.toLowerCase(java.util.Locale.ROOT).endsWith(".txt")&&looksLikeQuranVerses(body)){
+    offerQuranSurahImport(body);return;
+   }
    if(body.length()>500000)throw new java.io.IOException("Pecahkan kitab kepada jilid lebih kecil");
    if(body.trim().isEmpty())throw new java.io.IOException("Teks kosong");
    EditText name=new EditText(this);name.setHint("Nama kitab");name.setSingleLine(true);name.setText(filename.replaceFirst("\\.[^.]+$",""));
@@ -3626,6 +3629,57 @@ public class MainActivity extends Activity {
     if(ok)openSection(true);else Toast.makeText(this,"Simpan gagal",Toast.LENGTH_LONG).show();
    }).show();
   }catch(Exception e){Toast.makeText(this,"Import gagal: "+e.getMessage(),Toast.LENGTH_LONG).show();}
+ }
+ // Tanzil plain-text Quran import: 114 independent surahs; original verse text is never normalized.
+ boolean looksLikeQuranVerses(String raw){
+  String[] lines=raw.split("\\r?\\n");int found=0;
+  for(String line:lines){
+   if(line.startsWith("#")||line.trim().isEmpty())continue;
+   if(!line.matches("[0-9]{1,3}\\\\|[0-9]{1,3}\\\\|.+"))return false;
+   found++;
+  }
+  return found==6236;
+ }
+ void offerQuranSurahImport(String raw){
+  final String[] surahNames={"الفاتحة","البقرة","آل عمران","النساء","المائدة","الأنعام","الأعراف","الأنفال","التوبة","يونس","هود","يوسف","الرعد","إبراهيم","الحجر","النحل","الإسراء","الكهف","مريم","طه","الأنبياء","الحج","المؤمنون","النور","الفرقان","الشعراء","النمل","القصص","العنكبوت","الروم","لقمان","السجدة","الأحزاب","سبأ","فاطر","يس","الصافات","ص","الزمر","غافر","فصلت","الشورى","الزخرف","الدخان","الجاثية","الأحقاف","محمد","الفتح","الحجرات","ق","الذاريات","الطور","النجم","القمر","الرحمن","الواقعة","الحديد","المجادلة","الحشر","الممتحنة","الصف","الجمعة","المنافقون","التغابن","الطلاق","التحريم","الملك","القلم","الحاقة","المعارج","نوح","الجن","المزمل","المدثر","القيامة","الإنسان","المرسلات","النبأ","النازعات","عبس","التكوير","الانفطار","المطففين","الانشقاق","البروج","الطارق","الأعلى","الغاشية","الفجر","البلد","الشمس","الليل","الضحى","الشرح","التين","العلق","القدر","البينة","الزلزلة","العاديات","القارعة","التكاثر","العصر","الهمزة","الفيل","قريش","الماعون","الكوثر","الكافرون","النصر","المسد","الإخلاص","الفلق","الناس"};
+  final String[] lines=raw.split("\\r?\\n");
+  final StringBuilder[] chapters=new StringBuilder[114];
+  final int[] counts=new int[114];
+  final StringBuilder credits=new StringBuilder();
+  int total=0;boolean valid=true;
+  for(String line:lines){
+   if(line.startsWith("#")){credits.append(line).append('\\n');continue;}
+   if(line.trim().isEmpty())continue;
+   int p=line.indexOf('|'),q=p<0?-1:line.indexOf('|',p+1);
+   try{
+    int chapter=Integer.parseInt(line.substring(0,p)),verse=Integer.parseInt(line.substring(p+1,q));
+    if(chapter<1||chapter>114||verse!=counts[chapter-1]+1||q+1>=line.length())throw new IllegalArgumentException();
+    if(chapters[chapter-1]==null)chapters[chapter-1]=new StringBuilder();
+    chapters[chapter-1].append(verse).append("  ").append(line.substring(q+1)).append('\\n');
+    counts[chapter-1]++;total++;
+   }catch(Exception e){valid=false;break;}
+  }
+  if(!valid||total!=6236||credits.indexOf("Tanzil")<0){
+   new AlertDialog.Builder(this).setTitle("Import al-Quran dihentikan").setMessage("Format, turutan ayat atau maklumat sumber tidak lengkap. Tiada kandungan disimpan.").setPositiveButton("OK",null).show();return;
+  }
+  for(int i=0;i<114;i++)if(chapters[i]==null){Toast.makeText(this,"Surah tidak lengkap",Toast.LENGTH_LONG).show();return;}
+  new AlertDialog.Builder(this).setTitle("Import al-Quran · 114 surah")
+   .setMessage("6,236 ayat disahkan mengikut turutan fail. Setiap surah akan menjadi topik Maktabah. Teks ayat asal dikekalkan, bersama atribusi Tanzil. Surah sedia ada daripada import ini akan dikemas kini tanpa pendua.")
+   .setNegativeButton("Batal",null)
+   .setPositiveButton("Import 114 surah",(dialog,which)->{
+    android.content.SharedPreferences.Editor batch=prefs.edit();
+    long now=System.currentTimeMillis();
+    for(int i=0;i<114;i++){
+     String key=String.format(java.util.Locale.ROOT,"m_quran_tanzil_simple_%03d",i+1);
+     String title=String.format(java.util.Locale.ROOT,"%03d · سورة %s",i+1,surahNames[i]);
+     String content=chapters[i].toString().trim()+"\\n\\n— Sumber: Tanzil Quran Text (Simple). Lesen CC BY 3.0. https://tanzil.net\\n";
+     batch.putString(key,content).putString("title_"+key,title).putString("cat_"+key,"Al-Quran")
+       .putLong("updated_"+key,now).putBoolean("deleted_"+key,false);
+    }
+    batch.putString("quran_tanzil_source_notice",credits.toString());
+    if(batch.commit()){Toast.makeText(this,"114 surah berjaya diimport",Toast.LENGTH_LONG).show();openSection(true);}
+    else new AlertDialog.Builder(this).setTitle("Import gagal").setMessage("Tidak dapat menyimpan koleksi al-Quran. Cuba lagi selepas ruang storan dikosongkan.").setPositiveButton("OK",null).show();
+   }).show();
  }
  void chooseComparison(String first){
   ArrayList<String> keys=new ArrayList<>(),names=new ArrayList<>();
