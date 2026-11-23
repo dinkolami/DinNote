@@ -2631,19 +2631,9 @@ public class MainActivity extends Activity {
    boolean imeComposing=android.view.inputmethod.BaseInputConnection.getComposingSpanStart(e)>=0;
    if(!restoring[0]&&!imeComposing&&!before.equals(e.toString())){
    int cursor=editor.getSelectionStart();
-   if(cursor>0&&cursor<=e.length()&&e.charAt(cursor-1)=='\n'){
-    String prior=e.subSequence(0,cursor-1).toString();
-    int start=prior.lastIndexOf('\n')+1;
-    String previousLine=prior.substring(start);
-    java.util.regex.Matcher numbered=java.util.regex.Pattern.compile("^\\s*(\\d+)\\.\\s*(.*)$").matcher(previousLine);
-    if(numbered.matches()){
-     int next=1;try{int current=Integer.parseInt(numbered.group(1));next=current<Integer.MAX_VALUE?current+1:1;}catch(NumberFormatException ignored){}
-     restoring[0]=true;
-     if(numbered.group(2).trim().isEmpty()){e.delete(start,cursor);editor.setSelection(start);}
-     else{String prefix=next+". ";e.insert(cursor,prefix);editor.setSelection(cursor+prefix.length());}
-     restoring[0]=false;
-    }
-   }
+   // Do not automatically continue numbered headings after Enter.
+   // Samsung keyboard whitespace/composition could create a duplicate, hard-to-delete
+   // next number. Users can explicitly type the next heading when needed.
    if(snapshot!=null)undoHistory.addLast(snapshot);if(undoHistory.size()>100)undoHistory.removeFirst();redoHistory.clear();historyButtons[0].setAlpha(1f);historyButtons[1].setAlpha(0.35f);}
    // Recheck Arabic when text is typed or pasted into an initially Rumi-only note.
    // Typeface updates do not modify Editable content or its autosave state.
