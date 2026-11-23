@@ -387,15 +387,15 @@ public class MainActivity extends Activity {
   for(int j=0;j<2;j++){
    final boolean isBook=j==1;
    LinearLayout tile=new LinearLayout(this);tile.setGravity(Gravity.CENTER_VERTICAL);
-   tile.setPadding(dp(8),0,dp(8),0);
+   tile.setPadding(dp(5),0,dp(5),0);
    tile.setBackground(dashboardTileSurface(false));tile.setElevation(0);
    TextView symbol=dashboardText(isBook?"▤":"✎",20,false);
    symbol.setTextColor(0xff528069);symbol.setPadding(0,0,dp(5),0);tile.addView(symbol);
-   TextView label=dashboardText(isBook?"Maktabah":"Nota",12,true);
+   TextView label=dashboardText(isBook?"Maktabah":"Nota",isBook?11:12,true);
    label.setTextColor(0xff365c48);label.setSingleLine(true);label.setPadding(0,0,0,0);
    tile.addView(label,new LinearLayout.LayoutParams(0,-2,1));
    TextView count=dashboardText(String.valueOf(isBook?bookCount:noteCount),14,true);
-   count.setTextColor(0xff52725e);count.setGravity(Gravity.CENTER);count.setPadding(dp(5),0,dp(5),0);
+   count.setTextColor(0xff52725e);count.setGravity(Gravity.CENTER);count.setPadding(dp(3),0,dp(3),0);
    count.setBackground(rounded(isBook?0xffe0e5e1:0xffd0e0d5,isBook?0xffd7ded9:0xffcbdcd0,8));
    tile.addView(count,new LinearLayout.LayoutParams(-2,dp(24)));
    LinearLayout.LayoutParams tp=new LinearLayout.LayoutParams(0,dp(38),1);
