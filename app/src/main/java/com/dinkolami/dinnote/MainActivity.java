@@ -337,7 +337,7 @@ public class MainActivity extends Activity {
    if(clean.isEmpty())continue;
    // Stop at the first non-Arabic line (Malay translation or source metadata).
    if(!clean.matches(".*[\u0600-\u06FF].*"))break;
-   if(arabic.length()>0)arabic.append('\\n');
+   if(arabic.length()>0)arabic.append('\n');
    arabic.append(clean);
   }
   target.setText(arabic.length()>0?arabic.toString():entry.split("\\r?\\n",2)[0].trim());
