@@ -330,27 +330,17 @@ public class MainActivity extends Activity {
   return entries;
  }
  void setHomeWisdomText(TextView target,String entry){
-  // Three-line format: Arabic, Malay translation, source. Older two-line
-  // entries remain readable; their second line is treated as a source.
-  String[] lines=entry.trim().split("\n",3);
-  String arabic=lines[0].trim();
-  String translation=lines.length>=3?lines[1].trim():"";
-  String source=lines.length>=3?lines[2].trim():(lines.length==2?lines[1].trim():"");
-  android.text.SpannableStringBuilder styled=new android.text.SpannableStringBuilder(arabic);
-  if(!arabic.isEmpty())styled.setSpan(new android.text.style.RelativeSizeSpan(1.28f),0,arabic.length(),android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-  if(!translation.isEmpty()){
-   styled.append("\n");
-   int start=styled.length();styled.append(translation);
-   styled.setSpan(new android.text.style.RelativeSizeSpan(1.06f),start,styled.length(),android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-   styled.setSpan(new android.text.style.TypefaceSpan("sans-serif-medium"),start,styled.length(),android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+  // Home preview shows Arabic only. Keep translation and source intact in the editable Maktabah post.
+  StringBuilder arabic=new StringBuilder();
+  for(String line:entry.split("\\r?\\n")){
+   String clean=line.trim();
+   if(clean.isEmpty())continue;
+   // Stop at the first non-Arabic line (Malay translation or source metadata).
+   if(!clean.matches(".*[\u0600-\u06FF].*"))break;
+   if(arabic.length()>0)arabic.append('\\n');
+   arabic.append(clean);
   }
-  if(!source.isEmpty()){
-   styled.append("\n");
-   int start=styled.length();styled.append(source);
-   styled.setSpan(new android.text.style.RelativeSizeSpan(0.76f),start,styled.length(),android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-   styled.setSpan(new android.text.style.ForegroundColorSpan(0xff718075),start,styled.length(),android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-  }
-  target.setText(styled);
+  target.setText(arabic.length()>0?arabic.toString():entry.split("\\r?\\n",2)[0].trim());
  }
  void home(){
   items=null;sectionOpen=false;editor=null;titleEditor=null;categoryPicker=null;selected=null;maktabah=false;
