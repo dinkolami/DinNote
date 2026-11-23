@@ -2048,6 +2048,8 @@ public class MainActivity extends Activity {
     java.util.regex.Matcher numbered=java.util.regex.Pattern.compile("^\\s*(\\d+)\\.\\s+(.*)$").matcher(line);
     java.util.regex.Matcher marked=java.util.regex.Pattern.compile("^\\s*([•☐☑✓])\\s+(.*)$").matcher(line);
     boolean isNumber=numbered.matches(),isMarked=!isNumber&&marked.matches();
+    java.util.regex.Matcher iconHeading=java.util.regex.Pattern.compile("^\\s*@#(?:\\s+(.+))?$").matcher(line);
+    boolean isIconHeading=!isNumber&&iconHeading.matches();
     if(line.trim().equals("---")||line.trim().equals("---FLOWER---")||line.trim().equals("---GEOMETRIC---")||line.trim().equals("---CLASSIC---")){
      LinearLayout ornament=new LinearLayout(this);ornament.setGravity(Gravity.CENTER_VERTICAL);
      ornament.setOrientation(LinearLayout.HORIZONTAL);ornament.setPadding(dp(12),dp(2),dp(12),dp(2));
@@ -2062,11 +2064,11 @@ public class MainActivity extends Activity {
      View rightRule=new View(this);rightRule.setBackgroundColor(ornamentColor);
      ornament.addView(rightRule,new LinearLayout.LayoutParams(0,dp(1),1));
      readingRows.addView(ornament);
-    }else if(isNumber||isMarked){
+    }else if(isNumber||isMarked||isIconHeading){
      LinearLayout itemRow=new LinearLayout(this);itemRow.setOrientation(LinearLayout.HORIZONTAL);
      itemRow.setGravity(Gravity.CENTER_VERTICAL);itemRow.setPadding(dp(6),dp(2),dp(6),dp(2));
-     String marker=isNumber?numbered.group(1):marked.group(1);
-     String value=isNumber?numbered.group(2):marked.group(2);
+     String marker=isNumber?numbered.group(1):(isIconHeading?"✦":marked.group(1));
+     String value=isNumber?numbered.group(2):(isIconHeading?(iconHeading.group(1)==null?"Huraian":iconHeading.group(1)):marked.group(2));
      boolean arabicHeading=java.util.regex.Pattern.compile("[\\u0600-\\u06FF]").matcher(value).find();
      // Pearl-and-gold medallion; Arabic headings put the number on the right.
      String displayMarker=marker;
@@ -2119,7 +2121,7 @@ public class MainActivity extends Activity {
      itemRow.addView(valueView,new LinearLayout.LayoutParams(0,-2,1));
      if(arabicHeading)itemRow.addView(medallion,medalParams);
      // Expandable commentary stored separately from the source note.
-     if(isNumber){
+     if(isNumber||isIconHeading){
       final String commentaryKey="syarahan_"+key+"_"+rowIndex;
       LinearLayout commentaryPanel=new LinearLayout(this);
       commentaryPanel.setOrientation(LinearLayout.VERTICAL);
@@ -2186,7 +2188,7 @@ public class MainActivity extends Activity {
       lecturePanels.add(commentaryPanel);lectureArrows.add(markerView);
       lectureHeadings.add(itemRow);lectureTitles.add(readerLabelText(value));
       medallion.setOnClickListener(toggleCommentary);
-      medallion.setContentDescription("Buka atau tutup syarahan nombor "+marker);
+      medallion.setContentDescription(isIconHeading?"Buka atau tutup huraian":("Buka atau tutup syarahan nombor "+marker));
       readingRows.addView(itemRow);
       readingRows.addView(commentaryPanel,commentaryParams);
      }else readingRows.addView(itemRow);
@@ -2986,7 +2988,9 @@ public class MainActivity extends Activity {
   for(int i=0;i<lines.length;i++){
    String line=lines[i];
    java.util.regex.Matcher numbered=java.util.regex.Pattern.compile("^\\s*(\\d+)\\.\\s+(.*)$").matcher(line);
-   if(numbered.matches()){
+   java.util.regex.Matcher iconHeading=java.util.regex.Pattern.compile("^\\s*@#(?:\\s+(.+))?$").matcher(line);
+   boolean isIconHeading=!numbered.matches()&&iconHeading.matches();
+   if(numbered.matches()||isIconHeading){
     addPlainBoxText(body,paragraph.toString(),fontSize);paragraph.setLength(0);
     final String commentaryKey="syarahan_"+key+"_"+(baseLine+i);
     LinearLayout wrapper=new LinearLayout(this);wrapper.setOrientation(1);
@@ -2996,11 +3000,11 @@ public class MainActivity extends Activity {
     android.graphics.drawable.GradientDrawable ring=new android.graphics.drawable.GradientDrawable();
     ring.setShape(android.graphics.drawable.GradientDrawable.OVAL);ring.setColor(0xfffcf8ed);ring.setStroke(dp(1),0xffc3a35a);
     medallion.setBackground(ring);
-    TextView numeral=new TextView(this);numeral.setText(numbered.group(1));numeral.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP,13);numeral.setTypeface(android.graphics.Typeface.create("sans-serif-medium",android.graphics.Typeface.NORMAL));numeral.setGravity(Gravity.CENTER);numeral.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);numeral.setTextColor(0xff176b47);numeral.setIncludeFontPadding(false);numeral.setPadding(0,0,0,0);numeral.setSingleLine(true);numeral.setMinHeight(0);numeral.setMinimumHeight(0);numeral.setMinWidth(0);numeral.setMinimumWidth(0);
+    TextView numeral=new TextView(this);numeral.setText(isIconHeading?"✦":numbered.group(1));numeral.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP,13);numeral.setTypeface(android.graphics.Typeface.create("sans-serif-medium",android.graphics.Typeface.NORMAL));numeral.setGravity(Gravity.CENTER);numeral.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);numeral.setTextColor(0xff176b47);numeral.setIncludeFontPadding(false);numeral.setPadding(0,0,0,0);numeral.setSingleLine(true);numeral.setMinHeight(0);numeral.setMinimumHeight(0);numeral.setMinWidth(0);numeral.setMinimumWidth(0);
     FrameLayout.LayoutParams numeralParams=new FrameLayout.LayoutParams(-1,-1);medallion.addView(numeral,numeralParams);
     LinearLayout.LayoutParams medalParams=new LinearLayout.LayoutParams(dp(23),dp(23));medalParams.setMargins(dp(4),0,dp(1),0);heading.addView(medallion,medalParams);
-    TextView title=text(numbered.group(2),fontSize);title.setTextColor(0xff303c43);title.setPadding(0,dp(2),dp(3),dp(2));heading.addView(title,new LinearLayout.LayoutParams(0,-2,1));
-    medallion.setContentDescription("Buka atau tutup huraian nombor "+numbered.group(1));
+    TextView title=text(isIconHeading?(iconHeading.group(1)==null?"Huraian":iconHeading.group(1)):numbered.group(2),fontSize);title.setTextColor(0xff303c43);title.setPadding(0,dp(2),dp(3),dp(2));heading.addView(title,new LinearLayout.LayoutParams(0,-2,1));
+    medallion.setContentDescription(isIconHeading?"Buka atau tutup huraian":("Buka atau tutup huraian nombor "+numbered.group(1)));
     wrapper.addView(heading);
     LinearLayout details=new LinearLayout(this);details.setOrientation(1);details.setPadding(dp(10),dp(4),dp(10),dp(6));details.setBackground(rounded(0xfff8faf5,0xffd9e4d6,10));details.setVisibility(View.GONE);
     TextView label=text("Syarahan / Huraian",13);label.setTextColor(0xff176b47);details.addView(label);
