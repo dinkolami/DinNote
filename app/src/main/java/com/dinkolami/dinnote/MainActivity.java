@@ -437,10 +437,10 @@ public class MainActivity extends Activity {
    sectionColumns.addView(pinnedColumn,pinnedParams);
    sectionColumns.addView(updatedColumn,updatedParams);
    shortcuts.addView(sectionColumns,new LinearLayout.LayoutParams(-1,-2));
-   dashboardSection(pinnedColumn,"Nota Disemat",dashboardKeys("pinned_",false),true);
+   dashboardSection(pinnedColumn,"Nota Disemat",dashboardKeys("pinned_",true),true);
    dashboardSection(updatedColumn,"Kemaskini Terakhir",dashboardKeys("updated_",false),false);
   }else{
-   dashboardSection(shortcuts,"Nota Disemat",dashboardKeys("pinned_",false),true);
+   dashboardSection(shortcuts,"Nota Disemat",dashboardKeys("pinned_",true),true);
    dashboardSection(shortcuts,"Kemaskini Terakhir",dashboardKeys("updated_",false),false);
   }
   String resume=prefs.getString("last_edited_key","");
@@ -681,7 +681,7 @@ public class MainActivity extends Activity {
    .setAdapter(adapter,(d,i)->{
     maktabah=key.startsWith("m_");
     if(i==0)edit(key);
-    else if(i==1){prefs.edit().putBoolean("pinned_"+key,!pinned).apply();home();}
+    else if(i==1){prefs.edit().putBoolean("pinned_"+key,!pinned).putLong("pinned_at_"+key,!pinned?System.currentTimeMillis():0L).apply();home();}
     else if(i==2)duplicateNote(key);
     else confirmDelete(key);
    }).show();
@@ -695,6 +695,12 @@ public class MainActivity extends Activity {
   // Results count is announced without replacing the approved home screen.
   if(hits==1)android.widget.Toast.makeText(this,"Ditemui: "+first,android.widget.Toast.LENGTH_SHORT).show();
  }
+ long pinOrderTime(String key){
+  long pinnedAt=prefs.getLong("pinned_at_"+key,0L);
+  if(pinnedAt>0L)return pinnedAt;
+  // Existing pinned notes predate pin timestamps: use last edit time as fallback.
+  return prefs.getLong("updated_"+key,0L);
+ }
  ArrayList<String> dashboardKeys(String field,boolean includeBooks){
   ArrayList<String> out=new ArrayList<>();
   for(String k:prefs.getAll().keySet())if((k.startsWith("n_")||(includeBooks&&k.startsWith("m_")))&&
@@ -702,7 +708,7 @@ public class MainActivity extends Activity {
     (field.equals("pinned_")?prefs.getBoolean(field+k,false):prefs.getLong(field+k,0L)>0))out.add(k);
   Collections.sort(out,(a,b)->{
    int comparison=field.equals("pinned_")?
-    prefs.getString("title_"+a,"").trim().compareToIgnoreCase(prefs.getString("title_"+b,"").trim()):
+    Long.compare(pinOrderTime(b),pinOrderTime(a)):
     Long.compare(prefs.getLong(field+b,0),prefs.getLong(field+a,0));
    return comparison!=0?comparison:a.compareTo(b);
   });
@@ -1737,7 +1743,7 @@ public class MainActivity extends Activity {
    row.setOnClickListener(v->{
     dialog[0].dismiss();
     if(option==0)edit(key);
-    else if(option==1){boolean pinned=prefs.getBoolean("pinned_"+key,false);prefs.edit().putBoolean("pinned_"+key,!pinned).apply();Toast.makeText(this,pinned?"Sematan dibuang":"Disemat",Toast.LENGTH_SHORT).show();read(key);}
+    else if(option==1){boolean pinned=prefs.getBoolean("pinned_"+key,false);prefs.edit().putBoolean("pinned_"+key,!pinned).putLong("pinned_at_"+key,!pinned?System.currentTimeMillis():0L).apply();Toast.makeText(this,pinned?"Sematan dibuang":"Disemat",Toast.LENGTH_SHORT).show();read(key);}
     else if(option==2)duplicateNote(key);
     else if(option==3)searchInsideReader(key);
     else if(option==4)copyReaderWithReference(key);
