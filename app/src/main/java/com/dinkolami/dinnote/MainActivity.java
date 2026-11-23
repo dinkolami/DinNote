@@ -3899,10 +3899,10 @@ public class MainActivity extends Activity {
   android.graphics.pdf.PdfDocument.Page sheet=null;
   int page=0,y=0;
   try{
-   String[] blocks=(pdfExportTitle+"\\n\\n"+pdfExportBody).split("\\n",-1);
+   String[] blocks=(pdfExportTitle+"\n\n"+pdfExportBody).split("\n",-1);
    for(int i=0;i<blocks.length;i++){
     String line=blocks[i].isEmpty()?" ":blocks[i];
-    android.text.TextPaint paint=i==0?titlePaint:bodyPaint;
+    boolean arabicLine=line.matches(".*[\\u0600-\\u06FF].*"); android.text.TextPaint paint=i==0?titlePaint:(arabicLine?new android.text.TextPaint(bodyPaint):bodyPaint); if(i!=0&&arabicLine)paint.setTextSize(17f);
     android.text.StaticLayout layout=android.text.StaticLayout.Builder.obtain(line,0,line.length(),paint,contentWidth)
       .setAlignment(android.text.Layout.Alignment.ALIGN_NORMAL)
       .setTextDirection(android.text.TextDirectionHeuristics.FIRSTSTRONG_LTR)
