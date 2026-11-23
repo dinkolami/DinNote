@@ -2,7 +2,7 @@ package com.dinkolami.dinnote;
 import android.app.*;import android.os.*;import android.graphics.Color;import android.view.*;import android.widget.*;import android.text.*;import android.content.*;import java.util.*;
 public class MainActivity extends Activity {
  LinearLayout root,items,compactSummary; ScrollView listScroll,readerScroll; int savedNotesScroll=0,savedBooksScroll=0; String lastOpenedCard=null; android.view.GestureDetector readerDetector; Runnable lectureBackReveal; EditText editor,titleEditor; TextView saveIndicator; Spinner categoryPicker; String categoryFilter="Semua"; String sortMode="Terbaru"; String selected=null; boolean maktabah=false, sectionOpen=false; android.content.SharedPreferences prefs;
- int green=Color.rgb(23,107,71), gold=Color.rgb(197,166,107); static final int BACKUP_CREATE=4201, BACKUP_OPEN=4202, CONTENT_IMPORT=4203, BOOK_TEXT_IMPORT=4204;
+ int green=Color.rgb(23,107,71), gold=Color.rgb(197,166,107); static final int BACKUP_CREATE=4201, BACKUP_OPEN=4202, CONTENT_IMPORT=4203, BOOK_TEXT_IMPORT=4204, PDF_EXPORT_CREATE=4205; String pdfExportTitle="",pdfExportBody="";
  public void onCreate(Bundle b){super.onCreate(b);prefs=getSharedPreferences("notes",0);if(!prefs.getBoolean("font_defaults_13_15_16_18_applied",false)){prefs.edit().putInt("reader_font_level",2).putInt("editor_font_level",2).putBoolean("font_defaults_13_15_16_18_applied",true).apply();}if(!prefs.getBoolean("fasa4_default_besar_applied",false)){android.content.SharedPreferences.Editor fontUpgrade=prefs.edit();if(prefs.getInt("reader_font_level",1)==1)fontUpgrade.putInt("reader_font_level",2);if(prefs.getInt("editor_font_level",1)==1)fontUpgrade.putInt("editor_font_level",2);fontUpgrade.putBoolean("fasa4_default_besar_applied",true).apply();}if(prefs.contains("security_pin_hash"))promptUnlock();else {openHomeSafely();receiveBookShare();}} // User content and categories are local; import them explicitly.}
  void openHomeSafely(){
   try{home();}
@@ -2455,7 +2455,7 @@ public class MainActivity extends Activity {
    if(sectionOpen)notesPage();else home();
    return;
   }
-  maktabah=key.startsWith("m_");prefs.edit().putString("last_edited_key",key).apply();}editor=null;saveIndicator=null;selected=key;cleanBase();LinearLayout bar=new LinearLayout(this);bar.setTag("editor_top_toolbar");bar.setGravity(Gravity.CENTER_VERTICAL);root.addView(bar);Button editorBack=action("←",bar,()->finishEditingSafely());editorBack.setTextSize(23);editorBack.setTextColor(0xff176b47);editorBack.setGravity(Gravity.CENTER);editorBack.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);editorBack.setIncludeFontPadding(false);editorBack.setPadding(0,0,0,0);editorBack.setMinWidth(dp(34));editorBack.setTranslationY(-dp(1));editorBack.setContentDescription("Kembali dan simpan");saveIndicator=text("✓ Disimpan",11);saveIndicator.setTextColor(0xff566a70);saveIndicator.setTypeface(null,android.graphics.Typeface.BOLD);saveIndicator.setGravity(Gravity.CENTER);saveIndicator.setPadding(dp(9),dp(3),dp(9),dp(3));saveIndicator.setBackground(rounded(0xfff6f8fa,0xffd0d7de,8));saveIndicator.setMinHeight(dp(34));saveIndicator.setElevation(0);LinearLayout.LayoutParams savedBadgeParams=new LinearLayout.LayoutParams(-2,-2);savedBadgeParams.leftMargin=dp(5);bar.addView(saveIndicator,savedBadgeParams);TextView spacer=text("",12);bar.addView(spacer,new LinearLayout.LayoutParams(0,1,1));final java.util.ArrayDeque<EditorSnapshot> undoHistory=new java.util.ArrayDeque<>();final java.util.ArrayDeque<EditorSnapshot> redoHistory=new java.util.ArrayDeque<>();final boolean[] restoring={false};final TextView[] historyButtons=new TextView[2];historyButtons[0]=action("↶",bar,()->{if(editor==null||undoHistory.isEmpty())return;restoring[0]=true;EditorSnapshot current=new EditorSnapshot(editor);EditorSnapshot previous=undoHistory.removeLast();redoHistory.addLast(current);previous.restore(editor);revealEditorCursor(editor);restoring[0]=false;save();historyButtons[0].setAlpha(undoHistory.isEmpty()?0.35f:1f);historyButtons[1].setAlpha(1f);});historyButtons[1]=action("↷",bar,()->{if(editor==null||redoHistory.isEmpty())return;restoring[0]=true;EditorSnapshot current=new EditorSnapshot(editor);EditorSnapshot next=redoHistory.removeLast();undoHistory.addLast(current);next.restore(editor);revealEditorCursor(editor);restoring[0]=false;save();historyButtons[0].setAlpha(1f);historyButtons[1].setAlpha(redoHistory.isEmpty()?0.35f:1f);});historyButtons[0].setContentDescription("Undo perubahan teks");historyButtons[1].setContentDescription("Redo perubahan teks");for(TextView historyButton:historyButtons){historyButton.setTextSize(23);historyButton.setTextColor(0xff146b45);historyButton.setBackground(rounded(0xfff6f8fa,0xffd0d7de,8));historyButton.setPadding(dp(9),dp(4),dp(9),dp(4));}historyButtons[0].setAlpha(0.45f);historyButtons[1].setAlpha(0.45f);Button doneButton=action("✓ Selesai",bar,()->finishEditingSafely());doneButton.setTextColor(Color.WHITE);doneButton.setTypeface(null,android.graphics.Typeface.BOLD);doneButton.setBackground(rounded(0xff216e4e,0xff216e4e,8));doneButton.setContentDescription("Selesai menyunting dan simpan nota");action("⋮",bar,()->{String[] options=new String[]{"Masukkan tarikh","Masukkan masa","Masukkan tarikh dan masa","Simpan versi","Sejarah suntingan","Huraian bernombor","Padam"};new AlertDialog.Builder(this).setItems(options,(d,i)->{if(i<3)insertCurrentDateTime(i);else if(i==3)saveHistoryVersion();else if(i==4)showHistoryVersions();else if(i==5)editNumberedCommentaries();else if(selected!=null)confirmDelete(selected);}).show();});categoryPicker=new Spinner(this);categoryPicker.setContentDescription(maktabah?"Kategori kitab":"Kategori nota");ArrayList<String> choices=new ArrayList<>();choices.add("Tanpa kategori");choices.addAll(categories());categoryPicker.setAdapter(new ArrayAdapter<>(this,android.R.layout.simple_spinner_dropdown_item,choices));String savedCat=key==null?"Tanpa kategori":prefs.getString("cat_"+key,"Tanpa kategori");
+  maktabah=key.startsWith("m_");prefs.edit().putString("last_edited_key",key).apply();}editor=null;saveIndicator=null;selected=key;cleanBase();LinearLayout bar=new LinearLayout(this);bar.setTag("editor_top_toolbar");bar.setGravity(Gravity.CENTER_VERTICAL);root.addView(bar);Button editorBack=action("←",bar,()->finishEditingSafely());editorBack.setTextSize(23);editorBack.setTextColor(0xff176b47);editorBack.setGravity(Gravity.CENTER);editorBack.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);editorBack.setIncludeFontPadding(false);editorBack.setPadding(0,0,0,0);editorBack.setMinWidth(dp(34));editorBack.setTranslationY(-dp(1));editorBack.setContentDescription("Kembali dan simpan");saveIndicator=text("✓ Disimpan",11);saveIndicator.setTextColor(0xff566a70);saveIndicator.setTypeface(null,android.graphics.Typeface.BOLD);saveIndicator.setGravity(Gravity.CENTER);saveIndicator.setPadding(dp(9),dp(3),dp(9),dp(3));saveIndicator.setBackground(rounded(0xfff6f8fa,0xffd0d7de,8));saveIndicator.setMinHeight(dp(34));saveIndicator.setElevation(0);LinearLayout.LayoutParams savedBadgeParams=new LinearLayout.LayoutParams(-2,-2);savedBadgeParams.leftMargin=dp(5);bar.addView(saveIndicator,savedBadgeParams);TextView spacer=text("",12);bar.addView(spacer,new LinearLayout.LayoutParams(0,1,1));final java.util.ArrayDeque<EditorSnapshot> undoHistory=new java.util.ArrayDeque<>();final java.util.ArrayDeque<EditorSnapshot> redoHistory=new java.util.ArrayDeque<>();final boolean[] restoring={false};final TextView[] historyButtons=new TextView[2];historyButtons[0]=action("↶",bar,()->{if(editor==null||undoHistory.isEmpty())return;restoring[0]=true;EditorSnapshot current=new EditorSnapshot(editor);EditorSnapshot previous=undoHistory.removeLast();redoHistory.addLast(current);previous.restore(editor);revealEditorCursor(editor);restoring[0]=false;save();historyButtons[0].setAlpha(undoHistory.isEmpty()?0.35f:1f);historyButtons[1].setAlpha(1f);});historyButtons[1]=action("↷",bar,()->{if(editor==null||redoHistory.isEmpty())return;restoring[0]=true;EditorSnapshot current=new EditorSnapshot(editor);EditorSnapshot next=redoHistory.removeLast();undoHistory.addLast(current);next.restore(editor);revealEditorCursor(editor);restoring[0]=false;save();historyButtons[0].setAlpha(1f);historyButtons[1].setAlpha(redoHistory.isEmpty()?0.35f:1f);});historyButtons[0].setContentDescription("Undo perubahan teks");historyButtons[1].setContentDescription("Redo perubahan teks");for(TextView historyButton:historyButtons){historyButton.setTextSize(23);historyButton.setTextColor(0xff146b45);historyButton.setBackground(rounded(0xfff6f8fa,0xffd0d7de,8));historyButton.setPadding(dp(9),dp(4),dp(9),dp(4));}historyButtons[0].setAlpha(0.45f);historyButtons[1].setAlpha(0.45f);Button doneButton=action("✓ Selesai",bar,()->finishEditingSafely());doneButton.setTextColor(Color.WHITE);doneButton.setTypeface(null,android.graphics.Typeface.BOLD);doneButton.setBackground(rounded(0xff216e4e,0xff216e4e,8));doneButton.setContentDescription("Selesai menyunting dan simpan nota");action("⋮",bar,()->{String[] options=new String[]{"Masukkan tarikh","Masukkan masa","Masukkan tarikh dan masa","Simpan versi","Sejarah suntingan","Huraian bernombor","Eksport PDF","Padam"};new AlertDialog.Builder(this).setItems(options,(d,i)->{if(i<3)insertCurrentDateTime(i);else if(i==3)saveHistoryVersion();else if(i==4)showHistoryVersions();else if(i==5)editNumberedCommentaries();else if(i==6)startPdfExport();else if(selected!=null)confirmDelete(selected);}).show();});categoryPicker=new Spinner(this);categoryPicker.setContentDescription(maktabah?"Kategori kitab":"Kategori nota");ArrayList<String> choices=new ArrayList<>();choices.add("Tanpa kategori");choices.addAll(categories());categoryPicker.setAdapter(new ArrayAdapter<>(this,android.R.layout.simple_spinner_dropdown_item,choices));String savedCat=key==null?"Tanpa kategori":prefs.getString("cat_"+key,"Tanpa kategori");
   // Preserve an existing note category even if it is missing from the category list.
   if(!choices.contains(savedCat)){
    choices.add(savedCat);
@@ -3872,11 +3872,83 @@ public class MainActivity extends Activity {
   intent.setType("application/json");
   startActivityForResult(intent,BACKUP_OPEN);
  }
+
+ void startPdfExport(){
+  if(editor==null)return;
+  save();
+  pdfExportTitle=titleEditor==null?"":titleEditor.getText().toString().trim();
+  if(pdfExportTitle.isEmpty())pdfExportTitle=maktabah?"Kitab DinNote":"Nota DinNote";
+  pdfExportBody=editor.getText().toString();
+  if(pdfExportBody.trim().isEmpty()){Toast.makeText(this,"Tiada teks untuk dieksport",Toast.LENGTH_LONG).show();return;}
+  String name=pdfExportTitle.replaceAll("[^\\p{L}\\p{N} ._-]","_");
+  if(name.length()>70)name=name.substring(0,70);
+  Intent intent=new Intent(Intent.ACTION_CREATE_DOCUMENT);
+  intent.addCategory(Intent.CATEGORY_OPENABLE);intent.setType("application/pdf");
+  intent.putExtra(Intent.EXTRA_TITLE,name+".pdf");
+  startActivityForResult(intent,PDF_EXPORT_CREATE);
+ }
+ void writePdfExport(android.net.Uri uri) throws java.io.IOException{
+  final int width=595,height=842,margin=48,contentWidth=width-2*margin;
+  android.graphics.pdf.PdfDocument pdf=new android.graphics.pdf.PdfDocument();
+  android.text.TextPaint bodyPaint=new android.text.TextPaint(android.graphics.Paint.ANTI_ALIAS_FLAG);
+  bodyPaint.setColor(0xff263e34);bodyPaint.setTextSize(12.5f);
+  bodyPaint.setTypeface(android.graphics.Typeface.create("sans-serif",0));
+  android.text.TextPaint titlePaint=new android.text.TextPaint(bodyPaint);
+  titlePaint.setTextSize(19);titlePaint.setColor(0xff176b47);
+  titlePaint.setTypeface(android.graphics.Typeface.create("sans-serif",1));
+  android.graphics.pdf.PdfDocument.Page sheet=null;
+  int page=0,y=0;
+  try{
+   String[] blocks=(pdfExportTitle+"\\n\\n"+pdfExportBody).split("\\n",-1);
+   for(int i=0;i<blocks.length;i++){
+    String line=blocks[i].isEmpty()?" ":blocks[i];
+    android.text.TextPaint paint=i==0?titlePaint:bodyPaint;
+    android.text.StaticLayout layout=android.text.StaticLayout.Builder.obtain(line,0,line.length(),paint,contentWidth)
+      .setAlignment(android.text.Layout.Alignment.ALIGN_NORMAL)
+      .setTextDirection(android.text.TextDirectionHeuristics.FIRSTSTRONG_LTR)
+      .setIncludePad(false).build();
+    int first=0;
+    while(first<layout.getLineCount()){
+     if(sheet==null){
+      sheet=pdf.startPage(new android.graphics.pdf.PdfDocument.PageInfo.Builder(width,height,++page).create());
+      android.graphics.Paint accent=new android.graphics.Paint();
+      accent.setColor(0xff176b47);sheet.getCanvas().drawRect(margin,28,width-margin,31,accent);
+      y=margin+10;
+     }
+     int last=first,remaining=height-margin-40-y;
+     while(last<layout.getLineCount()&&layout.getLineBottom(last)-layout.getLineTop(first)<=remaining)last++;
+     if(last==first){finishPdfExportPage(pdf,sheet,page,width,height,margin);sheet=null;continue;}
+     android.graphics.Canvas canvas=sheet.getCanvas();
+     canvas.save();canvas.translate(margin,y-layout.getLineTop(first));
+     canvas.clipRect(0,layout.getLineTop(first),contentWidth,layout.getLineBottom(last-1));
+     layout.draw(canvas);canvas.restore();
+     y+=layout.getLineBottom(last-1)-layout.getLineTop(first);
+     first=last;
+     if(first<layout.getLineCount()){finishPdfExportPage(pdf,sheet,page,width,height,margin);sheet=null;}
+    }
+    y+=i==0?16:8;
+    if(sheet!=null&&y>height-margin-55){finishPdfExportPage(pdf,sheet,page,width,height,margin);sheet=null;}
+   }
+   if(sheet!=null){finishPdfExportPage(pdf,sheet,page,width,height,margin);sheet=null;}
+   try(java.io.OutputStream out=getContentResolver().openOutputStream(uri)){
+    if(out==null)throw new java.io.IOException("Tidak dapat membuka fail destinasi");
+    pdf.writeTo(out);
+   }
+  }finally{if(sheet!=null)pdf.finishPage(sheet);pdf.close();}
+ }
+ void finishPdfExportPage(android.graphics.pdf.PdfDocument pdf,android.graphics.pdf.PdfDocument.Page sheet,int number,int width,int height,int margin){
+  android.graphics.Paint footer=new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
+  footer.setColor(0xff75877e);footer.setTextSize(9);
+  sheet.getCanvas().drawText("DinNote - Emerald Pearl",margin,height-27,footer);
+  String numberText=String.valueOf(number);
+  sheet.getCanvas().drawText(numberText,width-margin-footer.measureText(numberText),height-27,footer);
+  pdf.finishPage(sheet);
+ }
  @Override protected void onActivityResult(int request,int result,Intent data){
   super.onActivityResult(request,result,data);
   if(result!=RESULT_OK||data==null||data.getData()==null)return;
   android.net.Uri uri=data.getData();
-  if(request==BOOK_TEXT_IMPORT){importBookText(uri);return;}
+  if(request==PDF_EXPORT_CREATE){try{writePdfExport(uri);Toast.makeText(this,"PDF berjaya disimpan",Toast.LENGTH_LONG).show();}catch(Exception e){android.util.Log.e("DinNote","PDF export failed",e);new AlertDialog.Builder(this).setTitle("Eksport PDF gagal").setMessage(String.valueOf(e.getMessage())).setPositiveButton("OK",null).show();}finally{pdfExportTitle="";pdfExportBody="";}return;} if(request==BOOK_TEXT_IMPORT){importBookText(uri);return;}
   if(request==BACKUP_CREATE){
    try{
     org.json.JSONObject obj=new org.json.JSONObject();
