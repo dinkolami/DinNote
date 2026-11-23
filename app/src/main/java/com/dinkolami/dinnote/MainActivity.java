@@ -3066,22 +3066,25 @@ public class MainActivity extends Activity {
  }
  void showTextBoxPicker(){
   if(editor==null)return;
-  if(manageCurrentBox())return;
+  // Always open the insertion picker on a normal tap, even when the caret is inside an existing box.
+  // Managing an existing box remains available via long press.
   final int a=Math.max(0,Math.min(editor.getSelectionStart(),editor.getSelectionEnd()));
   final int b=Math.max(a,Math.max(editor.getSelectionStart(),editor.getSelectionEnd()));
   final String[] types={"DALIL","HIKMAH","CATATAN","FIRMAN","SABDA","SAHABAT","TABII","ULAMA"};
   new AlertDialog.Builder(this).setTitle("Kotak teks")
    .setItems(new String[]{"Dalil","Kalam Hikmah","Catatan Penting","Firman Allah SWT:","Sabda Nabi SAW:","Kata Sahabat Rdh.","Kata Tabi\u0027in Rhm.","Kata Ulama\u0027 Rhm.","Buang kotak terpilih","Urus kotak sedia ada"},(d,i)->{
     if(i==9){manageCurrentBox(true);return;}
-    if(editor==null||b>editor.length())return;
-    String chosen=editor.getText().subSequence(a,b).toString();
-    if(i==8){editor.getText().replace(a,b,chosen.replaceAll("(?m)^---KOTAK(?:DALIL|HIKMAH|CATATAN|FIRMAN|SABDA|SAHABAT|TABII|ULAMA|TAMAT)---\\n?",""));return;}
+    if(editor==null)return;
+    // Clamp the saved selection after dialog focus changes or repeated insertions.
+    int safeA=Math.min(a,editor.length()),safeB=Math.min(b,editor.length());
+    String chosen=editor.getText().subSequence(safeA,safeB).toString();
+    if(i==8){editor.getText().replace(safeA,safeB,chosen.replaceAll("(?m)^---KOTAK(?:DALIL|HIKMAH|CATATAN|FIRMAN|SABDA|SAHABAT|TABII|ULAMA|TAMAT)---\\n?",""));return;}
     String prefix="\n---KOTAK"+types[i]+"---\n";
-    int insertA=a,insertB=b;
+    int insertA=safeA,insertB=safeB;
     String existing=editor.getText().toString();
     java.util.regex.Matcher boxes=java.util.regex.Pattern.compile("(?ms)^---KOTAK(?:DALIL|HIKMAH|CATATAN|FIRMAN|SABDA|SAHABAT|TABII|ULAMA)---\\n.*?^---KOTAKTAMAT---").matcher(existing);
-    while(boxes.find()){if(a>=boxes.start()&&a<boxes.end()){insertA=insertB=boxes.end();chosen="";break;}}
-    if(chosen.contains("---KOTAK")){insertA=insertB=b;chosen="";}
+    while(boxes.find()){if(safeA>=boxes.start()&&safeA<boxes.end()){insertA=insertB=boxes.end();chosen="";break;}}
+    if(chosen.contains("---KOTAK")){insertA=insertB=safeB;chosen="";}
     editor.getText().replace(insertA,insertB,prefix+chosen+"\n---KOTAKTAMAT---\n");
     editor.setSelection(insertA+prefix.length(),insertA+prefix.length()+chosen.length());
    }).show();
