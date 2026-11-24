@@ -5,11 +5,40 @@ public class MainActivity extends Activity {
  int green=Color.rgb(23,107,71), gold=Color.rgb(197,166,107); static final int BACKUP_CREATE=4201, BACKUP_OPEN=4202, CONTENT_IMPORT=4203, BOOK_TEXT_IMPORT=4204, PDF_EXPORT_CREATE=4205; String pdfExportTitle="",pdfExportBody="";
  public void onCreate(Bundle b){super.onCreate(b);prefs=getSharedPreferences("notes",0);if(!prefs.getBoolean("font_defaults_13_15_16_18_applied",false)){prefs.edit().putInt("reader_font_level",2).putInt("editor_font_level",2).putBoolean("font_defaults_13_15_16_18_applied",true).apply();}if(!prefs.getBoolean("fasa4_default_besar_applied",false)){android.content.SharedPreferences.Editor fontUpgrade=prefs.edit();if(prefs.getInt("reader_font_level",1)==1)fontUpgrade.putInt("reader_font_level",2);if(prefs.getInt("editor_font_level",1)==1)fontUpgrade.putInt("editor_font_level",2);fontUpgrade.putBoolean("fasa4_default_besar_applied",true).apply();}if(prefs.contains("security_pin_hash"))promptUnlock();else {openHomeSafely();receiveBookShare();}} // User content and categories are local; import them explicitly.}
  void openHomeSafely(){
-  try{home();}
+  try{installMindmapDemoOnce();home();}
   catch(Exception problem){
    android.util.Log.e("DinNote","Home startup failure; entering data-safe recovery",problem);
    showDataSafeRecovery(problem);
   }
+ }
+ void installMindmapDemoOnce(){
+  final String flag="demo_ikhlas_v1_installed";
+  if(prefs.getBoolean(flag,false))return;
+  final String key="m_demo_kitab_keikhlasan_v1";
+  if(prefs.contains(key)){prefs.edit().putBoolean(flag,true).apply();return;}
+  String content="Bab 1: Keutamaan Ikhlas\n"
+   +"Fasal 1: Niat dalam Amalan\n"
+   +"1. Amalan bergantung pada niat\n"
+   +"إِنَّمَا الْأَعْمَالُ بِالنِّيَّاتِ\n"
+   +"Maksud ringkas: Nilai sesuatu amalan berkait dengan niat pelakunya.\n\n"
+   +"Fasal 2: Mengharap Keredaan Allah\n"
+   +"1. Memperbetulkan tujuan ibadah\n"
+   +"Lakukan kebaikan dengan tujuan mencari keredaan Allah.\n\n"
+   +"Bab 2: Tanda-tanda Ikhlas\n"
+   +"Fasal 1: Menjaga Niat\n"
+   +"1. Muhasabah sebelum beramal\n"
+   +"1. Muhasabah selepas beramal\n\n"
+   +"Bab 3: Memelihara Keikhlasan\n"
+   +"Fasal 1: Menghindari Riya\n"
+   +"1. Tidak mengejar pujian manusia\n"
+   +"1. Memohon pertolongan Allah\n\n"
+   +"Nota: Kandungan ini ialah contoh demonstrasi Petaminda dan boleh disunting atau dipadam.";
+  boolean saved=prefs.edit().putString(key,content)
+   .putString("title_"+key,"Kitab Keikhlasan (Contoh Petaminda)")
+   .putString("cat_"+key,"Kitab-Kitab")
+   .putLong("updated_"+key,System.currentTimeMillis())
+   .putBoolean(flag,true).commit();
+  if(!saved)android.util.Log.w("DinNote","Demo Petaminda tidak berjaya disimpan");
  }
  void showDataSafeRecovery(Exception problem){
   editor=null;titleEditor=null;saveIndicator=null;selected=null;sectionOpen=false;
