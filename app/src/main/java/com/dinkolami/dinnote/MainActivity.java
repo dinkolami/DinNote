@@ -905,7 +905,7 @@ public class MainActivity extends Activity {
   if(raw==null)return "";
   // Some imported samples contain escaped newline sequences rather than line breaks.
   String cleaned=raw.replace("\\r\\n"," ").replace("\\n"," ").replace("\\r"," ").replace("\\t"," ");
-  cleaned=cleaned.replaceAll("(?i)---(?:MATAN|SYARAHAN|DALIL|TERJEMAHAN|KHULASAH|IKTIBAR|TAMAT|FLOWER|GEOMETRIC|CLASSIC|KOTAK(?:DALIL|HIKMAH|CATATAN|FIRMAN|SABDA|SAHABAT|TABII|ULAMA|TAMAT))---"," ");
+  cleaned=cleaned.replaceAll("(?i)---(?:MATAN|SYARAHAN|DALIL|TERJEMAHAN|KHULASAH|IKTIBAR|SYAFII|HANAFI|MALIKI|HANBALI|MUQARAN|TAMAT|FLOWER|GEOMETRIC|CLASSIC|KOTAK(?:DALIL|HIKMAH|CATATAN|FIRMAN|SABDA|SAHABAT|TABII|ULAMA|TAMAT))---"," ");
   cleaned=cleaned.replaceAll("(?i)</?[biu]>","");
   cleaned=formattedReadingText(cleaned).toString();
   cleaned=cleaned.replaceAll("(?<!\\S)---(?!\\S)"," ").replaceAll("\\s+"," ").trim();
@@ -1380,10 +1380,10 @@ public class MainActivity extends Activity {
  }
  android.text.SpannableStringBuilder readerLabelText(String source){
   android.text.SpannableStringBuilder out=formattedReadingText(source);
-  java.util.regex.Matcher marks=java.util.regex.Pattern.compile("(?m)^---(MATAN|SYARAHAN|DALIL|TERJEMAHAN|KHULASAH|IKTIBAR)---[ \\t]*$").matcher(out.toString());
+  java.util.regex.Matcher marks=java.util.regex.Pattern.compile("(?m)^---(MATAN|SYARAHAN|DALIL|TERJEMAHAN|KHULASAH|IKTIBAR|SYAFII|HANAFI|MALIKI|HANBALI|MUQARAN)---[ \\t]*$").matcher(out.toString());
   while(marks.find()){
    String k=marks.group(1);
-   String label=k.equals("MATAN")?"المتن · Matan":k.equals("SYARAHAN")?"الشرح · Syarahan":k.equals("DALIL")?"الدليل · Dalil":k.equals("TERJEMAHAN")?"الترجمة · Terjemahan":k.equals("KHULASAH")?"الخُلَاصَةُ · Khulasah":"الدُّرُوسُ وَالْعِبَرُ · Pengajaran & Iktibar";
+   String label=k.equals("MATAN")?"المتن · Matan":k.equals("SYARAHAN")?"الشرح · Syarahan":k.equals("DALIL")?"الدليل · Dalil":k.equals("TERJEMAHAN")?"الترجمة · Terjemahan":k.equals("SYAFII")?"الشَّافِعِيُّ · Syafi‘i":k.equals("HANAFI")?"الْحَنَفِيُّ · Hanafi":k.equals("MALIKI")?"الْمَالِكِيُّ · Maliki":k.equals("HANBALI")?"الْحَنْبَلِيُّ · Hanbali":k.equals("MUQARAN")?"الْفِقْهُ الْمُقَارَنُ · Fiqh Muqaran":k.equals("KHULASAH")?"الخُلَاصَةُ · Khulasah":"الدُّرُوسُ وَالْعِبَرُ · Pengajaran & Iktibar";
    out.setSpan(new BoxMarkerSpan(label,0xff176b47,0xffedf5ee),marks.start(),marks.end(),33);
   }
   return out;
@@ -1695,7 +1695,7 @@ public class MainActivity extends Activity {
   int start=Math.min(editor.getSelectionStart(),editor.getSelectionEnd()),end=Math.max(editor.getSelectionStart(),editor.getSelectionEnd());
   if(start<0||end>editor.length())return;
   android.text.Editable value=editor.getText();
-  if(start!=end&&value.subSequence(start,end).toString().matches("(?s).*---(?:MATAN|SYARAHAN|DALIL|TERJEMAHAN|KHULASAH|IKTIBAR|TAMAT)---.*")){Toast.makeText(this,"Pilih teks tanpa tanda bacaan sedia ada",Toast.LENGTH_SHORT).show();return;}
+  if(start!=end&&value.subSequence(start,end).toString().matches("(?s).*---(?:MATAN|SYARAHAN|DALIL|TERJEMAHAN|KHULASAH|IKTIBAR|SYAFII|HANAFI|MALIKI|HANBALI|MUQARAN|TAMAT)---.*")){Toast.makeText(this,"Pilih teks tanpa tanda bacaan sedia ada",Toast.LENGTH_SHORT).show();return;}
   String opening=(start>0&&value.charAt(start-1)!='\n'?"\n":"")+"---"+code+"---\n";
   String closing="\n---TAMAT---\n";
   android.text.SpannableStringBuilder block=new android.text.SpannableStringBuilder(opening);
@@ -1715,6 +1715,11 @@ public class MainActivity extends Activity {
    if(marker.equals("---TERJEMAHAN---")){type=4;if(labels&&(mode==0||mode==type))out.append(marker).append('\n');continue;}
    if(marker.equals("---KHULASAH---")){type=5;if(labels&&(mode==0||mode==type))out.append(marker).append('\n');continue;}
    if(marker.equals("---IKTIBAR---")){type=6;if(labels&&(mode==0||mode==type))out.append(marker).append('\n');continue;}
+   if(marker.equals("---SYAFII---")){type=7;if(labels&&(mode==0||mode==type))out.append(marker).append('\n');continue;}
+   if(marker.equals("---HANAFI---")){type=8;if(labels&&(mode==0||mode==type))out.append(marker).append('\n');continue;}
+   if(marker.equals("---MALIKI---")){type=9;if(labels&&(mode==0||mode==type))out.append(marker).append('\n');continue;}
+   if(marker.equals("---HANBALI---")){type=10;if(labels&&(mode==0||mode==type))out.append(marker).append('\n');continue;}
+   if(marker.equals("---MUQARAN---")){type=11;if(labels&&(mode==0||mode==type))out.append(marker).append('\n');continue;}
    if(marker.equals("---TAMAT---")){type=0;continue;}
    if(marker.equals("---KOTAKDALIL---")||marker.equals("---KOTAKFIRMAN---")||marker.equals("---KOTAKSABDA---"))type=3;
    if(mode==0||type==mode)out.append(line).append('\n');
@@ -1729,8 +1734,8 @@ public class MainActivity extends Activity {
   return selectedReadingText(key,mode,true);
  }
  void showSelectedReading(String key){
-  String[] names={"Teks lengkap","Matan sahaja","Syarahan sahaja","Dalil sahaja","Terjemahan sahaja","Khulasah sahaja","Pengajaran & Iktibar sahaja"};
-  new AlertDialog.Builder(this).setTitle("Mod Bacaan Terpilih").setSingleChoiceItems(names,Math.max(0,Math.min(6,prefs.getInt("reading_filter_"+key,0))),(d,i)->{
+  String[] names={"Teks lengkap","Matan sahaja","Syarahan sahaja","Dalil sahaja","Terjemahan sahaja","Khulasah sahaja","Pengajaran & Iktibar sahaja","Syafi‘i sahaja","Hanafi sahaja","Maliki sahaja","Hanbali sahaja","Fiqh Muqaran sahaja"};
+  new AlertDialog.Builder(this).setTitle("Mod Bacaan Terpilih").setSingleChoiceItems(names,Math.max(0,Math.min(11,prefs.getInt("reading_filter_"+key,0))),(d,i)->{
    if(i>0&&selectedReadingText(key,i).isEmpty()){Toast.makeText(this,"Tiada teks bertanda untuk pilihan ini",Toast.LENGTH_LONG).show();return;}
    prefs.edit().putInt("reading_filter_"+key,i).apply();d.dismiss();read(key);
   }).setNeutralButton("Panduan tanda",(d,w)->new AlertDialog.Builder(this).setTitle("Penandaan dalam editor").setMessage("Letakkan tanda pada baris berasingan sebelum teks: ---MATAN---, ---SYARAHAN---, ---DALIL--- atau ---TERJEMAHAN--- atau ---KHULASAH--- atau ---IKTIBAR---. Akhiri bahagian dengan ---TAMAT---. Teks tanpa tanda kekal dalam mod lengkap.").setPositiveButton("OK",null).show()).setNegativeButton("Batal",null).show();
@@ -1739,7 +1744,7 @@ public class MainActivity extends Activity {
   LinearLayout panel=new LinearLayout(this);panel.setOrientation(1);panel.setPadding(dp(12),dp(8),dp(12),dp(12));
   ScrollView scroll=new ScrollView(this);scroll.addView(panel);
   String raw=prefs.getString(key,"");
-  java.util.regex.Matcher blocks=java.util.regex.Pattern.compile("(?m)^---(MATAN|SYARAHAN|DALIL|TERJEMAHAN|KHULASAH|IKTIBAR|TAMAT)---[ \\t]*$").matcher(raw);
+  java.util.regex.Matcher blocks=java.util.regex.Pattern.compile("(?m)^---(MATAN|SYARAHAN|DALIL|TERJEMAHAN|KHULASAH|IKTIBAR|SYAFII|HANAFI|MALIKI|HANBALI|MUQARAN|TAMAT)---[ \\t]*$").matcher(raw);
   int start=0;String kind="";LinearLayout group=panel;int count=0;
   while(blocks.find()){
    String chunk=raw.substring(start,blocks.start()).trim();
@@ -2727,11 +2732,11 @@ public class MainActivity extends Activity {
   checklistButton.setContentDescription("Masukkan kotak semak");
     underlineButton.setContentDescription("Garis bawah teks terpilih");
   // Compact reading-section picker shares the formatting row; no extra toolbar row.
-  final String[] tagLabels={"Matan · المتن","Syarahan · الشرح","Dalil · الدليل","Terjemahan · الترجمة","Khulasah · الخُلَاصَةُ","Pengajaran & Iktibar · الدُّرُوسُ وَالْعِبَرُ"};
+  final String[] tagLabels={"Matan · المتن","Syarahan · الشرح","Dalil · الدليل","Terjemahan · الترجمة","Khulasah · الخُلَاصَةُ","Pengajaran & Iktibar · الدُّرُوسُ وَالْعِبَرُ","Mazhab · المَذَاهِبُ"};
   final String[] tagCodes={"MATAN","SYARAHAN","DALIL","TERJEMAHAN","KHULASAH","IKTIBAR"};
   Button readingTagPicker=action("§",formatBar,()->new AlertDialog.Builder(this)
    .setTitle("Bahagian Teks")
-   .setItems(tagLabels,(dialog,index)->insertReadingTag(tagCodes[index]))
+   .setItems(tagLabels,(dialog,index)->{if(index<tagCodes.length)insertReadingTag(tagCodes[index]);else new AlertDialog.Builder(this).setTitle("Mazhab · المَذَاهِبُ").setItems(new String[]{"Syafi‘i · الشَّافِعِيُّ","Hanafi · الْحَنَفِيُّ","Maliki · الْمَالِكِيُّ","Hanbali · الْحَنْبَلِيُّ","Fiqh Muqaran · الْفِقْهُ الْمُقَارَنُ"},(d,j)->insertReadingTag(new String[]{"SYAFII","HANAFI","MALIKI","HANBALI","MUQARAN"}[j])).show();})
    .show());
   readingTagPicker.setTextColor(0xff176b47);
   readingTagPicker.setContentDescription("Bahagian Teks: Matan, Syarahan, Dalil, Terjemahan, Khulasah, Pengajaran & Iktibar");
@@ -2842,7 +2847,7 @@ public class MainActivity extends Activity {
  }
  class BoxMarkerSpan extends android.text.style.ReplacementSpan {
   final String title;final int ink,bg;
-  BoxMarkerSpan(String t,int i,int b){title=t;bg=b;ink=t.contains(" · Matan")?0xff246447:t.contains(" · Syarahan")?0xff345d8c:t.contains(" · Dalil")?0xff94701d:t.contains(" · Terjemahan")?0xff78558f:t.contains(" · Khulasah")?0xffa15e29:t.contains(" · Pengajaran & Iktibar")?0xff9d4960:i;}
+  BoxMarkerSpan(String t,int i,int b){title=t;bg=b;ink=t.contains(" · Syafi‘i")?0xff246447:t.contains(" · Hanafi")?0xff345d8c:t.contains(" · Maliki")?0xff94701d:t.contains(" · Hanbali")?0xff78558f:t.contains(" · Fiqh Muqaran")?0xff287e80:t.contains(" · Matan")?0xff246447:t.contains(" · Syarahan")?0xff345d8c:t.contains(" · Dalil")?0xff94701d:t.contains(" · Terjemahan")?0xff78558f:t.contains(" · Khulasah")?0xffa15e29:t.contains(" · Pengajaran & Iktibar")?0xff9d4960:i;}
   @Override public int getSize(android.graphics.Paint p,CharSequence t,int a,int b,android.graphics.Paint.FontMetricsInt fm){
    if(fm!=null){int h=dp(title.isEmpty()?5:22);fm.ascent=-h;fm.top=-h;fm.descent=dp(2);fm.bottom=fm.descent;}
    android.graphics.Paint q=new android.graphics.Paint(p);q.setTypeface(android.graphics.Typeface.DEFAULT);q.setTextSize(dp(13));
@@ -2850,10 +2855,10 @@ public class MainActivity extends Activity {
   }
   @Override public void draw(android.graphics.Canvas c,CharSequence t,int a,int b,float x,int top,int y,int bottom,android.graphics.Paint p){
    if(title.isEmpty())return;
-   boolean section=title.contains(" · Matan")||title.contains(" · Syarahan")||title.contains(" · Dalil")||title.contains(" · Terjemahan")||title.contains(" · Khulasah")||title.contains(" · Pengajaran & Iktibar");
+   boolean section=title.contains(" · Matan")||title.contains(" · Syarahan")||title.contains(" · Dalil")||title.contains(" · Terjemahan")||title.contains(" · Khulasah")||title.contains(" · Pengajaran & Iktibar")||title.contains(" · Syafi‘i")||title.contains(" · Hanafi")||title.contains(" · Maliki")||title.contains(" · Hanbali")||title.contains(" · Fiqh Muqaran");
    float left=x+dp(section?1:7),right=x+getSize(p,t,a,b,null)-dp(4),cy=(top+bottom)/2f;
    float capsuleTop=section?cy-dp(11):top+dp(4),capsuleBottom=section?cy+dp(11):bottom-dp(3);
-   android.graphics.Paint q=new android.graphics.Paint(p);q.setAntiAlias(true);q.setColor(ink);q.setAlpha(22);c.drawRoundRect(left,capsuleTop,right,capsuleBottom,dp(12),dp(12),q);if(title.contains(" · Matan")||title.contains(" · Syarahan")||title.contains(" · Dalil")||title.contains(" · Terjemahan")||title.contains(" · Khulasah")||title.contains(" · Pengajaran & Iktibar")){q.setStyle(android.graphics.Paint.Style.STROKE);q.setStrokeWidth(getResources().getDisplayMetrics().density*0.65f);q.setAlpha(100);c.drawRoundRect(left,capsuleTop,right,capsuleBottom,dp(12),dp(12),q);q.setStyle(android.graphics.Paint.Style.FILL);}q.setAlpha(45);c.drawCircle(x+dp(13),cy,dp(section?9:10),q);
+   android.graphics.Paint q=new android.graphics.Paint(p);q.setAntiAlias(true);q.setColor(ink);q.setAlpha(22);c.drawRoundRect(left,capsuleTop,right,capsuleBottom,dp(12),dp(12),q);if(title.contains(" · Matan")||title.contains(" · Syarahan")||title.contains(" · Dalil")||title.contains(" · Terjemahan")||title.contains(" · Khulasah")||title.contains(" · Pengajaran & Iktibar")||title.contains(" · Syafi‘i")||title.contains(" · Hanafi")||title.contains(" · Maliki")||title.contains(" · Hanbali")||title.contains(" · Fiqh Muqaran")){q.setStyle(android.graphics.Paint.Style.STROKE);q.setStrokeWidth(getResources().getDisplayMetrics().density*0.65f);q.setAlpha(100);c.drawRoundRect(left,capsuleTop,right,capsuleBottom,dp(12),dp(12),q);q.setStyle(android.graphics.Paint.Style.FILL);}q.setAlpha(45);c.drawCircle(x+dp(13),cy,dp(section?9:10),q);
    q.setAlpha(255);q.setColor(ink);q.setTypeface(android.graphics.Typeface.DEFAULT);q.setTextSize(dp(13));
    String mark=title.startsWith("Firman")?"":title.startsWith("Sabda")?"":title.startsWith("Kalam")?"✒":title.startsWith("Dalil")?"⚖":"◎";
    q.setTextAlign(android.graphics.Paint.Align.CENTER);c.drawText(mark,x+dp(13),(top+bottom)/2f-(q.ascent()+q.descent())/2,q);
@@ -2920,10 +2925,10 @@ public class MainActivity extends Activity {
   while(div.find())e.setSpan(new EditorDividerSpan(div.group(1)),div.start(),div.end(),33);
 
   for(BoxMarkerSpan span:e.getSpans(0,e.length(),BoxMarkerSpan.class))e.removeSpan(span);
-  java.util.regex.Matcher readingMarks=java.util.regex.Pattern.compile("(?m)^---(MATAN|SYARAHAN|DALIL|TERJEMAHAN|KHULASAH|IKTIBAR|TAMAT)---$").matcher(e.toString());
+  java.util.regex.Matcher readingMarks=java.util.regex.Pattern.compile("(?m)^---(MATAN|SYARAHAN|DALIL|TERJEMAHAN|KHULASAH|IKTIBAR|SYAFII|HANAFI|MALIKI|HANBALI|MUQARAN|TAMAT)---$").matcher(e.toString());
   while(readingMarks.find()){
    String k=readingMarks.group(1);
-   String label=k.equals("MATAN")?"المتن · Matan":k.equals("SYARAHAN")?"الشرح · Syarahan":k.equals("DALIL")?"الدليل · Dalil":k.equals("TERJEMAHAN")?"الترجمة · Terjemahan":k.equals("KHULASAH")?"الخُلَاصَةُ · Khulasah":k.equals("IKTIBAR")?"الدُّرُوسُ وَالْعِبَرُ · Pengajaran & Iktibar":"";
+   String label=k.equals("MATAN")?"المتن · Matan":k.equals("SYARAHAN")?"الشرح · Syarahan":k.equals("DALIL")?"الدليل · Dalil":k.equals("TERJEMAHAN")?"الترجمة · Terjemahan":k.equals("SYAFII")?"الشَّافِعِيُّ · Syafi‘i":k.equals("HANAFI")?"الْحَنَفِيُّ · Hanafi":k.equals("MALIKI")?"الْمَالِكِيُّ · Maliki":k.equals("HANBALI")?"الْحَنْبَلِيُّ · Hanbali":k.equals("MUQARAN")?"الْفِقْهُ الْمُقَارَنُ · Fiqh Muqaran":k.equals("KHULASAH")?"الخُلَاصَةُ · Khulasah":k.equals("IKTIBAR")?"الدُّرُوسُ وَالْعِبَرُ · Pengajaran & Iktibar":"";
    e.setSpan(new BoxMarkerSpan(label,0xff176b47,0xffedf5ee),readingMarks.start(),readingMarks.end(),33);
   }
   for(BoxBodySpan span:e.getSpans(0,e.length(),BoxBodySpan.class))e.removeSpan(span);
