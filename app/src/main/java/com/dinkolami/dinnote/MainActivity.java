@@ -285,6 +285,8 @@ public class MainActivity extends Activity {
  }
  
  void seedQurtubiPosts(){
+ if(!prefs.getBoolean("qurtubi_intro_pilot_v1",false)){String id="m_qurtubi_fatihah_intro_1";android.content.SharedPreferences.Editor pilot=prefs.edit();if(!prefs.contains(id)&&!prefs.getBoolean("deleted_"+id,false))pilot.putString(id,"فَضَائِلُ الْفَاتِحَةِ وَأَسْمَاؤُهَا\n\nPermasalahan pertama — petikan percubaan\n\nAt-Tirmidzi meriwayatkan dari Ubay bin Ka'ab, dia berkata: Rasulullah SAW bersabda:\n\nمَا أَنْزَلَ اللَّهُ فِي التَّوْرَاةِ وَلَا فِي الْإِنْجِيلِ مِثْلَ أُمِّ الْقُرْآنِ، وَهِيَ السَّبْعُ الْمَثَانِي، وَهِيَ مَقْسُومَةٌ بَيْنِي وَبَيْنَ عَبْدِي، وَلِعَبْدِي مَا سَأَلَ.\n\nTerjemahan\nAllah tidak menurunkan seperti Ummul Qur'an (Al Faatihah) di dalam Taurat dan tidak (pula) di dalam Injil. Ia adalah As-Sab'u Al Matsani (tujuh ayat yang diulang), dia terbagi di antara Aku dan hamba-Ku, dan bagi hamba-Ku apa yang dia minta.\n\nRujukan: Tafsir al-Qurthubi, jilid 1, hlm. 280; At-Tirmidzi no. 3125 (menurut edisi terjemahan). Teks Arab belum disemak dengan naskhah asal.").putString("title_"+id,"Tafsir al-Qurthubi — Keutamaan al-Fatihah (Percubaan)").putString("cat_"+id,"Kitab-Kitab › Tafsir");pilot.putBoolean("qurtubi_intro_pilot_v1",true).apply();}
+
  if(prefs.getBoolean("qurtubi_posts_v1",false))return;
  String[] verses={"بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ","الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ","الرَّحْمَٰنِ الرَّحِيمِ","مَالِكِ يَوْمِ الدِّينِ","إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ","اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ","صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ"};
  android.content.SharedPreferences.Editor e=prefs.edit();
