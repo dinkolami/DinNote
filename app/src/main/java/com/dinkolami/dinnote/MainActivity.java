@@ -1438,9 +1438,9 @@ public class MainActivity extends Activity {
    String line=raw.trim();
    if(line.isEmpty()||line.length()>110)continue;
    String lower=line.toLowerCase(java.util.Locale.ROOT);
-   boolean chapter=lower.matches("^(bab|fasal|chapter|section|juz)(\\\\s+.*)?")||line.matches("^(باب|فصل|جزء)(\\\\s+.*)?");
-   boolean marked=line.matches("^@#\\\\s+.+");
-   boolean numbered=line.matches("^[0-9]{1,3}[.)]\\\\s+.{3,100}");
+   boolean chapter=lower.matches("^(bab|fasal|chapter|section|juz)(\\s+.*)?")||line.matches("^(باب|فصل|جزء)(\\s+.*)?");
+   boolean marked=line.matches("^@#\\s+.+");
+   boolean numbered=line.matches("^[0-9]{1,3}[.)]\\s+.{3,100}");
    if(chapter||marked||numbered){
     headings.add(marked?line.substring(2).trim():line);
     terms.add(line);
@@ -1479,7 +1479,7 @@ public class MainActivity extends Activity {
  View findIndexHeadingView(View node,String term,int occurrence,int[] seen){
   if(node instanceof TextView){
    String shown=((TextView)node).getText().toString().trim();
-   String target=term.replaceFirst("^@#\\\\s*","").replaceFirst("^[0-9]{1,3}[.)]\\\\s+","").trim();
+   String target=term.replaceFirst("^@#\\s*","").replaceFirst("^[0-9]{1,3}[.)]\\s+","").trim();
    if(shown.equals(term)||shown.equals(target)){
     if(seen[0]++==occurrence)return node;
    }
