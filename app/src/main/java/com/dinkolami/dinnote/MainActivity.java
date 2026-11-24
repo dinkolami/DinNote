@@ -3206,7 +3206,7 @@ public class MainActivity extends Activity {
   try{
    org.json.JSONArray versions=new org.json.JSONArray(prefs.getString("history_"+selected,"[]"));
    if(versions.length()==0){
-    new AlertDialog.Builder(this).setTitle("Sejarah suntingan").setMessage("Belum ada versi tersimpan. Pilih Simpan versi dalam menu editor.")
+    new AlertDialog.Builder(this).setTitle("Sejarah suntingan").setMessage("Belum ada versi terdahulu. DinNote menyimpan sandaran automatik sebelum perubahan, dan anda juga boleh memilih Simpan versi.")
      .setPositiveButton("OK",null).show();return;
    }
    String[] labels=new String[versions.length()];
@@ -3260,6 +3260,29 @@ public class MainActivity extends Activity {
   if(y!=active.getScrollY())active.scrollTo(active.getScrollX(),y);
  }
  private static final java.util.concurrent.ExecutorService autosaveFlush=java.util.concurrent.Executors.newSingleThreadExecutor();
+ void snapshotBeforeAutosave(String key,String oldBody,String oldTitle,String oldCategory){
+  // Preserve the previous content once per editing window, never on every keystroke.
+  try{
+   if(oldBody.isEmpty()&&oldTitle.isEmpty())return;
+   long now=System.currentTimeMillis();
+   long last=prefs.getLong("auto_history_at_"+key,0L);
+   if(last>0&&now-last<30L*60L*1000L)return;
+   org.json.JSONArray versions=new org.json.JSONArray(prefs.getString("history_"+key,"[]"));
+   if(versions.length()>0){
+    org.json.JSONObject previous=versions.getJSONObject(versions.length()-1);
+    if(oldBody.equals(previous.optString("body"))&&oldTitle.equals(previous.optString("title"))&&oldCategory.equals(previous.optString("category"))){
+     prefs.edit().putLong("auto_history_at_"+key,now).apply();return;
+    }
+   }
+   org.json.JSONObject entry=new org.json.JSONObject();
+   entry.put("time",now);entry.put("title",oldTitle);entry.put("body",oldBody);entry.put("category",oldCategory);
+   org.json.JSONArray kept=new org.json.JSONArray();
+   for(int i=Math.max(0,versions.length()-9);i<versions.length();i++)kept.put(versions.getJSONObject(i));
+   kept.put(entry);
+   if(!prefs.edit().putString("history_"+key,kept.toString()).putLong("auto_history_at_"+key,now).commit())
+    android.util.Log.w("DinNote","Gagal menyimpan sandaran automatik sebelum suntingan");
+  }catch(Exception e){android.util.Log.e("DinNote","Sandaran sejarah automatik gagal",e);}
+ }
  void save(){
   if(editor==null)return;
   String value=encodedEditorText();
@@ -3274,6 +3297,7 @@ public class MainActivity extends Activity {
    !title.equals(prefs.getString("title_"+selected,""))||
    !category.equals(prefs.getString("cat_"+selected,"Tanpa kategori"));
   if(changed){
+   if(!isNew&&prefs.contains(selected))snapshotBeforeAutosave(selected,prefs.getString(selected,""),prefs.getString("title_"+selected,""),prefs.getString("cat_"+selected,"Tanpa kategori"));
    prefs.edit().putString(selected,value).putString("title_"+selected,title)
     .putString("cat_"+selected,category).putLong("updated_"+selected,System.currentTimeMillis())
     .putString("last_edited_key",selected).apply();
