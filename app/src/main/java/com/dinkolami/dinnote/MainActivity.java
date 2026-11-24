@@ -1386,7 +1386,7 @@ public class MainActivity extends Activity {
    if(start>=end)return;
    for(int i=start;i<end&&i<text.length();i++)if(!Character.isWhitespace(text.charAt(i)))return;
    if(text instanceof android.text.Spanned){android.text.Spanned sp=(android.text.Spanned)text;if(start<sp.getSpanStart(this)||end>sp.getSpanEnd(this))return;}
-   fm.ascent=-dp(4);fm.descent=dp(3);
+   fm.ascent=-dp(3);fm.descent=dp(3);
    fm.top=fm.ascent;fm.bottom=fm.descent;
   }
  }
@@ -1401,7 +1401,7 @@ public class MainActivity extends Activity {
    else if(trim.equals("---TAMAT---")){active=false;paragraphStart=false;}
    else if(trim.equals("---KOTAKTAMAT---"))box=false;
    else if(trim.startsWith("---KOTAK"))box=true;
-   else if(trim.isEmpty()){paragraphStart=true;if(!box&&end<raw.length())value.setSpan(new SectionGapSpan(),start,end+1,android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);}
+   else if(trim.isEmpty()){paragraphStart=true;if(!box&&end<raw.length())value.setSpan(new SectionGapSpan(),Math.max(0,start-1),end+1,android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);}
    else if(active&&paragraphStart&&!box&&!trim.isEmpty()&&!Character.isWhitespace(line.charAt(0))&&!Character.isSpaceChar(line.charAt(0))&&!trim.startsWith("---")&&!trim.matches("^(?:\\p{Nd}+[.)]|[-•●◦▪☐☑✓*#]|@#).*")){
     value.setSpan(new SectionIndentSpan(),start,end<raw.length()?end+1:end,android.text.Spanned.SPAN_PARAGRAPH);
    }
