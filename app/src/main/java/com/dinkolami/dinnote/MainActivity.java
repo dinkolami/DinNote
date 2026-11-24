@@ -3617,11 +3617,13 @@ public class MainActivity extends Activity {
    EditText name=new EditText(this);name.setHint("Nama kitab");name.setSingleLine(true);name.setText(filename.replaceFirst("\\.[^.]+$",""));
    LinearLayout importPanel=new LinearLayout(this);importPanel.setOrientation(1);importPanel.addView(name);
    if(extractPdf){TextView sample=text("Semak tulisan Arab sebelum simpan:\n\n"+body.substring(0,Math.min(700,body.length())),15);sample.setTextIsSelectable(true);sample.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);sample.setPadding(dp(12),dp(8),dp(12),dp(8));ScrollView preview=new ScrollView(this);preview.addView(sample);importPanel.addView(preview,new LinearLayout.LayoutParams(-1,dp(240)));TextView warning=text("Penting: Jika huruf Arab terbalik, bercantum salah atau baris rosak, tekan Batal dan import semula sebagai PDF asal. Ekstraksi tidak dapat membetulkan susunan aksara yang rosak dalam PDF sumber.",12);warning.setTextColor(0xff875b25);warning.setPadding(dp(12),dp(6),dp(12),dp(8));importPanel.addView(warning);}
-   new AlertDialog.Builder(this).setTitle("Import kitab").setView(importPanel).setNegativeButton("Batal",null).setPositiveButton("Simpan",(d,w)->{
+   AlertDialog.Builder importDialog=new AlertDialog.Builder(this).setTitle(extractPdf?"Semak ekstrak PDF":"Import kitab").setView(importPanel).setNegativeButton("Batal",null).setPositiveButton("Simpan teks",(d,w)->{
     String key="m_"+java.util.UUID.randomUUID().toString();
     boolean ok=prefs.edit().putString(key,body).putString("title_"+key,name.getText().toString().trim().isEmpty()?"Kitab import":name.getText().toString().trim()).putString("cat_"+key,"Tanpa kategori").putLong("updated_"+key,System.currentTimeMillis()).commit();
     if(ok)openSection(true);else Toast.makeText(this,"Simpan gagal",Toast.LENGTH_LONG).show();
-   }).show();
+   });
+   if(extractPdf)importDialog.setNeutralButton("Simpan PDF asal",(d,w)->saveOriginalPdf(bytes,filename));
+   importDialog.show();
   }catch(Exception e){Toast.makeText(this,"Import gagal: "+e.getMessage(),Toast.LENGTH_LONG).show();}
  }
  // Tanzil plain-text Quran import: 114 independent surahs; original verse text is never normalized.
