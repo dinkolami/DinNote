@@ -1381,6 +1381,12 @@ public class MainActivity extends Activity {
  class SectionIndentSpan extends android.text.style.LeadingMarginSpan.Standard {
   SectionIndentSpan(){super(dp(24),0);}
  }
+ class SectionGapSpan implements android.text.style.LineHeightSpan {
+  @Override public void chooseHeight(CharSequence text,int start,int end,int spanstartv,int v,android.graphics.Paint.FontMetricsInt fm){
+   fm.ascent=Math.round(fm.ascent*0.6f);fm.descent=Math.round(fm.descent*0.6f);
+   fm.top=Math.round(fm.top*0.6f);fm.bottom=Math.round(fm.bottom*0.6f);
+  }
+ }
  void applySectionIndent(android.text.Spannable value){
   for(SectionIndentSpan span:value.getSpans(0,value.length(),SectionIndentSpan.class))value.removeSpan(span);
   String raw=value.toString();boolean active=false,box=false,paragraphStart=false;
@@ -1391,7 +1397,7 @@ public class MainActivity extends Activity {
    else if(trim.equals("---TAMAT---")){active=false;paragraphStart=false;}
    else if(trim.equals("---KOTAKTAMAT---"))box=false;
    else if(trim.startsWith("---KOTAK"))box=true;
-   else if(trim.isEmpty())paragraphStart=true;
+   else if(trim.isEmpty()){paragraphStart=true;if(active&&!box&&end<raw.length()&&!(value instanceof android.text.Editable))value.setSpan(new SectionGapSpan(),start,end+1,android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);}
    else if(active&&paragraphStart&&!box&&!trim.isEmpty()&&!Character.isWhitespace(line.charAt(0))&&!Character.isSpaceChar(line.charAt(0))&&!trim.startsWith("---")&&!trim.matches("^(?:\\p{Nd}+[.)]|[-•●◦▪☐☑✓*#]|@#).*")){
     value.setSpan(new SectionIndentSpan(),start,end<raw.length()?end+1:end,android.text.Spanned.SPAN_PARAGRAPH);
    }
