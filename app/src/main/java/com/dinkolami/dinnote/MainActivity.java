@@ -1503,6 +1503,8 @@ public class MainActivity extends Activity {
   rootNode.setTypeface(null,android.graphics.Typeface.BOLD);
   rootNode.setTextColor(0xff16543b);rootNode.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
   rootNode.setPadding(dp(13),dp(11),dp(13),dp(11));
+  rootNode.setCompoundDrawablesWithIntrinsicBounds(android.R.drawable.ic_menu_agenda,0,0,0);
+  rootNode.setCompoundDrawablePadding(dp(10));
   rootNode.setBackground(rounded(0xffe6f2e9,0xffb6d3bf,12));
   tree.addView(rootNode,new LinearLayout.LayoutParams(-1,-2));
   final java.util.ArrayList<LinearLayout> branchRows=new java.util.ArrayList<>();
@@ -1517,15 +1519,15 @@ public class MainActivity extends Activity {
    LinearLayout branch=new LinearLayout(this);branch.setOrientation(LinearLayout.HORIZONTAL);
    branch.setGravity(Gravity.CENTER_VERTICAL);
    LinearLayout.LayoutParams branchParams=new LinearLayout.LayoutParams(-1,-2);
-   branchParams.topMargin=dp(6);branchParams.leftMargin=dp(9+depth*18);
+   branchParams.topMargin=dp(depth==0?9:5);branchParams.leftMargin=dp(9+depth*14);
    tree.addView(branch,branchParams);
-   TextView connector=text(depth==0?"◆":depth==1?"├":"└",13);
+   TextView connector=text(depth==0?"▣":depth==1?"◆":"•",13);
    connector.setTextColor(0xff8a9f8d);connector.setGravity(Gravity.CENTER);
    branch.addView(connector,new LinearLayout.LayoutParams(dp(22),-2));
    TextView node=text(label,14);
    node.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
    node.setTextColor(depth==0?0xff205b42:0xff384a41);
-   node.setPadding(dp(10),dp(8),dp(10),dp(8));
+   node.setPadding(dp(11),dp(depth==0?10:8),dp(11),dp(depth==0?10:8));
    node.setBackground(rounded(depth==0?0xffedf6ee:depth==1?0xfff5f8f3:0xfffdfcf8,0xffd3dfd4,9));
    if(depth==0)node.setTypeface(null,android.graphics.Typeface.BOLD);
    branch.addView(node,new LinearLayout.LayoutParams(0,-2,1));
