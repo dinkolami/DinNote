@@ -1442,7 +1442,10 @@ public class MainActivity extends Activity {
    boolean marked=line.matches("^@#\\s+.+");
    boolean numbered=line.matches("^[0-9]{1,3}[.)]\\s+.{3,100}");
    if(chapter||marked||numbered){
-    headings.add(marked?line.substring(2).trim():line);
+    String label=marked?line.substring(2).trim():line;
+    boolean isBab=lower.matches("^(bab|chapter|juz)(\\s+.*)?")||line.matches("^(باب|جزء)(\\s+.*)?");
+    boolean isFasal=lower.matches("^(fasal|section)(\\s+.*)?")||line.matches("^فصل(\\s+.*)?");
+    headings.add((isBab?"":isFasal?"    ├  ":"        •  ")+label);
     terms.add(line);
     if(headings.size()>=100)break;
    }
@@ -1474,7 +1477,22 @@ public class MainActivity extends Activity {
       label.postDelayed(()->{if(label.getParent()!=null)label.setTextColor(oldColor);},1400);
      }
     });
-   }).setNegativeButton("Tutup",null).show();
+   }).setNeutralButton("Petaminda", (d,w)->showBookMindmap(key,headings))
+    .setNegativeButton("Tutup",null).show();
+ }
+ void showBookMindmap(String key,java.util.ArrayList<String> headings){
+  String title=prefs.getString("title_"+key,"Kitab");
+  StringBuilder map=new StringBuilder("◉  ").append(title.isEmpty()?"Kitab":title);
+  for(String heading:headings){
+   map.append("\\n").append(heading.startsWith("        ")? "       └  ":heading.startsWith("    ")?"    ├  ":"  ◆  ").append(heading.trim().replaceFirst("^├\\s*",""));
+  }
+  TextView view=text(map.toString(),15);
+  view.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
+  view.setTextIsSelectable(true);
+  view.setPadding(dp(18),dp(12),dp(18),dp(12));
+  ScrollView scroll=new ScrollView(this);scroll.addView(view);
+  new AlertDialog.Builder(this).setTitle("Petaminda Subtopik").setView(scroll)
+   .setPositiveButton("Tutup",null).show();
  }
  View findIndexHeadingView(View node,String term,int occurrence,int[] seen){
   if(node instanceof TextView){
