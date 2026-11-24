@@ -1523,6 +1523,41 @@ public class MainActivity extends Activity {
    .setView(scroll).setNegativeButton("Tutup",null).create();
   popup[0].show();
  }
+ void showAutomaticContents(String key){
+  String[] codes={"MATAN","SYARAHAN","DALIL","TERJEMAHAN","KHULASAH","IKTIBAR","SYAFII","HANAFI","MALIKI","HANBALI","MUQARAN"};
+  String[] names={"Matan","Syarahan","Dalil","Terjemahan","Khulasah","Pengajaran & Iktibar","Syafi‘i","Hanafi","Maliki","Hanbali","Fiqh Muqaran"};
+  java.util.ArrayList<String> labels=new java.util.ArrayList<>(),terms=new java.util.ArrayList<>();
+  java.util.HashMap<String,Integer> counts=new java.util.HashMap<>();
+  for(String raw:prefs.getString(key,"").split("\\n")){
+   String line=raw.trim();
+   for(int i=0;i<codes.length;i++)if(line.equals("---"+codes[i]+"---")){
+    int n=counts.containsKey(line)?counts.get(line)+1:1;counts.put(line,n);
+    labels.add(names[i]+(n>1?" ("+n+")":""));terms.add(line);break;
+   }
+  }
+  if(labels.isEmpty()){new AlertDialog.Builder(this).setTitle("Isi Kandungan").setMessage("Belum ada label bahagian dalam posting ini.").setPositiveButton("Tutup",null).show();return;}
+  new AlertDialog.Builder(this).setTitle("Isi Kandungan").setItems(labels.toArray(new String[0]),(d,which)->{
+   String term=terms.get(which);int occurrence=0;for(int i=0;i<which;i++)if(terms.get(i).equals(term))occurrence++;
+   final int wanted=occurrence;
+   if(readerScroll==null){Toast.makeText(this,"Gunakan mod bacaan skrol",Toast.LENGTH_SHORT).show();return;}
+   final ScrollView scroll=readerScroll;
+   scroll.post(()->{if(!jumpToContents(scroll,scroll,term,wanted,new int[]{0}))Toast.makeText(this,"Bahagian tidak ditemui dalam paparan ini",Toast.LENGTH_SHORT).show();});
+  }).setNegativeButton("Tutup",null).show();
+ }
+ boolean jumpToContents(ScrollView scroll,View node,String term,int wanted,int[] seen){
+  if(node instanceof TextView){
+   TextView tv=(TextView)node;String raw=tv.getText().toString();int offset=0;
+   while((offset=raw.indexOf(term,offset))>=0){
+    if(seen[0]++==wanted&&tv.getLayout()!=null){
+     int y=tv.getTotalPaddingTop()+tv.getLayout().getLineTop(tv.getLayout().getLineForOffset(offset));
+     android.graphics.Rect rect=new android.graphics.Rect(0,y,1,y+1);
+     scroll.offsetDescendantRectToMyCoords(tv,rect);scroll.smoothScrollTo(0,Math.max(0,rect.top-dp(16)));return true;
+    }offset+=term.length();
+   }
+  }
+  if(node instanceof android.view.ViewGroup){android.view.ViewGroup group=(android.view.ViewGroup)node;for(int i=0;i<group.getChildCount();i++)if(jumpToContents(scroll,group.getChildAt(i),term,wanted,seen))return true;}
+  return false;
+ }
  void showBookIndex(String key){
   String content=prefs.getString(key,"");
   String[] lines=content.split("\\n");
@@ -1947,6 +1982,10 @@ public class MainActivity extends Activity {
   labels=java.util.Arrays.copyOf(labels,beforePdf+1);icons=java.util.Arrays.copyOf(icons,beforePdf+1);descriptions=java.util.Arrays.copyOf(descriptions,beforePdf+1);
   labels[beforePdf]=labels[beforePdf-1];icons[beforePdf]=icons[beforePdf-1];descriptions[beforePdf]=descriptions[beforePdf-1];
   labels[beforePdf-1]="Eksport PDF";icons[beforePdf-1]="▤";descriptions[beforePdf-1]="Cetak atau simpan sebagai PDF melalui Android";
+  int contentsIndex=labels.length-1;
+  labels=java.util.Arrays.copyOf(labels,labels.length+1);icons=java.util.Arrays.copyOf(icons,icons.length+1);descriptions=java.util.Arrays.copyOf(descriptions,descriptions.length+1);
+  labels[contentsIndex+1]=labels[contentsIndex];icons[contentsIndex+1]=icons[contentsIndex];descriptions[contentsIndex+1]=descriptions[contentsIndex];
+  labels[contentsIndex]="Isi Kandungan";icons[contentsIndex]="☷";descriptions[contentsIndex]="Lompat ke label bahagian dalam posting";
   ScrollView scroll=new ScrollView(this);scroll.setFillViewport(false);
   LinearLayout panel=new LinearLayout(this);panel.setOrientation(LinearLayout.VERTICAL);
   panel.setPadding(dp(12),dp(8),dp(12),dp(10));scroll.addView(panel);
@@ -1976,7 +2015,8 @@ public class MainActivity extends Activity {
    applyTouchFeedback(row);
    row.setOnClickListener(v->{
     dialog[0].dismiss();
-    if(option==0)edit(key);
+    if(option==contentsIndex)showAutomaticContents(key);
+    else if(option==0)edit(key);
     else if(option==1){boolean pinned=prefs.getBoolean("pinned_"+key,false);prefs.edit().putBoolean("pinned_"+key,!pinned).putLong("pinned_at_"+key,!pinned?System.currentTimeMillis():0L).apply();Toast.makeText(this,pinned?"Sematan dibuang":"Disemat",Toast.LENGTH_SHORT).show();read(key);}
     else if(option==2)duplicateNote(key);
     else if(option==3)searchInsideReader(key);
