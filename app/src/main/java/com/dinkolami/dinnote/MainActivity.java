@@ -1386,7 +1386,7 @@ public class MainActivity extends Activity {
    if(start>=end)return;
    for(int i=start;i<end&&i<text.length();i++)if(!Character.isWhitespace(text.charAt(i)))return;
    if(text instanceof android.text.Spanned){android.text.Spanned sp=(android.text.Spanned)text;if(start<sp.getSpanStart(this)||end>sp.getSpanEnd(this))return;}
-   fm.ascent=-dp(3);fm.descent=dp(2);
+   fm.ascent=-dp(4);fm.descent=dp(3);
    fm.top=fm.ascent;fm.bottom=fm.descent;
   }
  }
@@ -1417,7 +1417,12 @@ public class MainActivity extends Activity {
    String label=k.equals("MATAN")?"المتن · Matan":k.equals("SYARAHAN")?"الشرح · Syarahan":k.equals("DALIL")?"الدليل · Dalil":k.equals("TERJEMAHAN")?"الترجمة · Terjemahan":k.equals("SYAFII")?"الشَّافِعِيُّ · Syafi‘i":k.equals("HANAFI")?"الْحَنَفِيُّ · Hanafi":k.equals("MALIKI")?"الْمَالِكِيُّ · Maliki":k.equals("HANBALI")?"الْحَنْبَلِيُّ · Hanbali":k.equals("MUQARAN")?"الْفِقْهُ الْمُقَارَنُ · Fiqh Muqaran":k.equals("KHULASAH")?"الخُلَاصَةُ · Khulasah":"الدُّرُوسُ وَالْعِبَرُ · Pengajaran & Iktibar";
    out.setSpan(new BoxMarkerSpan(k.equals("TAMAT")?"":label,0xff176b47,0xffedf5ee),marks.start(),marks.end(),33);
   }
+  // Closing markers are structural only; remove their entire line from the display copy.
+  java.util.regex.Matcher closingLines=java.util.regex.Pattern.compile("(?m)^---TAMAT---[ \\t]*(?:\\n|$)").matcher(out.toString());
+  java.util.ArrayList<int[]> closingRanges=new java.util.ArrayList<>();
+  while(closingLines.find())closingRanges.add(new int[]{closingLines.start(),closingLines.end()});
   applySectionIndent(out);
+  for(int i=closingRanges.size()-1;i>=0;i--){int[] range=closingRanges.get(i);out.delete(range[0],range[1]);}
   return out;
  }
  int richMask(android.text.Spanned value,int a,int b){
