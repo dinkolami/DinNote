@@ -1496,17 +1496,36 @@ public class MainActivity extends Activity {
  }
  void showBookMindmap(String key,java.util.ArrayList<String> headings){
   String title=prefs.getString("title_"+key,"Kitab");
-  StringBuilder map=new StringBuilder("◉  ").append(title.isEmpty()?"Kitab":title);
+  ScrollView scroll=new ScrollView(this);
+  LinearLayout tree=new LinearLayout(this);tree.setOrientation(LinearLayout.VERTICAL);
+  tree.setPadding(dp(12),dp(12),dp(12),dp(14));scroll.addView(tree);
+  TextView rootNode=text(title.trim().isEmpty()?"Kitab":title,16);
+  rootNode.setTypeface(null,android.graphics.Typeface.BOLD);
+  rootNode.setTextColor(0xff16543b);rootNode.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
+  rootNode.setPadding(dp(13),dp(11),dp(13),dp(11));
+  rootNode.setBackground(rounded(0xffe6f2e9,0xffb6d3bf,12));
+  tree.addView(rootNode,new LinearLayout.LayoutParams(-1,-2));
   for(String heading:headings){
-   map.append("\n").append(heading.startsWith("        ")? "       └  ":heading.startsWith("    ")?"    ├  ":"  ◆  ").append(heading.trim().replaceFirst("^├\\s*",""));
+   int depth=heading.startsWith("        ")?2:heading.startsWith("    ")?1:0;
+   String label=heading.trim().replaceFirst("^[├•]\\s*","").trim();
+   LinearLayout branch=new LinearLayout(this);branch.setOrientation(LinearLayout.HORIZONTAL);
+   branch.setGravity(Gravity.CENTER_VERTICAL);
+   LinearLayout.LayoutParams branchParams=new LinearLayout.LayoutParams(-1,-2);
+   branchParams.topMargin=dp(6);branchParams.leftMargin=dp(9+depth*18);
+   tree.addView(branch,branchParams);
+   TextView connector=text(depth==0?"◆":depth==1?"├":"└",13);
+   connector.setTextColor(0xff8a9f8d);connector.setGravity(Gravity.CENTER);
+   branch.addView(connector,new LinearLayout.LayoutParams(dp(22),-2));
+   TextView node=text(label,14);
+   node.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
+   node.setTextColor(depth==0?0xff205b42:0xff384a41);
+   node.setPadding(dp(10),dp(8),dp(10),dp(8));
+   node.setBackground(rounded(depth==0?0xffedf6ee:depth==1?0xfff5f8f3:0xfffdfcf8,0xffd3dfd4,9));
+   if(depth==0)node.setTypeface(null,android.graphics.Typeface.BOLD);
+   branch.addView(node,new LinearLayout.LayoutParams(0,-2,1));
   }
-  TextView view=text(map.toString(),15);
-  view.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
-  view.setTextIsSelectable(true);
-  view.setPadding(dp(18),dp(12),dp(18),dp(12));
-  ScrollView scroll=new ScrollView(this);scroll.addView(view);
-  new AlertDialog.Builder(this).setTitle("Petaminda Subtopik").setView(scroll)
-   .setPositiveButton("Tutup",null).show();
+  new AlertDialog.Builder(this).setTitle("Petaminda Subtopik ("+headings.size()+")")
+   .setView(scroll).setPositiveButton("Tutup",null).show();
  }
  View findIndexHeadingView(View node,String term,int occurrence,int[] seen){
   if(node instanceof TextView){
