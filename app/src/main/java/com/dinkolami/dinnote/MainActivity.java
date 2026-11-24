@@ -1722,22 +1722,24 @@ public class MainActivity extends Activity {
   header.setTypeface(null,android.graphics.Typeface.BOLD);header.setTextColor(0xff566a70);
   header.setPadding(dp(12),dp(10),dp(12),dp(14));panel.addView(header);
   final AlertDialog[] dialog=new AlertDialog[1];
+  // Display Padam immediately after Edit; retain original action indexes and confirmation.
   for(int i=0;i<labels.length;i++){
-   final int option=i;boolean danger=i==labels.length-1;
+   final int option=i==0?0:(i==1?labels.length-1:i-1);
+   boolean danger=option==labels.length-1;
    LinearLayout row=new LinearLayout(this);row.setGravity(Gravity.CENTER_VERTICAL);
    row.setPadding(dp(12),dp(7),dp(12),dp(7));
    row.setBackground(rounded(danger?0xfffff1f0:0xfff9fbf9,danger?0xffe8bcb8:0xffcbdcd2,10));
    LinearLayout.LayoutParams rowParams=new LinearLayout.LayoutParams(-1,dp(62));
    rowParams.bottomMargin=dp(5);panel.addView(row,rowParams);
-   TextView symbol=text(icons[i],21);symbol.setGravity(Gravity.CENTER);
+   TextView symbol=text(icons[option],21);symbol.setGravity(Gravity.CENTER);
    symbol.setTextColor(danger?0xffa42e2e:0xff566a70);
    symbol.setBackground(rounded(danger?0xffffdfdc:0xffe2f1e7,danger?0xffffdfdc:0xffe2f1e7,9));
    row.addView(symbol,new LinearLayout.LayoutParams(dp(42),dp(42)));
    LinearLayout words=new LinearLayout(this);words.setOrientation(LinearLayout.VERTICAL);
    words.setPadding(dp(12),0,dp(4),0);row.addView(words,new LinearLayout.LayoutParams(0,-2,1));
-   TextView label=text(labels[i],14);label.setTypeface(null,android.graphics.Typeface.BOLD);
+   TextView label=text(labels[option],14);label.setTypeface(null,android.graphics.Typeface.BOLD);
    label.setTextColor(danger?0xffa42e2e:0xff25372d);words.addView(label);
-   TextView detail=text(descriptions[i],11);detail.setTextColor(danger?0xffa65a56:0xff68766d);words.addView(detail);
+   TextView detail=text(descriptions[option],11);detail.setTextColor(danger?0xffa65a56:0xff68766d);words.addView(detail);
    TextView arrow=text("›",22);arrow.setTextColor(danger?0xffa42e2e:0xff566a70);row.addView(arrow);
    applyTouchFeedback(row);
    row.setOnClickListener(v->{
