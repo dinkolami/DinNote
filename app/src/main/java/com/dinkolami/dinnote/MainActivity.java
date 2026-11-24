@@ -3182,6 +3182,7 @@ public class MainActivity extends Activity {
    org.json.JSONArray versions=new org.json.JSONArray(prefs.getString("history_"+selected,"[]"));
    org.json.JSONObject entry=new org.json.JSONObject();
    entry.put("time",System.currentTimeMillis());
+   entry.put("source","manual");
    entry.put("title",titleEditor==null?"":titleEditor.getText().toString());
    entry.put("body",encodedEditorText());
    String category=categoryPicker==null||categoryPicker.getSelectedItem()==null?"Tanpa kategori":categoryPicker.getSelectedItem().toString();
@@ -3212,7 +3213,7 @@ public class MainActivity extends Activity {
    String[] labels=new String[versions.length()];
    for(int i=0;i<versions.length();i++){
     org.json.JSONObject item=versions.getJSONObject(versions.length()-1-i);
-    labels[i]=new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm",java.util.Locale.getDefault()).format(new java.util.Date(item.optLong("time",0)))+" — "+item.optString("title","Tanpa tajuk");
+    labels[i]=(item.optString("source","manual").equals("auto")?"⏱ Automatik  ·  ":"✎ Disimpan  ·  ")+new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm",java.util.Locale.getDefault()).format(new java.util.Date(item.optLong("time",0)))+" — "+item.optString("title","Tanpa tajuk");
    }
    new AlertDialog.Builder(this).setTitle("Sejarah suntingan").setItems(labels,(d,index)->{
     try{
@@ -3275,7 +3276,7 @@ public class MainActivity extends Activity {
     }
    }
    org.json.JSONObject entry=new org.json.JSONObject();
-   entry.put("time",now);entry.put("title",oldTitle);entry.put("body",oldBody);entry.put("category",oldCategory);
+   entry.put("time",now);entry.put("title",oldTitle);entry.put("body",oldBody);entry.put("category",oldCategory);entry.put("source","auto");
    org.json.JSONArray kept=new org.json.JSONArray();
    for(int i=Math.max(0,versions.length()-9);i<versions.length();i++)kept.put(versions.getJSONObject(i));
    kept.put(entry);
