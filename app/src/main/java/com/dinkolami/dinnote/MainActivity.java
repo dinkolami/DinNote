@@ -526,10 +526,10 @@ public class MainActivity extends Activity {
     item.setSingleLine(true);item.setEllipsize(android.text.TextUtils.TruncateAt.END);
     item.setPadding(dp(32),dp(4),dp(prefs.getLong("viewed_"+k,0L)>0L?88:10),dp(4));
     row.addView(item,new FrameLayout.LayoutParams(-1,-2,Gravity.CENTER_VERTICAL));
-    TextView recentIcon=dashboardText(k.startsWith("m_")?"▤":"✎",14,false);
-    recentIcon.setTextColor(0xff303b42);recentIcon.setGravity(Gravity.CENTER);
-    FrameLayout.LayoutParams recentIconParams=new FrameLayout.LayoutParams(dp(22),-1,Gravity.LEFT|Gravity.CENTER_VERTICAL);
-    recentIconParams.leftMargin=dp(9);row.addView(recentIcon,recentIconParams);
+    TextView dashboardRowIcon=dashboardText(k.startsWith("m_")?"▤":"✎",14,false);
+    dashboardRowIcon.setTextColor(0xff303b42);dashboardRowIcon.setGravity(Gravity.CENTER);
+    FrameLayout.LayoutParams dashboardRowIconParams=new FrameLayout.LayoutParams(dp(22),-1,Gravity.LEFT|Gravity.CENTER_VERTICAL);
+    dashboardRowIconParams.leftMargin=dp(9);row.addView(dashboardRowIcon,dashboardRowIconParams);
     item.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
     long when=prefs.getLong("viewed_"+k,0L);
     if(when>0L){
