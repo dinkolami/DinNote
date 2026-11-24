@@ -3060,13 +3060,15 @@ public class MainActivity extends Activity {
   if(editor==null)return;
   // Always open the insertion picker on a normal tap, even when the caret is inside an existing box.
   // Managing an existing box remains available via long press.
-  final int a=Math.max(0,Math.min(editor.getSelectionStart(),editor.getSelectionEnd()));
-  final int b=Math.max(a,Math.max(editor.getSelectionStart(),editor.getSelectionEnd()));
+  final EditText target=editor;
+  final int startSelection=target.getSelectionStart(),endSelection=target.getSelectionEnd();
+  final int a=startSelection<0?target.length():Math.max(0,Math.min(startSelection,endSelection));
+  final int b=endSelection<0?a:Math.max(a,Math.max(startSelection,endSelection));
   final String[] types={"DALIL","HIKMAH","CATATAN","FIRMAN","SABDA","SAHABAT","TABII","ULAMA"};
   new AlertDialog.Builder(this).setTitle("Kotak teks")
    .setItems(new String[]{"Dalil","Kalam Hikmah","Catatan Penting","Firman Allah SWT:","Sabda Nabi SAW:","Kata Sahabat Rdh.","Kata Tabi\u0027in Rhm.","Kata Ulama\u0027 Rhm.","Buang kotak terpilih","Urus kotak sedia ada"},(d,i)->{
     if(i==9){manageCurrentBox(true);return;}
-    if(editor==null)return;
+    if(editor!=target)return;
     // Clamp the saved selection after dialog focus changes or repeated insertions.
     int safeA=Math.min(a,editor.length()),safeB=Math.min(b,editor.length());
     String chosen=editor.getText().subSequence(safeA,safeB).toString();
