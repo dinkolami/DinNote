@@ -1536,13 +1536,29 @@ public class MainActivity extends Activity {
    }
   }
   if(labels.isEmpty()){new AlertDialog.Builder(this).setTitle("Isi Kandungan").setMessage("Belum ada label bahagian dalam posting ini.").setPositiveButton("Tutup",null).show();return;}
-  new AlertDialog.Builder(this).setTitle("Isi Kandungan").setItems(labels.toArray(new String[0]),(d,which)->{
+  ScrollView list=new ScrollView(this);
+  LinearLayout panel=new LinearLayout(this);panel.setOrientation(LinearLayout.VERTICAL);panel.setPadding(dp(12),dp(4),dp(12),dp(6));list.addView(panel);
+  int[] colors={0xff386b55,0xff42698b,0xff92732f,0xff795a90,0xff976b42,0xffa2556c,0xff386b55,0xff42698b,0xff92732f,0xff795a90,0xff386b55};
+  final AlertDialog[] dialog=new AlertDialog[1];
+  for(int j=0;j<labels.size();j++){
+   final int which=j;int color=0xff386b55;
+   for(int k=0;k<codes.length;k++)if(terms.get(j).equals("---"+codes[k]+"---")){color=colors[k];break;}
+   int bg=android.graphics.Color.rgb((android.graphics.Color.red(color)+255*9)/10,(android.graphics.Color.green(color)+255*9)/10,(android.graphics.Color.blue(color)+255*9)/10);
+   int edge=android.graphics.Color.rgb((android.graphics.Color.red(color)+255*2)/3,(android.graphics.Color.green(color)+255*2)/3,(android.graphics.Color.blue(color)+255*2)/3);
+   LinearLayout row=new LinearLayout(this);row.setGravity(Gravity.CENTER_VERTICAL);row.setPadding(dp(10),dp(7),dp(10),dp(7));row.setBackground(rounded(bg,edge,10));
+   LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);lp.bottomMargin=dp(4);panel.addView(row,lp);
+   TextView icon=text("◎",16);icon.setTextColor(color);row.addView(icon,new LinearLayout.LayoutParams(dp(28),-2));
+   TextView label=text(labels.get(j),14);label.setTextColor(color);row.addView(label,new LinearLayout.LayoutParams(0,-2,1));
+   TextView arrow=text("›",20);arrow.setTextColor(color);row.addView(arrow);
+   applyTouchFeedback(row);row.setOnClickListener(v->{dialog[0].dismiss();
    String term=terms.get(which);int occurrence=0;for(int i=0;i<which;i++)if(terms.get(i).equals(term))occurrence++;
    final int wanted=occurrence;
    if(readerScroll==null){Toast.makeText(this,"Gunakan mod bacaan skrol",Toast.LENGTH_SHORT).show();return;}
    final ScrollView scroll=readerScroll;
    scroll.post(()->{if(!jumpToContents(scroll,scroll,term,wanted,new int[]{0}))Toast.makeText(this,"Bahagian tidak ditemui dalam paparan ini",Toast.LENGTH_SHORT).show();});
-  }).setNegativeButton("Tutup",null).show();
+   });
+  }
+  dialog[0]=new AlertDialog.Builder(this).setTitle("Isi Kandungan").setView(list).setNegativeButton("Tutup",null).create();dialog[0].show();
  }
  boolean jumpToContents(ScrollView scroll,View node,String term,int wanted,int[] seen){
   if(node instanceof TextView){
