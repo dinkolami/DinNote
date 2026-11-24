@@ -3643,6 +3643,17 @@ public class MainActivity extends Activity {
     original.setOnClickListener(v->{previewDialog.dismiss();saveOriginalPdf(bytes,filename);});
     cancel.setOnClickListener(v->previewDialog.dismiss());
     previewDialog.show();
+    // Explicit confirmation prevents accidental saving of broken Arabic/Jawi extraction.
+    previewDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v->{
+     new AlertDialog.Builder(this).setTitle("Pastikan teks PDF betul")
+      .setMessage("Adakah semua teks Arab/Jawi dalam pratonton boleh dibaca dengan sempurna? Jika tidak, pilih Simpan PDF asal supaya kandungan tidak hilang.")
+      .setNegativeButton("Semak semula",null)
+      .setPositiveButton("Ya, simpan teks",(confirm,which)->{
+       String key="m_"+java.util.UUID.randomUUID().toString();
+       boolean ok=prefs.edit().putString(key,body).putString("title_"+key,name.getText().toString().trim().isEmpty()?"Kitab import":name.getText().toString().trim()).putString("cat_"+key,"Tanpa kategori").putLong("updated_"+key,System.currentTimeMillis()).commit();
+       if(ok){previewDialog.dismiss();openSection(true);}else Toast.makeText(this,"Simpan gagal",Toast.LENGTH_LONG).show();
+      }).show();
+    });
    }else importDialog.show();
   }catch(Exception e){Toast.makeText(this,"Import gagal: "+e.getMessage(),Toast.LENGTH_LONG).show();}
  }
