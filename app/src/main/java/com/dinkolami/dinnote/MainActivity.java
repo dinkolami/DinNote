@@ -524,14 +524,14 @@ public class MainActivity extends Activity {
     item.setMinHeight(dp(42));
     item.setTooltipText(t);item.setContentDescription(t);
     item.setSingleLine(true);item.setEllipsize(android.text.TextUtils.TruncateAt.END);
-    item.setPadding(dp(32),dp(4),dp(prefs.getLong("viewed_"+k,0L)>0L?88:10),dp(4));
+    item.setPadding(dp(33),dp(4),dp(prefs.getLong("viewed_"+k,0L)>0L?88:10),dp(4));
     row.addView(item,new FrameLayout.LayoutParams(-1,-2,Gravity.CENTER_VERTICAL));
     android.widget.ImageView dashboardRowIcon=new android.widget.ImageView(this);
     dashboardRowIcon.setImageResource(k.startsWith("m_")?android.R.drawable.ic_menu_agenda:android.R.drawable.ic_menu_edit);
     dashboardRowIcon.setColorFilter(0xff536a5c);
     dashboardRowIcon.setScaleType(android.widget.ImageView.ScaleType.FIT_CENTER);
     FrameLayout.LayoutParams dashboardRowIconParams=new FrameLayout.LayoutParams(dp(17),dp(17),Gravity.LEFT|Gravity.CENTER_VERTICAL);
-    dashboardRowIconParams.leftMargin=dp(13);row.addView(dashboardRowIcon,dashboardRowIconParams);
+    dashboardRowIconParams.leftMargin=dp(7);row.addView(dashboardRowIcon,dashboardRowIconParams);
     item.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
     long when=prefs.getLong("viewed_"+k,0L);
     if(when>0L){
