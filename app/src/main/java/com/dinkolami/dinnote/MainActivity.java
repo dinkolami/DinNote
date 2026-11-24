@@ -516,7 +516,7 @@ public class MainActivity extends Activity {
     // Light emerald list: slightly larger titles, dates consistently aligned right.
     FrameLayout row=new FrameLayout(this);
     row.setBackground(homeInsetSurface(0xffffffff,0xffffffff,0xffd4ddd7,10));row.setMinimumHeight(dp(42));
-    TextView item=dashboardText((k.startsWith("m_")?"▤  ":"✎  ")+t,14,false);
+    TextView item=dashboardText(t,14,false);
     item.setTextColor(0xff303b42);item.setGravity(Gravity.CENTER_VERTICAL);
     item.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
     item.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);
@@ -524,7 +524,12 @@ public class MainActivity extends Activity {
     item.setMinHeight(dp(42));
     item.setTooltipText(t);item.setContentDescription(t);
     item.setSingleLine(true);item.setEllipsize(android.text.TextUtils.TruncateAt.END);
+    item.setPadding(dp(32),dp(4),dp(prefs.getLong("viewed_"+k,0L)>0L?88:10),dp(4));
     row.addView(item,new FrameLayout.LayoutParams(-1,-2,Gravity.CENTER_VERTICAL));
+    TextView recentIcon=dashboardText(k.startsWith("m_")?"▤":"✎",14,false);
+    recentIcon.setTextColor(0xff303b42);recentIcon.setGravity(Gravity.CENTER);
+    FrameLayout.LayoutParams recentIconParams=new FrameLayout.LayoutParams(dp(22),-1,Gravity.LEFT|Gravity.CENTER_VERTICAL);
+    recentIconParams.leftMargin=dp(9);row.addView(recentIcon,recentIconParams);
     item.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
     long when=prefs.getLong("viewed_"+k,0L);
     if(when>0L){
@@ -781,7 +786,8 @@ public class MainActivity extends Activity {
     String body=prefs.getString(key,"").trim();
     if(!body.isEmpty())label=body.split("\\n",2)[0].trim();
    }
-   TextView entry=dashboardText((key.startsWith("m_")?"▤  ":"✎  ")+(label.isEmpty()?"Tanpa tajuk":label),14,false);
+   String entryTitle=label.isEmpty()?"Tanpa tajuk":label;
+   TextView entry=dashboardText(entryTitle,14,false);
    entry.setTextColor(0xff303b42);entry.setGravity(Gravity.CENTER_VERTICAL);
    entry.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
    entry.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);
@@ -789,7 +795,12 @@ public class MainActivity extends Activity {
    entry.setIncludeFontPadding(false);entry.setPadding(0,0,0,0);entry.setMinWidth(0);
    LinearLayout line=new LinearLayout(this);line.setOrientation(LinearLayout.HORIZONTAL);line.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);line.setGravity(Gravity.CENTER_VERTICAL);
    line.setPadding(dp(7),dp(3),dp(7),dp(3));line.setBackground(homeInsetSurface(0xffffffff,0xffffffff,0xffd4ddd7,10));line.setMinimumHeight(dp(folded?38:42));
-   if(pin){entry.setCompoundDrawablePadding(dp(5));entry.setTextColor(0xff8b6925);}
+   TextView entryIcon=dashboardText(key.startsWith("m_")?"▤":"✎",14,false);
+   entryIcon.setTextColor(pin?0xff8b6925:0xff303b42);
+   entryIcon.setGravity(Gravity.CENTER_VERTICAL|Gravity.LEFT);
+   LinearLayout.LayoutParams iconParams=new LinearLayout.LayoutParams(-2,-2);iconParams.rightMargin=dp(7);
+   line.addView(entryIcon,iconParams);
+   if(pin)entry.setTextColor(0xff8b6925);
    line.addView(entry,new LinearLayout.LayoutParams(0,-2,1));
    Object rawStamp=prefs.getAll().get("updated_"+key);
    long stamp=rawStamp instanceof Number?((Number)rawStamp).longValue():0L;
