@@ -3218,8 +3218,12 @@ public class MainActivity extends Activity {
    new AlertDialog.Builder(this).setTitle("Sejarah suntingan").setItems(labels,(d,index)->{
     try{
      org.json.JSONObject item=versions.getJSONObject(versions.length()-1-index);
-     new AlertDialog.Builder(this).setTitle("Pulihkan versi?")
-      .setMessage("Kandungan editor semasa akan digantikan. Simpan versi semasa dahulu jika mahu menyimpannya.")
+     String oldBody=item.optString("body","");
+     String snippet=oldBody.replaceAll("(?m)^---[A-Z][A-Z0-9_ -]*---\\s*$","").trim();
+     if(snippet.length()>350)snippet=snippet.substring(0,350)+"…";
+     String preview="Tajuk: "+item.optString("title","Tanpa tajuk")+"\\nKategori: "+item.optString("category","Tanpa kategori")+"\\n\\n"+(snippet.isEmpty()?"(Tiada kandungan)":snippet)+"\\n\\nMemulihkan versi ini akan menggantikan kandungan editor semasa. Versi semasa akan disandarkan terlebih dahulu.";
+     new AlertDialog.Builder(this).setTitle("Pratonton versi terdahulu")
+      .setMessage(preview)
       .setPositiveButton("Pulihkan",(a,b)->{
        if(editor==null||titleEditor==null)return;
        if(!saveHistoryVersion(false)){
