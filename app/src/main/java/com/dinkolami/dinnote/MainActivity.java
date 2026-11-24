@@ -905,7 +905,7 @@ public class MainActivity extends Activity {
   if(raw==null)return "";
   // Some imported samples contain escaped newline sequences rather than line breaks.
   String cleaned=raw.replace("\\r\\n"," ").replace("\\n"," ").replace("\\r"," ").replace("\\t"," ");
-  cleaned=cleaned.replaceAll("(?i)---(?:MATAN|SYARAHAN|DALIL|TERJEMAHAN|TAMAT|FLOWER|GEOMETRIC|CLASSIC|KOTAK(?:DALIL|HIKMAH|CATATAN|FIRMAN|SABDA|SAHABAT|TABII|ULAMA|TAMAT))---"," ");
+  cleaned=cleaned.replaceAll("(?i)---(?:MATAN|SYARAHAN|DALIL|TERJEMAHAN|KHULASAH|TAMAT|FLOWER|GEOMETRIC|CLASSIC|KOTAK(?:DALIL|HIKMAH|CATATAN|FIRMAN|SABDA|SAHABAT|TABII|ULAMA|TAMAT))---"," ");
   cleaned=cleaned.replaceAll("(?i)</?[biu]>","");
   cleaned=formattedReadingText(cleaned).toString();
   cleaned=cleaned.replaceAll("(?<!\\S)---(?!\\S)"," ").replaceAll("\\s+"," ").trim();
@@ -1380,10 +1380,10 @@ public class MainActivity extends Activity {
  }
  android.text.SpannableStringBuilder readerLabelText(String source){
   android.text.SpannableStringBuilder out=formattedReadingText(source);
-  java.util.regex.Matcher marks=java.util.regex.Pattern.compile("(?m)^---(MATAN|SYARAHAN|DALIL|TERJEMAHAN)---[ \\t]*$").matcher(out.toString());
+  java.util.regex.Matcher marks=java.util.regex.Pattern.compile("(?m)^---(MATAN|SYARAHAN|DALIL|TERJEMAHAN|KHULASAH)---[ \\t]*$").matcher(out.toString());
   while(marks.find()){
    String k=marks.group(1);
-   String label=k.equals("MATAN")?"المتن · Matan":k.equals("SYARAHAN")?"الشرح · Syarahan":k.equals("DALIL")?"الدليل · Dalil":"الترجمة · Terjemahan";
+   String label=k.equals("MATAN")?"المتن · Matan":k.equals("SYARAHAN")?"الشرح · Syarahan":k.equals("DALIL")?"الدليل · Dalil":k.equals("TERJEMAHAN")?"الترجمة · Terjemahan":"الخُلَاصَةُ · Khulasah";
    out.setSpan(new BoxMarkerSpan(label,0xff176b47,0xffedf5ee),marks.start(),marks.end(),33);
   }
   return out;
@@ -1695,7 +1695,7 @@ public class MainActivity extends Activity {
   int start=Math.min(editor.getSelectionStart(),editor.getSelectionEnd()),end=Math.max(editor.getSelectionStart(),editor.getSelectionEnd());
   if(start<0||end>editor.length())return;
   android.text.Editable value=editor.getText();
-  if(start!=end&&value.subSequence(start,end).toString().matches("(?s).*---(?:MATAN|SYARAHAN|DALIL|TERJEMAHAN|TAMAT)---.*")){Toast.makeText(this,"Pilih teks tanpa tanda bacaan sedia ada",Toast.LENGTH_SHORT).show();return;}
+  if(start!=end&&value.subSequence(start,end).toString().matches("(?s).*---(?:MATAN|SYARAHAN|DALIL|TERJEMAHAN|KHULASAH|TAMAT)---.*")){Toast.makeText(this,"Pilih teks tanpa tanda bacaan sedia ada",Toast.LENGTH_SHORT).show();return;}
   String opening=(start>0&&value.charAt(start-1)!='\n'?"\n":"")+"---"+code+"---\n";
   String closing="\n---TAMAT---\n";
   android.text.SpannableStringBuilder block=new android.text.SpannableStringBuilder(opening);
@@ -1713,6 +1713,7 @@ public class MainActivity extends Activity {
    if(marker.equals("---SYARAHAN---")){type=2;if(labels&&(mode==0||mode==type))out.append(marker).append('\n');continue;}
    if(marker.equals("---DALIL---")){type=3;if(labels&&(mode==0||mode==type))out.append(marker).append('\n');continue;}
    if(marker.equals("---TERJEMAHAN---")){type=4;if(labels&&(mode==0||mode==type))out.append(marker).append('\n');continue;}
+   if(marker.equals("---KHULASAH---")){type=5;if(labels&&(mode==0||mode==type))out.append(marker).append('\n');continue;}
    if(marker.equals("---TAMAT---")){type=0;continue;}
    if(marker.equals("---KOTAKDALIL---")||marker.equals("---KOTAKFIRMAN---")||marker.equals("---KOTAKSABDA---"))type=3;
    if(mode==0||type==mode)out.append(line).append('\n');
@@ -1731,13 +1732,13 @@ public class MainActivity extends Activity {
   new AlertDialog.Builder(this).setTitle("Mod Bacaan Terpilih").setSingleChoiceItems(names,Math.max(0,Math.min(4,prefs.getInt("reading_filter_"+key,0))),(d,i)->{
    if(i>0&&selectedReadingText(key,i).isEmpty()){Toast.makeText(this,"Tiada teks bertanda untuk pilihan ini",Toast.LENGTH_LONG).show();return;}
    prefs.edit().putInt("reading_filter_"+key,i).apply();d.dismiss();read(key);
-  }).setNeutralButton("Panduan tanda",(d,w)->new AlertDialog.Builder(this).setTitle("Penandaan dalam editor").setMessage("Letakkan tanda pada baris berasingan sebelum teks: ---MATAN---, ---SYARAHAN---, ---DALIL--- atau ---TERJEMAHAN---. Akhiri bahagian dengan ---TAMAT---. Teks tanpa tanda kekal dalam mod lengkap.").setPositiveButton("OK",null).show()).setNegativeButton("Batal",null).show();
+  }).setNeutralButton("Panduan tanda",(d,w)->new AlertDialog.Builder(this).setTitle("Penandaan dalam editor").setMessage("Letakkan tanda pada baris berasingan sebelum teks: ---MATAN---, ---SYARAHAN---, ---DALIL--- atau ---TERJEMAHAN--- atau ---KHULASAH---. Akhiri bahagian dengan ---TAMAT---. Teks tanpa tanda kekal dalam mod lengkap.").setPositiveButton("OK",null).show()).setNegativeButton("Batal",null).show();
  }
  void showLayeredCommentary(String key){
   LinearLayout panel=new LinearLayout(this);panel.setOrientation(1);panel.setPadding(dp(12),dp(8),dp(12),dp(12));
   ScrollView scroll=new ScrollView(this);scroll.addView(panel);
   String raw=prefs.getString(key,"");
-  java.util.regex.Matcher blocks=java.util.regex.Pattern.compile("(?m)^---(MATAN|SYARAHAN|DALIL|TERJEMAHAN|TAMAT)---[ \\t]*$").matcher(raw);
+  java.util.regex.Matcher blocks=java.util.regex.Pattern.compile("(?m)^---(MATAN|SYARAHAN|DALIL|TERJEMAHAN|KHULASAH|TAMAT)---[ \\t]*$").matcher(raw);
   int start=0;String kind="";LinearLayout group=panel;int count=0;
   while(blocks.find()){
    String chunk=raw.substring(start,blocks.start()).trim();
@@ -2725,14 +2726,14 @@ public class MainActivity extends Activity {
   checklistButton.setContentDescription("Masukkan kotak semak");
     underlineButton.setContentDescription("Garis bawah teks terpilih");
   // Compact reading-section picker shares the formatting row; no extra toolbar row.
-  final String[] tagLabels={"Matan · المتن","Syarahan · الشرح","Dalil · الدليل","Terjemahan · الترجمة"};
-  final String[] tagCodes={"MATAN","SYARAHAN","DALIL","TERJEMAHAN"};
+  final String[] tagLabels={"Matan · المتن","Syarahan · الشرح","Dalil · الدليل","Terjemahan · الترجمة","Khulasah · الخُلَاصَةُ"};
+  final String[] tagCodes={"MATAN","SYARAHAN","DALIL","TERJEMAHAN","KHULASAH"};
   Button readingTagPicker=action("§",formatBar,()->new AlertDialog.Builder(this)
    .setTitle("Bahagian Teks")
    .setItems(tagLabels,(dialog,index)->insertReadingTag(tagCodes[index]))
    .show());
   readingTagPicker.setTextColor(0xff176b47);
-  readingTagPicker.setContentDescription("Bahagian Teks: Matan, Syarahan, Dalil, Terjemahan");
+  readingTagPicker.setContentDescription("Bahagian Teks: Matan, Syarahan, Dalil, Terjemahan, Khulasah");
   Button dividerButton=action("✿",formatBar,()->showDividerPicker());
   dividerButton.setTextColor(0xff176b47);dividerButton.setContentDescription("Pilih pemisah perenggan Islamik");
   Button boxButton=action("▣",formatBar,()->showTextBoxPicker());
@@ -2915,10 +2916,10 @@ public class MainActivity extends Activity {
   while(div.find())e.setSpan(new EditorDividerSpan(div.group(1)),div.start(),div.end(),33);
 
   for(BoxMarkerSpan span:e.getSpans(0,e.length(),BoxMarkerSpan.class))e.removeSpan(span);
-  java.util.regex.Matcher readingMarks=java.util.regex.Pattern.compile("(?m)^---(MATAN|SYARAHAN|DALIL|TERJEMAHAN|TAMAT)---$").matcher(e.toString());
+  java.util.regex.Matcher readingMarks=java.util.regex.Pattern.compile("(?m)^---(MATAN|SYARAHAN|DALIL|TERJEMAHAN|KHULASAH|TAMAT)---$").matcher(e.toString());
   while(readingMarks.find()){
    String k=readingMarks.group(1);
-   String label=k.equals("MATAN")?"المتن · Matan":k.equals("SYARAHAN")?"الشرح · Syarahan":k.equals("DALIL")?"الدليل · Dalil":k.equals("TERJEMAHAN")?"الترجمة · Terjemahan":"";
+   String label=k.equals("MATAN")?"المتن · Matan":k.equals("SYARAHAN")?"الشرح · Syarahan":k.equals("DALIL")?"الدليل · Dalil":k.equals("TERJEMAHAN")?k.equals("TERJEMAHAN")?"الترجمة · Terjemahan":"الخُلَاصَةُ · Khulasah":"";
    e.setSpan(new BoxMarkerSpan(label,0xff176b47,0xffedf5ee),readingMarks.start(),readingMarks.end(),33);
   }
   for(BoxBodySpan span:e.getSpans(0,e.length(),BoxBodySpan.class))e.removeSpan(span);
