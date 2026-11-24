@@ -1727,14 +1727,14 @@ public class MainActivity extends Activity {
    final int option=i==0?0:(i==1?labels.length-1:i-1);
    boolean danger=option==labels.length-1;
    LinearLayout row=new LinearLayout(this);row.setGravity(Gravity.CENTER_VERTICAL);
-   row.setPadding(dp(12),dp(7),dp(12),dp(7));
+   row.setPadding(dp(12),dp(5),dp(12),dp(5));
    row.setBackground(rounded(danger?0xfffff1f0:0xfff9fbf9,danger?0xffe8bcb8:0xffcbdcd2,10));
-   LinearLayout.LayoutParams rowParams=new LinearLayout.LayoutParams(-1,dp(62));
-   rowParams.bottomMargin=dp(5);panel.addView(row,rowParams);
+   LinearLayout.LayoutParams rowParams=new LinearLayout.LayoutParams(-1,dp(54));
+   rowParams.bottomMargin=dp(4);panel.addView(row,rowParams);
    TextView symbol=text(icons[option],21);symbol.setGravity(Gravity.CENTER);
    symbol.setTextColor(danger?0xffa42e2e:0xff566a70);
    symbol.setBackground(rounded(danger?0xffffdfdc:0xffe2f1e7,danger?0xffffdfdc:0xffe2f1e7,9));
-   row.addView(symbol,new LinearLayout.LayoutParams(dp(42),dp(42)));
+   row.addView(symbol,new LinearLayout.LayoutParams(dp(38),dp(38)));
    LinearLayout words=new LinearLayout(this);words.setOrientation(LinearLayout.VERTICAL);
    words.setPadding(dp(12),0,dp(4),0);row.addView(words,new LinearLayout.LayoutParams(0,-2,1));
    TextView label=text(labels[option],14);label.setTypeface(null,android.graphics.Typeface.BOLD);
