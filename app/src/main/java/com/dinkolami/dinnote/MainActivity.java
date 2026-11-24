@@ -1724,6 +1724,25 @@ public class MainActivity extends Activity {
   if(start<0||end>editor.length())return;
   android.text.Editable value=editor.getText();
   if(start!=end&&value.subSequence(start,end).toString().matches("(?s).*---(?:MATAN|SYARAHAN|DALIL|TERJEMAHAN|KHULASAH|IKTIBAR|SYAFII|HANAFI|MALIKI|HANBALI|MUQARAN|TAMAT)---.*")){Toast.makeText(this,"Pilih teks tanpa tanda bacaan sedia ada",Toast.LENGTH_SHORT).show();return;}
+  // At a collapsed caret before existing prose, label that paragraph instead of inserting an empty section.
+  if(start==end&&start<value.length()&&(start==0||value.charAt(start-1)=='\n')){
+   int p=start;
+   while(p<value.length()&&(value.charAt(p)=='\n'||value.charAt(p)==' '||value.charAt(p)=='\t'))p++;
+   if(p<value.length()&&!value.subSequence(p,value.length()).toString().startsWith("---")){
+    int stop=p;
+    while(stop<value.length()){
+     if(value.charAt(stop)=='\n'&&(stop+1==value.length()||value.charAt(stop+1)=='\n'||value.subSequence(stop+1,value.length()).toString().startsWith("---")))break;
+     stop++;
+    }
+    String prefix="---"+code+"---\n";
+    android.text.SpannableStringBuilder section=new android.text.SpannableStringBuilder(prefix);
+    section.append(value.subSequence(p,stop));section.append("\n---TAMAT---");
+    if(stop==value.length())section.append("\n");
+    value.replace(start,stop,section);
+    editor.setSelection(Math.min(value.length(),start+prefix.length()));
+    return;
+   }
+  }
   String opening=(start>0&&value.charAt(start-1)!='\n'?"\n":"")+"---"+code+"---\n";
   String closing="\n---TAMAT---\n";
   android.text.SpannableStringBuilder block=new android.text.SpannableStringBuilder(opening);
