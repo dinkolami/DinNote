@@ -1397,7 +1397,7 @@ public class MainActivity extends Activity {
    else if(trim.equals("---TAMAT---")){active=false;paragraphStart=false;}
    else if(trim.equals("---KOTAKTAMAT---"))box=false;
    else if(trim.startsWith("---KOTAK"))box=true;
-   else if(trim.isEmpty()){paragraphStart=true;if(active&&!box&&end<raw.length()&&!(value instanceof android.text.Editable))value.setSpan(new SectionGapSpan(),start,end+1,android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);}
+   else if(trim.isEmpty()){paragraphStart=true;if(!box&&end<raw.length()&&!(value instanceof android.text.Editable))value.setSpan(new SectionGapSpan(),start,end+1,android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);}
    else if(active&&paragraphStart&&!box&&!trim.isEmpty()&&!Character.isWhitespace(line.charAt(0))&&!Character.isSpaceChar(line.charAt(0))&&!trim.startsWith("---")&&!trim.matches("^(?:\\p{Nd}+[.)]|[-•●◦▪☐☑✓*#]|@#).*")){
     value.setSpan(new SectionIndentSpan(),start,end<raw.length()?end+1:end,android.text.Spanned.SPAN_PARAGRAPH);
    }
@@ -2417,7 +2417,8 @@ public class MainActivity extends Activity {
      View fineDivider=new View(this);fineDivider.setBackgroundColor(0xffc5e7cb);
      readingRows.addView(fineDivider,new LinearLayout.LayoutParams(-1,dp(1)));
     }else{
-     TextView paragraph=text("",readingSizes[fontLevel]);paragraph.setText(readerLabelText(line.isEmpty()?" ":line));applySharedTextMetrics(paragraph);
+     if(line.trim().isEmpty()){View paragraphGap=new View(this);readingRows.addView(paragraphGap,new LinearLayout.LayoutParams(-1,dp(8)));continue;}
+     TextView paragraph=text("",readingSizes[fontLevel]);paragraph.setText(readerLabelText(line));applySharedTextMetrics(paragraph);
      paragraph.setTextColor(0xff303c43);paragraph.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
      paragraph.setTextIsSelectable(!cleanReading);if(cleanReading)paragraph.setOnClickListener(v->markLectureParagraph(paragraph));paragraph.setPadding(dp(4),dp(1),dp(4),dp(1));
      paragraph.setLineSpacing(prefs.getBoolean("reader_wide_spacing",false)?dp(5):dp(1),prefs.getBoolean("reader_wide_spacing",false)?1.15f:1.0f);readingRows.addView(paragraph);
