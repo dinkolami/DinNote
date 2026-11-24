@@ -1505,6 +1505,10 @@ public class MainActivity extends Activity {
   rootNode.setPadding(dp(13),dp(11),dp(13),dp(11));
   rootNode.setBackground(rounded(0xffe6f2e9,0xffb6d3bf,12));
   tree.addView(rootNode,new LinearLayout.LayoutParams(-1,-2));
+  final java.util.ArrayList<LinearLayout> branchRows=new java.util.ArrayList<>();
+  final java.util.ArrayList<Integer> branchDepths=new java.util.ArrayList<>();
+  final java.util.ArrayList<Boolean> expanded=new java.util.ArrayList<>();
+  final java.util.ArrayList<TextView> branchNodes=new java.util.ArrayList<>();
   for(String heading:headings){
    int depth=heading.startsWith("        ")?2:heading.startsWith("    ")?1:0;
    String label=heading.trim().replaceFirst("^[├•]\\s*","").trim();
@@ -1523,6 +1527,29 @@ public class MainActivity extends Activity {
    node.setBackground(rounded(depth==0?0xffedf6ee:depth==1?0xfff5f8f3:0xfffdfcf8,0xffd3dfd4,9));
    if(depth==0)node.setTypeface(null,android.graphics.Typeface.BOLD);
    branch.addView(node,new LinearLayout.LayoutParams(0,-2,1));
+   final int branchIndex=branchRows.size();
+   branchRows.add(branch);branchDepths.add(depth);expanded.add(true);branchNodes.add(node);
+   boolean hasChildren=branchIndex+1<headings.size()&&(headings.get(branchIndex+1).startsWith("        ")?2:headings.get(branchIndex+1).startsWith("    ")?1:0)>depth;
+   if(hasChildren){
+    node.setText("▾  "+label);
+    node.setContentDescription("Buka atau tutup cabang "+label);
+    node.setOnClickListener(v->{
+     expanded.set(branchIndex,!expanded.get(branchIndex));
+     branchNodes.get(branchIndex).setText((expanded.get(branchIndex)?"▾  ":"▸  ")+label);
+     for(int j=branchIndex+1;j<branchRows.size();j++){
+      int level=branchDepths.get(j);
+      if(level<=depth)break;
+      boolean visible=true;
+      for(int parent=j-1;parent>=0;parent--){
+       if(branchDepths.get(parent)<branchDepths.get(j)){
+        if(!expanded.get(parent)){visible=false;break;}
+        if(branchDepths.get(parent)==0)break;
+       }
+      }
+      branchRows.get(j).setVisibility(visible?View.VISIBLE:View.GONE);
+     }
+    });
+   }
   }
   new AlertDialog.Builder(this).setTitle("Petaminda Subtopik ("+headings.size()+")")
    .setView(scroll).setPositiveButton("Tutup",null).show();
