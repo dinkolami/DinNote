@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+ <style name="DinNoteTheme" parent="android:style/Theme.Material.Light.NoActionBar">
+  <item name="android:colorAccent">#176B47</item>
+  <item name="android:dialogTheme">@style/DinNoteDialogTheme</item>
+  <item name="android:alertDialogTheme">@style/DinNoteDialogTheme</item>
+ </style>
+ <style name="DinNoteDialogTheme" parent="android:style/Theme.Material.Light.Dialog.Alert">
+  <item name="android:windowBackground">@drawable/dialog_emerald_pearl</item>
+  <item name="android:colorAccent">#176B47</item>
+  <item name="android:windowMinWidthMajor">85%</item>
+  <item name="android:windowMinWidthMinor">90%</item>
+ </style>
+</resources>
