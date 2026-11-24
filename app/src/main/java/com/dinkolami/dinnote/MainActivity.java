@@ -1383,8 +1383,8 @@ public class MainActivity extends Activity {
  }
  class SectionGapSpan implements android.text.style.LineHeightSpan {
   @Override public void chooseHeight(CharSequence text,int start,int end,int spanstartv,int v,android.graphics.Paint.FontMetricsInt fm){
-   fm.ascent=Math.round(fm.ascent*0.42f);fm.descent=Math.round(fm.descent*0.42f);
-   fm.top=Math.round(fm.top*0.42f);fm.bottom=Math.round(fm.bottom*0.42f);
+   fm.ascent=-dp(3);fm.descent=dp(2);
+   fm.top=fm.ascent;fm.bottom=fm.descent;
   }
  }
  void applySectionIndent(android.text.Spannable value){
