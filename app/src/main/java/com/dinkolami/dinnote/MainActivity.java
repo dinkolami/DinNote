@@ -3221,7 +3221,9 @@ public class MainActivity extends Activity {
      String oldBody=item.optString("body","");
      String snippet=oldBody.replaceAll("(?m)^---[A-Z][A-Z0-9_ -]*---\\s*$","").trim();
      if(snippet.length()>350)snippet=snippet.substring(0,350)+"…";
-     String preview="Tajuk: "+item.optString("title","Tanpa tajuk")+"\nKategori: "+item.optString("category","Tanpa kategori")+"\n\n"+(snippet.isEmpty()?"(Tiada kandungan)":snippet)+"\n\nMemulihkan versi ini akan menggantikan kandungan editor semasa. Versi semasa akan disandarkan terlebih dahulu.";
+     String versionTime=new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm",java.util.Locale.getDefault()).format(new java.util.Date(item.optLong("time",0)));
+     String versionType="auto".equals(item.optString("source","manual"))?"Automatik":"Disimpan";
+     String preview="Jenis: "+versionType+"\nTarikh: "+versionTime+"\nTajuk: "+item.optString("title","Tanpa tajuk")+"\nKategori: "+item.optString("category","Tanpa kategori")+"\n\n"+(snippet.isEmpty()?"(Tiada kandungan)":snippet)+"\n\nMemulihkan versi ini akan menggantikan kandungan editor semasa. Versi semasa akan disandarkan terlebih dahulu.";
      new AlertDialog.Builder(this).setTitle("Pratonton versi terdahulu")
       .setMessage(preview)
       .setPositiveButton("Pulihkan",(a,b)->{
