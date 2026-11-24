@@ -2842,7 +2842,7 @@ public class MainActivity extends Activity {
  }
  class BoxMarkerSpan extends android.text.style.ReplacementSpan {
   final String title;final int ink,bg;
-  BoxMarkerSpan(String t,int i,int b){title=t;ink=i;bg=b;}
+  BoxMarkerSpan(String t,int i,int b){title=t;bg=b;ink=t.contains(" · Matan")?0xff246447:t.contains(" · Syarahan")?0xff345d8c:t.contains(" · Dalil")?0xff94701d:t.contains(" · Terjemahan")?0xff78558f:t.contains(" · Khulasah")?0xffa15e29:t.contains(" · Pengajaran & Iktibar")?0xff9d4960:i;}
   @Override public int getSize(android.graphics.Paint p,CharSequence t,int a,int b,android.graphics.Paint.FontMetricsInt fm){
    if(fm!=null){int h=dp(title.isEmpty()?5:22);fm.ascent=-h;fm.top=-h;fm.descent=dp(2);fm.bottom=fm.descent;}
    android.graphics.Paint q=new android.graphics.Paint(p);q.setTypeface(android.graphics.Typeface.DEFAULT);q.setTextSize(dp(13));
