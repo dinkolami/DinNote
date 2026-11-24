@@ -1438,14 +1438,17 @@ public class MainActivity extends Activity {
    String line=raw.trim();
    if(line.length()<3||line.length()>110)continue;
    String lower=line.toLowerCase(java.util.Locale.ROOT);
-   if(lower.matches("^(bab|fasal|chapter|section|juz)\\s+.*")||line.startsWith("باب ")||line.startsWith("فصل ")||line.startsWith("جزء ")){
-    headings.add(line);terms.add(line);
+   boolean chapter=lower.matches("^(bab|fasal|chapter|section|juz)\\s+.*")||line.startsWith("باب ")||line.startsWith("فصل ")||line.startsWith("جزء ");
+   boolean marked=line.matches("^@#\\s+.+");
+   boolean numbered=line.matches("^[0-9]{1,3}[.)]\\s+.{3,100}");
+   if(chapter||marked||numbered){
+    headings.add(marked?line.substring(2).trim():line);terms.add(line);
     if(headings.size()>=100)break;
    }
   }
   if(headings.isEmpty()){
    new AlertDialog.Builder(this).setTitle("Indeks Kitab")
-    .setMessage("Belum ada tajuk bab atau fasal yang dikenal pasti. Gunakan baris bermula dengan Bab, Fasal, باب atau فصل.")
+    .setMessage("Belum ada subtopik yang dikenal pasti. Gunakan Bab, Fasal, باب, فصل, tajuk @# atau nombor seperti 1. Tajuk.")
     .setPositiveButton("Tutup",null).show();return;
   }
   new AlertDialog.Builder(this).setTitle("Indeks Kitab ("+headings.size()+")")
