@@ -526,10 +526,12 @@ public class MainActivity extends Activity {
     item.setSingleLine(true);item.setEllipsize(android.text.TextUtils.TruncateAt.END);
     item.setPadding(dp(32),dp(4),dp(prefs.getLong("viewed_"+k,0L)>0L?88:10),dp(4));
     row.addView(item,new FrameLayout.LayoutParams(-1,-2,Gravity.CENTER_VERTICAL));
-    TextView dashboardRowIcon=dashboardText(k.startsWith("m_")?"▤":"✎",17,false);
-    dashboardRowIcon.setTextColor(0xff303b42);dashboardRowIcon.setTypeface(android.graphics.Typeface.DEFAULT);dashboardRowIcon.setGravity(Gravity.CENTER);
-    FrameLayout.LayoutParams dashboardRowIconParams=new FrameLayout.LayoutParams(dp(22),dp(42),Gravity.LEFT|Gravity.CENTER_VERTICAL);
-    dashboardRowIconParams.leftMargin=dp(9);row.addView(dashboardRowIcon,dashboardRowIconParams);
+    android.widget.ImageView dashboardRowIcon=new android.widget.ImageView(this);
+    dashboardRowIcon.setImageResource(k.startsWith("m_")?android.R.drawable.ic_menu_agenda:android.R.drawable.ic_menu_edit);
+    dashboardRowIcon.setColorFilter(0xff536a5c);
+    dashboardRowIcon.setScaleType(android.widget.ImageView.ScaleType.FIT_CENTER);
+    FrameLayout.LayoutParams dashboardRowIconParams=new FrameLayout.LayoutParams(dp(17),dp(17),Gravity.LEFT|Gravity.CENTER_VERTICAL);
+    dashboardRowIconParams.leftMargin=dp(13);row.addView(dashboardRowIcon,dashboardRowIconParams);
     item.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
     long when=prefs.getLong("viewed_"+k,0L);
     if(when>0L){
@@ -795,10 +797,11 @@ public class MainActivity extends Activity {
    entry.setIncludeFontPadding(false);entry.setPadding(0,0,0,0);entry.setMinWidth(0);
    LinearLayout line=new LinearLayout(this);line.setOrientation(LinearLayout.HORIZONTAL);line.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);line.setGravity(Gravity.CENTER_VERTICAL);
    line.setPadding(dp(7),dp(3),dp(7),dp(3));line.setBackground(homeInsetSurface(0xffffffff,0xffffffff,0xffd4ddd7,10));line.setMinimumHeight(dp(folded?38:42));
-   TextView entryIcon=dashboardText(key.startsWith("m_")?"▤":"✎",17,false);
-   entryIcon.setTextColor(pin?0xff8b6925:0xff303b42);entryIcon.setTypeface(android.graphics.Typeface.DEFAULT);
-   entryIcon.setGravity(Gravity.CENTER_VERTICAL|Gravity.LEFT);
-   LinearLayout.LayoutParams iconParams=new LinearLayout.LayoutParams(-2,-2);iconParams.rightMargin=dp(7);
+   android.widget.ImageView entryIcon=new android.widget.ImageView(this);
+   entryIcon.setImageResource(key.startsWith("m_")?android.R.drawable.ic_menu_agenda:android.R.drawable.ic_menu_edit);
+   entryIcon.setColorFilter(pin?0xff8b6925:0xff536a5c);
+   entryIcon.setScaleType(android.widget.ImageView.ScaleType.FIT_CENTER);
+   LinearLayout.LayoutParams iconParams=new LinearLayout.LayoutParams(dp(17),dp(17));iconParams.rightMargin=dp(9);
    line.addView(entryIcon,iconParams);
    if(pin)entry.setTextColor(0xff8b6925);
    line.addView(entry,new LinearLayout.LayoutParams(0,-2,1));
