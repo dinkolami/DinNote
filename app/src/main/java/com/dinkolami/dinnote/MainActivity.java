@@ -3621,14 +3621,29 @@ public class MainActivity extends Activity {
    if(body.trim().isEmpty())throw new java.io.IOException("Teks kosong");
    EditText name=new EditText(this);name.setHint("Nama kitab");name.setSingleLine(true);name.setText(filename.replaceFirst("\\.[^.]+$",""));
    LinearLayout importPanel=new LinearLayout(this);importPanel.setOrientation(1);importPanel.addView(name);
-   if(extractPdf){TextView sample=text("Semak tulisan Arab sebelum simpan:\n\n"+body.substring(0,Math.min(700,body.length())),15);sample.setTextIsSelectable(true);sample.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);sample.setPadding(dp(12),dp(8),dp(12),dp(8));ScrollView preview=new ScrollView(this);preview.addView(sample);importPanel.addView(preview,new LinearLayout.LayoutParams(-1,dp(240)));TextView warning=text("Penting: Jika huruf Arab terbalik, bercantum salah atau baris rosak, pilih Simpan PDF asal di bawah. Jangan simpan teks yang rosak. Ekstraksi tidak dapat membetulkan pemetaan aksara yang rosak dalam PDF sumber.",12);warning.setTextColor(0xff875b25);warning.setPadding(dp(12),dp(6),dp(12),dp(8));importPanel.addView(warning);}
+   if(extractPdf){TextView sample=text("Semak tulisan Arab sebelum simpan:\n\n"+body.substring(0,Math.min(700,body.length())),15);sample.setTextIsSelectable(true);sample.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);sample.setPadding(dp(12),dp(8),dp(12),dp(8));ScrollView preview=new ScrollView(this);preview.addView(sample);importPanel.addView(preview,new LinearLayout.LayoutParams(-1,dp(155)));TextView warning=text("Jika Arab/Jawi rosak atau tidak lengkap, pilih Simpan PDF asal. Jangan simpan teks yang rosak.",12);warning.setTextColor(0xff875b25);warning.setPadding(dp(12),dp(6),dp(12),dp(8));importPanel.addView(warning);}
    AlertDialog.Builder importDialog=new AlertDialog.Builder(this).setTitle(extractPdf?"Semak ekstrak PDF":"Import kitab").setView(importPanel).setNegativeButton("Batal",null).setPositiveButton("Simpan teks",(d,w)->{
     String key="m_"+java.util.UUID.randomUUID().toString();
     boolean ok=prefs.edit().putString(key,body).putString("title_"+key,name.getText().toString().trim().isEmpty()?"Kitab import":name.getText().toString().trim()).putString("cat_"+key,"Tanpa kategori").putLong("updated_"+key,System.currentTimeMillis()).commit();
     if(ok)openSection(true);else Toast.makeText(this,"Simpan gagal",Toast.LENGTH_LONG).show();
    });
-   if(extractPdf)importDialog.setNeutralButton("Simpan PDF asal",(d,w)->saveOriginalPdf(bytes,filename));
-   importDialog.show();
+   if(extractPdf){
+    LinearLayout choices=new LinearLayout(this);choices.setOrientation(LinearLayout.HORIZONTAL);
+    choices.setPadding(dp(8),dp(4),dp(8),dp(4));
+    Button original=new Button(this);original.setText("Simpan PDF asal");original.setAllCaps(false);original.setTextSize(12);
+    original.setTextColor(0xff176b47);original.setBackground(rounded(0xffeaf4ee,0xffc5d9ce,9));
+    LinearLayout.LayoutParams originalParams=new LinearLayout.LayoutParams(0,dp(42),1);originalParams.rightMargin=dp(8);
+    choices.addView(original,originalParams);
+    Button cancel=new Button(this);cancel.setText("Batal");cancel.setAllCaps(false);cancel.setTextSize(12);
+    cancel.setBackground(rounded(0xfff6f8f7,0xffd9e5dd,9));
+    choices.addView(cancel,new LinearLayout.LayoutParams(0,dp(42),1));
+    importPanel.addView(choices);
+    importDialog.setNegativeButton(null,null);
+    AlertDialog previewDialog=importDialog.create();
+    original.setOnClickListener(v->{previewDialog.dismiss();saveOriginalPdf(bytes,filename);});
+    cancel.setOnClickListener(v->previewDialog.dismiss());
+    previewDialog.show();
+   }else importDialog.show();
   }catch(Exception e){Toast.makeText(this,"Import gagal: "+e.getMessage(),Toast.LENGTH_LONG).show();}
  }
  // Tanzil plain-text Quran import: 114 independent surahs; original verse text is never normalized.
