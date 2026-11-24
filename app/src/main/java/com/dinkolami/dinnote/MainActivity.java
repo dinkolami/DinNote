@@ -1436,35 +1436,62 @@ public class MainActivity extends Activity {
   java.util.ArrayList<String> terms=new java.util.ArrayList<>();
   for(String raw:lines){
    String line=raw.trim();
-   if(line.length()<3||line.length()>110)continue;
+   if(line.isEmpty()||line.length()>110)continue;
    String lower=line.toLowerCase(java.util.Locale.ROOT);
-   boolean chapter=lower.matches("^(bab|fasal|chapter|section|juz)\\s+.*")||line.startsWith("باب ")||line.startsWith("فصل ")||line.startsWith("جزء ");
-   boolean marked=line.matches("^@#\\s+.+");
-   boolean numbered=line.matches("^[0-9]{1,3}[.)]\\s+.{3,100}");
+   boolean chapter=lower.matches("^(bab|fasal|chapter|section|juz)(\\\\s+.*)?")||line.matches("^(باب|فصل|جزء)(\\\\s+.*)?");
+   boolean marked=line.matches("^@#\\\\s+.+");
+   boolean numbered=line.matches("^[0-9]{1,3}[.)]\\\\s+.{3,100}");
    if(chapter||marked||numbered){
-    headings.add(marked?line.substring(2).trim():line);terms.add(line);
+    headings.add(marked?line.substring(2).trim():line);
+    terms.add(line);
     if(headings.size()>=100)break;
    }
   }
   if(headings.isEmpty()){
    new AlertDialog.Builder(this).setTitle("Indeks Kitab")
-    .setMessage("Belum ada subtopik yang dikenal pasti. Gunakan Bab, Fasal, باب, فصل, tajuk @# atau nombor seperti 1. Tajuk.")
+    .setMessage("Belum ada subtopik. Gunakan Bab, Fasal, باب, فصل, @# Tajuk atau 1. Tajuk.")
     .setPositiveButton("Tutup",null).show();return;
   }
   new AlertDialog.Builder(this).setTitle("Indeks Kitab ("+headings.size()+")")
    .setItems(headings.toArray(new String[0]),(d,which)->{
-    String target=terms.get(which);
-    String source=prefs.getString(key,"");
-    String haystack=source.toLowerCase(java.util.Locale.ROOT);
-    String needle=target.toLowerCase(java.util.Locale.ROOT);
-    java.util.ArrayList<Integer> matches=new java.util.ArrayList<>();
-    int from=0;
-    while((from=haystack.indexOf(needle,from))>=0){
-     matches.add(from);from+=Math.max(1,needle.length());
-    }
-    if(matches.isEmpty())searchInsideReader(key,target);
-    else showReaderSearchResult(source,target,matches,0);
+    if(readerScroll==null){Toast.makeText(this,"Buka kitab dalam mod bacaan skrol untuk melompat ke tajuk",Toast.LENGTH_LONG).show();return;}
+    String chosen=terms.get(which);
+    int occurrence=0;
+    for(int i=0;i<which;i++)if(terms.get(i).equals(chosen))occurrence++;
+    final int targetOccurrence=occurrence;
+    readerScroll.post(()->{
+     View target=findIndexHeadingView(readerScroll,chosen,targetOccurrence,new int[]{0});
+     if(target==null){Toast.makeText(this,"Tajuk tidak ditemui pada paparan bacaan",Toast.LENGTH_SHORT).show();return;}
+     android.graphics.Rect rect=new android.graphics.Rect(0,0,target.getWidth(),target.getHeight());
+     readerScroll.offsetDescendantRectToMyCoords(target,rect);
+     readerScroll.smoothScrollTo(0,Math.max(0,readerScroll.getScrollY()+rect.top-dp(48)));
+     int original=0xff303c43;
+     if(target instanceof TextView){
+      TextView label=(TextView)target;
+      original=label.getCurrentTextColor();
+      label.setTextColor(0xff176b47);
+      final int oldColor=original;
+      label.postDelayed(()->{if(label.getParent()!=null)label.setTextColor(oldColor);},1400);
+     }
+    });
    }).setNegativeButton("Tutup",null).show();
+ }
+ View findIndexHeadingView(View node,String term,int occurrence,int[] seen){
+  if(node instanceof TextView){
+   String shown=((TextView)node).getText().toString().trim();
+   String target=term.replaceFirst("^@#\\\\s*","").replaceFirst("^[0-9]{1,3}[.)]\\\\s+","").trim();
+   if(shown.equals(term)||shown.equals(target)){
+    if(seen[0]++==occurrence)return node;
+   }
+  }
+  if(node instanceof android.view.ViewGroup){
+   android.view.ViewGroup group=(android.view.ViewGroup)node;
+   for(int i=0;i<group.getChildCount();i++){
+    View match=findIndexHeadingView(group.getChildAt(i),term,occurrence,seen);
+    if(match!=null)return match;
+   }
+  }
+  return null;
  }
  void showBookMarginNote(String key){
   if(!key.startsWith("m_"))return;
