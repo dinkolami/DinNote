@@ -1509,6 +1509,8 @@ public class MainActivity extends Activity {
   final java.util.ArrayList<Integer> branchDepths=new java.util.ArrayList<>();
   final java.util.ArrayList<Boolean> expanded=new java.util.ArrayList<>();
   final java.util.ArrayList<TextView> branchNodes=new java.util.ArrayList<>();
+  final java.util.ArrayList<String> branchLabels=new java.util.ArrayList<>();
+  final java.util.ArrayList<Boolean> branchHasChildren=new java.util.ArrayList<>();
   for(String heading:headings){
    int depth=heading.startsWith("        ")?2:heading.startsWith("    ")?1:0;
    String label=heading.trim().replaceFirst("^[├•]\\s*","").trim();
@@ -1528,31 +1530,45 @@ public class MainActivity extends Activity {
    if(depth==0)node.setTypeface(null,android.graphics.Typeface.BOLD);
    branch.addView(node,new LinearLayout.LayoutParams(0,-2,1));
    final int branchIndex=branchRows.size();
-   branchRows.add(branch);branchDepths.add(depth);expanded.add(true);branchNodes.add(node);
+   branchRows.add(branch);branchDepths.add(depth);expanded.add(true);branchNodes.add(node);branchLabels.add(label);
    boolean hasChildren=branchIndex+1<headings.size()&&(headings.get(branchIndex+1).startsWith("        ")?2:headings.get(branchIndex+1).startsWith("    ")?1:0)>depth;
+   branchHasChildren.add(hasChildren);
    if(hasChildren){
     node.setText("▾  "+label);
     node.setContentDescription("Buka atau tutup cabang "+label);
     node.setOnClickListener(v->{
      expanded.set(branchIndex,!expanded.get(branchIndex));
      branchNodes.get(branchIndex).setText((expanded.get(branchIndex)?"▾  ":"▸  ")+label);
-     for(int j=branchIndex+1;j<branchRows.size();j++){
-      int level=branchDepths.get(j);
-      if(level<=depth)break;
-      boolean visible=true;
-      for(int parent=j-1;parent>=0;parent--){
-       if(branchDepths.get(parent)<branchDepths.get(j)){
-        if(!expanded.get(parent)){visible=false;break;}
-        if(branchDepths.get(parent)==0)break;
-       }
-      }
-      branchRows.get(j).setVisibility(visible?View.VISIBLE:View.GONE);
-     }
+     refreshMindmapBranches(branchRows,branchDepths,expanded,branchNodes,branchLabels,branchHasChildren);
     });
    }
   }
+  rootNode.setContentDescription("Tekan untuk buka atau tutup semua cabang");
+  rootNode.setOnClickListener(v->{
+   boolean anyCollapsed=false;
+   for(int i=0;i<expanded.size();i++)if(branchHasChildren.get(i)&&!expanded.get(i)){anyCollapsed=true;break;}
+   for(int i=0;i<expanded.size();i++)if(branchHasChildren.get(i))expanded.set(i,anyCollapsed);
+   refreshMindmapBranches(branchRows,branchDepths,expanded,branchNodes,branchLabels,branchHasChildren);
+  });
   new AlertDialog.Builder(this).setTitle("Petaminda Subtopik ("+headings.size()+")")
    .setView(scroll).setPositiveButton("Tutup",null).show();
+ }
+ void refreshMindmapBranches(java.util.ArrayList<LinearLayout> rows,java.util.ArrayList<Integer> depths,
+  java.util.ArrayList<Boolean> expanded,java.util.ArrayList<TextView> nodes,
+  java.util.ArrayList<String> labels,java.util.ArrayList<Boolean> hasChildren){
+  for(int i=0;i<rows.size();i++){
+   int depth=depths.get(i);
+   boolean visible=true;
+   for(int j=i-1;j>=0;j--){
+    if(depths.get(j)<depth){
+     if(!expanded.get(j)){visible=false;break;}
+     depth=depths.get(j);
+     if(depth==0)break;
+    }
+   }
+   rows.get(i).setVisibility(visible?View.VISIBLE:View.GONE);
+   if(hasChildren.get(i))nodes.get(i).setText((expanded.get(i)?"▾  ":"▸  ")+labels.get(i));
+  }
  }
  View findIndexHeadingView(View node,String term,int occurrence,int[] seen){
   if(node instanceof TextView){
