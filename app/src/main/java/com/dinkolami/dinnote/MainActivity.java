@@ -1378,14 +1378,34 @@ public class MainActivity extends Activity {
    }
   }return out;
  }
+ class SectionIndentSpan extends android.text.style.LeadingMarginSpan.Standard {
+  SectionIndentSpan(){super(dp(24),0);}
+ }
+ void applySectionIndent(android.text.Spannable value){
+  for(SectionIndentSpan span:value.getSpans(0,value.length(),SectionIndentSpan.class))value.removeSpan(span);
+  String raw=value.toString();boolean active=false,box=false;
+  for(int start=0;start<raw.length();){
+   int end=raw.indexOf('\n',start);if(end<0)end=raw.length();
+   String line=raw.substring(start,end),trim=line.trim();
+   if(trim.matches("---(?:MATAN|SYARAHAN|DALIL|TERJEMAHAN|KHULASAH|IKTIBAR|SYAFII|HANAFI|MALIKI|HANBALI|MUQARAN)---"))active=true;
+   else if(trim.equals("---TAMAT---"))active=false;
+   else if(trim.equals("---KOTAKTAMAT---"))box=false;
+   else if(trim.startsWith("---KOTAK"))box=true;
+   else if(active&&!box&&!trim.isEmpty()&&!Character.isWhitespace(line.charAt(0))&&!Character.isSpaceChar(line.charAt(0))&&!trim.startsWith("---")&&!trim.matches("^(?:\\p{Nd}+[.)]|[-•●◦▪☐☑✓*#]|@#).*")){
+    value.setSpan(new SectionIndentSpan(),start,end<raw.length()?end+1:end,android.text.Spanned.SPAN_PARAGRAPH);
+   }
+   start=end+1;
+  }
+ }
  android.text.SpannableStringBuilder readerLabelText(String source){
   android.text.SpannableStringBuilder out=formattedReadingText(source);
-  java.util.regex.Matcher marks=java.util.regex.Pattern.compile("(?m)^---(MATAN|SYARAHAN|DALIL|TERJEMAHAN|KHULASAH|IKTIBAR|SYAFII|HANAFI|MALIKI|HANBALI|MUQARAN)---[ \\t]*$").matcher(out.toString());
+  java.util.regex.Matcher marks=java.util.regex.Pattern.compile("(?m)^---(MATAN|SYARAHAN|DALIL|TERJEMAHAN|KHULASAH|IKTIBAR|SYAFII|HANAFI|MALIKI|HANBALI|MUQARAN|TAMAT)---[ \\t]*$").matcher(out.toString());
   while(marks.find()){
    String k=marks.group(1);
    String label=k.equals("MATAN")?"المتن · Matan":k.equals("SYARAHAN")?"الشرح · Syarahan":k.equals("DALIL")?"الدليل · Dalil":k.equals("TERJEMAHAN")?"الترجمة · Terjemahan":k.equals("SYAFII")?"الشَّافِعِيُّ · Syafi‘i":k.equals("HANAFI")?"الْحَنَفِيُّ · Hanafi":k.equals("MALIKI")?"الْمَالِكِيُّ · Maliki":k.equals("HANBALI")?"الْحَنْبَلِيُّ · Hanbali":k.equals("MUQARAN")?"الْفِقْهُ الْمُقَارَنُ · Fiqh Muqaran":k.equals("KHULASAH")?"الخُلَاصَةُ · Khulasah":"الدُّرُوسُ وَالْعِبَرُ · Pengajaran & Iktibar";
-   out.setSpan(new BoxMarkerSpan(label,0xff176b47,0xffedf5ee),marks.start(),marks.end(),33);
+   out.setSpan(new BoxMarkerSpan(k.equals("TAMAT")?"":label,0xff176b47,0xffedf5ee),marks.start(),marks.end(),33);
   }
+  applySectionIndent(out);
   return out;
  }
  int richMask(android.text.Spanned value,int a,int b){
@@ -1720,7 +1740,7 @@ public class MainActivity extends Activity {
    if(marker.equals("---MALIKI---")){type=9;if(labels&&(mode==0||mode==type))out.append(marker).append('\n');continue;}
    if(marker.equals("---HANBALI---")){type=10;if(labels&&(mode==0||mode==type))out.append(marker).append('\n');continue;}
    if(marker.equals("---MUQARAN---")){type=11;if(labels&&(mode==0||mode==type))out.append(marker).append('\n');continue;}
-   if(marker.equals("---TAMAT---")){type=0;continue;}
+   if(marker.equals("---TAMAT---")){if(labels&&type!=0&&(mode==0||mode==type))out.append(marker).append('\n');type=0;continue;}
    if(marker.equals("---KOTAKDALIL---")||marker.equals("---KOTAKFIRMAN---")||marker.equals("---KOTAKSABDA---"))type=3;
    if(mode==0||type==mode)out.append(line).append('\n');
    if(marker.equals("---KOTAKTAMAT---"))type=0;
@@ -2920,6 +2940,7 @@ public class MainActivity extends Activity {
   return true;
  }
  void refreshEditorBoxes(android.text.Editable e){
+  applySectionIndent(e);
   for(EditorDividerSpan span:e.getSpans(0,e.length(),EditorDividerSpan.class))e.removeSpan(span);
   java.util.regex.Matcher div=java.util.regex.Pattern.compile("(?m)^---(FLOWER|GEOMETRIC|CLASSIC)---$").matcher(e.toString());
   while(div.find())e.setSpan(new EditorDividerSpan(div.group(1)),div.start(),div.end(),33);
