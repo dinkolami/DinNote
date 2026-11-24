@@ -1409,6 +1409,19 @@ public class MainActivity extends Activity {
    start=end+1;
   }
  }
+ class CompactLatinReadingSpan implements android.text.style.LineHeightSpan {
+  @Override public void chooseHeight(CharSequence text,int start,int end,int spanstartv,int v,android.graphics.Paint.FontMetricsInt fm){
+   boolean latin=false;
+   for(int i=start;i<end&&i<text.length();i++){
+    char c=text.charAt(i);
+    if((c>=0x0600&&c<=0x08ff)||c=='-')return;
+    if((c>='A'&&c<='Z')||(c>='a'&&c<='z'))latin=true;
+   }
+   if(!latin)return;
+   int reduction=Math.round((fm.descent-fm.ascent)*0.10f);
+   fm.descent=Math.max(1,fm.descent-reduction);
+  }
+ }
  android.text.SpannableStringBuilder readerLabelText(String source){
   android.text.SpannableStringBuilder out=formattedReadingText(source);
   java.util.regex.Matcher marks=java.util.regex.Pattern.compile("(?m)^---(MATAN|SYARAHAN|DALIL|TERJEMAHAN|KHULASAH|IKTIBAR|SYAFII|HANAFI|MALIKI|HANBALI|MUQARAN|TAMAT)---[ \\t]*$").matcher(out.toString());
@@ -1423,6 +1436,7 @@ public class MainActivity extends Activity {
   while(closingLines.find())closingRanges.add(new int[]{closingLines.start(),closingLines.end()});
   applySectionIndent(out);
   for(int i=closingRanges.size()-1;i>=0;i--){int[] range=closingRanges.get(i);out.delete(range[0],range[1]);}
+  if(out.length()>0&&!prefs.getBoolean("reader_wide_spacing",false))out.setSpan(new CompactLatinReadingSpan(),0,out.length(),android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
   return out;
  }
  int richMask(android.text.Spanned value,int a,int b){
