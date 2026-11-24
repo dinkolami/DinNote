@@ -3584,6 +3584,7 @@ public class MainActivity extends Activity {
    String filename=bookImportName(uri);
    String mime=getContentResolver().getType(uri);
    final String body;
+   int pdfPages=0,pdfSparsePages=0;
    if(bytes.length>=5&&bytes[0]==37&&bytes[1]==80&&bytes[2]==68&&bytes[3]==70&&bytes[4]==45){
     if(!extractPdf){
      new AlertDialog.Builder(this).setTitle("Cara import PDF").setItems(new String[]{"PDF asal · Kekalkan halaman dan tulisan Arab","Ekstrak teks · Boleh disunting"},(d,w)->{if(w==0)saveOriginalPdf(bytes,filename);else importBookText(uri,true);}).setNegativeButton("Batal",null).show();return;
@@ -3596,9 +3597,12 @@ public class MainActivity extends Activity {
      com.tom_roush.pdfbox.text.PDFTextStripper stripper=new com.tom_roush.pdfbox.text.PDFTextStripper();
      stripper.setSortByPosition(true);
      StringBuilder extracted=new StringBuilder();
-     for(int page=1;page<=doc.getNumberOfPages();page++){
+     pdfPages=doc.getNumberOfPages();
+     for(int page=1;page<=pdfPages;page++){
       stripper.setStartPage(page);stripper.setEndPage(page);
-      extracted.append(stripper.getText(doc)).append("\n\n");
+      String pageText=stripper.getText(doc);
+      if(pageText.trim().length()<25)pdfSparsePages++;
+      extracted.append(pageText).append("\n\n");
       if(extracted.length()>500000)throw new java.io.IOException("Pecahkan kitab kepada jilid lebih kecil");
      }
      body=extracted.toString().trim();
@@ -3621,7 +3625,7 @@ public class MainActivity extends Activity {
    if(body.trim().isEmpty())throw new java.io.IOException("Teks kosong");
    EditText name=new EditText(this);name.setHint("Nama kitab");name.setSingleLine(true);name.setText(filename.replaceFirst("\\.[^.]+$",""));
    LinearLayout importPanel=new LinearLayout(this);importPanel.setOrientation(1);importPanel.addView(name);
-   if(extractPdf){String previewText=body.substring(0,Math.min(5000,body.length()));previewText=previewText.replace("\\r\\n","\n").replace("\\n","\n");TextView sample=text("Pratonton "+Math.min(5000,body.length())+" daripada "+body.length()+" aksara. Semak tulisan Arab/Jawi sebelum simpan:\n\n"+previewText,15);sample.setTextIsSelectable(true);sample.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);sample.setPadding(dp(12),dp(8),dp(12),dp(8));ScrollView preview=new ScrollView(this);preview.addView(sample);importPanel.addView(preview,new LinearLayout.LayoutParams(-1,dp(155)));TextView warning=text("Jika Arab/Jawi rosak atau tidak lengkap, pilih Simpan PDF asal. Jangan simpan teks yang rosak.",12);warning.setTextColor(0xff875b25);warning.setPadding(dp(12),dp(6),dp(12),dp(8));importPanel.addView(warning);}
+   if(extractPdf){String previewText=body.substring(0,Math.min(5000,body.length()));previewText=previewText.replace("\\r\\n","\n").replace("\\n","\n");TextView sample=text("Pratonton "+Math.min(5000,body.length())+" daripada "+body.length()+" aksara. Semak tulisan Arab/Jawi sebelum simpan:\n\n"+previewText,15);sample.setTextIsSelectable(true);sample.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);sample.setPadding(dp(12),dp(8),dp(12),dp(8));ScrollView preview=new ScrollView(this);preview.addView(sample);importPanel.addView(preview,new LinearLayout.LayoutParams(-1,dp(155)));TextView warning=text((pdfSparsePages>0?"Amaran: "+pdfSparsePages+" daripada "+pdfPages+" halaman mengandungi sangat sedikit teks yang dapat diekstrak. ":"")+"Jika Arab/Jawi rosak atau tidak lengkap, pilih Simpan PDF asal. Jangan simpan teks yang rosak.",12);warning.setTextColor(0xff875b25);warning.setPadding(dp(12),dp(6),dp(12),dp(8));importPanel.addView(warning);}
    AlertDialog.Builder importDialog=new AlertDialog.Builder(this).setTitle(extractPdf?"Semak ekstrak PDF":"Import kitab").setView(importPanel).setNegativeButton("Batal",null).setPositiveButton("Simpan teks",(d,w)->{
     String key="m_"+java.util.UUID.randomUUID().toString();
     boolean ok=prefs.edit().putString(key,body).putString("title_"+key,name.getText().toString().trim().isEmpty()?"Kitab import":name.getText().toString().trim()).putString("cat_"+key,"Tanpa kategori").putLong("updated_"+key,System.currentTimeMillis()).commit();
