@@ -481,7 +481,7 @@ public class MainActivity extends Activity {
   ArrayList<String> keys=new ArrayList<>();
   for(String k:prefs.getAll().keySet())if((k.startsWith("n_")||k.startsWith("m_"))&&prefs.getAll().get(k) instanceof String&&!prefs.getBoolean("deleted_"+k,false)&&prefs.getLong("viewed_"+k,0L)>0L)keys.add(k);
   Collections.sort(keys,(firstKey,secondKey)->{int order=Long.compare(prefs.getLong("viewed_"+secondKey,0L),prefs.getLong("viewed_"+firstKey,0L));return order!=0?order:firstKey.compareTo(secondKey);});
-  TextView latestCount=dashboardText(Math.min(homeWindowWidthDp()>=440?10:5,keys.size())+" Topik",10,true);
+  TextView latestCount=dashboardText(Math.min(homeWindowWidthDp()>=440?20:5,keys.size())+" Topik",10,true);
   latestCount.setTextColor(0xff416653);latestCount.setGravity(Gravity.CENTER);
   latestCount.setPadding(dp(5),dp(3),dp(5),dp(3));
   latestCount.setBackground(homeInsetSurface(0xffedf5ee,0xffe4efe7,0xffc1d4c5,9));
@@ -498,7 +498,7 @@ public class MainActivity extends Activity {
    TextView hint=dashboardText("Nota atau kitab yang dibuka akan muncul di sini.",14,false);
    hint.setGravity(Gravity.CENTER);hint.setTextColor(0xff656d76);hint.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);hint.setTextSize(13);hint.setPadding(dp(12),dp(6),dp(12),dp(12));recentNotes.addView(hint);
   }else {
-   // Two balanced columns of five on an unfolded Fold6; one column on narrow screens.
+   // Two balanced columns of ten on an unfolded Fold6; one column of five on narrow screens.
    boolean wide=homeWindowWidthDp()>=440;
    LinearLayout columns=null,left=null,right=null;
    if(wide){
@@ -510,7 +510,7 @@ public class MainActivity extends Activity {
     columns.addView(left,leftParams);columns.addView(right,rightParams);
     recentNotes.addView(columns,new LinearLayout.LayoutParams(-1,-2));
    }
-   for(int i=0;i<Math.min(wide?10:5,keys.size());i++){
+   for(int i=0;i<Math.min(wide?20:5,keys.size());i++){
     String k=keys.get(i);String t=prefs.getString("title_"+k,"").trim();
     if(t.trim().isEmpty())t="Tanpa tajuk";
     // Light emerald list: slightly larger titles, dates consistently aligned right.
@@ -538,7 +538,7 @@ public class MainActivity extends Activity {
     LinearLayout.LayoutParams itemParams=new LinearLayout.LayoutParams(-1,-2);
     itemParams.bottomMargin=dp(2);
     itemParams.leftMargin=0;itemParams.rightMargin=0;
-    if(wide)(i<5?left:right).addView(row,itemParams);else recentNotes.addView(row,itemParams);
+    if(wide)(i<10?left:right).addView(row,itemParams);else recentNotes.addView(row,itemParams);
     applyTouchFeedback(row);row.setFocusable(true);
     row.setContentDescription("Buka "+(k.startsWith("m_")?"kitab ":"nota ")+t);
     row.setTooltipText(t);
