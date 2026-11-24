@@ -1383,17 +1383,19 @@ public class MainActivity extends Activity {
  }
  void applySectionIndent(android.text.Spannable value){
   for(SectionIndentSpan span:value.getSpans(0,value.length(),SectionIndentSpan.class))value.removeSpan(span);
-  String raw=value.toString();boolean active=false,box=false;
+  String raw=value.toString();boolean active=false,box=false,paragraphStart=false;
   for(int start=0;start<raw.length();){
    int end=raw.indexOf('\n',start);if(end<0)end=raw.length();
    String line=raw.substring(start,end),trim=line.trim();
-   if(trim.matches("---(?:MATAN|SYARAHAN|DALIL|TERJEMAHAN|KHULASAH|IKTIBAR|SYAFII|HANAFI|MALIKI|HANBALI|MUQARAN)---"))active=true;
-   else if(trim.equals("---TAMAT---"))active=false;
+   if(trim.matches("---(?:MATAN|SYARAHAN|DALIL|TERJEMAHAN|KHULASAH|IKTIBAR|SYAFII|HANAFI|MALIKI|HANBALI|MUQARAN)---")){active=true;paragraphStart=true;}
+   else if(trim.equals("---TAMAT---")){active=false;paragraphStart=false;}
    else if(trim.equals("---KOTAKTAMAT---"))box=false;
    else if(trim.startsWith("---KOTAK"))box=true;
-   else if(active&&!box&&!trim.isEmpty()&&!Character.isWhitespace(line.charAt(0))&&!Character.isSpaceChar(line.charAt(0))&&!trim.startsWith("---")&&!trim.matches("^(?:\\p{Nd}+[.)]|[-•●◦▪☐☑✓*#]|@#).*")){
+   else if(trim.isEmpty())paragraphStart=true;
+   else if(active&&paragraphStart&&!box&&!trim.isEmpty()&&!Character.isWhitespace(line.charAt(0))&&!Character.isSpaceChar(line.charAt(0))&&!trim.startsWith("---")&&!trim.matches("^(?:\\p{Nd}+[.)]|[-•●◦▪☐☑✓*#]|@#).*")){
     value.setSpan(new SectionIndentSpan(),start,end<raw.length()?end+1:end,android.text.Spanned.SPAN_PARAGRAPH);
    }
+   if(!trim.isEmpty()&&!trim.startsWith("---"))paragraphStart=false;
    start=end+1;
   }
  }
