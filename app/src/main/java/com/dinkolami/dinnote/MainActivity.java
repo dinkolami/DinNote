@@ -285,6 +285,8 @@ public class MainActivity extends Activity {
  }
  
  void seedQurtubiPosts(){
+ if(!prefs.getBoolean("qurtubi_basmalah_pilot_v1",false)){String id="m_qurtubi_fatihah_1";String old="بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ\n\nالنَّصُّ الْعَرَبِيُّ\nTeks tafsir asal belum diimport.\n\nTerjemahan Indonesia\nPadanan terjemahan belum diimport.";android.content.SharedPreferences.Editor p=prefs.edit();if(!prefs.getBoolean("deleted_"+id,false)&&((!prefs.contains(id)&&!prefs.getBoolean("qurtubi_posts_v1",false))||old.equals(prefs.getString(id,""))))p.putString(id,"بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ\n\nالْأُولَى: قَالَ الْعُلَمَاءُ: «بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ» قَسَمٌ مِنْ رَبِّنَا أَنْزَلَهُ عِنْدَ رَأْسِ كُلِّ سُورَةٍ، يُقْسِمُ لِعِبَادِهِ إِنَّ هَذَا الَّذِي وَضَعْتُ لَكُمْ يَا عِبَادِي فِي هَذِهِ السُّورَةِ حَقٌّ، وَإِنِّي أُوفِي لَكُمْ بِجَمِيعِ مَا ضَمَّنْتُ فِي هَذِهِ السُّورَةِ مِنْ وَعْدِي وَلُطْفِي وَبِرِّي. وَ«بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ» مِمَّا أَنْزَلَهُ اللَّهُ تَعَالَى فِي كِتَابِنَا وَعَلَى هَذِهِ الْأُمَّةِ خُصُوصًا بَعْدَ سُلَيْمَانَ عَلَيْهِ السَّلَامُ. وَقَالَ بَعْضُ الْعُلَمَاءِ: إِنَّ «بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ» تَضَمَّنَتْ جَمِيعَ الشَّرْعِ، لِأَنَّهَا تَدُلُّ عَلَى الذَّاتِ وَعَلَى الصِّفَاتِ، وَهَذَا صَحِيحٌ. || Pertama: Ulama berkata, lafaz Bismillahirrahmanirrahim adalah sumpah Tuhan kita yang Dia turunkan di awal setiap surah. Dia bersumpah kepada hamba-hamba-Nya: Wahai hamba-hamba-Ku, sesungguhnya yang Aku letakkan untuk kalian dalam surah ini adalah suatu kebenaran, dan Aku akan memenuhi semua yang Aku jamin dalam surah ini, yaitu janji, kelembutan-Ku dan kebaikan-Ku. Bismillahirrahmanirrahim adalah sesuatu yang Allah turunkan dalam kitab kita dan diberikan kepada umat ini, khususnya setelah diberikan kepada Sulaiman. Sebagian ulama berkata bahwa lafaz ini mengandung seluruh syariat, sebab ia menunjukkan kepada Zat dan sifat Allah. Ini adalah pendapat yang benar.\n\nRujukan: al-Qurthubi 1/91, https://shamela.ws/book/20855/97 ; edisi Indonesia hlm. 237 (teks dinormalisasi daripada OCR).").putString("title_"+id,"Tafsir al-Qurthubi — al-Fatihah, Ayat 1 (Masalah 1)").putString("cat_"+id,"Kitab-Kitab › Tafsir");p.putBoolean("qurtubi_basmalah_pilot_v1",true).apply();}
+
  if(!prefs.getBoolean("qurtubi_intro_pilot_v1",false)){String id="m_qurtubi_fatihah_intro_1";android.content.SharedPreferences.Editor pilot=prefs.edit();if(!prefs.contains(id)&&!prefs.getBoolean("deleted_"+id,false))pilot.putString(id,"فَضَائِلُ الْفَاتِحَةِ وَأَسْمَاؤُهَا\n\nPermasalahan pertama — petikan percubaan\n\nAt-Tirmidzi meriwayatkan dari Ubay bin Ka'ab, dia berkata: Rasulullah SAW bersabda:\n\nمَا أَنْزَلَ اللَّهُ فِي التَّوْرَاةِ وَلَا فِي الْإِنْجِيلِ مِثْلَ أُمِّ الْقُرْآنِ، وَهِيَ السَّبْعُ الْمَثَانِي، وَهِيَ مَقْسُومَةٌ بَيْنِي وَبَيْنَ عَبْدِي، وَلِعَبْدِي مَا سَأَلَ.\n\nTerjemahan\nAllah tidak menurunkan seperti Ummul Qur'an (Al Faatihah) di dalam Taurat dan tidak (pula) di dalam Injil. Ia adalah As-Sab'u Al Matsani (tujuh ayat yang diulang), dia terbagi di antara Aku dan hamba-Ku, dan bagi hamba-Ku apa yang dia minta.\n\nRujukan: Tafsir al-Qurthubi, jilid 1, hlm. 280; At-Tirmidzi no. 3125 (menurut edisi terjemahan). Teks Arab belum disemak dengan naskhah asal.").putString("title_"+id,"Tafsir al-Qurthubi — Keutamaan al-Fatihah (Percubaan)").putString("cat_"+id,"Kitab-Kitab › Tafsir");pilot.putBoolean("qurtubi_intro_pilot_v1",true).apply();}
 
  if(prefs.getBoolean("qurtubi_posts_v1",false))return;
@@ -2275,8 +2277,9 @@ public class MainActivity extends Activity {
   for(String line:displayLines)if(line.trim().matches("---(?:FLOWER|GEOMETRIC|CLASSIC)?---|---")){hasLists=true;break;}
   for(String line:displayLines)if(line.matches("^\\s*(?:\\d+\\.\\s+|[•☐☑✓]\\s+).*")){hasLists=true;break;}
   // Optional aligned bilingual reading. Each paired line uses Arabic || Malay.
-  boolean bilingualReading=key.startsWith("m_")&&availableReaderWidthDp>=500
-   &&prefs.getBoolean("reader_bilingual_columns",false)&&fullReadingText.contains(" || ");
+  boolean qurtubiPair=key.equals("m_qurtubi_fatihah_1")&&fullReadingText.contains(" || ");
+  boolean bilingualReading=qurtubiPair||(key.startsWith("m_")&&availableReaderWidthDp>=500
+   &&prefs.getBoolean("reader_bilingual_columns",false)&&fullReadingText.contains(" || "));
   if(bilingualReading){
    LinearLayout bilingual=new LinearLayout(this);bilingual.setOrientation(LinearLayout.VERTICAL);
    for(String line:displayLines){
@@ -2289,6 +2292,7 @@ public class MainActivity extends Activity {
     TextView malay=text(line.substring(divider+4),readingSizes[fontLevel]);
     malay.setTextDirection(View.TEXT_DIRECTION_LTR);malay.setGravity(Gravity.LEFT|Gravity.TOP);
     malay.setTextIsSelectable(true);malay.setPadding(dp(8),dp(6),dp(8),dp(6));
+    if(qurtubiPair){pair.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);if(availableReaderWidthDp<500){pair.setOrientation(LinearLayout.VERTICAL);pair.addView(arabic,new LinearLayout.LayoutParams(-1,-2));pair.addView(malay,new LinearLayout.LayoutParams(-1,-2));}else{pair.addView(malay,new LinearLayout.LayoutParams(0,-2,1));View separator=new View(this);separator.setBackgroundColor(0xffb7c1c9);pair.addView(separator,new LinearLayout.LayoutParams(dp(1),-1));pair.addView(arabic,new LinearLayout.LayoutParams(0,-2,1));}bilingual.addView(pair);continue;}
     pair.addView(arabic,new LinearLayout.LayoutParams(0,-2,1));
     View rule=new View(this);rule.setBackgroundColor(0xffb7c1c9);
     pair.addView(rule,new LinearLayout.LayoutParams(dp(1),-1));
