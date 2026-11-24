@@ -3236,8 +3236,15 @@ public class MainActivity extends Activity {
        editor.setText(item.optString("body",""));
        if(categoryPicker!=null){
         String category=item.optString("category","Tanpa kategori");
+        int categoryPosition=-1;
         for(int i=0;i<categoryPicker.getCount();i++)
-         if(category.equals(categoryPicker.getItemAtPosition(i).toString())){categoryPicker.setSelection(i);break;}
+         if(category.equals(categoryPicker.getItemAtPosition(i).toString())){categoryPosition=i;break;}
+        if(categoryPosition<0&&categoryPicker.getAdapter() instanceof android.widget.ArrayAdapter){
+         @SuppressWarnings("unchecked") android.widget.ArrayAdapter<String> adapter=(android.widget.ArrayAdapter<String>)categoryPicker.getAdapter();
+         adapter.add(category);
+         categoryPosition=adapter.getPosition(category);
+        }
+        if(categoryPosition>=0)categoryPicker.setSelection(categoryPosition);
        }
        save();
        Toast.makeText(this,"Versi dipulihkan",Toast.LENGTH_SHORT).show();
