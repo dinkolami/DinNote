@@ -3621,7 +3621,7 @@ public class MainActivity extends Activity {
    if(body.trim().isEmpty())throw new java.io.IOException("Teks kosong");
    EditText name=new EditText(this);name.setHint("Nama kitab");name.setSingleLine(true);name.setText(filename.replaceFirst("\\.[^.]+$",""));
    LinearLayout importPanel=new LinearLayout(this);importPanel.setOrientation(1);importPanel.addView(name);
-   if(extractPdf){String previewText=body.substring(0,Math.min(700,body.length()));previewText=previewText.replace("\\r\\n","\n").replace("\\n","\n");TextView sample=text("Semak tulisan Arab sebelum simpan:\n\n"+previewText,15);sample.setTextIsSelectable(true);sample.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);sample.setPadding(dp(12),dp(8),dp(12),dp(8));ScrollView preview=new ScrollView(this);preview.addView(sample);importPanel.addView(preview,new LinearLayout.LayoutParams(-1,dp(155)));TextView warning=text("Jika Arab/Jawi rosak atau tidak lengkap, pilih Simpan PDF asal. Jangan simpan teks yang rosak.",12);warning.setTextColor(0xff875b25);warning.setPadding(dp(12),dp(6),dp(12),dp(8));importPanel.addView(warning);}
+   if(extractPdf){String previewText=body.substring(0,Math.min(5000,body.length()));previewText=previewText.replace("\\r\\n","\n").replace("\\n","\n");TextView sample=text("Pratonton "+Math.min(5000,body.length())+" daripada "+body.length()+" aksara. Semak tulisan Arab/Jawi sebelum simpan:\n\n"+previewText,15);sample.setTextIsSelectable(true);sample.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);sample.setPadding(dp(12),dp(8),dp(12),dp(8));ScrollView preview=new ScrollView(this);preview.addView(sample);importPanel.addView(preview,new LinearLayout.LayoutParams(-1,dp(155)));TextView warning=text("Jika Arab/Jawi rosak atau tidak lengkap, pilih Simpan PDF asal. Jangan simpan teks yang rosak.",12);warning.setTextColor(0xff875b25);warning.setPadding(dp(12),dp(6),dp(12),dp(8));importPanel.addView(warning);}
    AlertDialog.Builder importDialog=new AlertDialog.Builder(this).setTitle(extractPdf?"Semak ekstrak PDF":"Import kitab").setView(importPanel).setNegativeButton("Batal",null).setPositiveButton("Simpan teks",(d,w)->{
     String key="m_"+java.util.UUID.randomUUID().toString();
     boolean ok=prefs.edit().putString(key,body).putString("title_"+key,name.getText().toString().trim().isEmpty()?"Kitab import":name.getText().toString().trim()).putString("cat_"+key,"Tanpa kategori").putLong("updated_"+key,System.currentTimeMillis()).commit();
@@ -3646,7 +3646,7 @@ public class MainActivity extends Activity {
     // Explicit confirmation prevents accidental saving of broken Arabic/Jawi extraction.
     previewDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v->{
      new AlertDialog.Builder(this).setTitle("Pastikan teks PDF betul")
-      .setMessage("Adakah semua teks Arab/Jawi dalam pratonton boleh dibaca dengan sempurna? Jika tidak, pilih Simpan PDF asal supaya kandungan tidak hilang.")
+      .setMessage("Pratonton hanya menunjukkan sebahagian teks PDF. Adakah teks yang diperiksa jelas dan betul? Jika ragu-ragu, pilih Simpan PDF asal supaya kandungan tidak hilang.")
       .setNegativeButton("Semak semula",null)
       .setPositiveButton("Ya, simpan teks",(confirm,which)->{
        String key="m_"+java.util.UUID.randomUUID().toString();
