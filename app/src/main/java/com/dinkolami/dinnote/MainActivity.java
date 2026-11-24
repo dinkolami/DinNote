@@ -1484,7 +1484,7 @@ public class MainActivity extends Activity {
   String title=prefs.getString("title_"+key,"Kitab");
   StringBuilder map=new StringBuilder("◉  ").append(title.isEmpty()?"Kitab":title);
   for(String heading:headings){
-   map.append("\\n").append(heading.startsWith("        ")? "       └  ":heading.startsWith("    ")?"    ├  ":"  ◆  ").append(heading.trim().replaceFirst("^├\\s*",""));
+   map.append("\n").appendheading.startsWith("        ")? "       └  ":heading.startsWith("    ")?"    ├  ":"  ◆  ").append(heading.trim().replaceFirst("^├\\s*",""));
   }
   TextView view=text(map.toString(),15);
   view.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
