@@ -1401,7 +1401,7 @@ public class MainActivity extends Activity {
    else if(trim.equals("---TAMAT---")){active=false;paragraphStart=false;}
    else if(trim.equals("---KOTAKTAMAT---"))box=false;
    else if(trim.startsWith("---KOTAK"))box=true;
-   else if(trim.isEmpty()){paragraphStart=true;if(!box&&end<raw.length())value.setSpan(new SectionGapSpan(),Math.max(0,start-1),end+1,android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);}
+   else if(trim.isEmpty()){paragraphStart=true;if(!box&&end<raw.length()&&!(value instanceof android.text.Editable))value.setSpan(new SectionGapSpan(),Math.max(0,start-1),end+1,android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);}
    else if(active&&paragraphStart&&!box&&!trim.isEmpty()&&!Character.isWhitespace(line.charAt(0))&&!Character.isSpaceChar(line.charAt(0))&&!trim.startsWith("---")&&!trim.matches("^(?:\\p{Nd}+[.)]|[-•●◦▪☐☑✓*#]|@#).*")){
     value.setSpan(new SectionIndentSpan(),start,end<raw.length()?end+1:end,android.text.Spanned.SPAN_PARAGRAPH);
    }
