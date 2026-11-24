@@ -2920,7 +2920,7 @@ public class MainActivity extends Activity {
   java.util.regex.Matcher readingMarks=java.util.regex.Pattern.compile("(?m)^---(MATAN|SYARAHAN|DALIL|TERJEMAHAN|KHULASAH|IKTIBAR|TAMAT)---$").matcher(e.toString());
   while(readingMarks.find()){
    String k=readingMarks.group(1);
-   String label=k.equals("MATAN")?"المتن · Matan":k.equals("SYARAHAN")?"الشرح · Syarahan":k.equals("DALIL")?"الدليل · Dalil":k.equals("TERJEMAHAN")?k.equals("TERJEMAHAN")?"الترجمة · Terjemahan":"الخُلَاصَةُ · Khulasah":"";
+   String label=k.equals("MATAN")?"المتن · Matan":k.equals("SYARAHAN")?"الشرح · Syarahan":k.equals("DALIL")?"الدليل · Dalil":k.equals("TERJEMAHAN")?"الترجمة · Terjemahan":k.equals("KHULASAH")?"الخُلَاصَةُ · Khulasah":k.equals("IKTIBAR")?"الدُّرُوسُ وَالْعِبَرُ · Pengajaran & Iktibar":"";
    e.setSpan(new BoxMarkerSpan(label,0xff176b47,0xffedf5ee),readingMarks.start(),readingMarks.end(),33);
   }
   for(BoxBodySpan span:e.getSpans(0,e.length(),BoxBodySpan.class))e.removeSpan(span);
