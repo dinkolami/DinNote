@@ -1728,8 +1728,8 @@ public class MainActivity extends Activity {
   return selectedReadingText(key,mode,true);
  }
  void showSelectedReading(String key){
-  String[] names={"Teks lengkap","Matan sahaja","Syarahan sahaja","Dalil sahaja","Terjemahan sahaja"};
-  new AlertDialog.Builder(this).setTitle("Mod Bacaan Terpilih").setSingleChoiceItems(names,Math.max(0,Math.min(4,prefs.getInt("reading_filter_"+key,0))),(d,i)->{
+  String[] names={"Teks lengkap","Matan sahaja","Syarahan sahaja","Dalil sahaja","Terjemahan sahaja","Khulasah sahaja"};
+  new AlertDialog.Builder(this).setTitle("Mod Bacaan Terpilih").setSingleChoiceItems(names,Math.max(0,Math.min(5,prefs.getInt("reading_filter_"+key,0))),(d,i)->{
    if(i>0&&selectedReadingText(key,i).isEmpty()){Toast.makeText(this,"Tiada teks bertanda untuk pilihan ini",Toast.LENGTH_LONG).show();return;}
    prefs.edit().putInt("reading_filter_"+key,i).apply();d.dismiss();read(key);
   }).setNeutralButton("Panduan tanda",(d,w)->new AlertDialog.Builder(this).setTitle("Penandaan dalam editor").setMessage("Letakkan tanda pada baris berasingan sebelum teks: ---MATAN---, ---SYARAHAN---, ---DALIL--- atau ---TERJEMAHAN--- atau ---KHULASAH---. Akhiri bahagian dengan ---TAMAT---. Teks tanpa tanda kekal dalam mod lengkap.").setPositiveButton("OK",null).show()).setNegativeButton("Batal",null).show();
