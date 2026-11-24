@@ -1726,7 +1726,7 @@ public class MainActivity extends Activity {
    final int option=i;boolean danger=i==labels.length-1;
    LinearLayout row=new LinearLayout(this);row.setGravity(Gravity.CENTER_VERTICAL);
    row.setPadding(dp(12),dp(7),dp(12),dp(7));
-   row.setBackground(rounded(danger?0xfffff1f0:0xfff9fbf9,danger?0xfff1d4d2:0xffe2eae4,10));
+   row.setBackground(rounded(danger?0xfffff1f0:0xfff9fbf9,danger?0xffe8bcb8:0xffcbdcd2,10));
    LinearLayout.LayoutParams rowParams=new LinearLayout.LayoutParams(-1,dp(62));
    rowParams.bottomMargin=dp(5);panel.addView(row,rowParams);
    TextView symbol=text(icons[i],21);symbol.setGravity(Gravity.CENTER);
@@ -1768,7 +1768,10 @@ public class MainActivity extends Activity {
   dialog[0]=new AlertDialog.Builder(this).setView(scroll).setNegativeButton("Tutup",null).create();
   dialog[0].show();
   android.view.Window window=dialog[0].getWindow();
-  if(window!=null)window.setLayout(Math.min(getResources().getDisplayMetrics().widthPixels-dp(32),dp(430)),-2);
+  if(window!=null){
+   window.setBackgroundDrawable(rounded(0xffffffff,0xffc5d9ce,12));
+   window.setLayout(Math.min(getResources().getDisplayMetrics().widthPixels-dp(32),dp(430)),-2);
+  }
  }
  void applySharedTextMetrics(android.widget.TextView view){
   // GitHub-like reading typography: lightweight sans-serif for prose, with Android font fallback for Arabic.
