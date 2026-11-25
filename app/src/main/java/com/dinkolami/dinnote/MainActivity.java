@@ -1457,6 +1457,7 @@ public class MainActivity extends Activity {
    out.replace(range[0],range[1],ornament);
    int finish=range[0]+ornament.length();
    out.setSpan(new android.text.style.ForegroundColorSpan(0xff176b47),range[0],finish,33);
+   out.setSpan(new ReaderOrnamentSpan(new String[]{"FLOWER","GEOMETRIC","CLASSIC"}[range[2]]),range[0],finish,33);
    out.setSpan(new android.text.style.AlignmentSpan.Standard(android.text.Layout.Alignment.ALIGN_CENTER),range[0],finish,33);
   }
   // Closing markers are structural only; remove their entire line from the display copy.
@@ -3048,17 +3049,39 @@ public class MainActivity extends Activity {
  class BoxInsetSpan extends android.text.style.LeadingMarginSpan.Standard {
   BoxInsetSpan(){super(dp(9));}
  }
+ void drawIslamicOrnament(android.graphics.Canvas c,float x,float y,float w,String kind){
+  c.save();c.translate(x+w/2f,y);
+  float scale=Math.min(w/220f,dp(1));c.scale(scale,scale);
+  android.graphics.Paint p=new android.graphics.Paint(3);p.setColor(0xffa38a49);p.setStyle(android.graphics.Paint.Style.STROKE);p.setStrokeWidth(1.2f);p.setStrokeCap(android.graphics.Paint.Cap.ROUND);p.setStrokeJoin(android.graphics.Paint.Join.ROUND);
+  float edge=w/(2*scale);
+  for(int side:new int[]{-1,1}){
+   c.save();c.scale(side,1);
+   android.graphics.Path vine=new android.graphics.Path();vine.moveTo(12,0);vine.cubicTo(24,-13,34,-13,40,-3);vine.cubicTo(46,8,32,10,32,2);vine.cubicTo(32,-2,37,-3,39,0);vine.moveTo(12,0);vine.cubicTo(29,12,48,12,55,0);vine.cubicTo(63,-12,75,-9,76,0);vine.cubicTo(76,6,66,7,66,1);vine.moveTo(55,0);vine.lineTo(edge-5,0);vine.lineTo(edge-1,-3);vine.moveTo(edge-5,0);vine.lineTo(edge-1,3);c.drawPath(vine,p);c.restore();
+  }
+  android.graphics.Path center=new android.graphics.Path();
+  if(kind.equals("GEOMETRIC")){
+   for(int i=0;i<2;i++){float a= i==0?13:8;center.moveTo(0,-a);center.lineTo(a,0);center.lineTo(0,a);center.lineTo(-a,0);center.close();}
+  }else if(kind.equals("FLOWER")){
+   center.moveTo(0,10);center.cubicTo(-19,2,-11,-8,0,-14);center.cubicTo(11,-8,19,2,0,10);center.moveTo(0,10);center.cubicTo(-15,7,-19,-4,-12,-7);center.cubicTo(-5,-7,-3,0,0,10);center.cubicTo(3,0,5,-7,12,-7);center.cubicTo(19,-4,15,7,0,10);
+  }else{
+   center.moveTo(-15,0);center.cubicTo(-8,-15,8,15,15,0);center.cubicTo(8,-15,-8,15,-15,0);center.moveTo(0,-12);center.quadTo(7,0,0,12);center.quadTo(-7,0,0,-12);
+  }
+  c.drawPath(center,p);c.restore();
+ }
+ class ReaderOrnamentSpan extends android.text.style.ReplacementSpan {
+  final String kind;ReaderOrnamentSpan(String k){kind=k;}
+  int width(android.graphics.Paint p){return Math.max(dp(60),Math.round(p.measureText("────────────────────")));}
+  @Override public int getSize(android.graphics.Paint p,CharSequence t,int a,int b,android.graphics.Paint.FontMetricsInt fm){if(fm!=null){fm.ascent=-dp(17);fm.top=fm.ascent;fm.descent=dp(17);fm.bottom=fm.descent;}return width(p);}
+  @Override public void draw(android.graphics.Canvas c,CharSequence t,int a,int b,float x,int top,int y,int bottom,android.graphics.Paint p){drawIslamicOrnament(c,x,y,width(p),kind);}
+ }
  class EditorDividerSpan extends android.text.style.ReplacementSpan {
   final String symbol;EditorDividerSpan(String kind){symbol=kind.equals("FLOWER")?"✿":kind.equals("GEOMETRIC")?"❖":"❧";}
   int width(){return editor==null?dp(120):Math.max(dp(24),editor.getWidth()-editor.getCompoundPaddingLeft()-editor.getCompoundPaddingRight()-dp(22));}
   @Override public int getSize(android.graphics.Paint p,CharSequence t,int a,int b,android.graphics.Paint.FontMetricsInt fm){
-   if(fm!=null){fm.ascent=-dp(15);fm.top=fm.ascent;fm.descent=dp(5);fm.bottom=fm.descent;}return width();
+   if(fm!=null){fm.ascent=-dp(17);fm.top=fm.ascent;fm.descent=dp(17);fm.bottom=fm.descent;}return width();
   }
   @Override public void draw(android.graphics.Canvas c,CharSequence t,int a,int b,float x,int top,int y,int bottom,android.graphics.Paint p){
-   android.graphics.Paint q=new android.graphics.Paint(p);q.setAntiAlias(true);q.setColor(0xff176b47);q.setStrokeWidth(dp(1));float mid=x+width()/2f,cy=(top+bottom)/2f;
-   q.setTypeface(android.graphics.Typeface.DEFAULT);q.setTextSize(dp(19));q.setTextAlign(android.graphics.Paint.Align.CENTER);float gap=q.measureText(symbol)/2+dp(8);
-   if(mid-gap>x)c.drawLine(x,cy,mid-gap,cy,q);if(mid+gap<x+width())c.drawLine(mid+gap,cy,x+width(),cy,q);
-   c.drawText(symbol,mid,cy-(q.ascent()+q.descent())/2,q);
+   drawIslamicOrnament(c,x,(top+bottom)/2f,width(),symbol.equals("✿")?"FLOWER":symbol.equals("❖")?"GEOMETRIC":"CLASSIC");
   }
  }
  // Keep user text out of structural marker lines: a broken marker would expose raw tags.
