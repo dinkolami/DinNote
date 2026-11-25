@@ -2810,7 +2810,7 @@ public class MainActivity extends Activity {
  }
  void attachLectureEditorPanel(final EditText active){
   LinearLayout panel=new LinearLayout(this);panel.setOrientation(1);
-  TextView toggle=text("☷  Subtopik Nota Kuliah",13);toggle.setTextColor(0xff216e4e);toggle.setPadding(dp(10),dp(6),dp(10),dp(6));panel.addView(toggle);
+  TextView toggle=text("☷  Subtopik Nota Kuliah",16);toggle.setTextColor(0xff216e4e);toggle.setPadding(dp(10),dp(6),dp(10),dp(6));panel.addView(toggle);
   LinearLayout rows=new LinearLayout(this);rows.setOrientation(1);panel.addView(rows);
   root.addView(panel,root.indexOfChild(active));
   Runnable refresh=()->{
@@ -2818,7 +2818,7 @@ public class MainActivity extends Activity {
    java.util.regex.Matcher m=java.util.regex.Pattern.compile("(?m)^(Muqaddimah|Pra Topik|Isi Pertama|Isi Kedua|Isi Ketiga|Pengajaran|Iktibar|Khulasah|Penutup)[ \\t]*$").matcher(active.getText());
    while(m.find()){
     final String name=m.group(1);
-    TextView row=text(name+"   ▾",13);row.setTextColor(0xff216e4e);row.setPadding(dp(12),dp(5),dp(12),dp(5));row.setBackground(rounded(0xfffffefd,0xffdce5df,8));rows.addView(row);
+    TextView row=text(name+"   ▾",16);row.setTextColor(0xff216e4e);row.setPadding(dp(12),dp(5),dp(12),dp(5));row.setBackground(rounded(0xfffffefd,0xffdce5df,8));row.setMinHeight(dp(48));row.setGravity(Gravity.CENTER_VERTICAL);LinearLayout.LayoutParams rp=new LinearLayout.LayoutParams(-1,-2);rp.setMargins(dp(8),0,dp(8),dp(4));rows.addView(row,rp);
     row.setOnClickListener(v->{
      java.util.regex.Matcher target=java.util.regex.Pattern.compile("(?m)^"+java.util.regex.Pattern.quote(name)+"[ \\t]*$").matcher(active.getText());
      if(!target.find())return;
@@ -2827,7 +2827,8 @@ public class MainActivity extends Activity {
     });
    }
   };
-  rows.setVisibility(View.GONE);
+  refresh.run();
+  if(rows.getChildCount()>0){active.clearFocus();active.setVisibility(View.GONE);rows.setVisibility(View.VISIBLE);}else rows.setVisibility(View.GONE);
   toggle.setOnClickListener(v->{
    if(rows.getVisibility()==View.VISIBLE){rows.setVisibility(View.GONE);active.setVisibility(View.VISIBLE);}
    else{refresh.run();active.clearFocus();active.setVisibility(View.GONE);rows.setVisibility(View.VISIBLE);}
@@ -3012,7 +3013,7 @@ public class MainActivity extends Activity {
   toolsButton.setContentDescription("Alat penyuntingan tambahan");
 
   LinearLayout.LayoutParams editBodyFrame=new LinearLayout.LayoutParams(-1,0,1);editBodyFrame.setMargins(dp(4),0,dp(4),0);root.addView(editor,editBodyFrame);
-  if(key!=null&&isLectureTemplate(prefs.getString(key,"")))attachLectureEditorPanel(editor);
+
 
   // Keep normal Android double-tap text selection while editing.
   // Never navigate away while EditText is handling touch/selection events.
@@ -3030,6 +3031,7 @@ public class MainActivity extends Activity {
   });
   editor.setOnTouchListener((v,event)->{editorSwipe.onTouchEvent(event);return false;});
   if(key!=null){int remembered=prefs.getInt("edit_cursor_"+key,0);editor.setText(formattedReadingText(repairBoxStructure(normalizeStructuralMarkers(prefs.getString(key,"")))));editor.setSelection(Math.max(0,Math.min(remembered,editor.length())));}
+  if(key!=null&&isLectureTemplate(prefs.getString(key,"")))attachLectureEditorPanel(editor);
   final EditText activeBody=editor;
   activeBody.post(()->revealEditorCursor(activeBody));
   // Match the reader's optional Arabic serif typeface in the editor as well.
