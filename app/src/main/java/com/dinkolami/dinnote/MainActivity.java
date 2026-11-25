@@ -2151,7 +2151,7 @@ public class MainActivity extends Activity {
   TextView details=text("Ralat: "+failure.getClass().getSimpleName()+": "+String.valueOf(failure.getMessage()),12);details.setTextIsSelectable(true);recovery.addView(details);
  }
  boolean isLectureTemplate(String source){return lectureHeadingPattern().matcher(source).find();}
- java.util.regex.Pattern lectureHeadingPattern(){return java.util.regex.Pattern.compile("(?m)^\\u2063([^\\r\\n]+)$");}
+ java.util.regex.Pattern lectureHeadingPattern(){return java.util.regex.Pattern.compile("(?m)^(?=\\u2063|(?:Muqaddimah|Pra Topik|Isi Pertama|Isi Kedua|Isi Ketiga|Pengajaran|Iktibar|Khulasah|Penutup)[ \\t]*$)\\u2063?([^\\r\\n]+)$");}
  void renderLectureTemplate(LinearLayout body,String source,int size,String key){
   java.util.regex.Matcher m=lectureHeadingPattern().matcher(source);
   ArrayList<String> names=new ArrayList<>();ArrayList<Integer> starts=new ArrayList<>();ArrayList<Integer> ends=new ArrayList<>();
@@ -2831,7 +2831,7 @@ public class MainActivity extends Activity {
     final String name=m.group(1);final int headingEnd=m.end();
     TextView row=text(name+"   ▾",16);row.setTextColor(0xff216e4e);row.setPadding(dp(12),dp(5),dp(12),dp(5));row.setBackground(rounded(0xfffffefd,0xffdce5df,8));row.setMinHeight(dp(48));row.setGravity(Gravity.CENTER_VERTICAL);LinearLayout.LayoutParams rp=new LinearLayout.LayoutParams(-1,-2);rp.setMargins(dp(8),0,dp(8),dp(4));rows.addView(row,rp);
     final int headingStart=m.start();
-    row.setOnLongClickListener(v->{EditText input=new EditText(this);input.setSingleLine(true);input.setText(name);new AlertDialog.Builder(this).setTitle("Ubah subtopik").setView(input).setNegativeButton("Batal",null).setNeutralButton("Buang tajuk",(d,w)->{active.getText().delete(headingStart,headingEnd);save();refresh[0].run();}).setPositiveButton("Simpan",(d,w)->{String renamed=input.getText().toString().trim();if(!renamed.isEmpty()){active.getText().replace(headingStart+1,headingEnd,renamed);save();refresh[0].run();}}).show();return true;});
+    row.setOnLongClickListener(v->{EditText input=new EditText(this);input.setSingleLine(true);input.setText(name);new AlertDialog.Builder(this).setTitle("Ubah subtopik").setView(input).setNegativeButton("Batal",null).setNeutralButton("Buang tajuk",(d,w)->{active.getText().delete(headingStart,headingEnd);save();refresh[0].run();}).setPositiveButton("Simpan",(d,w)->{String renamed=input.getText().toString().trim();if(!renamed.isEmpty()){active.getText().replace(headingStart,headingEnd,"\u2063"+renamed);save();refresh[0].run();}}).show();return true;});
     row.setOnClickListener(v->{
      int p=Math.min(headingEnd,active.length());if(p<active.length()&&active.getText().charAt(p)=='\n')p++;
      rows.setVisibility(View.GONE);active.setVisibility(View.VISIBLE);active.requestFocus();active.setSelection(p);active.post(()->revealEditorCursor(active));
