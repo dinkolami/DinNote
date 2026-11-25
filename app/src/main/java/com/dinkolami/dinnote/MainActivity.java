@@ -2899,7 +2899,7 @@ public class MainActivity extends Activity {
   dialog.setOnShowListener(v->dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(x->{
    String name=title.getText().toString().trim();if(name.isEmpty()){title.setError("Masukkan tajuk");return;}
    String key="n_"+java.util.UUID.randomUUID().toString();
-   String body="\u2063Muqaddimah\n\n\u2063Pra Topik\n\n\u2063Isi Pertama\n\n\u2063Isi Kedua\n\n\u2063Isi Ketiga\n\n\u2063Pengajaran\n\n\u2063Iktibar\n\n\u2063Khulasah\n\n\u2063Penutup\n";
+   String body="\u2063Muqaddimah\n\n\n\u2063Pra Topik\n\n\n\u2063Isi Pertama\n\n\n\u2063Isi Kedua\n\n\n\u2063Isi Ketiga\n\n\n\u2063Pengajaran\n\n\n\u2063Iktibar\n\n\n\u2063Khulasah\n\n\n\u2063Penutup\n\n\n";
    boolean ok=prefs.edit().putString(key,body).putString("title_"+key,name).putString("cat_"+key,"Tanpa kategori").putLong("updated_"+key,System.currentTimeMillis()).commit();
    if(ok){dialog.dismiss();maktabah=false;edit(key);}else Toast.makeText(this,"Simpan gagal",Toast.LENGTH_SHORT).show();
   }));dialog.show();
@@ -2925,6 +2925,7 @@ public class MainActivity extends Activity {
    if(removed.indexOf('\u2063')<0)return null;
    String replacement=source.subSequence(start,end).toString();
    if(replacement.indexOf('\u2063')>=0)return null;
+   if(replacement.isEmpty())return null;
    if(removed.indexOf('\n')>=0)return null;
    return "\u2063"+replacement;
   };
@@ -2942,8 +2943,13 @@ public class MainActivity extends Activity {
    java.util.regex.Matcher m=lectureHeadingPattern().matcher(active.getText());
    while(m.find()){
     final String name=m.group(1);final int headingEnd=m.end();
-    TextView row=text(name+"   ▾",16);row.setTextColor(0xff216e4e);row.setPadding(dp(12),dp(5),dp(12),dp(5));row.setBackground(rounded(0xfffffefd,0xffdce5df,8));row.setMinHeight(dp(48));row.setGravity(Gravity.CENTER_VERTICAL);LinearLayout.LayoutParams rp=new LinearLayout.LayoutParams(-1,-2);rp.setMargins(dp(8),0,dp(8),dp(4));rows.addView(row,rp);
+    TextView row=text(name,16);row.setTextColor(0xff216e4e);row.setPadding(dp(12),dp(5),dp(12),dp(5));row.setBackground(rounded(0xfffffefd,0xffdce5df,8));row.setMinHeight(dp(48));row.setGravity(Gravity.CENTER_VERTICAL);LinearLayout.LayoutParams rp=new LinearLayout.LayoutParams(-1,-2);rp.setMargins(dp(8),0,dp(8),dp(4));LinearLayout line=new LinearLayout(this);line.setGravity(Gravity.CENTER_VERTICAL);line.setBackground(rounded(0xfffffefd,0xffdce5df,8));row.setBackgroundColor(Color.TRANSPARENT);rows.addView(line,rp);line.addView(row,new LinearLayout.LayoutParams(0,-2,1));
     final int headingStart=m.start();
+    for(int direction:new int[]{-1,1}){
+     final int delta=direction;TextView move=text(delta<0?"+":"−",17);move.setGravity(Gravity.CENTER);move.setTextColor(0xff216e4e);line.addView(move,new LinearLayout.LayoutParams(dp(30),dp(44)));
+     move.setOnClickListener(v->{android.text.Editable e=active.getText();java.util.regex.Matcher hm=lectureHeadingPattern().matcher(e.toString());ArrayList<Integer> offsets=new ArrayList<>();while(hm.find())offsets.add(hm.start());int index=offsets.indexOf(headingStart),other=index+delta;if(index<0||other<0||other>=offsets.size())return;int low=Math.min(index,other),high=low+1;int a=offsets.get(low),b=offsets.get(high),c=high+1<offsets.size()?offsets.get(high+1):e.length();android.text.SpannableStringBuilder swapped=new android.text.SpannableStringBuilder(e.subSequence(b,c));if(swapped.length()>0&&swapped.charAt(swapped.length()-1)!='\n')swapped.append("\n");swapped.append(e.subSequence(a,b));e.replace(a,c,swapped);save();refresh[0].run();});
+    }
+    TextView arrow=text("▾",16);arrow.setTextColor(0xff216e4e);arrow.setPadding(dp(8),0,dp(12),0);line.addView(arrow);arrow.setOnClickListener(v->row.performClick());
     row.setOnLongClickListener(v->{EditText input=new EditText(this);input.setSingleLine(true);input.setText(name);new AlertDialog.Builder(this).setTitle("Ubah subtopik").setView(input).setNegativeButton("Batal",null).setNeutralButton("Buang tajuk",(d,w)->{active.getText().delete(headingStart,Math.min(active.length(),headingEnd+1));save();refresh[0].run();}).setPositiveButton("Simpan",(d,w)->{String renamed=input.getText().toString().trim();if(!renamed.isEmpty()){active.getText().replace(headingStart,headingEnd,"\u2063"+renamed);save();refresh[0].run();}}).show();return true;});
     row.setOnClickListener(v->{
      int p=Math.min(headingEnd,active.length());if(p<active.length()&&active.getText().charAt(p)=='\n')p++;
@@ -2951,7 +2957,7 @@ public class MainActivity extends Activity {
     });
    }
   };
-  Button addHeading=action("+ Subtopik",panel,()->{EditText input=new EditText(this);input.setSingleLine(true);new AlertDialog.Builder(this).setTitle("Tambah subtopik").setView(input).setNegativeButton("Batal",null).setPositiveButton("Seterusnya",(d,w)->{String name=input.getText().toString().trim();if(name.isEmpty())return;ArrayList<String> labels=new ArrayList<>();ArrayList<Integer> positions=new ArrayList<>();java.util.regex.Matcher hm=lectureHeadingPattern().matcher(active.getText().toString());while(hm.find()){labels.add("Sisip sebelum "+hm.group(1));positions.add(hm.start());}labels.add("Tambah paling bawah");positions.add(active.length());new AlertDialog.Builder(this).setTitle("Kedudukan subtopik").setItems(labels.toArray(new String[0]),(dd,index)->{int pos=positions.get(index);String prefix=pos>0&&active.getText().charAt(pos-1)!='\n'?"\n":"";active.getText().insert(pos,prefix+"\u2063"+name+"\n\n");save();refresh[0].run();}).setNegativeButton("Batal",null).show();}).show();});
+  Button addHeading=action("+ Subtopik",panel,()->{EditText input=new EditText(this);input.setSingleLine(true);new AlertDialog.Builder(this).setTitle("Tambah subtopik").setView(input).setNegativeButton("Batal",null).setPositiveButton("Seterusnya",(d,w)->{String name=input.getText().toString().trim();if(name.isEmpty())return;ArrayList<String> labels=new ArrayList<>();ArrayList<Integer> positions=new ArrayList<>();java.util.regex.Matcher hm=lectureHeadingPattern().matcher(active.getText().toString());while(hm.find()){labels.add("Sisip sebelum "+hm.group(1));positions.add(hm.start());}labels.add("Tambah paling bawah");positions.add(active.length());new AlertDialog.Builder(this).setTitle("Kedudukan subtopik").setItems(labels.toArray(new String[0]),(dd,index)->{int pos=positions.get(index);String prefix=pos>0&&active.getText().charAt(pos-1)!='\n'?"\n":"";active.getText().insert(pos,prefix+"\u2063"+name+"\n\n\n");save();refresh[0].run();}).setNegativeButton("Batal",null).show();}).show();});
   refresh[0].run();
   rows.setVisibility(View.GONE);active.setVisibility(View.VISIBLE);
   toggle.setOnClickListener(v->{
