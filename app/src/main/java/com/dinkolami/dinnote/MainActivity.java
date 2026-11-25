@@ -1446,6 +1446,23 @@ public class MainActivity extends Activity {
    String label=k.equals("MATAN")?"المتن · Matan":k.equals("SYARAHAN")?"الشرح · Syarahan":k.equals("DALIL")?"الدليل · Dalil":k.equals("TERJEMAHAN")?"الترجمة · Terjemahan":k.equals("SYAFII")?"الشَّافِعِيُّ · Syafi‘i":k.equals("HANAFI")?"الْحَنَفِيُّ · Hanafi":k.equals("MALIKI")?"الْمَالِكِيُّ · Maliki":k.equals("HANBALI")?"الْحَنْبَلِيُّ · Hanbali":k.equals("MUQARAN")?"الْفِقْهُ الْمُقَارَنُ · Fiqh Muqaran":k.equals("KHULASAH")?"الخُلَاصَةُ · Khulasah":"الدُّرُوسُ وَالْعِبَرُ · Pengajaran & Iktibar";
    out.setSpan(new BoxMarkerSpan(k.equals("TAMAT")?"":label,0xff176b47,0xffedf5ee),marks.start(),marks.end(),33);
   }
+  // Render divider markers in every text-based reader, including boxed and paged notes.
+  java.util.regex.Matcher dividers=java.util.regex.Pattern.compile("(?m)^[ \\t]*---(FLOWER|GEOMETRIC|CLASSIC)---[ \\t]*$").matcher(out.toString());
+  while(dividers.find()){
+   final String symbol=dividers.group(1).equals("FLOWER")?"✿":dividers.group(1).equals("GEOMETRIC")?"❖":"❧";
+   out.setSpan(new android.text.style.ReplacementSpan(){
+    int width(android.graphics.Paint p){return Math.max(dp(24),Math.min(dp(120),Math.round(p.measureText("────────────"))));}
+    @Override public int getSize(android.graphics.Paint p,CharSequence t,int a,int b,android.graphics.Paint.FontMetricsInt fm){return width(p);}
+    @Override public void draw(android.graphics.Canvas c,CharSequence t,int a,int b,float x,int top,int y,int bottom,android.graphics.Paint p){
+     android.graphics.Paint q=new android.graphics.Paint(p);q.setAntiAlias(true);q.setColor(0xff176b47);q.setStrokeWidth(dp(1));
+     float w=width(p),mid=x+w/2f,cy=(top+bottom)/2f;
+     q.setTextSize(dp(19));q.setTextAlign(android.graphics.Paint.Align.CENTER);float gap=q.measureText(symbol)/2+dp(6);
+     if(mid-gap>x)c.drawLine(x,cy,mid-gap,cy,q);
+     if(mid+gap<x+w)c.drawLine(mid+gap,cy,x+w,cy,q);
+     c.drawText(symbol,mid,cy-(q.ascent()+q.descent())/2,q);
+    }
+   },dividers.start(),dividers.end(),33);
+  }
   // Closing markers are structural only; remove their entire line from the display copy.
   java.util.regex.Matcher closingLines=java.util.regex.Pattern.compile("(?m)^---TAMAT---[ \\t]*(?:\\n|$)").matcher(out.toString());
   java.util.ArrayList<int[]> closingRanges=new java.util.ArrayList<>();
@@ -2289,7 +2306,7 @@ public class MainActivity extends Activity {
    LinearLayout bilingual=new LinearLayout(this);bilingual.setOrientation(LinearLayout.VERTICAL);
    for(String line:displayLines){
     int divider=line.indexOf(" || ");
-    if(divider<0){if(qurtubiPair&&line.trim().equals("---TAMAT---"))continue;TextView plain=text(line,readingSizes[fontLevel]);if(qurtubiPair)plain.setText(readerLabelText(line));plain.setTextColor(0xff303c43);bilingual.addView(plain);continue;}
+    if(divider<0){if(qurtubiPair&&line.trim().equals("---TAMAT---"))continue;TextView plain=text(line,readingSizes[fontLevel]);plain.setText(readerLabelText(line));plain.setTextColor(0xff303c43);bilingual.addView(plain);continue;}
     LinearLayout pair=new LinearLayout(this);pair.setOrientation(LinearLayout.HORIZONTAL);
     TextView arabic=text(line.substring(0,divider),readingSizes[fontLevel]);
     arabic.setTextDirection(View.TEXT_DIRECTION_RTL);arabic.setGravity(Gravity.RIGHT|Gravity.TOP);
