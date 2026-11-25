@@ -3319,7 +3319,15 @@ public class MainActivity extends Activity {
   editor.post(()->revealEditorCursor(editor));
   return true;
  }
+ static class LectureHeadingVisualSpan extends android.text.style.MetricAffectingSpan {
+  private void apply(android.text.TextPaint p){android.graphics.Typeface old=p.getTypeface();int style=old==null?0:old.getStyle();p.setTypeface(android.graphics.Typeface.create(old,style|android.graphics.Typeface.BOLD));}
+  @Override public void updateDrawState(android.text.TextPaint p){apply(p);}
+  @Override public void updateMeasureState(android.text.TextPaint p){apply(p);}
+ }
  void refreshEditorBoxes(android.text.Editable e){
+  for(LectureHeadingVisualSpan span:e.getSpans(0,e.length(),LectureHeadingVisualSpan.class))e.removeSpan(span);
+  java.util.regex.Matcher heading=lectureHeadingPattern().matcher(e.toString());
+  while(heading.find())if(heading.start()<heading.end()&&e.charAt(heading.start())=='\u2063')e.setSpan(new LectureHeadingVisualSpan(),heading.start(),heading.end(),android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
   applySectionIndent(e);
   for(EditorDividerSpan span:e.getSpans(0,e.length(),EditorDividerSpan.class))e.removeSpan(span);
   java.util.regex.Matcher div=java.util.regex.Pattern.compile("(?m)^---(FLOWER|GEOMETRIC|CLASSIC)---$").matcher(e.toString());
