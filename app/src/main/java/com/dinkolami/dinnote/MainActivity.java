@@ -2822,7 +2822,7 @@ public class MainActivity extends Activity {
     row.setOnClickListener(v->{
      java.util.regex.Matcher target=java.util.regex.Pattern.compile("(?m)^"+java.util.regex.Pattern.quote(name)+"[ \\t]*$").matcher(active.getText());
      if(!target.find())return;
-     int p=target.end();if(p<active.length()&&active.getText().charAt(p)=='\\n')p++;
+     int p=target.end();if(p<active.length()&&active.getText().charAt(p)=='\n')p++;
      rows.setVisibility(View.GONE);active.setVisibility(View.VISIBLE);active.requestFocus();active.setSelection(p);active.post(()->revealEditorCursor(active));
     });
    }
