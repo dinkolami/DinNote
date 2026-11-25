@@ -2161,6 +2161,19 @@ public class MainActivity extends Activity {
   if(starts.get(0)>0){TextView prefix=text("",size);prefix.setText(readerLabelText(source.substring(0,starts.get(0))));body.addView(prefix);}
   ArrayList<View> panels=new ArrayList<>();ArrayList<TextView> headers=new ArrayList<>();
   int mode=prefs.getInt("lecture_view_"+key,0);
+  TextView sectionTitle=text("☷  Subtopik Nota Kuliah",16);
+  sectionTitle.setTextColor(0xff216e4e);sectionTitle.setPadding(dp(8),dp(8),dp(8),dp(8));body.addView(sectionTitle);
+  if(mode!=2){
+   sectionTitle.setContentDescription("Buka atau tutup semua subtopik Nota Kuliah");
+   sectionTitle.setOnClickListener(v->{
+    boolean open=false;
+    for(View panel:panels)if(panel.getVisibility()!=View.VISIBLE){open=true;break;}
+    for(int j=0;j<panels.size();j++){
+     panels.get(j).setVisibility(open?View.VISIBLE:View.GONE);
+     headers.get(j).setText(names.get(j)+(open?"  ▴":"  ▾"));
+    }
+   });
+  }
   for(int i=0;i<names.size();i++){
    String value=source.substring(ends.get(i),i+1<starts.size()?starts.get(i+1):source.length()).trim();
    if(value.isEmpty()&&mode==2)continue;
@@ -2172,6 +2185,7 @@ public class MainActivity extends Activity {
    if(value.isEmpty()){
     TextView empty=text("Tiada kandungan",Math.max(13,size-2));empty.setTextColor(0xff718078);empty.setPadding(dp(4),dp(8),dp(4),dp(8));panel.addView(empty);
    }else renderBoxReading(panel,value,size,key);
+   panels.add(panel);headers.add(h);
    panel.setVisibility(mode==0?View.GONE:View.VISIBLE);
    if(mode!=2)h.setOnClickListener(v->{boolean open=panel.getVisibility()!=View.VISIBLE;panel.setVisibility(open?View.VISIBLE:View.GONE);h.setText(name+(open?"  ▴":"  ▾"));});
   }
