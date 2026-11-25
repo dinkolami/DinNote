@@ -1477,7 +1477,9 @@ public class MainActivity extends Activity {
  }
  String encodedEditorText(){
   if(editor==null)return "";
-  android.text.Editable e=editor.getText();StringBuilder out=new StringBuilder();int i=0;
+  return encodeLectureEditable(editor.getText());
+ }
+ String encodeLectureEditable(android.text.Editable e){StringBuilder out=new StringBuilder();int i=0;
   while(i<e.length()){
    if(e.charAt(i)=='\n'||e.charAt(i)=='\u2063'){out.append(e.charAt(i));i++;continue;}
    int mask=richMask(e,i,i+1),end=i+1;
@@ -2185,6 +2187,31 @@ public class MainActivity extends Activity {
    if(value.isEmpty()){
     TextView empty=text("Tiada kandungan",Math.max(13,size-2));empty.setTextColor(0xff718078);empty.setPadding(dp(4),dp(8),dp(4),dp(8));panel.addView(empty);
    }else renderBoxReading(panel,value,size,key);
+   final int sectionIndex=i;
+   TextView quick=text("✎  Edit pantas",13);quick.setTextColor(0xff216e4e);quick.setPadding(dp(4),dp(8),dp(4),dp(4));panel.addView(quick);
+   quick.setOnClickListener(v->{
+    String raw=prefs.getString(key,"");
+    java.util.regex.Matcher matcher=lectureHeadingPattern().matcher(raw);
+    ArrayList<Integer> ss=new ArrayList<>(),ee=new ArrayList<>();
+    while(matcher.find()){ss.add(matcher.start());ee.add(matcher.end());}
+    if(sectionIndex>=ee.size())return;
+    int start=ee.get(sectionIndex),end=sectionIndex+1<ss.size()?ss.get(sectionIndex+1):raw.length();
+    EditText input=new EditText(this);input.setTextSize(size);input.setGravity(Gravity.TOP);input.setMinLines(3);
+    input.setText(formattedReadingText(raw.substring(start,end).trim()));
+    panel.removeAllViews();panel.addView(input);
+    LinearLayout controls=new LinearLayout(this);panel.addView(controls);
+    Button done=new Button(this);done.setText("Selesai");controls.addView(done);
+    Button cancel=new Button(this);cancel.setText("Batal");controls.addView(cancel);
+    done.setOnClickListener(w->{
+     if(!raw.equals(prefs.getString(key,""))){Toast.makeText(this,"Nota telah berubah. Buka semula.",Toast.LENGTH_SHORT).show();read(key);return;}
+     String updated=raw.substring(0,start)+"\n"+encodeLectureEditable(input.getText())+"\n"+raw.substring(end);
+     snapshotBeforeAutosave(key,raw,prefs.getString("title_"+key,""),prefs.getString("cat_"+key,"Tanpa kategori"));
+     prefs.edit().putString(key,updated).putLong("updated_"+key,System.currentTimeMillis()).apply();
+     panel.removeAllViews();renderBoxReading(panel,encodeLectureEditable(input.getText()),size,key);panel.addView(quick);
+    });
+    cancel.setOnClickListener(w->{panel.removeAllViews();renderBoxReading(panel,value,size,key);panel.addView(quick);});
+    input.requestFocus();
+   });
    panels.add(panel);headers.add(h);
    panel.setVisibility(mode==0?View.GONE:View.VISIBLE);
    if(mode!=2)h.setOnClickListener(v->{boolean open=panel.getVisibility()!=View.VISIBLE;panel.setVisibility(open?View.VISIBLE:View.GONE);h.setText(formattedReadingText(name+(open?"  ▴":"  ▾")));});
