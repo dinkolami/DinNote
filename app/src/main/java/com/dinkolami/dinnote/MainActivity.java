@@ -2136,7 +2136,7 @@ public class MainActivity extends Activity {
   if(dialog.getWindow()!=null)dialog.getWindow().setLayout(-1,(int)(getResources().getDisplayMetrics().heightPixels*0.82f));
  }
  void read(String key){
-  try{readContentSafely(key);}
+  try{if(key!=null&&key.startsWith("n_")&&prefs.contains(key)&&isLectureTemplate(prefs.getString(key,""))){edit(key);return;}readContentSafely(key);}
   catch(Exception failure){
    android.util.Log.e("DinNote","Reader failed for "+key,failure);
    showReaderRecovery(key,failure);
@@ -2840,7 +2840,8 @@ public class MainActivity extends Activity {
   oldEditor.postDelayed(()->{
    if(isFinishing()||isDestroyed()||editor!=oldEditor)return;
    editor=null;titleEditor=null;saveIndicator=null;categoryPicker=null;
-   if(finishedKey!=null){prefs.edit().putBoolean("reader_safe_scroll_"+finishedKey,true).apply();read(finishedKey);}
+   if(finishedKey!=null&&finishedKey.startsWith("n_")&&isLectureTemplate(prefs.getString(finishedKey,""))){if(sectionOpen)notesPage();else home();}
+   else if(finishedKey!=null){prefs.edit().putBoolean("reader_safe_scroll_"+finishedKey,true).apply();read(finishedKey);}
    else if(sectionOpen)notesPage();else home();
   },180);
  }
