@@ -2201,28 +2201,42 @@ public class MainActivity extends Activity {
     EditText input=new EditText(this);input.setTextSize(size);input.setGravity(Gravity.TOP);input.setMinLines(3);
     input.setText(formattedReadingText(raw.substring(start,end).trim()));
     panel.removeAllViews();panel.addView(input);
-    LinearLayout controls=new LinearLayout(this);panel.addView(controls);
-    Button done=new Button(this);done.setText("Selesai");controls.addView(done);
-    Button cancel=new Button(this);cancel.setText("Batal");controls.addView(cancel);
-    final String original=raw.substring(start,end).trim();
-    Runnable finish=()->{
-     finishActive[0]=null;
-     if(!raw.equals(prefs.getString(key,""))){Toast.makeText(this,"Nota telah berubah. Buka semula.",Toast.LENGTH_SHORT).show();read(key);return;}
+    refreshEditorBoxes(input.getText());
+    final String[] expected={raw};
+    final int[] boundary={end};
+    final String[] last={encodeLectureEditable(input.getText())};
+    final boolean[] backedUp={false};
+    Runnable persist=()->{
      String edited=encodeLectureEditable(input.getText());
-     String updated=edited.equals(original)?raw:raw.substring(0,start)+"\n"+edited+"\n"+raw.substring(end);
-     if(!updated.equals(raw)){
-     snapshotBeforeAutosave(key,raw,prefs.getString("title_"+key,""),prefs.getString("cat_"+key,"Tanpa kategori"));
-     prefs.edit().putString(key,updated).putLong("updated_"+key,System.currentTimeMillis()).apply();}
+     if(edited.equals(last[0]))return;
+     if(!expected[0].equals(prefs.getString(key,""))){Toast.makeText(this,"Nota telah berubah. Buka semula.",Toast.LENGTH_SHORT).show();return;}
+     String replacement="\n"+edited+"\n";
+     String updated=expected[0].substring(0,start)+replacement+expected[0].substring(boundary[0]);
+     if(!backedUp[0]){
+      snapshotBeforeAutosave(key,raw,prefs.getString("title_"+key,""),prefs.getString("cat_"+key,"Tanpa kategori"));backedUp[0]=true;
+     }
+     prefs.edit().putString(key,updated).putLong("updated_"+key,System.currentTimeMillis()).apply();
+     expected[0]=updated;boundary[0]=start+replacement.length();last[0]=edited;
+    };
+    input.addTextChangedListener(new TextWatcher(){
+     public void beforeTextChanged(CharSequence t,int st,int c,int after){}
+     public void onTextChanged(CharSequence t,int st,int before,int c){}
+     public void afterTextChanged(Editable e){
+      persist.run();
+      if(android.view.inputmethod.BaseInputConnection.getComposingSpanStart(e)<0)refreshEditorBoxes(e);
+     }
+    });
+    Runnable finish=()->{
+     persist.run();finishActive[0]=null;
      panel.removeAllViews();renderBoxReading(panel,encodeLectureEditable(input.getText()),size,key);panel.addView(quick);
+     panel.setVisibility(View.GONE);h.setText(formattedReadingText(name+"  ▾"));
     };
     finishActive[0]=finish;
-    done.setOnClickListener(w->finish.run());
-    cancel.setOnClickListener(w->{finishActive[0]=null;panel.removeAllViews();renderBoxReading(panel,original,size,key);panel.addView(quick);});
     input.requestFocus();
    });
    panels.add(panel);headers.add(h);
    panel.setVisibility(mode==0?View.GONE:View.VISIBLE);
-   if(mode!=2)h.setOnClickListener(v->{boolean open=panel.getVisibility()!=View.VISIBLE;panel.setVisibility(open?View.VISIBLE:View.GONE);h.setText(formattedReadingText(name+(open?"  ▴":"  ▾")));});
+   if(mode!=2)h.setOnClickListener(v->{boolean open=panel.getVisibility()!=View.VISIBLE;if(finishActive[0]!=null)finishActive[0].run();panel.setVisibility(open?View.VISIBLE:View.GONE);h.setText(formattedReadingText(name+(open?"  ▴":"  ▾")));});
   }
  }
  void readContentSafely(String key){
