@@ -2136,7 +2136,7 @@ public class MainActivity extends Activity {
   if(dialog.getWindow()!=null)dialog.getWindow().setLayout(-1,(int)(getResources().getDisplayMetrics().heightPixels*0.82f));
  }
  void read(String key){
-  try{if(key!=null&&key.startsWith("n_")&&prefs.contains(key)&&isLectureTemplate(prefs.getString(key,""))){edit(key);return;}readContentSafely(key);}
+  try{if(key!=null&&prefs.contains(key)&&isLectureTemplate(prefs.getString(key,"")))prefs.edit().putInt("lecture_view_"+key,0).apply();readContentSafely(key);}
   catch(Exception failure){
    android.util.Log.e("DinNote","Reader failed for "+key,failure);
    showReaderRecovery(key,failure);
@@ -2162,10 +2162,9 @@ public class MainActivity extends Activity {
   if(prefs.getInt("lecture_view_"+key,0)!=2&&starts.get(0)>0){TextView prefix=text("",size);prefix.setText(readerLabelText(source.substring(0,starts.get(0))));body.addView(prefix);}
   ArrayList<View> panels=new ArrayList<>();ArrayList<TextView> headers=new ArrayList<>();
   int mode=prefs.getInt("lecture_view_"+key,0);
-  TextView sectionTitle=text("☷  Subtopik Nota Kuliah",16);
-  sectionTitle.setTextColor(0xff216e4e);sectionTitle.setPadding(dp(8),dp(8),dp(8),dp(8));body.addView(sectionTitle);
-  sectionTitle.setContentDescription(mode==2?"Tukar kepada dropdown":"Tukar kepada paparan penuh");
-  sectionTitle.setOnClickListener(v->{prefs.edit().putInt("lecture_view_"+key,mode==2?0:2).apply();read(key);});
+  LinearLayout lectureMenu=new LinearLayout(this);lectureMenu.setGravity(Gravity.CENTER_VERTICAL);body.addView(lectureMenu);
+  TextView sectionTitle=text("☷  Subtopik",15);sectionTitle.setTextColor(0xff216e4e);sectionTitle.setPadding(dp(8),dp(8),dp(8),dp(8));lectureMenu.addView(sectionTitle,new LinearLayout.LayoutParams(0,-2,1));sectionTitle.setBackground(rounded(0xfffffefd,0xffdce5df,8));sectionTitle.setOnClickListener(v->edit(key));
+  TextView ready=text(mode==2?"☷  Dropdown":"▤  Paparan Siap",15);ready.setTextColor(0xff216e4e);ready.setPadding(dp(8),dp(8),dp(8),dp(8));lectureMenu.addView(ready,new LinearLayout.LayoutParams(0,-2,1));ready.setBackground(rounded(0xfffffefd,0xffdce5df,8));ready.setOnClickListener(v->{prefs.edit().putInt("lecture_view_"+key,mode==2?0:2).apply();try{readContentSafely(key);}catch(Exception failure){showReaderRecovery(key,failure);}});
   if(mode==2){
    // Render each section independently to prevent box leakage.
    String prefix=source.substring(0,starts.get(0)).trim();
@@ -2840,8 +2839,7 @@ public class MainActivity extends Activity {
   oldEditor.postDelayed(()->{
    if(isFinishing()||isDestroyed()||editor!=oldEditor)return;
    editor=null;titleEditor=null;saveIndicator=null;categoryPicker=null;
-   if(finishedKey!=null&&finishedKey.startsWith("n_")&&isLectureTemplate(prefs.getString(finishedKey,""))){if(sectionOpen)notesPage();else home();}
-   else if(finishedKey!=null){prefs.edit().putBoolean("reader_safe_scroll_"+finishedKey,true).apply();read(finishedKey);}
+   if(finishedKey!=null){prefs.edit().putBoolean("reader_safe_scroll_"+finishedKey,true).apply();read(finishedKey);}
    else if(sectionOpen)notesPage();else home();
   },180);
  }
@@ -2941,7 +2939,7 @@ public class MainActivity extends Activity {
   };
   Button addHeading=action("+ Subtopik",panel,()->{EditText input=new EditText(this);input.setSingleLine(true);new AlertDialog.Builder(this).setTitle("Tambah subtopik").setView(input).setNegativeButton("Batal",null).setPositiveButton("Tambah",(d,w)->{String name=input.getText().toString().trim();if(name.isEmpty())return;active.append("\n\n\u2063"+name+"\n");save();refresh[0].run();}).show();});
   refresh[0].run();
-  if(rows.getChildCount()>0){active.clearFocus();active.setVisibility(View.GONE);rows.setVisibility(View.VISIBLE);}else rows.setVisibility(View.GONE);
+  rows.setVisibility(View.GONE);active.setVisibility(View.VISIBLE);
   toggle.setOnClickListener(v->{
    if(rows.getVisibility()==View.VISIBLE){rows.setVisibility(View.GONE);active.setVisibility(View.VISIBLE);}
    else{refresh[0].run();active.clearFocus();active.setVisibility(View.GONE);rows.setVisibility(View.VISIBLE);}
