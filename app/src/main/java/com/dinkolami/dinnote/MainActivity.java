@@ -2808,6 +2808,19 @@ public class MainActivity extends Activity {
    showReaderRecovery(key,failure);
   }
  }
+ void showLectureEditorIndex(){
+  if(editor==null)return;
+  final EditText active=editor;
+  java.util.regex.Matcher m=java.util.regex.Pattern.compile("(?m)^(Muqaddimah|Pra Topik|Isi Pertama|Isi Kedua|Isi Ketiga|Pengajaran|Iktibar|Khulasah|Penutup)[ \\t]*$").matcher(active.getText());
+  ArrayList<String> names=new ArrayList<>();ArrayList<Integer> offsets=new ArrayList<>();
+  while(m.find()){names.add(m.group(1));offsets.add(m.end());}
+  new AlertDialog.Builder(this).setTitle("Indeks Nota Kuliah").setItems(names.toArray(new String[0]),(d,i)->{
+   if(editor!=active)return;
+   int p=Math.min(offsets.get(i),active.length());
+   if(p<active.length()&&active.getText().charAt(p)=='\n')p++;
+   active.requestFocus();active.setSelection(p);active.post(()->revealEditorCursor(active));
+  }).setNegativeButton("Tutup",null).show();
+ }
  void editContentSafely(String key){readerDetector=null;if(key!=null){
   if(!prefs.contains(key)){
    Toast.makeText(this,"Nota tidak ditemui atau telah dipadam",Toast.LENGTH_LONG).show();
@@ -2911,6 +2924,10 @@ public class MainActivity extends Activity {
   formatScroll.setFillViewport(false);
   root.addView(formatScroll);
   formatScroll.addView(formatBar);
+  if(key!=null&&isLectureTemplate(prefs.getString(key,""))){
+   Button lectureIndex=action("☷",formatBar,()->showLectureEditorIndex());
+   lectureIndex.setContentDescription("Indeks subtopik Nota Kuliah");
+  }
   Button boldButton=action("B",formatBar,()->wrapEditorSelection("**","**"));
   boldButton.setTypeface(null,android.graphics.Typeface.BOLD);boldButton.setContentDescription("Tebal: tandakan teks terpilih");
   Button italicButton=action("I",formatBar,()->wrapEditorSelection("*","*"));
