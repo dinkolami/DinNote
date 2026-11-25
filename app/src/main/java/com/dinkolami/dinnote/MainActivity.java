@@ -2937,7 +2937,7 @@ public class MainActivity extends Activity {
     });
    }
   };
-  Button addHeading=action("+ Subtopik",panel,()->{EditText input=new EditText(this);input.setSingleLine(true);new AlertDialog.Builder(this).setTitle("Tambah subtopik").setView(input).setNegativeButton("Batal",null).setPositiveButton("Tambah",(d,w)->{String name=input.getText().toString().trim();if(name.isEmpty())return;active.append("\n\n\u2063"+name+"\n");save();refresh[0].run();}).show();});
+  Button addHeading=action("+ Subtopik",panel,()->{EditText input=new EditText(this);input.setSingleLine(true);new AlertDialog.Builder(this).setTitle("Tambah subtopik").setView(input).setNegativeButton("Batal",null).setPositiveButton("Seterusnya",(d,w)->{String name=input.getText().toString().trim();if(name.isEmpty())return;ArrayList<String> labels=new ArrayList<>();ArrayList<Integer> positions=new ArrayList<>();java.util.regex.Matcher hm=lectureHeadingPattern().matcher(active.getText().toString());while(hm.find()){labels.add("Sisip sebelum "+hm.group(1));positions.add(hm.start());}labels.add("Tambah paling bawah");positions.add(active.length());new AlertDialog.Builder(this).setTitle("Kedudukan subtopik").setItems(labels.toArray(new String[0]),(dd,index)->{int pos=positions.get(index);String prefix=pos>0&&active.getText().charAt(pos-1)!='\n'?"\n":"";active.getText().insert(pos,prefix+"\u2063"+name+"\n\n");save();refresh[0].run();}).setNegativeButton("Batal",null).show();}).show();});
   refresh[0].run();
   rows.setVisibility(View.GONE);active.setVisibility(View.VISIBLE);
   toggle.setOnClickListener(v->{
