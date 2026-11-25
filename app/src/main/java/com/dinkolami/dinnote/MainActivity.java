@@ -1479,9 +1479,9 @@ public class MainActivity extends Activity {
   if(editor==null)return "";
   android.text.Editable e=editor.getText();StringBuilder out=new StringBuilder();int i=0;
   while(i<e.length()){
-   if(e.charAt(i)=='\n'){out.append('\n');i++;continue;}
+   if(e.charAt(i)=='\n'||e.charAt(i)=='\u2063'){out.append(e.charAt(i));i++;continue;}
    int mask=richMask(e,i,i+1),end=i+1;
-   while(end<e.length()&&e.charAt(end)!='\n'&&richMask(e,end,end+1)==mask)end++;
+   while(end<e.length()&&e.charAt(end)!='\n'&&e.charAt(end)!='\u2063'&&richMask(e,end,end+1)==mask)end++;
    if((mask&4)!=0)out.append("<u>");if((mask&1)!=0)out.append("<b>");if((mask&2)!=0)out.append("<i>");
    out.append(e.subSequence(i,end));
    if((mask&2)!=0)out.append("</i>");if((mask&1)!=0)out.append("</b>");if((mask&4)!=0)out.append("</u>");i=end;
@@ -2171,14 +2171,14 @@ public class MainActivity extends Activity {
    final String name=names.get(i);
    LinearLayout group=new LinearLayout(this);group.setOrientation(1);
    if(mode!=2){group.setBackground(rounded(0xfffffefd,0xffdce5df,8));LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);lp.setMargins(0,dp(3),0,dp(3));body.addView(group,lp);}else body.addView(group);
-   TextView h=text(name+(mode==2?"":mode==1?"  ▴":"  ▾"),size);h.setTextColor(0xff216e4e);h.setTypeface(null,android.graphics.Typeface.BOLD);h.setPadding(dp(8),dp(7),dp(8),dp(7));group.addView(h);
+   TextView h=text("",size);h.setText(formattedReadingText(name+(mode==2?"":mode==1?"  ▴":"  ▾")));h.setTextColor(0xff216e4e);h.setTypeface(null,android.graphics.Typeface.BOLD);h.setPadding(dp(8),dp(7),dp(8),dp(7));group.addView(h);
    LinearLayout panel=new LinearLayout(this);panel.setOrientation(1);panel.setPadding(dp(8),0,dp(8),dp(6));group.addView(panel);
    if(value.isEmpty()){
     TextView empty=text("Tiada kandungan",Math.max(13,size-2));empty.setTextColor(0xff718078);empty.setPadding(dp(4),dp(8),dp(4),dp(8));panel.addView(empty);
    }else renderBoxReading(panel,value,size,key);
    panels.add(panel);headers.add(h);
    panel.setVisibility(mode==0?View.GONE:View.VISIBLE);
-   if(mode!=2)h.setOnClickListener(v->{boolean open=panel.getVisibility()!=View.VISIBLE;panel.setVisibility(open?View.VISIBLE:View.GONE);h.setText(name+(open?"  ▴":"  ▾"));});
+   if(mode!=2)h.setOnClickListener(v->{boolean open=panel.getVisibility()!=View.VISIBLE;panel.setVisibility(open?View.VISIBLE:View.GONE);h.setText(formattedReadingText(name+(open?"  ▴":"  ▾")));});
   }
  }
  void readContentSafely(String key){
