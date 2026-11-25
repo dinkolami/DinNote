@@ -3044,9 +3044,19 @@ public class MainActivity extends Activity {
  }
  void drawIslamicOrnament(android.graphics.Canvas c,float x,float y,float w,String kind){
   if(w<=0)return;c.save();c.translate(x+w/2f,y);
-  float scale=Math.min(w/220f,dp(1));c.scale(scale,scale);
-  android.graphics.Paint p=new android.graphics.Paint(3);p.setColor(0xffa38a49);p.setStyle(android.graphics.Paint.Style.STROKE);p.setStrokeWidth(1.2f);p.setStrokeCap(android.graphics.Paint.Cap.ROUND);p.setStrokeJoin(android.graphics.Paint.Join.ROUND);
+  float scale=Math.min(w/220f,dp(1)*1.3f);c.scale(scale,scale);
+  android.graphics.Paint p=new android.graphics.Paint(3);p.setColor(0xffa38a49);p.setStyle(android.graphics.Paint.Style.STROKE);p.setStrokeWidth(1.45f);p.setStrokeCap(android.graphics.Paint.Cap.ROUND);p.setStrokeJoin(android.graphics.Paint.Join.ROUND);
   float edge=w/(2*scale);
+  if(kind.equals("CLASSIC")){
+   c.save();c.scale(w/330f/scale,1);
+   android.graphics.Path minimal=new android.graphics.Path();
+   for(int side:new int[]{-1,1}){
+    c.save();c.scale(side,1);
+    minimal.reset();minimal.moveTo(165,0);minimal.lineTo(40,0);minimal.lineTo(25,-7);minimal.lineTo(10,0);minimal.lineTo(25,7);minimal.lineTo(40,0);c.drawPath(minimal,p);c.restore();
+   }
+   minimal.reset();minimal.moveTo(0,-14);minimal.lineTo(14,0);minimal.lineTo(0,14);minimal.lineTo(-14,0);minimal.close();c.drawPath(minimal,p);
+   p.setStyle(android.graphics.Paint.Style.FILL);c.drawCircle(0,0,4,p);c.restore();c.restore();return;
+  }
   for(int side:new int[]{-1,1}){
    c.save();c.scale(side,1);
    android.graphics.Path vine=new android.graphics.Path();vine.moveTo(12,0);vine.cubicTo(24,-13,34,-13,40,-3);vine.cubicTo(46,8,32,10,32,2);vine.cubicTo(32,-2,37,-3,39,0);vine.moveTo(12,0);vine.cubicTo(29,12,48,12,55,0);vine.cubicTo(63,-12,75,-9,76,0);vine.cubicTo(76,6,66,7,66,1);vine.moveTo(55,0);vine.lineTo(edge-5,0);vine.lineTo(edge-1,-3);vine.moveTo(edge-5,0);vine.lineTo(edge-1,3);c.drawPath(vine,p);c.restore();
@@ -3063,7 +3073,7 @@ public class MainActivity extends Activity {
  }
  class ReaderOrnamentSpan extends android.text.style.ReplacementSpan {
   final String kind;ReaderOrnamentSpan(String k){kind=k;}
-  int width(android.graphics.Paint p){return Math.max(dp(60),Math.round(p.measureText("──────────────")));}
+  int width(android.graphics.Paint p){return Math.max(dp(60),Math.round(p.measureText("────────────────────────")));}
   @Override public int getSize(android.graphics.Paint p,CharSequence t,int a,int b,android.graphics.Paint.FontMetricsInt fm){if(fm!=null){fm.ascent=-dp(17);fm.top=fm.ascent;fm.descent=dp(17);fm.bottom=fm.descent;}return width(p);}
   @Override public void draw(android.graphics.Canvas c,CharSequence t,int a,int b,float x,int top,int y,int bottom,android.graphics.Paint p){drawIslamicOrnament(c,x,y,width(p),kind);}
  }
@@ -3424,7 +3434,7 @@ public class MainActivity extends Activity {
    }).show();
  }
  void showDividerPicker(){
-  final String[] labels={"Bunga Islamik","Simpulan geometri","Hiasan klasik"};
+  final String[] labels={"Bunga","Simpulan","Hiasan"};
   final String[] kinds={"FLOWER","GEOMETRIC","CLASSIC"};
   LinearLayout choices=new LinearLayout(this);choices.setOrientation(1);choices.setPadding(dp(16),dp(8),dp(16),dp(8));
   AlertDialog dialog=new AlertDialog.Builder(this).setTitle("Pemisah Perenggan (Divider)").setView(choices).setNegativeButton("Batal",null).create();
