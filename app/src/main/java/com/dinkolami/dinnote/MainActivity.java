@@ -1446,22 +1446,18 @@ public class MainActivity extends Activity {
    String label=k.equals("MATAN")?"المتن · Matan":k.equals("SYARAHAN")?"الشرح · Syarahan":k.equals("DALIL")?"الدليل · Dalil":k.equals("TERJEMAHAN")?"الترجمة · Terjemahan":k.equals("SYAFII")?"الشَّافِعِيُّ · Syafi‘i":k.equals("HANAFI")?"الْحَنَفِيُّ · Hanafi":k.equals("MALIKI")?"الْمَالِكِيُّ · Maliki":k.equals("HANBALI")?"الْحَنْبَلِيُّ · Hanbali":k.equals("MUQARAN")?"الْفِقْهُ الْمُقَارَنُ · Fiqh Muqaran":k.equals("KHULASAH")?"الخُلَاصَةُ · Khulasah":"الدُّرُوسُ وَالْعِبَرُ · Pengajaran & Iktibar";
    out.setSpan(new BoxMarkerSpan(k.equals("TAMAT")?"":label,0xff176b47,0xffedf5ee),marks.start(),marks.end(),33);
   }
-  // Render divider markers in every text-based reader, including boxed and paged notes.
+  // Use a visible ornament in text-only readers; do not depend on a replacement span
+  // surviving pagination, line-height adjustments or selection.
   java.util.regex.Matcher dividers=java.util.regex.Pattern.compile("(?m)^[ \\t]*---(FLOWER|GEOMETRIC|CLASSIC)---[ \\t]*$").matcher(out.toString());
-  while(dividers.find()){
-   final String symbol=dividers.group(1).equals("FLOWER")?"✿":dividers.group(1).equals("GEOMETRIC")?"❖":"❧";
-   out.setSpan(new android.text.style.ReplacementSpan(){
-    int width(android.graphics.Paint p){return Math.max(dp(24),Math.min(dp(120),Math.round(p.measureText("────────────"))));}
-    @Override public int getSize(android.graphics.Paint p,CharSequence t,int a,int b,android.graphics.Paint.FontMetricsInt fm){return width(p);}
-    @Override public void draw(android.graphics.Canvas c,CharSequence t,int a,int b,float x,int top,int y,int bottom,android.graphics.Paint p){
-     android.graphics.Paint q=new android.graphics.Paint(p);q.setAntiAlias(true);q.setColor(0xff176b47);q.setStrokeWidth(dp(1));
-     float w=width(p),mid=x+w/2f,cy=(top+bottom)/2f;
-     q.setTextSize(dp(19));q.setTextAlign(android.graphics.Paint.Align.CENTER);float gap=q.measureText(symbol)/2+dp(6);
-     if(mid-gap>x)c.drawLine(x,cy,mid-gap,cy,q);
-     if(mid+gap<x+w)c.drawLine(mid+gap,cy,x+w,cy,q);
-     c.drawText(symbol,mid,cy-(q.ascent()+q.descent())/2,q);
-    }
-   },dividers.start(),dividers.end(),33);
+  java.util.ArrayList<int[]> dividerRanges=new java.util.ArrayList<>();
+  while(dividers.find())dividerRanges.add(new int[]{dividers.start(),dividers.end(),dividers.group(1).equals("FLOWER")?0:dividers.group(1).equals("GEOMETRIC")?1:2});
+  for(int i=dividerRanges.size()-1;i>=0;i--){
+   int[] range=dividerRanges.get(i);
+   String ornament="──────  "+new String[]{"✿","❖","❧"}[range[2]]+"  ──────";
+   out.replace(range[0],range[1],ornament);
+   int finish=range[0]+ornament.length();
+   out.setSpan(new android.text.style.ForegroundColorSpan(0xff176b47),range[0],finish,33);
+   out.setSpan(new android.text.style.AlignmentSpan.Standard(android.text.Layout.Alignment.ALIGN_CENTER),range[0],finish,33);
   }
   // Closing markers are structural only; remove their entire line from the display copy.
   java.util.regex.Matcher closingLines=java.util.regex.Pattern.compile("(?m)^---TAMAT---[ \\t]*(?:\\n|$)").matcher(out.toString());
@@ -1913,7 +1909,7 @@ public class MainActivity extends Activity {
   if(dialog.getWindow()!=null)dialog.getWindow().setLayout(-1,(int)(getResources().getDisplayMetrics().heightPixels*.85f));
  }
  LinearLayout appendLayeredBlock(LinearLayout panel,LinearLayout group,String kind,String chunk){
-  TextView value=text("",15);value.setText(formattedReadingText(chunk));applySharedTextMetrics(value);value.setTextIsSelectable(true);value.setPadding(dp(10),dp(8),dp(10),dp(8));value.setTextColor(0xff303c43);
+  TextView value=text("",15);value.setText(readerLabelText(chunk));applySharedTextMetrics(value);value.setTextIsSelectable(true);value.setPadding(dp(10),dp(8),dp(10),dp(8));value.setTextColor(0xff303c43);
   if(kind.equals("MATAN")){
    LinearLayout card=new LinearLayout(this);card.setOrientation(1);card.setPadding(dp(5),dp(5),dp(5),dp(5));card.setBackground(rounded(0xfff9fcf8,0xffc6b582,10));
    LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);lp.bottomMargin=dp(8);panel.addView(card,lp);
