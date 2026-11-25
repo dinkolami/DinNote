@@ -2169,7 +2169,9 @@ public class MainActivity extends Activity {
    if(mode!=2){group.setBackground(rounded(0xfffffefd,0xffdce5df,8));LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);lp.setMargins(0,dp(3),0,dp(3));body.addView(group,lp);}else body.addView(group);
    TextView h=text(name+(mode==2?"":mode==1?"  ▴":"  ▾"),size);h.setTextColor(0xff216e4e);h.setTypeface(null,android.graphics.Typeface.BOLD);h.setPadding(dp(8),dp(7),dp(8),dp(7));group.addView(h);
    LinearLayout panel=new LinearLayout(this);panel.setOrientation(1);panel.setPadding(dp(8),0,dp(8),dp(6));group.addView(panel);
-   renderBoxReading(panel,value,size,key);
+   if(value.isEmpty()){
+    TextView empty=text("Tiada kandungan",Math.max(13,size-2));empty.setTextColor(0xff718078);empty.setPadding(dp(4),dp(8),dp(4),dp(8));panel.addView(empty);
+   }else renderBoxReading(panel,value,size,key);
    panel.setVisibility(mode==0?View.GONE:View.VISIBLE);
    if(mode!=2)h.setOnClickListener(v->{boolean open=panel.getVisibility()!=View.VISIBLE;panel.setVisibility(open?View.VISIBLE:View.GONE);h.setText(name+(open?"  ▴":"  ▾"));});
   }
