@@ -2808,6 +2808,31 @@ public class MainActivity extends Activity {
    showReaderRecovery(key,failure);
   }
  }
+ void attachLectureEditorPanel(final EditText active){
+  LinearLayout panel=new LinearLayout(this);panel.setOrientation(1);
+  TextView toggle=text("☷  Subtopik Nota Kuliah",13);toggle.setTextColor(0xff216e4e);toggle.setPadding(dp(10),dp(6),dp(10),dp(6));panel.addView(toggle);
+  LinearLayout rows=new LinearLayout(this);rows.setOrientation(1);panel.addView(rows);
+  root.addView(panel,root.indexOfChild(active));
+  Runnable refresh=()->{
+   rows.removeAllViews();
+   java.util.regex.Matcher m=java.util.regex.Pattern.compile("(?m)^(Muqaddimah|Pra Topik|Isi Pertama|Isi Kedua|Isi Ketiga|Pengajaran|Iktibar|Khulasah|Penutup)[ \\t]*$").matcher(active.getText());
+   while(m.find()){
+    final String name=m.group(1);
+    TextView row=text(name+"   ▾",13);row.setTextColor(0xff216e4e);row.setPadding(dp(12),dp(5),dp(12),dp(5));row.setBackground(rounded(0xfffffefd,0xffdce5df,8));rows.addView(row);
+    row.setOnClickListener(v->{
+     java.util.regex.Matcher target=java.util.regex.Pattern.compile("(?m)^"+java.util.regex.Pattern.quote(name)+"[ \\t]*$").matcher(active.getText());
+     if(!target.find())return;
+     int p=target.end();if(p<active.length()&&active.getText().charAt(p)=='\\n')p++;
+     rows.setVisibility(View.GONE);active.setVisibility(View.VISIBLE);active.requestFocus();active.setSelection(p);active.post(()->revealEditorCursor(active));
+    });
+   }
+  };
+  rows.setVisibility(View.GONE);
+  toggle.setOnClickListener(v->{
+   if(rows.getVisibility()==View.VISIBLE){rows.setVisibility(View.GONE);active.setVisibility(View.VISIBLE);}
+   else{refresh.run();active.clearFocus();active.setVisibility(View.GONE);rows.setVisibility(View.VISIBLE);}
+  });
+ }
  void showLectureEditorIndex(){
   if(editor==null)return;
   final EditText active=editor;
@@ -2987,6 +3012,8 @@ public class MainActivity extends Activity {
   toolsButton.setContentDescription("Alat penyuntingan tambahan");
 
   LinearLayout.LayoutParams editBodyFrame=new LinearLayout.LayoutParams(-1,0,1);editBodyFrame.setMargins(dp(4),0,dp(4),0);root.addView(editor,editBodyFrame);
+  if(key!=null&&isLectureTemplate(prefs.getString(key,"")))attachLectureEditorPanel(editor);
+
   // Keep normal Android double-tap text selection while editing.
   // Never navigate away while EditText is handling touch/selection events.
   // Let EditText handle selection and cursor gestures; observe swipes for inertial scrolling.
