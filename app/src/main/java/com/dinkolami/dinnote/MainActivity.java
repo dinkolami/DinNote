@@ -3048,7 +3048,7 @@ public class MainActivity extends Activity {
   android.graphics.Paint p=new android.graphics.Paint(3);p.setColor(0xffa38a49);p.setStyle(android.graphics.Paint.Style.STROKE);p.setStrokeWidth(1.45f);p.setStrokeCap(android.graphics.Paint.Cap.ROUND);p.setStrokeJoin(android.graphics.Paint.Join.ROUND);
   float edge=w/(2*scale);
   if(kind.equals("CLASSIC")){
-   c.save();c.scale(w/330f/scale,1);
+   c.save();c.scale(w/330f/scale,w/330f/scale);
    android.graphics.Path minimal=new android.graphics.Path();
    for(int side:new int[]{-1,1}){
     c.save();c.scale(side,1);
@@ -3066,8 +3066,7 @@ public class MainActivity extends Activity {
    for(int i=0;i<2;i++){float a= i==0?13:8;center.moveTo(0,-a);center.lineTo(a,0);center.lineTo(0,a);center.lineTo(-a,0);center.close();}
   }else if(kind.equals("FLOWER")){
    center.moveTo(0,10);center.cubicTo(-19,2,-11,-8,0,-14);center.cubicTo(11,-8,19,2,0,10);center.moveTo(0,10);center.cubicTo(-15,7,-19,-4,-12,-7);center.cubicTo(-5,-7,-3,0,0,10);center.cubicTo(3,0,5,-7,12,-7);center.cubicTo(19,-4,15,7,0,10);
-  }else{
-   center.moveTo(-15,0);center.cubicTo(-8,-15,8,15,15,0);center.cubicTo(8,-15,-8,15,-15,0);center.moveTo(0,-12);center.quadTo(7,0,0,12);center.quadTo(-7,0,0,-12);
+
   }
   c.drawPath(center,p);c.restore();
  }
