@@ -2164,7 +2164,16 @@ public class MainActivity extends Activity {
   sectionTitle.setTextColor(0xff216e4e);sectionTitle.setPadding(dp(8),dp(8),dp(8),dp(8));body.addView(sectionTitle);
   sectionTitle.setContentDescription(mode==2?"Tukar kepada dropdown":"Tukar kepada paparan penuh");
   sectionTitle.setOnClickListener(v->{prefs.edit().putInt("lecture_view_"+key,mode==2?0:2).apply();read(key);});
-  if(mode==2){renderBoxReading(body,source.replace("\u2063",""),size,key);return;}
+  if(mode==2){
+   StringBuilder content=new StringBuilder();int previous=0;
+   for(int i=0;i<starts.size();i++){
+    content.append(source.substring(previous,starts.get(i)));
+    previous=ends.get(i);
+    if(previous<source.length()&&source.charAt(previous)=='\n')previous++;
+   }
+   content.append(source.substring(previous));
+   renderBoxReading(body,content.toString().trim(),size,key);return;
+  }
   for(int i=0;i<names.size();i++){
    String value=source.substring(ends.get(i),i+1<starts.size()?starts.get(i+1):source.length()).trim();
    if(value.isEmpty()&&mode==2)continue;
