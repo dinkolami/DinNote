@@ -2179,9 +2179,17 @@ public class MainActivity extends Activity {
    // Render each section independently to prevent box leakage.
    String prefix=source.substring(0,starts.get(0)).trim();
    if(!prefix.isEmpty())renderBoxReading(body,prefix,size,key);
+   boolean hasContent=!prefix.isEmpty();int pendingBlank=0;
    for(int i=0;i<starts.size();i++){
-    String content=source.substring(ends.get(i),i+1<starts.size()?starts.get(i+1):source.length()).trim();
-    if(!content.isEmpty())renderBoxReading(body,content,size,key);
+    String section=source.substring(ends.get(i),i+1<starts.size()?starts.get(i+1):source.length());
+    String content=section.trim();
+    int leading=0,trailing=0;
+    for(int p=0;p<section.length()&&Character.isWhitespace(section.charAt(p));p++)if(section.charAt(p)=='\n')leading++;
+    if(content.isEmpty()){pendingBlank+=Math.max(0,leading-1);continue;}
+    for(int p=section.length()-1;p>=0&&Character.isWhitespace(section.charAt(p));p--)if(section.charAt(p)=='\n')trailing++;
+    int extra=pendingBlank+Math.max(0,leading-1);
+    if(hasContent||extra>0){View gap=new View(this);body.addView(gap,new LinearLayout.LayoutParams(-1,dp((hasContent?16:0)+extra*size)));}
+    renderBoxReading(body,content,size,key);hasContent=true;pendingBlank=Math.max(0,trailing-1);
    }
    return;
   }
