@@ -2383,19 +2383,7 @@ public class MainActivity extends Activity {
     java.util.regex.Matcher iconHeading=java.util.regex.Pattern.compile("^\\s*@#(?:\\s+(.+))?$").matcher(line);
     boolean isIconHeading=!isNumber&&iconHeading.matches();
     if(line.trim().equals("---")||line.trim().equals("---FLOWER---")||line.trim().equals("---GEOMETRIC---")||line.trim().equals("---CLASSIC---")){
-     LinearLayout ornament=new LinearLayout(this);ornament.setGravity(Gravity.CENTER_VERTICAL);
-     ornament.setOrientation(LinearLayout.HORIZONTAL);ornament.setPadding(dp(12),dp(2),dp(12),dp(2));
-     boolean floral=line.trim().equals("---FLOWER---");
-     boolean geometric=line.trim().equals("---GEOMETRIC---");
-     boolean classic=line.trim().equals("---CLASSIC---");
-     int ornamentColor=(floral||geometric||classic)?0xff176b47:0xffc4a45a;
-     View leftRule=new View(this);leftRule.setBackgroundColor(ornamentColor);
-     ornament.addView(leftRule,new LinearLayout.LayoutParams(0,dp(1),1));
-     TextView diamond=text(floral?"✿":geometric?"❖":classic?"❧":"◇",floral?24:19);diamond.setTextColor((floral||geometric||classic)?0xff176b47:0xffae913d);
-     diamond.setSingleLine(true);diamond.setMaxLines(1);diamond.setGravity(Gravity.CENTER);diamond.setIncludeFontPadding(false);diamond.setPadding(dp(6),0,dp(6),0);ornament.addView(diamond,new LinearLayout.LayoutParams(dp(42),-2));
-     View rightRule=new View(this);rightRule.setBackgroundColor(ornamentColor);
-     ornament.addView(rightRule,new LinearLayout.LayoutParams(0,dp(1),1));
-     readingRows.addView(ornament);
+     readingRows.addView(islamicOrnamentView(line.trim().equals("---")?"GEOMETRIC":line.trim().replace("---","")),new LinearLayout.LayoutParams(-1,dp(38)));
     }else if(isNumber||isMarked||isIconHeading){
      LinearLayout itemRow=new LinearLayout(this);itemRow.setOrientation(LinearLayout.HORIZONTAL);
      itemRow.setGravity(Gravity.CENTER_VERTICAL);itemRow.setPadding(dp(6),dp(2),dp(6),dp(2));
@@ -3049,8 +3037,13 @@ public class MainActivity extends Activity {
  class BoxInsetSpan extends android.text.style.LeadingMarginSpan.Standard {
   BoxInsetSpan(){super(dp(9));}
  }
+ View islamicOrnamentView(final String kind){
+  View v=new View(this){
+   @Override protected void onDraw(android.graphics.Canvas c){super.onDraw(c);float w=getWidth()*0.90f;if(w>0)drawIslamicOrnament(c,(getWidth()-w)/2f,getHeight()/2f,w,kind);}
+  };v.setContentDescription("Pemisah "+kind);return v;
+ }
  void drawIslamicOrnament(android.graphics.Canvas c,float x,float y,float w,String kind){
-  c.save();c.translate(x+w/2f,y);
+  if(w<=0)return;c.save();c.translate(x+w/2f,y);
   float scale=Math.min(w/220f,dp(1));c.scale(scale,scale);
   android.graphics.Paint p=new android.graphics.Paint(3);p.setColor(0xffa38a49);p.setStyle(android.graphics.Paint.Style.STROKE);p.setStrokeWidth(1.2f);p.setStrokeCap(android.graphics.Paint.Cap.ROUND);p.setStrokeJoin(android.graphics.Paint.Join.ROUND);
   float edge=w/(2*scale);
@@ -3070,7 +3063,7 @@ public class MainActivity extends Activity {
  }
  class ReaderOrnamentSpan extends android.text.style.ReplacementSpan {
   final String kind;ReaderOrnamentSpan(String k){kind=k;}
-  int width(android.graphics.Paint p){return Math.max(dp(60),Math.round(p.measureText("────────────────────")));}
+  int width(android.graphics.Paint p){return Math.max(dp(60),Math.round(p.measureText("──────────────")));}
   @Override public int getSize(android.graphics.Paint p,CharSequence t,int a,int b,android.graphics.Paint.FontMetricsInt fm){if(fm!=null){fm.ascent=-dp(17);fm.top=fm.ascent;fm.descent=dp(17);fm.bottom=fm.descent;}return width(p);}
   @Override public void draw(android.graphics.Canvas c,CharSequence t,int a,int b,float x,int top,int y,int bottom,android.graphics.Paint p){drawIslamicOrnament(c,x,y,width(p),kind);}
  }
@@ -3321,13 +3314,7 @@ public class MainActivity extends Activity {
   int start=0;
   while(ornaments.find()){
    addPlainBoxParagraph(body,value.substring(start,ornaments.start()),fontSize,key,baseLine+value.substring(0,start).split("\\n",-1).length-1);
-   LinearLayout row=new LinearLayout(this);row.setGravity(Gravity.CENTER_VERTICAL);row.setPadding(dp(12),0,dp(12),0);
-   View left=new View(this);left.setBackgroundColor(0xffb7d3c5);row.addView(left,new LinearLayout.LayoutParams(0,dp(1),1));
-   TextView symbol=text(ornaments.group(1).equals("FLOWER")?"✿":ornaments.group(1).equals("GEOMETRIC")?"❖":"❧",19);
-   symbol.setGravity(Gravity.CENTER);symbol.setIncludeFontPadding(false);symbol.setSingleLine(true);symbol.setTextColor(0xff52846d);symbol.setMinHeight(0);symbol.setMinimumHeight(0);symbol.setPadding(0,0,0,0);symbol.setLineSpacing(0,1f);row.addView(symbol,new LinearLayout.LayoutParams(dp(34),-2));
-   View right=new View(this);right.setBackgroundColor(0xffb7d3c5);row.addView(right,new LinearLayout.LayoutParams(0,dp(1),1));
-   LinearLayout.LayoutParams dividerParams=new LinearLayout.LayoutParams(-1,-2);
-   dividerParams.setMargins(dp(5),dp(7),dp(5),dp(7));body.addView(row,dividerParams);
+   body.addView(islamicOrnamentView(ornaments.group(1)),new LinearLayout.LayoutParams(-1,dp(38)));
    start=ornaments.end();
   }
   addPlainBoxParagraph(body,value.substring(start),fontSize,key,baseLine+value.substring(0,start).split("\\n",-1).length-1);
@@ -3437,11 +3424,18 @@ public class MainActivity extends Activity {
    }).show();
  }
  void showDividerPicker(){
-  final String[] labels={"✿  Bunga Islamik (lalai)","◇  Simpulan geometri","❧  Hiasan klasik"};
-  final String[] markers={"---FLOWER---","---GEOMETRIC---","---CLASSIC---"};
-  new AlertDialog.Builder(this).setTitle("Pemisah Perenggan (Divider)")
-   .setItems(labels,(dialog,choice)->insertEditorText("\n"+markers[choice]+"\n"))
-   .show();
+  final String[] labels={"Bunga Islamik","Simpulan geometri","Hiasan klasik"};
+  final String[] kinds={"FLOWER","GEOMETRIC","CLASSIC"};
+  LinearLayout choices=new LinearLayout(this);choices.setOrientation(1);choices.setPadding(dp(16),dp(8),dp(16),dp(8));
+  AlertDialog dialog=new AlertDialog.Builder(this).setTitle("Pemisah Perenggan (Divider)").setView(choices).setNegativeButton("Batal",null).create();
+  for(int i=0;i<kinds.length;i++){
+   final String kind=kinds[i];LinearLayout item=new LinearLayout(this);item.setOrientation(1);
+   TextView label=text(labels[i],14);label.setGravity(Gravity.CENTER);item.addView(label);
+   item.addView(islamicOrnamentView(kind),new LinearLayout.LayoutParams(-1,dp(42)));
+   choices.addView(item,new LinearLayout.LayoutParams(-1,-2));
+   item.setOnClickListener(v->{dialog.dismiss();insertEditorText("\n---"+kind+"---\n");});
+  }
+  dialog.show();
  }
  void insertEditorText(String value){
   if(editor==null)return;
