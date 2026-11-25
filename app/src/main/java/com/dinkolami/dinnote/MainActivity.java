@@ -2154,6 +2154,16 @@ public class MainActivity extends Activity {
  }
  boolean isLectureTemplate(String source){return lectureHeadingPattern().matcher(source).find();}
  java.util.regex.Pattern lectureHeadingPattern(){return java.util.regex.Pattern.compile("(?m)^(?=\\u2063|(?:Muqaddimah|Pra Topik|Isi Pertama|Isi Kedua|Isi Ketiga|Pengajaran|Iktibar|Khulasah|Penutup)[ \\t]*$)\\u2063?([^\\r\\n]+)$");}
+ void moveLectureSection(String key,int index,int delta){
+  String raw=prefs.getString(key,"");java.util.regex.Matcher m=lectureHeadingPattern().matcher(raw);ArrayList<Integer> starts=new ArrayList<>();while(m.find())starts.add(m.start());
+  int other=index+delta;if(index<0||index>=starts.size()||other<0||other>=starts.size())return;
+  int low=Math.min(index,other),high=low+1;int a=starts.get(low),b=starts.get(high),c=high+1<starts.size()?starts.get(high+1):raw.length();
+  String first=raw.substring(a,b),second=raw.substring(b,c);if(!second.endsWith("\n"))second+="\n";
+  String updated=raw.substring(0,a)+second+first+raw.substring(c);
+  snapshotBeforeAutosave(key,raw,prefs.getString("title_"+key,""),prefs.getString("cat_"+key,"Tanpa kategori"));
+  prefs.edit().putString(key,updated).putLong("updated_"+key,System.currentTimeMillis()).apply();
+  try{readContentSafely(key);}catch(Exception failure){showReaderRecovery(key,failure);}
+ }
  void renderLectureTemplate(LinearLayout body,String source,int size,String key){
   java.util.regex.Matcher m=lectureHeadingPattern().matcher(source);
   ArrayList<String> names=new ArrayList<>();ArrayList<Integer> starts=new ArrayList<>();ArrayList<Integer> ends=new ArrayList<>();
@@ -2182,7 +2192,11 @@ public class MainActivity extends Activity {
    final String name=names.get(i);
    LinearLayout group=new LinearLayout(this);group.setOrientation(1);
    if(mode!=2){group.setBackground(rounded(0xfffffefd,0xffdce5df,8));LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);lp.setMargins(0,dp(3),0,dp(3));body.addView(group,lp);}else body.addView(group);
-   TextView h=text("",Math.max(18,size));h.setText(formattedReadingText(name));h.setTextColor(0xff216e4e);h.setTypeface(android.graphics.Typeface.create("sans-serif-medium",android.graphics.Typeface.NORMAL));h.setPadding(dp(12),dp(12),dp(12),dp(12));h.setMinHeight(dp(52));LinearLayout headerRow=new LinearLayout(this);headerRow.setGravity(Gravity.CENTER_VERTICAL);group.addView(headerRow);headerRow.addView(h,new LinearLayout.LayoutParams(0,-2,1));TextView arrow=text(mode==1?"▴":"▾",18);arrow.setTextColor(0xff216e4e);arrow.setPadding(dp(8),0,dp(12),0);headerRow.addView(arrow);
+   TextView h=text("",Math.max(18,size));h.setText(formattedReadingText(name));h.setTextColor(0xff216e4e);h.setTypeface(android.graphics.Typeface.create("sans-serif-medium",android.graphics.Typeface.NORMAL));h.setPadding(dp(12),dp(12),dp(12),dp(12));h.setMinHeight(dp(52));LinearLayout headerRow=new LinearLayout(this);headerRow.setGravity(Gravity.CENTER_VERTICAL);group.addView(headerRow);headerRow.addView(h,new LinearLayout.LayoutParams(0,-2,1));TextView arrow=text(mode==1?"▴":"▾",18);arrow.setTextColor(0xff216e4e);arrow.setPadding(dp(8),0,dp(12),0);final int moveIndex=i;
+   for(int direction:new int[]{-1,1}){
+    final int delta=direction;TextView move=text(delta<0?"+":"−",17);move.setGravity(Gravity.CENTER);move.setTextColor(0xff216e4e);headerRow.addView(move,new LinearLayout.LayoutParams(dp(30),dp(44)));move.setEnabled(moveIndex+delta>=0&&moveIndex+delta<names.size());move.setAlpha(move.isEnabled()?1f:0.3f);move.setContentDescription(delta<0?"Pindah ke atas":"Pindah ke bawah");move.setOnClickListener(v->{if(finishActive[0]!=null)finishActive[0].run();moveLectureSection(key,moveIndex,delta);});
+   }
+   headerRow.addView(arrow);
    LinearLayout panel=new LinearLayout(this);panel.setOrientation(1);panel.setPadding(dp(8),0,dp(8),dp(6));group.addView(panel);
    if(value.isEmpty()){
     TextView empty=text("Tiada kandungan",Math.max(13,size-2));empty.setTextColor(0xff718078);empty.setPadding(dp(4),dp(8),dp(4),dp(8));panel.addView(empty);
