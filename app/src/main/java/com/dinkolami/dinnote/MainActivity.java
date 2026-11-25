@@ -2150,11 +2150,10 @@ public class MainActivity extends Activity {
   Button back=new Button(this);back.setText("Kembali ke halaman depan");recovery.addView(back);back.setOnClickListener(v->openHomeSafely());
   TextView details=text("Ralat: "+failure.getClass().getSimpleName()+": "+String.valueOf(failure.getMessage()),12);details.setTextIsSelectable(true);recovery.addView(details);
  }
- boolean isLectureTemplate(String source){
-  return java.util.regex.Pattern.compile("(?m)^Muqaddimah\\s*$").matcher(source).find() && java.util.regex.Pattern.compile("(?m)^Pra Topik\\s*$").matcher(source).find() && java.util.regex.Pattern.compile("(?m)^Penutup\\s*$").matcher(source).find();
- }
+ boolean isLectureTemplate(String source){return lectureHeadingPattern().matcher(source).find();}
+ java.util.regex.Pattern lectureHeadingPattern(){return java.util.regex.Pattern.compile("(?m)^\\u2063([^\\r\\n]+)$");}
  void renderLectureTemplate(LinearLayout body,String source,int size,String key){
-  java.util.regex.Matcher m=java.util.regex.Pattern.compile("(?m)^(Muqaddimah|Pra Topik|Isi Pertama|Isi Kedua|Isi Ketiga|Pengajaran|Iktibar|Khulasah|Penutup)[ \\t]*$").matcher(source);
+  java.util.regex.Matcher m=lectureHeadingPattern().matcher(source);
   ArrayList<String> names=new ArrayList<>();ArrayList<Integer> starts=new ArrayList<>();ArrayList<Integer> ends=new ArrayList<>();
   while(m.find()){names.add(m.group(1));starts.add(m.start());ends.add(m.end());}
   if(starts.isEmpty())return;
@@ -2165,7 +2164,7 @@ public class MainActivity extends Activity {
   sectionTitle.setTextColor(0xff216e4e);sectionTitle.setPadding(dp(8),dp(8),dp(8),dp(8));body.addView(sectionTitle);
   sectionTitle.setContentDescription(mode==2?"Tukar kepada dropdown":"Tukar kepada paparan penuh");
   sectionTitle.setOnClickListener(v->{prefs.edit().putInt("lecture_view_"+key,mode==2?0:2).apply();read(key);});
-  if(mode==2){renderBoxReading(body,source,size,key);return;}
+  if(mode==2){renderBoxReading(body,source.replace("\u2063",""),size,key);return;}
   for(int i=0;i<names.size();i++){
    String value=source.substring(ends.get(i),i+1<starts.size()?starts.get(i+1):source.length()).trim();
    if(value.isEmpty()&&mode==2)continue;
@@ -2806,7 +2805,7 @@ public class MainActivity extends Activity {
   dialog.setOnShowListener(v->dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(x->{
    String name=title.getText().toString().trim();if(name.isEmpty()){title.setError("Masukkan tajuk");return;}
    String key="n_"+java.util.UUID.randomUUID().toString();
-   String body="Muqaddimah\n\nPra Topik\n\nIsi Pertama\n\nIsi Kedua\n\nIsi Ketiga\n\nPengajaran\n\nIktibar\n\nKhulasah\n\nPenutup\n";
+   String body="\u2063Muqaddimah\n\n\u2063Pra Topik\n\n\u2063Isi Pertama\n\n\u2063Isi Kedua\n\n\u2063Isi Ketiga\n\n\u2063Pengajaran\n\n\u2063Iktibar\n\n\u2063Khulasah\n\n\u2063Penutup\n";
    boolean ok=prefs.edit().putString(key,body).putString("title_"+key,name).putString("cat_"+key,"Tanpa kategori").putLong("updated_"+key,System.currentTimeMillis()).commit();
    if(ok){dialog.dismiss();maktabah=false;edit(key);}else Toast.makeText(this,"Simpan gagal",Toast.LENGTH_SHORT).show();
   }));dialog.show();
@@ -2826,18 +2825,19 @@ public class MainActivity extends Activity {
   root.addView(panel,root.indexOfChild(active));
   Runnable refresh=()->{
    rows.removeAllViews();
-   java.util.regex.Matcher m=java.util.regex.Pattern.compile("(?m)^(Muqaddimah|Pra Topik|Isi Pertama|Isi Kedua|Isi Ketiga|Pengajaran|Iktibar|Khulasah|Penutup)[ \\t]*$").matcher(active.getText());
+   java.util.regex.Matcher m=lectureHeadingPattern().matcher(active.getText());
    while(m.find()){
-    final String name=m.group(1);
+    final String name=m.group(1);final int headingEnd=m.end();
     TextView row=text(name+"   ▾",16);row.setTextColor(0xff216e4e);row.setPadding(dp(12),dp(5),dp(12),dp(5));row.setBackground(rounded(0xfffffefd,0xffdce5df,8));row.setMinHeight(dp(48));row.setGravity(Gravity.CENTER_VERTICAL);LinearLayout.LayoutParams rp=new LinearLayout.LayoutParams(-1,-2);rp.setMargins(dp(8),0,dp(8),dp(4));rows.addView(row,rp);
+    final int headingStart=m.start();
+    row.setOnLongClickListener(v->{EditText input=new EditText(this);input.setSingleLine(true);input.setText(name);new AlertDialog.Builder(this).setTitle("Ubah subtopik").setView(input).setNegativeButton("Batal",null).setNeutralButton("Buang tajuk",(d,w)->{active.getText().delete(headingStart,headingEnd);save();refresh.run();}).setPositiveButton("Simpan",(d,w)->{String renamed=input.getText().toString().trim();if(!renamed.isEmpty()){active.getText().replace(headingStart+1,headingEnd,renamed);save();refresh.run();}}).show();return true;});
     row.setOnClickListener(v->{
-     java.util.regex.Matcher target=java.util.regex.Pattern.compile("(?m)^"+java.util.regex.Pattern.quote(name)+"[ \\t]*$").matcher(active.getText());
-     if(!target.find())return;
-     int p=target.end();if(p<active.length()&&active.getText().charAt(p)=='\n')p++;
+     int p=Math.min(headingEnd,active.length());if(p<active.length()&&active.getText().charAt(p)=='\n')p++;
      rows.setVisibility(View.GONE);active.setVisibility(View.VISIBLE);active.requestFocus();active.setSelection(p);active.post(()->revealEditorCursor(active));
     });
    }
   };
+  Button addHeading=action("+ Subtopik",panel,()->{EditText input=new EditText(this);input.setSingleLine(true);new AlertDialog.Builder(this).setTitle("Tambah subtopik").setView(input).setNegativeButton("Batal",null).setPositiveButton("Tambah",(d,w)->{String name=input.getText().toString().trim();if(name.isEmpty())return;active.append("\n\n\u2063"+name+"\n");save();refresh.run();}).show();});
   refresh.run();
   if(rows.getChildCount()>0){active.clearFocus();active.setVisibility(View.GONE);rows.setVisibility(View.VISIBLE);}else rows.setVisibility(View.GONE);
   toggle.setOnClickListener(v->{
@@ -2848,7 +2848,7 @@ public class MainActivity extends Activity {
  void showLectureEditorIndex(){
   if(editor==null)return;
   final EditText active=editor;
-  java.util.regex.Matcher m=java.util.regex.Pattern.compile("(?m)^(Muqaddimah|Pra Topik|Isi Pertama|Isi Kedua|Isi Ketiga|Pengajaran|Iktibar|Khulasah|Penutup)[ \\t]*$").matcher(active.getText());
+  java.util.regex.Matcher m=lectureHeadingPattern().matcher(active.getText());
   ArrayList<String> names=new ArrayList<>();ArrayList<Integer> offsets=new ArrayList<>();
   while(m.find()){names.add(m.group(1));offsets.add(m.end());}
   new AlertDialog.Builder(this).setTitle("Indeks Nota Kuliah").setItems(names.toArray(new String[0]),(d,i)->{
