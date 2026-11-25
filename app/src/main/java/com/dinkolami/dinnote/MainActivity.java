@@ -302,7 +302,7 @@ public class MainActivity extends Activity {
  void notesPage(){if(maktabah)seedQurtubiPosts();editor=null;titleEditor=null;categoryPicker=null;selected=null;base("DinNote");LinearLayout tabs=new LinearLayout(this);tabs.setPadding(dp(12),dp(7),dp(12),dp(5));tabs.setGravity(Gravity.CENTER_VERTICAL);int toolbarWidth=getResources().getConfiguration().screenWidthDp;boolean narrowToolbar=toolbarWidth<370;int toolbarIconWidth=narrowToolbar?36:43;TextView notes=text(toolbarWidth<300?"✎":"✎ Nota",narrowToolbar?12:13);TextView books=text(toolbarWidth<300?"▤":"▤ Maktabah",narrowToolbar?12:13);notes.setSingleLine(true);books.setSingleLine(true);notes.setAutoSizeTextTypeUniformWithConfiguration(9,13,1,android.util.TypedValue.COMPLEX_UNIT_SP);books.setAutoSizeTextTypeUniformWithConfiguration(9,13,1,android.util.TypedValue.COMPLEX_UNIT_SP);notes.setGravity(Gravity.CENTER);books.setGravity(Gravity.CENTER);notes.setTypeface(null,maktabah?android.graphics.Typeface.NORMAL:android.graphics.Typeface.BOLD);books.setTypeface(null,maktabah?android.graphics.Typeface.BOLD:android.graphics.Typeface.NORMAL);notes.setPadding(dp(3),0,dp(3),0);books.setPadding(dp(3),0,dp(3),0);notes.setBackground(rounded(maktabah?0xfff8faf8:0xfff0f3f6,maktabah?0xffe0e6e2:0xffb7c1c9,16));notes.setTextColor(maktabah?0xff65777b:0xff566a70);notes.setContentDescription(maktabah?"Buka Nota":"Nota, bahagian dipilih");books.setBackground(rounded(maktabah?0xfff0f3f6:0xfff8faf8,maktabah?0xffb7c1c9:0xffe0e6e2,16));books.setTextColor(maktabah?0xff566a70:0xff65777b);books.setContentDescription(maktabah?"Maktabah, bahagian dipilih":"Buka Maktabah");LinearLayout.LayoutParams noteTabParams=new LinearLayout.LayoutParams(0,dp(44),1f);noteTabParams.rightMargin=dp(4);tabs.addView(notes,noteTabParams);
  LinearLayout.LayoutParams bookTabParams=new LinearLayout.LayoutParams(0,dp(44),1.25f);bookTabParams.rightMargin=dp(7);tabs.addView(books,bookTabParams);
  TextView quickSearch=text("⌕",23);quickSearch.setGravity(Gravity.CENTER);quickSearch.setTextColor(0xff566a70);quickSearch.setBackground(rounded(0xfff8faf8,0xffdce5df,12));quickSearch.setContentDescription("Cari tajuk, isi atau kategori");applyTouchFeedback(quickSearch);LinearLayout.LayoutParams quickSearchParams=new LinearLayout.LayoutParams(dp(toolbarIconWidth),dp(44));quickSearchParams.rightMargin=dp(5);tabs.addView(quickSearch,quickSearchParams);
- TextView quickAdd=text("✚",20);quickAdd.setGravity(Gravity.CENTER);quickAdd.setTextColor(0xff566a70);quickAdd.setBackground(rounded(0xffeaf4ee,0xffc9dfd0,12));quickAdd.setContentDescription(maktabah?"Kitab baharu":"Nota baharu");quickAdd.setOnClickListener(v->{if(maktabah)showBookAddMenu();else edit(null);});applyTouchFeedback(quickAdd);
+ TextView quickAdd=text("✚",20);quickAdd.setGravity(Gravity.CENTER);quickAdd.setTextColor(0xff566a70);quickAdd.setBackground(rounded(0xffeaf4ee,0xffc9dfd0,12));quickAdd.setContentDescription(maktabah?"Kitab baharu":"Nota baharu");quickAdd.setOnClickListener(v->{if(maktabah)showBookAddMenu();else showNoteCreationMenu();});applyTouchFeedback(quickAdd);
  LinearLayout.LayoutParams quickParams=new LinearLayout.LayoutParams(dp(toolbarIconWidth),dp(44));quickParams.rightMargin=dp(5);tabs.addView(quickAdd,quickParams);
  TextView quickCategory=text("⚙",19);quickCategory.setGravity(Gravity.CENTER);quickCategory.setTextColor(0xff596e75);quickCategory.setBackground(rounded(0xfff8faf8,0xffdce5df,12));quickCategory.setContentDescription("Urus kategori");quickCategory.setOnClickListener(v->manageCategories());applyTouchFeedback(quickCategory);
  LinearLayout.LayoutParams categoryButtonParams=new LinearLayout.LayoutParams(dp(toolbarIconWidth),dp(44));categoryButtonParams.rightMargin=dp(5);tabs.addView(quickCategory,categoryButtonParams);
@@ -709,7 +709,7 @@ public class MainActivity extends Activity {
   actions.addView(addBook,bookActionParams);
   addBook.setContentDescription("Cipta kitab baharu");addBook.setOnClickListener(v->{maktabah=true;edit(null);});applyTouchFeedback(addBook);
   add.setContentDescription("Cipta nota baharu");add.setFocusable(true);
-  add.setOnClickListener(v->{maktabah=false;edit(null);});
+  add.setOnClickListener(v->{maktabah=false;showNoteCreationMenu();});
   applyTouchFeedback(add);
  }
  void showDashboardActions(String key){
@@ -2754,6 +2754,20 @@ public class MainActivity extends Activity {
    EditText detail=new EditText(this);detail.setMinLines(4);detail.setMaxLines(12);detail.setGravity(Gravity.TOP);detail.setHint("Tulis huraian…");detail.setText(prefs.getString(commentaryKey,""));
    new AlertDialog.Builder(this).setTitle(labels.get(which)).setView(detail).setPositiveButton("Simpan",(dd,w)->{prefs.edit().putString(commentaryKey,detail.getText().toString()).apply();Toast.makeText(this,"Huraian disimpan",Toast.LENGTH_SHORT).show();}).setNegativeButton("Batal",null).show();
   }).setNegativeButton("Tutup",null).show();
+ }
+ void showNoteCreationMenu(){
+  new AlertDialog.Builder(this).setTitle("Nota baharu").setItems(new String[]{"Nota biasa","Nota Kuliah"},(d,which)->{if(which==0)edit(null);else createLectureTemplate();}).show();
+ }
+ void createLectureTemplate(){
+  EditText title=new EditText(this);title.setSingleLine(true);title.setHint("Tajuk kuliah");
+  AlertDialog dialog=new AlertDialog.Builder(this).setTitle("Nota Kuliah").setView(title).setNegativeButton("Batal",null).setPositiveButton("Cipta",null).create();
+  dialog.setOnShowListener(v->dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(x->{
+   String name=title.getText().toString().trim();if(name.isEmpty()){title.setError("Masukkan tajuk");return;}
+   String key="n_"+java.util.UUID.randomUUID().toString();
+   String body="Muqaddimah\n\nPra Topik\n\nIsi Pertama\n\nIsi Kedua\n\nIsi Ketiga\n\nPengajaran\n\nIktibar\n\nKhulasah\n\nPenutup\n";
+   boolean ok=prefs.edit().putString(key,body).putString("title_"+key,name).putString("cat_"+key,"Tanpa kategori").putLong("updated_"+key,System.currentTimeMillis()).commit();
+   if(ok){dialog.dismiss();maktabah=false;edit(key);}else Toast.makeText(this,"Simpan gagal",Toast.LENGTH_SHORT).show();
+  }));dialog.show();
  }
  void edit(String key){
   try{editContentSafely(key);}
