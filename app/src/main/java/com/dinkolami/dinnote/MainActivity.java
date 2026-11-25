@@ -2136,7 +2136,7 @@ public class MainActivity extends Activity {
   if(dialog.getWindow()!=null)dialog.getWindow().setLayout(-1,(int)(getResources().getDisplayMetrics().heightPixels*0.82f));
  }
  void read(String key){
-  try{if(key!=null&&prefs.contains(key)&&isLectureTemplate(prefs.getString(key,"")))prefs.edit().putInt("lecture_view_"+key,0).apply();readContentSafely(key);}
+  try{if(key!=null&&prefs.contains(key)&&isLectureTemplate(prefs.getString(key,"")))prefs.edit().putInt("lecture_view_"+key,2).apply();readContentSafely(key);}
   catch(Exception failure){
    android.util.Log.e("DinNote","Reader failed for "+key,failure);
    showReaderRecovery(key,failure);
@@ -2163,8 +2163,8 @@ public class MainActivity extends Activity {
   ArrayList<View> panels=new ArrayList<>();ArrayList<TextView> headers=new ArrayList<>();
   int mode=prefs.getInt("lecture_view_"+key,0);
   LinearLayout lectureMenu=new LinearLayout(this);lectureMenu.setGravity(Gravity.CENTER_VERTICAL);body.addView(lectureMenu);
-  TextView sectionTitle=text("✎\nEdit Penuh",18);sectionTitle.setTextColor(0xff216e4e);sectionTitle.setGravity(Gravity.CENTER);sectionTitle.setTypeface(null,android.graphics.Typeface.BOLD);sectionTitle.setPadding(dp(8),dp(12),dp(8),dp(12));sectionTitle.setMinHeight(dp(76));LinearLayout.LayoutParams editLp=new LinearLayout.LayoutParams(0,-2,1);editLp.setMargins(0,dp(4),dp(4),dp(8));lectureMenu.addView(sectionTitle,editLp);sectionTitle.setBackground(rounded(0xfffffefd,0xff9bbbab,12));sectionTitle.setOnClickListener(v->edit(key));
-  TextView ready=text(mode==2?"☷\nDropdown":"▤\nPaparan Siap",18);ready.setTextColor(0xff216e4e);ready.setGravity(Gravity.CENTER);ready.setTypeface(null,android.graphics.Typeface.BOLD);ready.setPadding(dp(8),dp(12),dp(8),dp(12));ready.setMinHeight(dp(76));LinearLayout.LayoutParams readyLp=new LinearLayout.LayoutParams(0,-2,1);readyLp.setMargins(dp(4),dp(4),0,dp(8));lectureMenu.addView(ready,readyLp);ready.setBackground(rounded(0xfffffefd,0xff9bbbab,12));ready.setOnClickListener(v->{prefs.edit().putInt("lecture_view_"+key,mode==2?0:2).apply();try{readContentSafely(key);}catch(Exception failure){showReaderRecovery(key,failure);}});
+  TextView ready=text(mode==2?"☷  Paparan":"▤  Paparan Siap",15);ready.setTextColor(0xff216e4e);ready.setGravity(Gravity.CENTER);ready.setTypeface(null,android.graphics.Typeface.BOLD);ready.setPadding(dp(8),dp(6),dp(8),dp(6));ready.setMinHeight(dp(40));LinearLayout.LayoutParams readyLp=new LinearLayout.LayoutParams(0,-2,1);readyLp.setMargins(0,dp(4),dp(4),dp(8));lectureMenu.addView(ready,readyLp);ready.setBackground(rounded(0xfffffefd,0xff9bbbab,10));ready.setOnClickListener(v->{prefs.edit().putInt("lecture_view_"+key,mode==2?0:2).apply();try{readContentSafely(key);}catch(Exception failure){showReaderRecovery(key,failure);}});
+  TextView sectionTitle=text("✎  Edit Penuh",15);sectionTitle.setTextColor(0xff216e4e);sectionTitle.setGravity(Gravity.CENTER);sectionTitle.setTypeface(null,android.graphics.Typeface.BOLD);sectionTitle.setPadding(dp(8),dp(6),dp(8),dp(6));sectionTitle.setMinHeight(dp(40));LinearLayout.LayoutParams editLp=new LinearLayout.LayoutParams(0,-2,1);editLp.setMargins(dp(4),dp(4),0,dp(8));lectureMenu.addView(sectionTitle,editLp);sectionTitle.setBackground(rounded(0xfffffefd,0xff9bbbab,10));sectionTitle.setOnClickListener(v->edit(key));
   if(mode==2){
    // Render each section independently to prevent box leakage.
    String prefix=source.substring(0,starts.get(0)).trim();
