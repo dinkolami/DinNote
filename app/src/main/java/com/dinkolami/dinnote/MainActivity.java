@@ -2150,6 +2150,32 @@ public class MainActivity extends Activity {
   Button back=new Button(this);back.setText("Kembali ke halaman depan");recovery.addView(back);back.setOnClickListener(v->openHomeSafely());
   TextView details=text("Ralat: "+failure.getClass().getSimpleName()+": "+String.valueOf(failure.getMessage()),12);details.setTextIsSelectable(true);recovery.addView(details);
  }
+ boolean isLectureTemplate(String source){
+  return java.util.regex.Pattern.compile("(?m)^Muqaddimah\\s*$").matcher(source).find() && java.util.regex.Pattern.compile("(?m)^Pra Topik\\s*$").matcher(source).find() && java.util.regex.Pattern.compile("(?m)^Penutup\\s*$").matcher(source).find();
+ }
+ void renderLectureTemplate(LinearLayout body,String source,int size,String key){
+  java.util.regex.Matcher m=java.util.regex.Pattern.compile("(?m)^(Muqaddimah|Pra Topik|Isi Pertama|Isi Kedua|Isi Ketiga|Pengajaran|Iktibar|Khulasah|Penutup)[ \\t]*$").matcher(source);
+  ArrayList<String> names=new ArrayList<>();ArrayList<Integer> starts=new ArrayList<>();ArrayList<Integer> ends=new ArrayList<>();
+  while(m.find()){names.add(m.group(1));starts.add(m.start());ends.add(m.end());}
+  if(starts.isEmpty())return;
+  if(starts.get(0)>0){TextView prefix=text("",size);prefix.setText(readerLabelText(source.substring(0,starts.get(0))));body.addView(prefix);}
+  ArrayList<View> panels=new ArrayList<>();ArrayList<TextView> headers=new ArrayList<>();
+  int mode=prefs.getInt("lecture_view_"+key,0);
+  TextView menu=text("☷  Paparan Nota Kuliah",13);menu.setPadding(dp(10),dp(8),dp(10),dp(8));menu.setTextColor(0xff216e4e);body.addView(menu);
+  menu.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Paparan Nota Kuliah").setItems(new String[]{"Collapse All","Expand All","Normal View"},(d,i)->{prefs.edit().putInt("lecture_view_"+key,i).apply();read(key);}).show());
+  for(int i=0;i<names.size();i++){
+   String value=source.substring(ends.get(i),i+1<starts.size()?starts.get(i+1):source.length()).trim();
+   if(value.isEmpty())continue;
+   final String name=names.get(i);
+   LinearLayout group=new LinearLayout(this);group.setOrientation(1);
+   if(mode!=2){group.setBackground(rounded(0xfffffefd,0xffdce5df,8));LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);lp.setMargins(0,dp(3),0,dp(3));body.addView(group,lp);}else body.addView(group);
+   TextView h=text(name+(mode==2?"":mode==1?"  ▴":"  ▾"),size);h.setTextColor(0xff216e4e);h.setTypeface(null,android.graphics.Typeface.BOLD);h.setPadding(dp(8),dp(7),dp(8),dp(7));group.addView(h);
+   LinearLayout panel=new LinearLayout(this);panel.setOrientation(1);panel.setPadding(dp(8),0,dp(8),dp(6));group.addView(panel);
+   renderBoxReading(panel,value,size,key);
+   panel.setVisibility(mode==0?View.GONE:View.VISIBLE);
+   if(mode!=2)h.setOnClickListener(v->{boolean open=panel.getVisibility()!=View.VISIBLE;panel.setVisibility(open?View.VISIBLE:View.GONE);h.setText(name+(open?"  ▴":"  ▾"));});
+  }
+ }
  void readContentSafely(String key){
   if("m_qurtubi_fatihah_1".equals(key))appendQurtubiLecture();
   if(key!=null&&prefs.contains("pdf_original_"+key)){showOriginalPdf(key);return;}
@@ -2222,7 +2248,7 @@ public class MainActivity extends Activity {
   }
   }
   // Page-by-page reader for long Nota and Maktabah content.
-  if(selectedReadingText(key).length()>=100 && availableReaderWidthDp>=500 && prefs.getBoolean("reader_swipe_mode",false)){ // Optional unfolded swipe reader.
+  if(!isLectureTemplate(selectedReadingText(key)) && selectedReadingText(key).length()>=100 && availableReaderWidthDp>=500 && prefs.getBoolean("reader_swipe_mode",false)){ // Optional unfolded swipe reader.
    try{showPagedReader(key);return;}
    catch(RuntimeException problem){
     android.util.Log.e("DinNote","Paged reader failed; using safe scrolling",problem);
@@ -2321,7 +2347,10 @@ public class MainActivity extends Activity {
    body.addView(bilingual);
   }
   boolean twoColumnReading=availableReaderWidthDp>=500&&prefs.getBoolean("reader_two_columns",true)&&fullReadingText.length()>=100;
-  if(hasBoxes){
+  if(isLectureTemplate(fullReadingText)&&!bilingualReading){
+   renderLectureTemplate(body,fullReadingText,readingSizes[fontLevel],key);
+  }
+  else if(hasBoxes){
    if(bilingualReading){body.removeViewAt(body.getChildCount()-1);}
    renderBoxReading(body,fullReadingText,readingSizes[fontLevel],key);
   }
