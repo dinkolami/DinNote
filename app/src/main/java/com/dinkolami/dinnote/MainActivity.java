@@ -2158,22 +2158,14 @@ public class MainActivity extends Activity {
   ArrayList<String> names=new ArrayList<>();ArrayList<Integer> starts=new ArrayList<>();ArrayList<Integer> ends=new ArrayList<>();
   while(m.find()){names.add(m.group(1));starts.add(m.start());ends.add(m.end());}
   if(starts.isEmpty())return;
-  if(starts.get(0)>0){TextView prefix=text("",size);prefix.setText(readerLabelText(source.substring(0,starts.get(0))));body.addView(prefix);}
+  if(prefs.getInt("lecture_view_"+key,0)!=2&&starts.get(0)>0){TextView prefix=text("",size);prefix.setText(readerLabelText(source.substring(0,starts.get(0))));body.addView(prefix);}
   ArrayList<View> panels=new ArrayList<>();ArrayList<TextView> headers=new ArrayList<>();
   int mode=prefs.getInt("lecture_view_"+key,0);
   TextView sectionTitle=text("☷  Subtopik Nota Kuliah",16);
   sectionTitle.setTextColor(0xff216e4e);sectionTitle.setPadding(dp(8),dp(8),dp(8),dp(8));body.addView(sectionTitle);
-  if(mode!=2){
-   sectionTitle.setContentDescription("Buka atau tutup semua subtopik Nota Kuliah");
-   sectionTitle.setOnClickListener(v->{
-    boolean open=false;
-    for(View panel:panels)if(panel.getVisibility()!=View.VISIBLE){open=true;break;}
-    for(int j=0;j<panels.size();j++){
-     panels.get(j).setVisibility(open?View.VISIBLE:View.GONE);
-     headers.get(j).setText(names.get(j)+(open?"  ▴":"  ▾"));
-    }
-   });
-  }
+  sectionTitle.setContentDescription(mode==2?"Tukar kepada dropdown":"Tukar kepada paparan penuh");
+  sectionTitle.setOnClickListener(v->{prefs.edit().putInt("lecture_view_"+key,mode==2?0:2).apply();read(key);});
+  if(mode==2){renderBoxReading(body,source,size,key);return;}
   for(int i=0;i<names.size();i++){
    String value=source.substring(ends.get(i),i+1<starts.size()?starts.get(i+1):source.length()).trim();
    if(value.isEmpty()&&mode==2)continue;
@@ -2577,7 +2569,10 @@ public class MainActivity extends Activity {
   int wordCount=0;java.util.regex.Matcher words=java.util.regex.Pattern.compile("[\\p{L}\\p{N}][\\p{L}\\p{M}\\p{N}]*").matcher(countable);while(words.find())wordCount++;
   long readingUpdated=prefs.getLong("updated_"+key,0L);String updatedLabel=readingUpdated>0?new java.text.SimpleDateFormat("dd/MM/yyyy",java.util.Locale.getDefault()).format(new java.util.Date(readingUpdated)):"—";TextView wordCounter=text(wordCount+" perkataan  ·  Dikemas kini "+updatedLabel,12);
   wordCounter.setTextColor(0xff687078);
-  wordCounter.setPadding(dp(20),dp(6),dp(20),dp(6));
+  wordCounter.setGravity(Gravity.LEFT|Gravity.BOTTOM);
+  wordCounter.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);
+  wordCounter.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
+  wordCounter.setPadding(dp(4),dp(10),dp(4),0);
   if(!cleanReading)body.addView(wordCounter);
   if(cleanReading){
    startLectureTimer(key);
