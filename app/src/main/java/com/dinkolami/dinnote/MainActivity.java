@@ -2163,7 +2163,7 @@ public class MainActivity extends Activity {
   ArrayList<View> panels=new ArrayList<>();ArrayList<TextView> headers=new ArrayList<>();
   int mode=prefs.getInt("lecture_view_"+key,0);
   LinearLayout lectureMenu=new LinearLayout(this);lectureMenu.setGravity(Gravity.CENTER_VERTICAL);body.addView(lectureMenu);
-  TextView ready=text(mode==2?"☷  Paparan":"▤  Paparan Siap",15);ready.setTextColor(0xff216e4e);ready.setGravity(Gravity.CENTER);ready.setTypeface(null,android.graphics.Typeface.BOLD);ready.setPadding(dp(8),dp(6),dp(8),dp(6));ready.setMinHeight(dp(40));LinearLayout.LayoutParams readyLp=new LinearLayout.LayoutParams(0,-2,1);readyLp.setMargins(0,dp(4),dp(4),dp(8));lectureMenu.addView(ready,readyLp);ready.setBackground(rounded(0xfffffefd,0xff9bbbab,10));ready.setOnClickListener(v->{prefs.edit().putInt("lecture_view_"+key,mode==2?0:2).apply();try{readContentSafely(key);}catch(Exception failure){showReaderRecovery(key,failure);}});
+  TextView ready=text(mode==2?"☷  Subtopik":"▤  Paparan Siap",15);ready.setTextColor(0xff216e4e);ready.setGravity(Gravity.CENTER);ready.setTypeface(null,android.graphics.Typeface.BOLD);ready.setPadding(dp(8),dp(6),dp(8),dp(6));ready.setMinHeight(dp(40));LinearLayout.LayoutParams readyLp=new LinearLayout.LayoutParams(0,-2,1);readyLp.setMargins(0,dp(4),dp(4),dp(8));lectureMenu.addView(ready,readyLp);ready.setBackground(rounded(0xfffffefd,0xff9bbbab,10));ready.setOnClickListener(v->{prefs.edit().putInt("lecture_view_"+key,mode==2?0:2).apply();try{readContentSafely(key);}catch(Exception failure){showReaderRecovery(key,failure);}});
   TextView sectionTitle=text("✎  Edit Penuh",15);sectionTitle.setTextColor(0xff216e4e);sectionTitle.setGravity(Gravity.CENTER);sectionTitle.setTypeface(null,android.graphics.Typeface.BOLD);sectionTitle.setPadding(dp(8),dp(6),dp(8),dp(6));sectionTitle.setMinHeight(dp(40));LinearLayout.LayoutParams editLp=new LinearLayout.LayoutParams(0,-2,1);editLp.setMargins(dp(4),dp(4),0,dp(8));lectureMenu.addView(sectionTitle,editLp);sectionTitle.setBackground(rounded(0xfffffefd,0xff9bbbab,10));sectionTitle.setOnClickListener(v->edit(key));
   if(mode==2){
    // Render each section independently to prevent box leakage.
@@ -2182,7 +2182,7 @@ public class MainActivity extends Activity {
    final String name=names.get(i);
    LinearLayout group=new LinearLayout(this);group.setOrientation(1);
    if(mode!=2){group.setBackground(rounded(0xfffffefd,0xffdce5df,8));LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);lp.setMargins(0,dp(3),0,dp(3));body.addView(group,lp);}else body.addView(group);
-   TextView h=text("",Math.max(18,size));h.setText(formattedReadingText(name+(mode==2?"":mode==1?"  ▴":"  ▾")));h.setTextColor(0xff216e4e);h.setTypeface(null,android.graphics.Typeface.BOLD);h.setPadding(dp(12),dp(12),dp(12),dp(12));h.setMinHeight(dp(52));group.addView(h);
+   TextView h=text("",Math.max(18,size));h.setText(formattedReadingText(name));h.setTextColor(0xff216e4e);h.setTypeface(android.graphics.Typeface.create("sans-serif-medium",android.graphics.Typeface.NORMAL));h.setPadding(dp(12),dp(12),dp(12),dp(12));h.setMinHeight(dp(52));LinearLayout headerRow=new LinearLayout(this);headerRow.setGravity(Gravity.CENTER_VERTICAL);group.addView(headerRow);headerRow.addView(h,new LinearLayout.LayoutParams(0,-2,1));TextView arrow=text(mode==1?"▴":"▾",18);arrow.setTextColor(0xff216e4e);arrow.setPadding(dp(8),0,dp(12),0);headerRow.addView(arrow);
    LinearLayout panel=new LinearLayout(this);panel.setOrientation(1);panel.setPadding(dp(8),0,dp(8),dp(6));group.addView(panel);
    if(value.isEmpty()){
     TextView empty=text("Tiada kandungan",Math.max(13,size-2));empty.setTextColor(0xff718078);empty.setPadding(dp(4),dp(8),dp(4),dp(8));panel.addView(empty);
@@ -2194,10 +2194,10 @@ public class MainActivity extends Activity {
     for(int j=0;j<panels.size();j++){
      if(panels.get(j)==panel)continue;
      panels.get(j).setVisibility(View.GONE);
-     headers.get(j).setText(formattedReadingText(names.get(j)+"  ▾"));
+     headers.get(j).setText("▾");
     }
     panel.setVisibility(View.VISIBLE);
-    h.setText(formattedReadingText(name+"  ▴"));
+    arrow.setText("▴");
     String raw=prefs.getString(key,"");
     java.util.regex.Matcher matcher=lectureHeadingPattern().matcher(raw);
     ArrayList<Integer> ss=new ArrayList<>(),ee=new ArrayList<>();
@@ -2235,14 +2235,14 @@ public class MainActivity extends Activity {
     Runnable finish=()->{
      persist.run();finishActive[0]=null;
      panel.removeAllViews();renderBoxReading(panel,encodeLectureEditable(input.getText()),size,key);panel.addView(quick);
-     panel.setVisibility(View.GONE);h.setText(formattedReadingText(name+"  ▾"));
+     panel.setVisibility(View.GONE);arrow.setText("▾");
     };
     finishActive[0]=finish;
     input.requestFocus();
    });
-   panels.add(panel);headers.add(h);
+   panels.add(panel);headers.add(arrow);
    panel.setVisibility(mode==0?View.GONE:View.VISIBLE);
-   if(mode!=2)h.setOnClickListener(v->{boolean open=panel.getVisibility()!=View.VISIBLE;if(finishActive[0]!=null)finishActive[0].run();panel.setVisibility(open?View.VISIBLE:View.GONE);h.setText(formattedReadingText(name+(open?"  ▴":"  ▾")));});
+   if(mode!=2)headerRow.setOnClickListener(v->{boolean open=panel.getVisibility()!=View.VISIBLE;if(finishActive[0]!=null)finishActive[0].run();panel.setVisibility(open?View.VISIBLE:View.GONE);arrow.setText(open?"▴":"▾");});
   }
  }
  void readContentSafely(String key){
