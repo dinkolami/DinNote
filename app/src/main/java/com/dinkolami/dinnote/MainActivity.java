@@ -2823,26 +2823,27 @@ public class MainActivity extends Activity {
   TextView toggle=text("☷  Subtopik Nota Kuliah",16);toggle.setTextColor(0xff216e4e);toggle.setPadding(dp(10),dp(6),dp(10),dp(6));panel.addView(toggle);
   LinearLayout rows=new LinearLayout(this);rows.setOrientation(1);panel.addView(rows);
   root.addView(panel,root.indexOfChild(active));
-  Runnable refresh=()->{
+  final Runnable[] refresh=new Runnable[1];
+  refresh[0]=()->{
    rows.removeAllViews();
    java.util.regex.Matcher m=lectureHeadingPattern().matcher(active.getText());
    while(m.find()){
     final String name=m.group(1);final int headingEnd=m.end();
     TextView row=text(name+"   ▾",16);row.setTextColor(0xff216e4e);row.setPadding(dp(12),dp(5),dp(12),dp(5));row.setBackground(rounded(0xfffffefd,0xffdce5df,8));row.setMinHeight(dp(48));row.setGravity(Gravity.CENTER_VERTICAL);LinearLayout.LayoutParams rp=new LinearLayout.LayoutParams(-1,-2);rp.setMargins(dp(8),0,dp(8),dp(4));rows.addView(row,rp);
     final int headingStart=m.start();
-    row.setOnLongClickListener(v->{EditText input=new EditText(this);input.setSingleLine(true);input.setText(name);new AlertDialog.Builder(this).setTitle("Ubah subtopik").setView(input).setNegativeButton("Batal",null).setNeutralButton("Buang tajuk",(d,w)->{active.getText().delete(headingStart,headingEnd);save();refresh.run();}).setPositiveButton("Simpan",(d,w)->{String renamed=input.getText().toString().trim();if(!renamed.isEmpty()){active.getText().replace(headingStart+1,headingEnd,renamed);save();refresh.run();}}).show();return true;});
+    row.setOnLongClickListener(v->{EditText input=new EditText(this);input.setSingleLine(true);input.setText(name);new AlertDialog.Builder(this).setTitle("Ubah subtopik").setView(input).setNegativeButton("Batal",null).setNeutralButton("Buang tajuk",(d,w)->{active.getText().delete(headingStart,headingEnd);save();refresh[0].run();}).setPositiveButton("Simpan",(d,w)->{String renamed=input.getText().toString().trim();if(!renamed.isEmpty()){active.getText().replace(headingStart+1,headingEnd,renamed);save();refresh[0].run();}}).show();return true;});
     row.setOnClickListener(v->{
      int p=Math.min(headingEnd,active.length());if(p<active.length()&&active.getText().charAt(p)=='\n')p++;
      rows.setVisibility(View.GONE);active.setVisibility(View.VISIBLE);active.requestFocus();active.setSelection(p);active.post(()->revealEditorCursor(active));
     });
    }
   };
-  Button addHeading=action("+ Subtopik",panel,()->{EditText input=new EditText(this);input.setSingleLine(true);new AlertDialog.Builder(this).setTitle("Tambah subtopik").setView(input).setNegativeButton("Batal",null).setPositiveButton("Tambah",(d,w)->{String name=input.getText().toString().trim();if(name.isEmpty())return;active.append("\n\n\u2063"+name+"\n");save();refresh.run();}).show();});
-  refresh.run();
+  Button addHeading=action("+ Subtopik",panel,()->{EditText input=new EditText(this);input.setSingleLine(true);new AlertDialog.Builder(this).setTitle("Tambah subtopik").setView(input).setNegativeButton("Batal",null).setPositiveButton("Tambah",(d,w)->{String name=input.getText().toString().trim();if(name.isEmpty())return;active.append("\n\n\u2063"+name+"\n");save();refresh[0].run();}).show();});
+  refresh[0].run();
   if(rows.getChildCount()>0){active.clearFocus();active.setVisibility(View.GONE);rows.setVisibility(View.VISIBLE);}else rows.setVisibility(View.GONE);
   toggle.setOnClickListener(v->{
    if(rows.getVisibility()==View.VISIBLE){rows.setVisibility(View.GONE);active.setVisibility(View.VISIBLE);}
-   else{refresh.run();active.clearFocus();active.setVisibility(View.GONE);rows.setVisibility(View.VISIBLE);}
+   else{refresh[0].run();active.clearFocus();active.setVisibility(View.GONE);rows.setVisibility(View.VISIBLE);}
   });
  }
  void showLectureEditorIndex(){
