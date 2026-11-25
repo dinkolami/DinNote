@@ -2806,7 +2806,23 @@ public class MainActivity extends Activity {
   }).setNegativeButton("Tutup",null).show();
  }
  void showNoteCreationMenu(){
-  new AlertDialog.Builder(this).setTitle("Nota baharu").setItems(new String[]{"Nota biasa","Nota Kuliah"},(d,which)->{if(which==0)edit(null);else createLectureTemplate();}).show();
+  LinearLayout panel=new LinearLayout(this);panel.setOrientation(1);panel.setPadding(dp(14),dp(12),dp(14),dp(8));
+  TextView heading=text("✎  Nota Baharu",18);heading.setTextColor(0xff216e4e);heading.setTypeface(null,android.graphics.Typeface.BOLD);heading.setPadding(dp(4),dp(2),dp(4),dp(12));panel.addView(heading);
+  AlertDialog dialog=new AlertDialog.Builder(this).setView(panel).create();
+  String[] labels={"Nota Umum","Nota Kuliah"};
+  int[] icons={android.R.drawable.ic_menu_edit,android.R.drawable.ic_menu_agenda};
+  for(int i=0;i<labels.length;i++){
+   final int option=i;
+   LinearLayout row=new LinearLayout(this);row.setGravity(Gravity.CENTER_VERTICAL);row.setPadding(dp(12),dp(7),dp(12),dp(7));row.setMinimumHeight(dp(48));row.setBackground(rounded(0xfffffefd,0xffc4d8cd,10));
+   LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);lp.bottomMargin=dp(8);panel.addView(row,lp);
+   android.widget.ImageView icon=new android.widget.ImageView(this);icon.setImageResource(icons[i]);icon.setColorFilter(0xff216e4e);row.addView(icon,new LinearLayout.LayoutParams(dp(20),dp(20)));
+   TextView label=text(labels[i],16);label.setTextColor(0xff216e4e);label.setPadding(dp(10),0,0,0);row.addView(label,new LinearLayout.LayoutParams(0,-2,1f));
+   TextView arrow=text("›",20);arrow.setTextColor(0xff719384);row.addView(arrow);
+   row.setOnClickListener(v->{dialog.dismiss();if(option==0)edit(null);else createLectureTemplate();});
+  }
+  TextView cancel=text("Batal",14);cancel.setTextColor(0xff216e4e);cancel.setGravity(Gravity.RIGHT|Gravity.CENTER_VERTICAL);cancel.setPadding(dp(8),dp(8),dp(8),dp(8));panel.addView(cancel);cancel.setOnClickListener(v->dialog.dismiss());
+  dialog.show();android.view.Window window=dialog.getWindow();
+  if(window!=null){window.setBackgroundDrawable(rounded(0xfff8faf7,0xffc5d9ce,14));window.setLayout(Math.min(getResources().getDisplayMetrics().widthPixels-dp(32),dp(340)),-2);}
  }
  void createLectureTemplate(){
   EditText title=new EditText(this);title.setSingleLine(true);title.setHint("Tajuk kuliah");
