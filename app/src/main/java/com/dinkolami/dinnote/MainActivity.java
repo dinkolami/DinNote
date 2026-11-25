@@ -2176,6 +2176,7 @@ public class MainActivity extends Activity {
    content.append(source.substring(previous));
    renderBoxReading(body,content.toString().trim(),size,key);return;
   }
+  final Runnable[] finishActive={null};
   for(int i=0;i<names.size();i++){
    String value=source.substring(ends.get(i),i+1<starts.size()?starts.get(i+1):source.length()).trim();
    if(value.isEmpty()&&mode==2)continue;
@@ -2190,6 +2191,7 @@ public class MainActivity extends Activity {
    final int sectionIndex=i;
    TextView quick=text("✎  Edit pantas",13);quick.setTextColor(0xff216e4e);quick.setPadding(dp(4),dp(8),dp(4),dp(4));panel.addView(quick);
    quick.setOnClickListener(v->{
+    if(finishActive[0]!=null)finishActive[0].run();
     String raw=prefs.getString(key,"");
     java.util.regex.Matcher matcher=lectureHeadingPattern().matcher(raw);
     ArrayList<Integer> ss=new ArrayList<>(),ee=new ArrayList<>();
@@ -2202,14 +2204,20 @@ public class MainActivity extends Activity {
     LinearLayout controls=new LinearLayout(this);panel.addView(controls);
     Button done=new Button(this);done.setText("Selesai");controls.addView(done);
     Button cancel=new Button(this);cancel.setText("Batal");controls.addView(cancel);
-    done.setOnClickListener(w->{
+    final String original=raw.substring(start,end).trim();
+    Runnable finish=()->{
+     finishActive[0]=null;
      if(!raw.equals(prefs.getString(key,""))){Toast.makeText(this,"Nota telah berubah. Buka semula.",Toast.LENGTH_SHORT).show();read(key);return;}
-     String updated=raw.substring(0,start)+"\n"+encodeLectureEditable(input.getText())+"\n"+raw.substring(end);
+     String edited=encodeLectureEditable(input.getText());
+     String updated=edited.equals(original)?raw:raw.substring(0,start)+"\n"+edited+"\n"+raw.substring(end);
+     if(!updated.equals(raw)){
      snapshotBeforeAutosave(key,raw,prefs.getString("title_"+key,""),prefs.getString("cat_"+key,"Tanpa kategori"));
-     prefs.edit().putString(key,updated).putLong("updated_"+key,System.currentTimeMillis()).apply();
+     prefs.edit().putString(key,updated).putLong("updated_"+key,System.currentTimeMillis()).apply();}
      panel.removeAllViews();renderBoxReading(panel,encodeLectureEditable(input.getText()),size,key);panel.addView(quick);
-    });
-    cancel.setOnClickListener(w->{panel.removeAllViews();renderBoxReading(panel,value,size,key);panel.addView(quick);});
+    };
+    finishActive[0]=finish;
+    done.setOnClickListener(w->finish.run());
+    cancel.setOnClickListener(w->{finishActive[0]=null;panel.removeAllViews();renderBoxReading(panel,original,size,key);panel.addView(quick);});
     input.requestFocus();
    });
    panels.add(panel);headers.add(h);
