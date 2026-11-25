@@ -2167,14 +2167,14 @@ public class MainActivity extends Activity {
   sectionTitle.setContentDescription(mode==2?"Tukar kepada dropdown":"Tukar kepada paparan penuh");
   sectionTitle.setOnClickListener(v->{prefs.edit().putInt("lecture_view_"+key,mode==2?0:2).apply();read(key);});
   if(mode==2){
-   StringBuilder content=new StringBuilder();int previous=0;
+   // Render each section independently to prevent box leakage.
+   String prefix=source.substring(0,starts.get(0)).trim();
+   if(!prefix.isEmpty())renderBoxReading(body,prefix,size,key);
    for(int i=0;i<starts.size();i++){
-    content.append(source.substring(previous,starts.get(i)));
-    previous=ends.get(i);
-    if(previous<source.length()&&source.charAt(previous)=='\n')previous++;
+    String content=source.substring(ends.get(i),i+1<starts.size()?starts.get(i+1):source.length()).trim();
+    if(!content.isEmpty())renderBoxReading(body,content,size,key);
    }
-   content.append(source.substring(previous));
-   renderBoxReading(body,content.toString().trim(),size,key);return;
+   return;
   }
   final Runnable[] finishActive={null};
   for(int i=0;i<names.size();i++){
