@@ -2818,6 +2818,29 @@ public class MainActivity extends Activity {
    showReaderRecovery(key,failure);
   }
  }
+ String markLectureHeadings(String source){
+  java.util.regex.Matcher m=lectureHeadingPattern().matcher(source);
+  StringBuffer out=new StringBuffer();
+  while(m.find())m.appendReplacement(out,java.util.regex.Matcher.quoteReplacement("\u2063"+m.group(1)));
+  m.appendTail(out);return out.toString();
+ }
+ void preserveLectureHeading(EditText active){
+  active.addTextChangedListener(new TextWatcher(){
+   int heading=-1;boolean repairing=false;
+   public void beforeTextChanged(CharSequence text,int start,int count,int after){
+    heading=-1;if(repairing)return;
+    java.util.regex.Matcher m=lectureHeadingPattern().matcher(text);
+    while(m.find())if(start>=m.start()&&start<=m.end()&&start+count<=m.end()){heading=m.start();break;}
+   }
+   public void onTextChanged(CharSequence text,int start,int before,int count){}
+   public void afterTextChanged(Editable e){
+    if(repairing||heading<0||heading>e.length())return;
+    int pos=heading;heading=-1;
+    if(pos<e.length()&&e.charAt(pos)=='\u2063')return;
+    repairing=true;try{e.insert(pos,"\u2063");}finally{repairing=false;}
+   }
+  });
+ }
  void attachLectureEditorPanel(final EditText active){
   LinearLayout panel=new LinearLayout(this);panel.setOrientation(1);
   TextView toggle=text("☷  Subtopik Nota Kuliah",16);toggle.setTextColor(0xff216e4e);toggle.setPadding(dp(10),dp(6),dp(10),dp(6));panel.addView(toggle);
@@ -2831,7 +2854,7 @@ public class MainActivity extends Activity {
     final String name=m.group(1);final int headingEnd=m.end();
     TextView row=text(name+"   ▾",16);row.setTextColor(0xff216e4e);row.setPadding(dp(12),dp(5),dp(12),dp(5));row.setBackground(rounded(0xfffffefd,0xffdce5df,8));row.setMinHeight(dp(48));row.setGravity(Gravity.CENTER_VERTICAL);LinearLayout.LayoutParams rp=new LinearLayout.LayoutParams(-1,-2);rp.setMargins(dp(8),0,dp(8),dp(4));rows.addView(row,rp);
     final int headingStart=m.start();
-    row.setOnLongClickListener(v->{EditText input=new EditText(this);input.setSingleLine(true);input.setText(name);new AlertDialog.Builder(this).setTitle("Ubah subtopik").setView(input).setNegativeButton("Batal",null).setNeutralButton("Buang tajuk",(d,w)->{active.getText().delete(headingStart,headingEnd);save();refresh[0].run();}).setPositiveButton("Simpan",(d,w)->{String renamed=input.getText().toString().trim();if(!renamed.isEmpty()){active.getText().replace(headingStart,headingEnd,"\u2063"+renamed);save();refresh[0].run();}}).show();return true;});
+    row.setOnLongClickListener(v->{EditText input=new EditText(this);input.setSingleLine(true);input.setText(name);new AlertDialog.Builder(this).setTitle("Ubah subtopik").setView(input).setNegativeButton("Batal",null).setNeutralButton("Buang tajuk",(d,w)->{active.getText().delete(headingStart,Math.min(active.length(),headingEnd+1));save();refresh[0].run();}).setPositiveButton("Simpan",(d,w)->{String renamed=input.getText().toString().trim();if(!renamed.isEmpty()){active.getText().replace(headingStart,headingEnd,"\u2063"+renamed);save();refresh[0].run();}}).show();return true;});
     row.setOnClickListener(v->{
      int p=Math.min(headingEnd,active.length());if(p<active.length()&&active.getText().charAt(p)=='\n')p++;
      rows.setVisibility(View.GONE);active.setVisibility(View.VISIBLE);active.requestFocus();active.setSelection(p);active.post(()->revealEditorCursor(active));
@@ -3042,8 +3065,8 @@ public class MainActivity extends Activity {
    }
   });
   editor.setOnTouchListener((v,event)->{editorSwipe.onTouchEvent(event);return false;});
-  if(key!=null){int remembered=prefs.getInt("edit_cursor_"+key,0);editor.setText(formattedReadingText(repairBoxStructure(normalizeStructuralMarkers(prefs.getString(key,"")))));editor.setSelection(Math.max(0,Math.min(remembered,editor.length())));}
-  if(key!=null&&isLectureTemplate(prefs.getString(key,"")))attachLectureEditorPanel(editor);
+  if(key!=null){int remembered=prefs.getInt("edit_cursor_"+key,0);editor.setText(formattedReadingText(repairBoxStructure(normalizeStructuralMarkers(isLectureTemplate(prefs.getString(key,""))?markLectureHeadings(prefs.getString(key,"")):prefs.getString(key,"")))));editor.setSelection(Math.max(0,Math.min(remembered,editor.length())));}
+  if(key!=null&&isLectureTemplate(prefs.getString(key,""))){attachLectureEditorPanel(editor);preserveLectureHeading(editor);}
   final EditText activeBody=editor;
   activeBody.post(()->revealEditorCursor(activeBody));
   // Match the reader's optional Arabic serif typeface in the editor as well.
