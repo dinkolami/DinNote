@@ -2161,11 +2161,9 @@ public class MainActivity extends Activity {
   if(starts.get(0)>0){TextView prefix=text("",size);prefix.setText(readerLabelText(source.substring(0,starts.get(0))));body.addView(prefix);}
   ArrayList<View> panels=new ArrayList<>();ArrayList<TextView> headers=new ArrayList<>();
   int mode=prefs.getInt("lecture_view_"+key,0);
-  TextView menu=text("☷  Paparan Nota Kuliah",13);menu.setPadding(dp(10),dp(8),dp(10),dp(8));menu.setTextColor(0xff216e4e);body.addView(menu);
-  menu.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Paparan Nota Kuliah").setItems(new String[]{"Collapse All","Expand All","Normal View"},(d,i)->{prefs.edit().putInt("lecture_view_"+key,i).apply();read(key);}).show());
   for(int i=0;i<names.size();i++){
    String value=source.substring(ends.get(i),i+1<starts.size()?starts.get(i+1):source.length()).trim();
-   if(value.isEmpty())continue;
+   if(value.isEmpty()&&mode==2)continue;
    final String name=names.get(i);
    LinearLayout group=new LinearLayout(this);group.setOrientation(1);
    if(mode!=2){group.setBackground(rounded(0xfffffefd,0xffdce5df,8));LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);lp.setMargins(0,dp(3),0,dp(3));body.addView(group,lp);}else body.addView(group);
@@ -2227,6 +2225,10 @@ public class MainActivity extends Activity {
   } // End normal reading toolbar; lecture mode retains Back only.
   if(!cleanReading){
   
+  if(isLectureTemplate(selectedReadingText(key))){
+   Button lectureMode=action("☷",bar,()->new AlertDialog.Builder(this).setTitle("Paparan Nota Kuliah").setItems(new String[]{"Collapse All","Expand All","Normal View"},(d,i)->{prefs.edit().putInt("lecture_view_"+key,i).apply();read(key);}).show());
+   lectureMode.setContentDescription("Paparan Nota Kuliah");
+  }
   Button readerFont=action("Aa",bar,()->showReaderSettings(key));readerFont.setContentDescription("Ubah saiz tulisan Nota dan Maktabah");
   Button bookmarkButton=action("♧",bar,()->{int pos=prefs.getInt("reading_scroll_"+key,0);new AlertDialog.Builder(this).setTitle("Penanda bacaan").setMessage("Kedudukan terakhir: "+pos+" px").setPositiveButton("Simpan penanda",(d,w)->{prefs.edit().putInt("bookmark_scroll_"+key,prefs.getInt("reading_scroll_"+key,0)).apply();Toast.makeText(this,"Penanda disimpan",Toast.LENGTH_SHORT).show();}).setNeutralButton("Pergi ke penanda",(d,w)->{int target=prefs.getInt("bookmark_scroll_"+key,-1);if(target>=0){read(key);root.post(()->{ScrollView currentScroll=(ScrollView)root.getChildAt(root.getChildCount()-2);currentScroll.post(()->currentScroll.scrollTo(0,target));});}else Toast.makeText(this,"Tiada penanda",Toast.LENGTH_SHORT).show();}).setNegativeButton("Tutup",null).show();});bookmarkButton.setContentDescription("Penanda bacaan");Button readerEdit=action("✎",bar,()->edit(key));readerEdit.setContentDescription(key.startsWith("m_")?"Sunting kandungan kitab":"Sunting kandungan nota");
   boolean compactReaderToolbar=availableReaderWidthDp<500;
