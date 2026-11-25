@@ -2297,7 +2297,7 @@ public class MainActivity extends Activity {
   if(!cleanReading){
   
   if(isLectureTemplate(selectedReadingText(key))){
-   Button lectureMode=action("☷",bar,()->new AlertDialog.Builder(this).setTitle("Paparan Nota Kuliah").setItems(new String[]{"Collapse All","Expand All","Normal View"},(d,i)->{prefs.edit().putInt("lecture_view_"+key,i).apply();read(key);}).show());
+   Button lectureMode=action("☷",bar,()->new AlertDialog.Builder(this).setTitle("Paparan Nota Kuliah").setItems(new String[]{"Collapse All","Expand All","Normal View"},(d,i)->{prefs.edit().putInt("lecture_view_"+key,i).apply();try{readContentSafely(key);}catch(Exception failure){showReaderRecovery(key,failure);}}).show());
    lectureMode.setContentDescription("Paparan Nota Kuliah");
   }
   Button readerFont=action("Aa",bar,()->showReaderSettings(key));readerFont.setContentDescription("Ubah saiz tulisan Nota dan Maktabah");
