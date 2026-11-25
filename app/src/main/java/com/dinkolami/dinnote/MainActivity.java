@@ -2383,7 +2383,7 @@ public class MainActivity extends Activity {
     java.util.regex.Matcher iconHeading=java.util.regex.Pattern.compile("^\\s*@#(?:\\s+(.+))?$").matcher(line);
     boolean isIconHeading=!isNumber&&iconHeading.matches();
     if(line.trim().equals("---")||line.trim().equals("---FLOWER---")||line.trim().equals("---GEOMETRIC---")||line.trim().equals("---CLASSIC---")){
-     readingRows.addView(islamicOrnamentView(line.trim().equals("---")?"GEOMETRIC":line.trim().replace("---","")),new LinearLayout.LayoutParams(-1,dp(38)));
+     readingRows.addView(islamicOrnamentView(line.trim().equals("---")?"GEOMETRIC":line.trim().replace("---","")),new LinearLayout.LayoutParams(-1,dp(34)));
     }else if(isNumber||isMarked||isIconHeading){
      LinearLayout itemRow=new LinearLayout(this);itemRow.setOrientation(LinearLayout.HORIZONTAL);
      itemRow.setGravity(Gravity.CENTER_VERTICAL);itemRow.setPadding(dp(6),dp(2),dp(6),dp(2));
@@ -3045,7 +3045,7 @@ public class MainActivity extends Activity {
  void drawIslamicOrnament(android.graphics.Canvas c,float x,float y,float w,String kind){
   if(w<=0)return;c.save();c.translate(x+w/2f,y);
   float scale=Math.min(w/220f,dp(1)*1.3f);c.scale(scale,scale);
-  android.graphics.Paint p=new android.graphics.Paint(3);p.setColor(0xffa38a49);p.setStyle(android.graphics.Paint.Style.STROKE);p.setStrokeWidth(1.45f);p.setStrokeCap(android.graphics.Paint.Cap.ROUND);p.setStrokeJoin(android.graphics.Paint.Join.ROUND);
+  android.graphics.Paint p=new android.graphics.Paint(3);p.setColor(0xffa38a49);p.setStyle(android.graphics.Paint.Style.STROKE);p.setStrokeWidth(kind.equals("CLASSIC")?1.45f:1.16f);p.setStrokeCap(android.graphics.Paint.Cap.ROUND);p.setStrokeJoin(android.graphics.Paint.Join.ROUND);
   float edge=w/(2*scale);
   if(kind.equals("CLASSIC")){
    c.save();c.scale(w/330f/scale,w/330f/scale);
@@ -3323,7 +3323,7 @@ public class MainActivity extends Activity {
   int start=0;
   while(ornaments.find()){
    addPlainBoxParagraph(body,value.substring(start,ornaments.start()),fontSize,key,baseLine+value.substring(0,start).split("\\n",-1).length-1);
-   body.addView(islamicOrnamentView(ornaments.group(1)),new LinearLayout.LayoutParams(-1,dp(38)));
+   body.addView(islamicOrnamentView(ornaments.group(1)),new LinearLayout.LayoutParams(-1,dp(34)));
    start=ornaments.end();
   }
   addPlainBoxParagraph(body,value.substring(start),fontSize,key,baseLine+value.substring(0,start).split("\\n",-1).length-1);
