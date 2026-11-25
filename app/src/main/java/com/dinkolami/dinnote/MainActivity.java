@@ -2825,21 +2825,17 @@ public class MainActivity extends Activity {
   m.appendTail(out);return out.toString();
  }
  void preserveLectureHeading(EditText active){
-  active.addTextChangedListener(new TextWatcher(){
-   int heading=-1;boolean repairing=false;
-   public void beforeTextChanged(CharSequence text,int start,int count,int after){
-    heading=-1;if(repairing)return;
-    java.util.regex.Matcher m=lectureHeadingPattern().matcher(text);
-    while(m.find())if(start>=m.start()&&start<=m.end()&&start+count<=m.end()){heading=m.start();break;}
-   }
-   public void onTextChanged(CharSequence text,int start,int before,int count){}
-   public void afterTextChanged(Editable e){
-    if(repairing||heading<0||heading>e.length())return;
-    int pos=heading;heading=-1;
-    if(pos<e.length()&&e.charAt(pos)=='\u2063')return;
-    repairing=true;try{e.insert(pos,"\u2063");}finally{repairing=false;}
-   }
-  });
+  android.text.InputFilter guard=(source,start,end,dest,dstart,dend)->{
+   if(dstart>=dend)return null;
+   String removed=dest.subSequence(dstart,dend).toString();
+   if(removed.indexOf('\u2063')<0)return null;
+   String replacement=source.subSequence(start,end).toString();
+   if(replacement.indexOf('\u2063')>=0)return null;
+   if(removed.indexOf('\n')>=0)return null;
+   return "\u2063"+replacement;
+  };
+  android.text.InputFilter[] old=active.getFilters();
+  android.text.InputFilter[] next=java.util.Arrays.copyOf(old,old.length+1);next[old.length]=guard;active.setFilters(next);
  }
  void attachLectureEditorPanel(final EditText active){
   LinearLayout panel=new LinearLayout(this);panel.setOrientation(1);
