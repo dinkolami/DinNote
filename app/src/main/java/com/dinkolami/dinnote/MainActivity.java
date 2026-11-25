@@ -2192,6 +2192,13 @@ public class MainActivity extends Activity {
    TextView quick=text("✎  Edit pantas",13);quick.setTextColor(0xff216e4e);quick.setPadding(dp(4),dp(8),dp(4),dp(4));panel.addView(quick);
    quick.setOnClickListener(v->{
     if(finishActive[0]!=null)finishActive[0].run();
+    for(int j=0;j<panels.size();j++){
+     if(panels.get(j)==panel)continue;
+     panels.get(j).setVisibility(View.GONE);
+     headers.get(j).setText(formattedReadingText(names.get(j)+"  ▾"));
+    }
+    panel.setVisibility(View.VISIBLE);
+    h.setText(formattedReadingText(name+"  ▴"));
     String raw=prefs.getString(key,"");
     java.util.regex.Matcher matcher=lectureHeadingPattern().matcher(raw);
     ArrayList<Integer> ss=new ArrayList<>(),ee=new ArrayList<>();
