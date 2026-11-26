@@ -459,10 +459,10 @@ public class MainActivity extends Activity {
   target.setText(arabic.length()>0?arabic.toString():entry.split("\\r?\\n",2)[0].trim());
  }
  class LivingGradient extends android.graphics.drawable.Drawable {
-  float phase=0f;final android.graphics.Paint paint=new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
+  float phase=0f;final android.graphics.Paint basePaint=new android.graphics.Paint(); {basePaint.setColor(0xfff7f8f4);} final android.graphics.Paint paint=new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
   @Override public void draw(android.graphics.Canvas canvas){
    android.graphics.Rect b=getBounds();float w=b.width(),h=b.height();if(w<=0||h<=0)return;
-   canvas.drawColor(0xfff7f8f4);
+   canvas.drawRect(b,basePaint);
    // V2: visible, slow-moving emerald and gold orbs; content remains above the background.
    float radius=Math.max(w*0.9f,h*0.32f);
    float theta=phase*(float)Math.PI*2f;
@@ -471,7 +471,9 @@ public class MainActivity extends Activity {
    paint.setShader(new android.graphics.RadialGradient(x,y,radius,new int[]{0x9973cba2,0x5575cda9,0x1875cda9,0x0075cda9},new float[]{0f,0.30f,0.68f,1f},android.graphics.Shader.TileMode.CLAMP));canvas.drawRect(b,paint);
    float goldX=w*(0.70f-0.28f*(float)Math.sin(theta));
    float goldY=h*(0.72f+0.10f*(float)Math.cos(theta));
-   paint.setShader(new android.graphics.RadialGradient(goldX,goldY,radius*0.65f,new int[]{0x77e7c778,0x33f0dca0,0x00ffffff},null,android.graphics.Shader.TileMode.CLAMP));canvas.drawRect(b,paint);paint.setShader(null);
+   paint.setShader(new android.graphics.RadialGradient(goldX,goldY,radius*0.65f,new int[]{0x99e7b6c5,0x55ebcdd3,0x00ebcdd3},null,android.graphics.Shader.TileMode.CLAMP));canvas.drawRect(b,paint);paint.setShader(null);
+   // Static, subtle mosque silhouette in the shared lower background.
+   canvas.save();canvas.translate(w*0.72f,h*0.99f);float u=Math.min(w,h)*0.12f;paint.setColor(0x23619b80);canvas.drawRect(-u,-u*0.55f,u,0,paint);android.graphics.Path dome=new android.graphics.Path();dome.moveTo(-u,-u*0.55f);dome.cubicTo(-u,-u*1.12f,-u*0.32f,-u*1.12f,0,-u*1.45f);dome.cubicTo(u*0.32f,-u*1.12f,u,-u*1.12f,u,-u*0.55f);dome.close();canvas.drawPath(dome,paint);for(int side:new int[]{-1,1}){float cx=side*u*1.45f;canvas.drawRect(cx-u*0.12f,-u*1.4f,cx+u*0.12f,0,paint);android.graphics.Path tip=new android.graphics.Path();tip.moveTo(cx-u*0.17f,-u*1.4f);tip.lineTo(cx,-u*1.75f);tip.lineTo(cx+u*0.17f,-u*1.4f);tip.close();canvas.drawPath(tip,paint);}canvas.restore();
   }
   @Override public void setAlpha(int alpha){} @Override public void setColorFilter(android.graphics.ColorFilter filter){} @Override public int getOpacity(){return android.graphics.PixelFormat.OPAQUE;}
  }
@@ -480,8 +482,10 @@ public class MainActivity extends Activity {
   base("DinNote");
   // V4: extend the animated emerald aura behind the home header only.
   final View homeHeader=root.getChildAt(0);
-  final LivingGradient headerGlow=new LivingGradient();
-  homeHeader.setBackground(headerGlow);
+  final LivingGradient homeBackground=new LivingGradient();
+  root.setBackground(homeBackground);
+  homeHeader.setBackgroundColor(Color.TRANSPARENT);
+  root.getChildAt(1).setBackgroundColor(Color.TRANSPARENT);
   final boolean splitHome=homeWindowWidthDp()>=440;
   LinearLayout dashboardHost=root;
   if(splitHome){
@@ -489,15 +493,15 @@ public class MainActivity extends Activity {
    ScrollView boardScroll=new ScrollView(this);split.addView(boardScroll,new LinearLayout.LayoutParams(0,-1,1));
    LinearLayout boardPanel=new LinearLayout(this);boardPanel.setOrientation(1);boardPanel.setPadding(dp(8),dp(8),dp(8),dp(8));boardScroll.addView(boardPanel);
    renderHomeBoards(boardPanel,false);renderHomeBoards(boardPanel,true);
-   View separator=new View(this);separator.setBackgroundColor(0xffdcebe3);split.addView(separator,new LinearLayout.LayoutParams(dp(1),-1));
+   View separator=new View(this);separator.setBackgroundColor(Color.TRANSPARENT);split.addView(separator,new LinearLayout.LayoutParams(dp(1),-1));
    dashboardHost=new LinearLayout(this);dashboardHost.setOrientation(1);split.addView(dashboardHost,new LinearLayout.LayoutParams(0,-1,1));
   }
   ScrollView scroll=new ScrollView(this);scroll.setFillViewport(false);scroll.setVerticalScrollBarEnabled(false);
   scroll.setOverScrollMode(View.OVER_SCROLL_NEVER);scroll.setSmoothScrollingEnabled(true);
   dashboardHost.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
   LinearLayout page=new LinearLayout(this);page.setOrientation(1);
-  page.setPadding(dp(10),dp(6),dp(10),dp(3));page.setBackground(new LivingGradient());page.setTag("dinnote_home");
-  android.animation.ValueAnimator homeGlow=android.animation.ValueAnimator.ofFloat(0f,1f);homeGlow.setDuration(8000L);homeGlow.setRepeatCount(android.animation.ValueAnimator.INFINITE);homeGlow.setRepeatMode(android.animation.ValueAnimator.RESTART);homeGlow.setInterpolator(new android.view.animation.LinearInterpolator());homeGlow.addUpdateListener(a->{if(page.isAttachedToWindow()){float phase=(float)a.getAnimatedValue();((LivingGradient)page.getBackground()).phase=phase;page.invalidate();headerGlow.phase=phase;homeHeader.invalidate();}});page.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener(){public void onViewAttachedToWindow(View v){if(!homeGlow.isStarted())homeGlow.start();}public void onViewDetachedFromWindow(View v){homeGlow.cancel();}});
+  page.setPadding(dp(10),dp(6),dp(10),dp(3));page.setBackgroundColor(Color.TRANSPARENT);page.setTag("dinnote_home");
+  android.animation.ValueAnimator homeGlow=android.animation.ValueAnimator.ofFloat(0f,1f);homeGlow.setDuration(4500L);homeGlow.setRepeatCount(android.animation.ValueAnimator.INFINITE);homeGlow.setRepeatMode(android.animation.ValueAnimator.RESTART);homeGlow.setInterpolator(new android.view.animation.LinearInterpolator());homeGlow.addUpdateListener(a->{if(page.isAttachedToWindow()){float phase=(float)a.getAnimatedValue();homeBackground.phase=phase;homeBackground.invalidateSelf();}});page.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener(){public void onViewAttachedToWindow(View v){if(!homeGlow.isStarted())homeGlow.start();}public void onViewDetachedFromWindow(View v){homeGlow.cancel();}});
   // Use the actual measured dashboard height. Avoid scaleY, synthetic spacer
   // and fixed-height wrapper: all three created a scrollable empty tail.
   scroll.addView(page,new ScrollView.LayoutParams(-1,-2));
@@ -521,7 +525,7 @@ public class MainActivity extends Activity {
    if(postingKey.startsWith("n_"))noteCount++;
    else if(postingKey.startsWith("m_"))bookCount++;
   }
-  LinearLayout tiles=new LinearLayout(this);tiles.setGravity(Gravity.CENTER_VERTICAL);tiles.setPadding(dp(10),dp(2),dp(10),dp(3));tiles.setBackgroundColor(0xfff7f8f4);dashboardHost.addView(tiles,splitHome?0:1,new LinearLayout.LayoutParams(-1,dp(48)));
+  LinearLayout tiles=new LinearLayout(this);tiles.setGravity(Gravity.CENTER_VERTICAL);tiles.setPadding(dp(10),dp(2),dp(10),dp(3));tiles.setBackgroundColor(Color.TRANSPARENT);dashboardHost.addView(tiles,splitHome?0:1,new LinearLayout.LayoutParams(-1,dp(48)));
   for(int j=0;j<2;j++){
    final boolean isBook=j==1;
    LinearLayout tile=new LinearLayout(this);tile.setGravity(Gravity.CENTER_VERTICAL);
@@ -716,8 +720,8 @@ public class MainActivity extends Activity {
   LinearLayout footer=new LinearLayout(this);
   footer.setOrientation(LinearLayout.VERTICAL);
   footer.setPadding(dp(10),dp(3),dp(10),dp(4));
-  footer.setBackgroundColor(0xfffdfefe);
-  footer.setElevation(dp(3));
+  footer.setBackgroundColor(Color.TRANSPARENT);
+  footer.setElevation(0);
   dashboardHost.addView(footer,new LinearLayout.LayoutParams(-1,-2));
   LinearLayout.LayoutParams ap=new LinearLayout.LayoutParams(-1,dp(42));
   LinearLayout actions=new LinearLayout(this);actions.setOrientation(LinearLayout.HORIZONTAL);
@@ -729,7 +733,7 @@ public class MainActivity extends Activity {
    wisdomCard.setPadding(dp(12),dp(2),dp(12),dp(5));
    final int[] wisdomBorders={0xffd8c69c,0xffb7d2be,0xffd4c5df};
    final int wisdomStyle=new java.util.Random().nextInt(wisdomBorders.length);
-   wisdomCard.setBackground(rounded(0xfffdfcf7,wisdomBorders[wisdomStyle],11));
+   wisdomCard.setBackground(rounded(0x55fdfcf7,wisdomBorders[wisdomStyle],11));
    wisdomCard.setClipToOutline(true);
    wisdomCard.setClipChildren(true);
    LinearLayout.LayoutParams wisdomParams=new LinearLayout.LayoutParams(-1,dp(126));
