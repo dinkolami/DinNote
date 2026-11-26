@@ -3206,8 +3206,8 @@ public class MainActivity extends Activity {
    View child=formatBar.getChildAt(i);
    if(!(child instanceof Button)||!(child.getLayoutParams() instanceof LinearLayout.LayoutParams))continue;
    LinearLayout.LayoutParams p=(LinearLayout.LayoutParams)child.getLayoutParams();
-   p.setMargins(dp(compact?1:3),dp(3),dp(compact?1:3),dp(3));
-   child.setLayoutParams(p);child.setPadding(dp(compact?4:8),dp(2),dp(compact?4:8),dp(2));
+   p.setMargins(dp(compact?2:3),dp(3),dp(compact?2:3),dp(3));
+   child.setLayoutParams(p);child.setPadding(dp(compact?7:8),dp(2),dp(compact?7:8),dp(2));
   }
  }
  void chooseStudyReference(){
@@ -3398,7 +3398,7 @@ public class MainActivity extends Activity {
   root.addView(formatScroll);
   formatScroll.addView(formatBar);
   final LinearLayout editorRoot=root;
-  editorRoot.addOnLayoutChangeListener((v,l,t,rr,b,ol,ot,orr,ob)->{boolean wide=rr-l>=dp(600);if(wide&&formatScroll.getParent()==editorRoot){compactFormatButtons(formatBar,true);editorRoot.removeView(formatScroll);spacer.setVisibility(View.GONE);bar.addView(formatScroll,bar.indexOfChild(spacer),new LinearLayout.LayoutParams(0,-2,1));formatScroll.post(()->formatScroll.scrollTo(0,0));}else if(!wide&&formatScroll.getParent()==bar){compactFormatButtons(formatBar,false);bar.removeView(formatScroll);spacer.setVisibility(View.VISIBLE);editorRoot.addView(formatScroll,editorRoot.indexOfChild(metadataTitle)+1,new LinearLayout.LayoutParams(-1,-2));}});
+
   if(key!=null&&isLectureTemplate(prefs.getString(key,""))){
    Button lectureIndex=action("☷",formatBar,()->showLectureEditorIndex());
    lectureIndex.setContentDescription("Indeks subtopik Nota Kuliah");
@@ -3461,6 +3461,7 @@ public class MainActivity extends Activity {
    }).show());
   toolsButton.setContentDescription("Alat penyuntingan tambahan");
   Button referenceButton=action("▥",formatBar,()->chooseStudyReference());referenceButton.setContentDescription("Dual View Maktabah");
+  editorRoot.addOnLayoutChangeListener((v,l,t,rr,b,ol,ot,orr,ob)->{boolean wide=rr-l>=dp(600);if(wide&&formatScroll.getParent()==editorRoot){formatBar.removeView(toolsButton);bar.addView(toolsButton,bar.indexOfChild(historyButtons[0]));compactFormatButtons(formatBar,true);editorRoot.removeView(formatScroll);spacer.setVisibility(View.GONE);bar.addView(formatScroll,bar.indexOfChild(spacer),new LinearLayout.LayoutParams(0,-2,1));formatScroll.post(()->formatScroll.scrollTo(0,0));}else if(!wide&&formatScroll.getParent()==bar){bar.removeView(toolsButton);formatBar.addView(toolsButton,formatBar.indexOfChild(referenceButton));compactFormatButtons(formatBar,false);bar.removeView(formatScroll);spacer.setVisibility(View.VISIBLE);editorRoot.addView(formatScroll,editorRoot.indexOfChild(metadataTitle)+1,new LinearLayout.LayoutParams(-1,-2));}});
 
   LinearLayout.LayoutParams editBodyFrame=new LinearLayout.LayoutParams(-1,0,1);editBodyFrame.setMargins(dp(4),0,dp(4),0);root.addView(editor,editBodyFrame);
 
