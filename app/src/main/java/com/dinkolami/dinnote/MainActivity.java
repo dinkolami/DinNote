@@ -849,7 +849,7 @@ public class MainActivity extends Activity {
   int hits=0;String first="";
   for(String k:prefs.getAll().keySet())if(k.startsWith("n_")||k.startsWith("m_")){
    String title=prefs.getString("title_"+k,""),body=prefs.getString(k,"");
-   if((title+" "+body).toLowerCase(java.util.Locale.ROOT).contains(query.toLowerCase(java.util.Locale.ROOT))){hits++;first=title;}
+   if(normalizeCompareText(title+" "+body).contains(normalizeCompareText(query))){hits++;first=title;}
   }
   // Results count is announced without replacing the approved home screen.
   if(hits==1)android.widget.Toast.makeText(this,"Ditemui: "+first,android.widget.Toast.LENGTH_SHORT).show();
@@ -1023,7 +1023,7 @@ public class MainActivity extends Activity {
   }
  }
 
- boolean matchesSearch(String content,String[] terms){String normalized=content.replaceAll("\\s+"," ").toLowerCase(java.util.Locale.ROOT);for(String term:terms)if(!normalized.contains(term))return false;return true;}
+ boolean matchesSearch(String content,String[] terms){String normalized=normalizeCompareText(content.replaceAll("\\s+"," "));for(String term:terms)if(!normalized.contains(term))return false;return true;}
  String cleanCardPreview(String raw){
   if(raw==null)return "";
   // Some imported samples contain escaped newline sequences rather than line breaks.
@@ -1078,7 +1078,7 @@ public class MainActivity extends Activity {
   picker.setOnShowListener(d->picker.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener(v->{boolean all=true;for(boolean on:checked)if(!on){all=false;break;}for(int i=0;i<checked.length;i++){checked[i]=!all;picker.getListView().setItemChecked(i,!all);}}));
   picker.show();
  }
- void list(String filter){filter=filter.trim();String query=filter.replaceAll("\\s+"," ").toLowerCase(java.util.Locale.ROOT);String[] terms=query.isEmpty()?new String[0]:query.split(" ");items.removeAllViews();ArrayList<String> keys=new ArrayList<>();java.util.Map<String,?> listSnapshot=prefs.getAll();for(String k:listSnapshot.keySet())if(k.startsWith(maktabah?"m_":"n_")&&listSnapshot.get(k) instanceof String&&!prefs.getBoolean("deleted_"+k,false))keys.add(k);Collections.sort(keys,(a,b)->{
+ void list(String filter){filter=filter.trim();String query=normalizeCompareText(filter.replaceAll("\\s+"," "));String[] terms=query.isEmpty()?new String[0]:query.split(" ");items.removeAllViews();ArrayList<String> keys=new ArrayList<>();java.util.Map<String,?> listSnapshot=prefs.getAll();for(String k:listSnapshot.keySet())if(k.startsWith(maktabah?"m_":"n_")&&listSnapshot.get(k) instanceof String&&!prefs.getBoolean("deleted_"+k,false))keys.add(k);Collections.sort(keys,(a,b)->{
    boolean pinA=prefs.getBoolean("pinned_"+a,false),pinB=prefs.getBoolean("pinned_"+b,false);
    if(pinA!=pinB)return pinA?-1:1;
    if(maktabah&&prefs.getBoolean("book_manual_order",false)){int rank=Integer.compare(prefs.getInt("book_rank_"+a,Integer.MAX_VALUE),prefs.getInt("book_rank_"+b,Integer.MAX_VALUE));if(rank!=0)return rank;}
@@ -1491,22 +1491,24 @@ public class MainActivity extends Activity {
     String term=field.getText().toString().trim();
     if(term.isEmpty())return;
     String source=prefs.getString(key,"");
-    String haystack=source.toLowerCase(java.util.Locale.ROOT),needle=term.toLowerCase(java.util.Locale.ROOT);
-    java.util.ArrayList<Integer> matches=new java.util.ArrayList<>();
+    String needle=normalizeCompareText(term);if(needle.isEmpty())return;
+    StringBuilder haystack=new StringBuilder();int[] offsets=new int[source.length()];int count=0;
+    for(int j=0;j<source.length();j++){String c=normalizeCompareText(source.substring(j,j+1));if(c.isEmpty())continue;haystack.append(c.charAt(0));offsets[count++]=j;}
+    java.util.ArrayList<int[]> matches=new java.util.ArrayList<>();
     int index=0;
-    while((index=haystack.indexOf(needle,index))>=0){matches.add(index);index+=Math.max(1,needle.length());}
+    while((index=haystack.indexOf(needle,index))>=0){int end=offsets[index+needle.length()-1]+1;while(end<source.length()&&normalizeCompareText(source.substring(end,end+1)).isEmpty())end++;matches.add(new int[]{offsets[index],end});index+=needle.length();}
     if(matches.isEmpty()){Toast.makeText(this,"Tiada padanan",Toast.LENGTH_SHORT).show();return;}
     showReaderSearchResult(source,term,matches,0);
    }).setNegativeButton("Batal",null).show();
  }
- void showReaderSearchResult(String source,String term,java.util.ArrayList<Integer> matches,int selectedMatch){
-  int index=matches.get(selectedMatch),from=Math.max(0,index-90),to=Math.min(source.length(),index+term.length()+120);
+ void showReaderSearchResult(String source,String term,java.util.ArrayList<int[]> matches,int selectedMatch){
+  int index=matches.get(selectedMatch)[0],end=matches.get(selectedMatch)[1],from=Math.max(0,index-90),to=Math.min(source.length(),end+120);
   String excerpt=(from>0?"…":"")+source.substring(from,to)+(to<source.length()?"…":"");
   int prefix=from>0?1:0;
   android.text.SpannableString marked=new android.text.SpannableString(excerpt);
   int begin=index-from+prefix;
-  marked.setSpan(new android.text.style.BackgroundColorSpan(0xffffe6a0),begin,Math.min(marked.length(),begin+term.length()),android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-  marked.setSpan(new android.text.style.UnderlineSpan(),begin,Math.min(marked.length(),begin+term.length()),android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+  marked.setSpan(new android.text.style.BackgroundColorSpan(0xffffe6a0),begin,Math.min(marked.length(),begin+end-index),android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+  marked.setSpan(new android.text.style.UnderlineSpan(),begin,Math.min(marked.length(),begin+end-index),android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
   new AlertDialog.Builder(this).setTitle("Padanan "+(selectedMatch+1)+" / "+matches.size())
    .setMessage(marked)
    .setNegativeButton("Sebelumnya",(d,w)->showReaderSearchResult(source,term,matches,(selectedMatch+matches.size()-1)%matches.size()))
