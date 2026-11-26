@@ -299,6 +299,12 @@ public class MainActivity extends Activity {
  for(int i=0;i<verses.length;i++){String id="m_qurtubi_fatihah_"+(i+1);if(!prefs.contains(id)&&!prefs.getBoolean("deleted_"+id,false))e.putString(id,verses[i]+"\n\nالنَّصُّ الْعَرَبِيُّ\nTeks tafsir asal belum diimport.\n\nTerjemahan Indonesia\nPadanan terjemahan belum diimport.").putString("title_"+id,"Tafsir al-Qurthubi — al-Fatihah, Ayat "+(i+1)).putString("cat_"+id,"Kitab-Kitab › Tafsir");}
  e.putBoolean("qurtubi_posts_v1",true).apply();
  }
+ void addBoardTrailLink(LinearLayout trail,String label,String target,boolean active){
+  TextView link=text(label,13);link.setTextColor(active?0xff243d32:0xff216e4e);link.setGravity(Gravity.CENTER_VERTICAL);link.setPadding(dp(3),0,dp(3),0);link.setSingleLine(true);
+  if(active)link.setTypeface(null,android.graphics.Typeface.BOLD);
+  trail.addView(link,new LinearLayout.LayoutParams(-2,-1));
+  if(!active){link.setContentDescription("Buka "+label);link.setOnClickListener(v->{categoryFilter=target;prefs.edit().putString(maktabah?"board_last_m":"board_last_n",target).apply();if(maktabah)savedBooksScroll=0;else savedNotesScroll=0;notesPage(true);});}
+ }
  void notesPage(){notesPage(false);}
  void notesPage(boolean keepBoards){if(maktabah)seedQurtubiPosts();editor=null;titleEditor=null;categoryPicker=null;selected=null;
   LinearLayout existing=keepBoards&&root!=null?root.findViewWithTag("board_list_pane"):null;
@@ -342,6 +348,14 @@ public class MainActivity extends Activity {
    filters.addView(compactSummary,new LinearLayout.LayoutParams(0,-2,2f));
   }
   listHost.addView(filters);
+  if(!categoryFilter.equals("Semua")&&!categoryFilter.equals("Tanpa kategori")){
+   HorizontalScrollView trailScroll=new HorizontalScrollView(this);trailScroll.setHorizontalScrollBarEnabled(false);
+   LinearLayout trail=new LinearLayout(this);trail.setGravity(Gravity.CENTER_VERTICAL);trail.setPadding(dp(14),0,dp(14),0);trailScroll.addView(trail);
+   ArrayList<String> chain=new ArrayList<>();for(String n=categoryFilter;!n.isEmpty();n=boardParent(n))chain.add(0,n);
+   addBoardTrailLink(trail,maktabah?"Maktabah":"Nota","Semua",false);
+   for(String node:chain){TextView sep=text(" › ",13);sep.setTextColor(0xff87958c);trail.addView(sep);addBoardTrailLink(trail,boardLeaf(node),node,node.equals(categoryFilter));}
+   listHost.addView(trailScroll,new LinearLayout.LayoutParams(-1,dp(32)));trailScroll.post(()->trailScroll.fullScroll(View.FOCUS_RIGHT));
+  }
   sort.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Susunan").setItems(new String[]{"Terbaru","Terlama","Tajuk A–Z","Kerap dibuka"},(d,i)->{sortMode=new String[]{"Terbaru","Terlama","Tajuk A–Z","Kerap dibuka"}[i];sort.setContentDescription("Susun: "+sortMode+". Tekan untuk ubah susunan");list(search.getText().toString());}).show());
   View line=new View(this);line.setBackgroundColor(0xffd0d7de);listHost.addView(line,new LinearLayout.LayoutParams(-1,1));ScrollView sc=new ScrollView(this);listScroll=sc;sc.setOverScrollMode(View.OVER_SCROLL_NEVER);sc.setFillViewport(true);sc.setVerticalScrollBarEnabled(true);items=new LinearLayout(this);items.setOrientation(1);items.setPadding(0,0,0,dp(12));sc.addView(items);listHost.addView(sc,new LinearLayout.LayoutParams(-1,0,1));catFilter.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener(){public void onNothingSelected(android.widget.AdapterView<?> p){}public void onItemSelected(android.widget.AdapterView<?> p,View v,int pos,long id){categoryFilter=cats.get(pos);prefs.edit().putString(maktabah?"board_last_m":"board_last_n",categoryFilter).apply();list(search.getText().toString());}});search.addTextChangedListener(new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){list(s.toString());}public void afterTextChanged(Editable e){}});list("");
  int restoreY=maktabah?savedBooksScroll:savedNotesScroll;
