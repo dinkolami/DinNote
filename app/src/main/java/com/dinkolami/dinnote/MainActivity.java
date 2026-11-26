@@ -4079,6 +4079,30 @@ public class MainActivity extends Activity {
   renderBoardRows(panel,null,nodes,"",0,boardPostingCounts(maktabah));
   rememberBoardScroll(scroll,maktabah?"board_scroll_manage_m":"board_scroll_manage_n");
  }
+ void appendOrderedBoardCategories(LinkedHashSet<String> nodes,java.util.Set<String> actual,String parent,ArrayList<String> ordered){
+  for(String node:nodes)if(boardParent(node).equals(parent)){
+   if(actual.contains(node))ordered.add(node);
+   appendOrderedBoardCategories(nodes,actual,node,ordered);
+  }
+ }
+ void moveBoardWithinLevel(String source,String target,boolean after){
+  if(source.equals(target)||!boardParent(source).equals(boardParent(target)))return;
+  ArrayList<String> original=categories();
+  LinkedHashSet<String> nodes=new LinkedHashSet<>();
+  for(String name:original){ArrayList<String> chain=new ArrayList<>();for(String n=name;!n.isEmpty();n=boardParent(n))chain.add(0,n);nodes.addAll(chain);}
+  if(!nodes.contains(source)||!nodes.contains(target))return;
+  LinkedHashSet<String> reordered=new LinkedHashSet<>();
+  for(String node:nodes){
+   if(node.equals(source))continue;
+   if(node.equals(target)&&!after)reordered.add(source);
+   reordered.add(node);
+   if(node.equals(target)&&after)reordered.add(source);
+  }
+  ArrayList<String> ordered=new ArrayList<>();
+  appendOrderedBoardCategories(reordered,new LinkedHashSet<>(original),"",ordered);
+  if(ordered.size()!=original.size()||!new LinkedHashSet<>(ordered).equals(new LinkedHashSet<>(original)))return;
+  storeCategories(ordered);manageCategories();
+ }
  void renderBoardRows(LinearLayout panel,AlertDialog dialog,LinkedHashSet<String> nodes,String parent,int depth,java.util.Map<String,Integer> counts){
   for(String name:nodes){if(!boardParent(name).equals(parent))continue;
    LinearLayout row=new LinearLayout(this);row.setGravity(Gravity.CENTER_VERTICAL);row.setPadding(dp(Math.min(depth,8)*14),dp(2),dp(3),dp(2));row.setBackground(rounded(0xfffdfefe,0xffe0e7e2,7));panel.addView(row);
@@ -4086,6 +4110,20 @@ public class MainActivity extends Activity {
    final boolean hasChildren=children;
    TextView arrow=text(children?"▾":"",15);arrow.setGravity(Gravity.CENTER);arrow.setTextColor(0xff216e4e);row.addView(arrow,new LinearLayout.LayoutParams(dp(28),dp(40)));TextView label=text((depth==0?"▣  ":"↳  ")+boardLeaf(name),15);label.setTextColor(0xff216e4e);label.setMinHeight(dp(44));label.setGravity(Gravity.CENTER_VERTICAL);row.addView(label,new LinearLayout.LayoutParams(0,-2,1));
    addBoardPostingCount(row,counts.getOrDefault(name,0));
+   TextView grip=text("⠿",20);grip.setGravity(Gravity.CENTER);grip.setTextColor(0xff687b70);grip.setContentDescription("Tekan lama untuk susun "+boardLeaf(name));row.addView(grip,new LinearLayout.LayoutParams(dp(28),dp(44)));
+   grip.setOnLongClickListener(v->v.startDragAndDrop(android.content.ClipData.newPlainText("board",name),new View.DragShadowBuilder(row),name,0));
+   row.setOnDragListener((v,event)->{
+    Object local=event.getLocalState();
+    if(!(local instanceof String)||local.equals(name)||!boardParent((String)local).equals(parent))return false;
+    switch(event.getAction()){
+     case android.view.DragEvent.ACTION_DRAG_STARTED:return true;
+     case android.view.DragEvent.ACTION_DRAG_ENTERED:v.setBackground(rounded(0xffe3eee7,0xff216e4e,7));return true;
+     case android.view.DragEvent.ACTION_DRAG_EXITED:
+     case android.view.DragEvent.ACTION_DRAG_ENDED:v.setBackground(rounded(0xfffdfefe,0xffe0e7e2,7));return true;
+     case android.view.DragEvent.ACTION_DROP:moveBoardWithinLevel((String)local,name,event.getY()>v.getHeight()/2f);return true;
+     default:return true;
+    }
+   });
    Button more=new Button(this);more.setText("⋮");styleBoardButton(more,false);row.addView(more,new LinearLayout.LayoutParams(dp(48),dp(44)));
    more.setOnClickListener(v->{if(dialog!=null)dialog.dismiss();new AlertDialog.Builder(this).setTitle(name).setItems(new String[]{"Tambah Sub-board","Urus kategori"},(d,w)->{if(w==0)addBoardChild(name);else categoryActions(name);}).setNegativeButton("Batal",null).show();});
    LinearLayout nested=new LinearLayout(this);nested.setOrientation(1);panel.addView(nested);
