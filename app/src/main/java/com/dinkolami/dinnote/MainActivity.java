@@ -5487,6 +5487,15 @@ public class MainActivity extends Activity {
   }
   super.onPause();
  }
+ @Override protected void onRestart(){
+  super.onRestart();
+  // onStop has already checkpointed the reader/editor. Never reopen its screen automatically.
+  stopAutoReading();
+  lectureBackReveal=null;readerDetector=null;readerScroll=null;
+  editor=null;titleEditor=null;saveIndicator=null;selected=null;
+  prefs.edit().putBoolean("reader_clean_mode",false).apply();
+  openHomeSafely();
+ }
  @Override protected void onStop(){
   // Checkpoint the latest editor text before flushing when Android backgrounds the app.
   if(editor!=null){
