@@ -3226,10 +3226,10 @@ public class MainActivity extends Activity {
   LinearLayout header=new LinearLayout(this);header.setGravity(Gravity.CENTER_VERTICAL);left.addView(header);
   TextView title=text(prefs.getString("title_"+key,"Kitab"),14);title.setTextColor(0xff216e4e);header.addView(title,new LinearLayout.LayoutParams(0,-2,1));
   action("×",header,()->closeStudyReference());
-  ScrollView scroll=new ScrollView(this);TextView body=text("",15);body.setText(formattedReadingText(cleanSelectableReadingText(prefs.getString(key,""))));body.setTextIsSelectable(true);body.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);body.setPadding(dp(10),dp(8),dp(10),dp(12));scroll.addView(body);left.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
+  ScrollView scroll=new ScrollView(this);TextView body=text("",15);body.setText(formattedReadingText(cleanSelectableReadingText(prefs.getString(key,""))));body.setTextIsSelectable(true);body.setTextColor(0xff30343b);body.setGravity(Gravity.TOP|Gravity.START);body.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START);body.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);body.setPadding(dp(10),dp(8),dp(10),dp(12));scroll.addView(body);left.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
   View handle=new View(this);handle.setBackgroundColor(0xffc6ad70);
   root.removeView(active);root.addView(split,index,new LinearLayout.LayoutParams(-1,0,1));
-  split.addView(left,new LinearLayout.LayoutParams(0,-1,1));split.addView(handle,new LinearLayout.LayoutParams(dp(8),-1));split.addView(active,new LinearLayout.LayoutParams(0,-1,1));
+  split.addView(left,new LinearLayout.LayoutParams(0,-1,1));split.addView(handle,new LinearLayout.LayoutParams(dp(3),-1));split.addView(active,new LinearLayout.LayoutParams(0,-1,1));
   handle.setOnTouchListener((v,event)->{if(event.getActionMasked()==android.view.MotionEvent.ACTION_DOWN)return true;if(event.getActionMasked()==android.view.MotionEvent.ACTION_MOVE){int[] xy=new int[2];split.getLocationOnScreen(xy);float f=Math.max(.30f,Math.min(.70f,(event.getRawX()-xy[0])/Math.max(1,split.getWidth())));left.setLayoutParams(new LinearLayout.LayoutParams(0,-1,f));active.setLayoutParams(new LinearLayout.LayoutParams(0,-1,1-f));return true;}return true;});
   active.post(()->revealEditorCursor(active));
  }
@@ -3260,6 +3260,9 @@ public class MainActivity extends Activity {
    }
   };
   Button addHeading=action("+ Subtopik",panel,()->{EditText input=new EditText(this);input.setSingleLine(true);new AlertDialog.Builder(this).setTitle("Tambah subtopik").setView(input).setNegativeButton("Batal",null).setPositiveButton("Seterusnya",(d,w)->{String name=input.getText().toString().trim();if(name.isEmpty())return;ArrayList<String> labels=new ArrayList<>();ArrayList<Integer> positions=new ArrayList<>();java.util.regex.Matcher hm=lectureHeadingPattern().matcher(active.getText().toString());while(hm.find()){labels.add("Sisip sebelum "+hm.group(1));positions.add(hm.start());}labels.add("Tambah paling bawah");positions.add(active.length());new AlertDialog.Builder(this).setTitle("Kedudukan subtopik").setItems(labels.toArray(new String[0]),(dd,index)->{int pos=positions.get(index);String prefix=pos>0&&active.getText().charAt(pos-1)!='\n'?"\n":"";active.getText().insert(pos,prefix+"\u2063"+name+"\n\n\n");save();refresh[0].run();}).setNegativeButton("Batal",null).show();}).show();});
+  final LinearLayout compactHeader=new LinearLayout(this);compactHeader.setGravity(Gravity.CENTER_VERTICAL);
+  panel.addView(compactHeader,0);
+  panel.addOnLayoutChangeListener((v,l,t,r,b,ol,ot,orr,ob)->{boolean wide=r-l>=dp(600);if(wide&&toggle.getParent()==panel){panel.removeView(toggle);panel.removeView(addHeading);compactHeader.addView(toggle,new LinearLayout.LayoutParams(0,-2,1));compactHeader.addView(addHeading,new LinearLayout.LayoutParams(-2,-2));}else if(!wide&&toggle.getParent()==compactHeader){compactHeader.removeView(toggle);compactHeader.removeView(addHeading);panel.addView(toggle,1);panel.addView(addHeading);}});
   refresh[0].run();
   rows.setVisibility(View.GONE);active.setVisibility(View.VISIBLE);
   toggle.setOnClickListener(v->{
@@ -3384,6 +3387,8 @@ public class MainActivity extends Activity {
   formatScroll.setFillViewport(false);
   root.addView(formatScroll);
   formatScroll.addView(formatBar);
+  final LinearLayout editorRoot=root;
+  editorRoot.addOnLayoutChangeListener((v,l,t,rr,b,ol,ot,orr,ob)->{boolean wide=rr-l>=dp(600);if(wide&&formatScroll.getParent()==editorRoot){editorRoot.removeView(formatScroll);spacer.setVisibility(View.GONE);bar.addView(formatScroll,bar.indexOfChild(spacer),new LinearLayout.LayoutParams(0,-2,1));}else if(!wide&&formatScroll.getParent()==bar){bar.removeView(formatScroll);spacer.setVisibility(View.VISIBLE);editorRoot.addView(formatScroll,editorRoot.indexOfChild(metadataTitle)+1,new LinearLayout.LayoutParams(-1,-2));}});
   if(key!=null&&isLectureTemplate(prefs.getString(key,""))){
    Button lectureIndex=action("☷",formatBar,()->showLectureEditorIndex());
    lectureIndex.setContentDescription("Indeks subtopik Nota Kuliah");
