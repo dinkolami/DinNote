@@ -2176,6 +2176,10 @@ public class MainActivity extends Activity {
   labels=java.util.Arrays.copyOf(labels,labels.length+1);icons=java.util.Arrays.copyOf(icons,icons.length+1);descriptions=java.util.Arrays.copyOf(descriptions,descriptions.length+1);
   labels[contentsIndex+1]=labels[contentsIndex];icons[contentsIndex+1]=icons[contentsIndex];descriptions[contentsIndex+1]=descriptions[contentsIndex];
   labels[contentsIndex]="Isi Kandungan";icons[contentsIndex]="☷";descriptions[contentsIndex]="Lompat ke label bahagian dalam posting";
+  final int restartIndex=labels.length-1;
+  labels=java.util.Arrays.copyOf(labels,labels.length+1);icons=java.util.Arrays.copyOf(icons,icons.length+1);descriptions=java.util.Arrays.copyOf(descriptions,descriptions.length+1);
+  labels[restartIndex+1]=labels[restartIndex];icons[restartIndex+1]=icons[restartIndex];descriptions[restartIndex+1]=descriptions[restartIndex];
+  labels[restartIndex]="Kembali ke awal bacaan";icons[restartIndex]="↑";descriptions[restartIndex]="Mulakan semula bacaan nota atau kitab ini";
   ScrollView scroll=new ScrollView(this);scroll.setFillViewport(false);
   LinearLayout panel=new LinearLayout(this);panel.setOrientation(LinearLayout.VERTICAL);
   panel.setPadding(dp(12),dp(8),dp(12),dp(10));scroll.addView(panel);
@@ -2205,7 +2209,8 @@ public class MainActivity extends Activity {
    applyTouchFeedback(row);
    row.setOnClickListener(v->{
     dialog[0].dismiss();
-    if(option==contentsIndex)showAutomaticContents(key);
+    if(option==restartIndex){stopAutoReading();if(readerScroll!=null&&key.equals(selected)){readerScroll.scrollTo(0,0);prefs.edit().putInt("reading_scroll_"+key,0).putInt("reading_progress_permille_"+key,0).apply();}}
+    else if(option==contentsIndex)showAutomaticContents(key);
     else if(option==0)edit(key);
     else if(option==1){boolean pinned=prefs.getBoolean("pinned_"+key,false);prefs.edit().putBoolean("pinned_"+key,!pinned).putLong("pinned_at_"+key,!pinned?System.currentTimeMillis():0L).apply();Toast.makeText(this,pinned?"Sematan dibuang":"Disemat",Toast.LENGTH_SHORT).show();read(key);}
     else if(option==2)duplicateNote(key);
@@ -2971,18 +2976,20 @@ public class MainActivity extends Activity {
     readingProgress.setProgress(progress);
     readingPercent.setText(progress+"%");
    };
-   scroll.getViewTreeObserver().addOnScrollChangedListener(updateReadingProgress::run);
+   final boolean[] positionRestored={false};
+   scroll.getViewTreeObserver().addOnScrollChangedListener(()->{updateReadingProgress.run();if(positionRestored[0]&&readerScroll==scroll&&key.equals(selected)&&editor==null)saveReaderPosition(key);});
    scroll.post(()->{
     int maxScroll=Math.max(0,scroll.getChildAt(0).getHeight()-scroll.getHeight());
     int savedFraction=prefs.getInt("reading_progress_permille_"+key,-1);
     int target=savedFraction>=0?Math.round(maxScroll*Math.max(0,Math.min(1000,savedFraction))/1000f):prefs.getInt("reading_scroll_"+key,0);
     scroll.scrollTo(0,Math.max(0,Math.min(maxScroll,target)));
+    positionRestored[0]=true;
     updateReadingProgress.run();
    });
    scroll.setOnTouchListener((v,e)->{
     if(e.getAction()==android.view.MotionEvent.ACTION_UP||e.getAction()==android.view.MotionEvent.ACTION_CANCEL)
      scroll.postDelayed(()->{
-      if(selected==null||!selected.equals(key)||scroll.getChildCount()==0)return;
+      if(selected==null||!selected.equals(key)||readerScroll!=scroll||!positionRestored[0]||scroll.getChildCount()==0)return;
       int maxScroll=Math.max(0,scroll.getChildAt(0).getHeight()-scroll.getHeight());
       int permille=maxScroll==0?0:Math.max(0,Math.min(1000,Math.round(scroll.getScrollY()*1000f/maxScroll)));
       prefs.edit().putInt("reading_scroll_"+key,scroll.getScrollY()).putInt("reading_progress_permille_"+key,permille).apply();
