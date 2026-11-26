@@ -2941,6 +2941,7 @@ public class MainActivity extends Activity {
   android.text.InputFilter[] next=java.util.Arrays.copyOf(old,old.length+1);next[old.length]=guard;active.setFilters(next);
  }
  void attachLectureEditorPanel(final EditText active){
+  active.setTransformationMethod(new LectureHeadingTransformation());
   LinearLayout panel=new LinearLayout(this);panel.setOrientation(1);
   TextView toggle=text("☷  Subtopik Nota Kuliah",16);toggle.setTextColor(0xff216e4e);toggle.setPadding(dp(10),dp(6),dp(10),dp(6));panel.addView(toggle);
   LinearLayout rows=new LinearLayout(this);rows.setOrientation(1);panel.addView(rows);
@@ -3312,6 +3313,35 @@ public class MainActivity extends Activity {
   refreshEditorBoxes(e);save();
   editor.post(()->revealEditorCursor(editor));
   return true;
+ }
+ // Length-preserving display only: editing and persistence keep the original characters.
+ static class LectureHeadingDisplay implements android.text.Spanned, android.text.GetChars {
+  final android.text.Spanned source;
+  LectureHeadingDisplay(android.text.Spanned source){this.source=source;}
+  public int length(){return source.length();}
+  public char charAt(int i){
+   char c=source.charAt(i);
+   if(c=='\n'||c=='\r')return c;
+   int start=i;while(start>0&&source.charAt(start-1)!='\n'&&source.charAt(start-1)!='\r')start--;
+   if(source.charAt(start)!='\u2063')return c;
+   return i==start?'#':Character.toUpperCase(c);
+  }
+  public void getChars(int start,int end,char[] dest,int off){for(int i=start;i<end;i++)dest[off+i-start]=charAt(i);}
+  public CharSequence subSequence(int start,int end){
+   char[] chars=new char[end-start];getChars(start,end,chars,0);
+   android.text.SpannableString result=new android.text.SpannableString(new String(chars));
+   android.text.TextUtils.copySpansFrom(source,start,end,Object.class,result,0);return result;
+  }
+  public String toString(){char[] chars=new char[length()];getChars(0,length(),chars,0);return new String(chars);}
+  public <T>T[] getSpans(int a,int b,Class<T> type){return source.getSpans(a,b,type);}
+  public int getSpanStart(Object o){return source.getSpanStart(o);}
+  public int getSpanEnd(Object o){return source.getSpanEnd(o);}
+  public int getSpanFlags(Object o){return source.getSpanFlags(o);}
+  public int nextSpanTransition(int a,int b,Class type){return source.nextSpanTransition(a,b,type);}
+ }
+ static class LectureHeadingTransformation implements android.text.method.TransformationMethod {
+  public CharSequence getTransformation(CharSequence source,View view){return source instanceof android.text.Spanned?new LectureHeadingDisplay((android.text.Spanned)source):source;}
+  public void onFocusChanged(View view,CharSequence source,boolean focused,int direction,android.graphics.Rect previous){}
  }
  static class LectureHeadingVisualSpan extends android.text.style.MetricAffectingSpan {
   private void apply(android.text.TextPaint p){android.graphics.Typeface old=p.getTypeface();int style=old==null?0:old.getStyle();p.setTypeface(android.graphics.Typeface.create(old,style|android.graphics.Typeface.BOLD));}
