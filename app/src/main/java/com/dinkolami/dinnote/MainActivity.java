@@ -310,6 +310,7 @@ public class MainActivity extends Activity {
    ScrollView boards=new ScrollView(this);split.addView(boards,new LinearLayout.LayoutParams(0,-1,1));
    LinearLayout panel=new LinearLayout(this);panel.setOrientation(1);panel.setPadding(dp(8),dp(8),dp(8),dp(8));boards.addView(panel);
    renderHomeBoards(panel,false);renderHomeBoards(panel,true);
+   rememberBoardScroll(boards,"board_scroll_split");
    View divider=new View(this);divider.setBackgroundColor(0xffd5bb72);split.addView(divider,new LinearLayout.LayoutParams(dp(1),-1));
    listHost=new LinearLayout(this);listHost.setOrientation(1);listHost.setTag("board_list_pane");split.addView(listHost,new LinearLayout.LayoutParams(0,-1,1));
   }
@@ -342,7 +343,7 @@ public class MainActivity extends Activity {
   }
   listHost.addView(filters);
   sort.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Susunan").setItems(new String[]{"Terbaru","Terlama","Tajuk A–Z","Kerap dibuka"},(d,i)->{sortMode=new String[]{"Terbaru","Terlama","Tajuk A–Z","Kerap dibuka"}[i];sort.setContentDescription("Susun: "+sortMode+". Tekan untuk ubah susunan");list(search.getText().toString());}).show());
-  View line=new View(this);line.setBackgroundColor(0xffd0d7de);listHost.addView(line,new LinearLayout.LayoutParams(-1,1));ScrollView sc=new ScrollView(this);listScroll=sc;sc.setOverScrollMode(View.OVER_SCROLL_NEVER);sc.setFillViewport(true);sc.setVerticalScrollBarEnabled(true);items=new LinearLayout(this);items.setOrientation(1);items.setPadding(0,0,0,dp(12));sc.addView(items);listHost.addView(sc,new LinearLayout.LayoutParams(-1,0,1));catFilter.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener(){public void onNothingSelected(android.widget.AdapterView<?> p){}public void onItemSelected(android.widget.AdapterView<?> p,View v,int pos,long id){categoryFilter=cats.get(pos);list(search.getText().toString());}});search.addTextChangedListener(new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){list(s.toString());}public void afterTextChanged(Editable e){}});list("");
+  View line=new View(this);line.setBackgroundColor(0xffd0d7de);listHost.addView(line,new LinearLayout.LayoutParams(-1,1));ScrollView sc=new ScrollView(this);listScroll=sc;sc.setOverScrollMode(View.OVER_SCROLL_NEVER);sc.setFillViewport(true);sc.setVerticalScrollBarEnabled(true);items=new LinearLayout(this);items.setOrientation(1);items.setPadding(0,0,0,dp(12));sc.addView(items);listHost.addView(sc,new LinearLayout.LayoutParams(-1,0,1));catFilter.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener(){public void onNothingSelected(android.widget.AdapterView<?> p){}public void onItemSelected(android.widget.AdapterView<?> p,View v,int pos,long id){categoryFilter=cats.get(pos);prefs.edit().putString(maktabah?"board_last_m":"board_last_n",categoryFilter).apply();list(search.getText().toString());}});search.addTextChangedListener(new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){list(s.toString());}public void afterTextChanged(Editable e){}});list("");
  int restoreY=maktabah?savedBooksScroll:savedNotesScroll;
  sc.post(()->sc.scrollTo(0,Math.max(0,restoreY)));
  }
@@ -362,7 +363,7 @@ public class MainActivity extends Activity {
    view.setForeground(getDrawable(value.resourceId));
   }
  }
- void openSection(boolean books){sectionOpen=true;maktabah=books;categoryFilter="Semua";notesPage();}
+ void openSection(boolean books){sectionOpen=true;maktabah=books;categoryFilter=prefs.getString(books?"board_last_m":"board_last_n","Semua");if(!categoryFilter.equals("Semua")&&!categories().contains(categoryFilter)){boolean found=false;for(String c:categories())for(String p=boardParent(c);!p.isEmpty();p=boardParent(p))if(p.equals(categoryFilter))found=true;if(!found)categoryFilter="Semua";}notesPage();}
  String smartPasteText(String value){
   // Conservative cleanup: preserve Arabic harakat, headings, lists and paragraph breaks.
   String clean=value.replace("\r\n","\n").replace('\r','\n').replace('\u00a0',' ');
@@ -3985,6 +3986,21 @@ public class MainActivity extends Activity {
  void addBoardPostingCount(LinearLayout row,int count){
   TextView number=text(String.valueOf(count),12);number.setTextColor(0xff687b70);number.setGravity(Gravity.END|Gravity.CENTER_VERTICAL);number.setPadding(dp(4),0,dp(8),0);number.setContentDescription(count+" posting");row.addView(number,new LinearLayout.LayoutParams(-2,dp(38)));
  }
+ void rememberBoardScroll(ScrollView scroll,String key){
+  final int saved=prefs.getInt(key,0);
+  scroll.post(()->{scroll.scrollTo(0,saved);scroll.setOnScrollChangeListener((v,x,y,oldX,oldY)->prefs.edit().putInt(key,y).apply());});
+ }
+ void restoreBoardBranch(TextView arrow,LinearLayout nested,String key){
+  nested.setTag("board_branch_children");
+  arrow.setTag("board_branch_arrow");
+  nested.setTag(android.R.id.custom,key);
+  boolean expanded=prefs.getBoolean(key,true);
+  nested.setVisibility(expanded?View.VISIBLE:View.GONE);arrow.setText(expanded?"▾":"▸");
+ }
+ void saveBoardBranch(View nested,boolean expanded){
+  Object key=nested.getTag(android.R.id.custom);
+  if(key instanceof String)prefs.edit().putBoolean((String)key,expanded).apply();
+ }
  void setAllBoardBranches(View view,boolean expand){
   if(view instanceof TextView&&"board_branch_arrow".equals(view.getTag())){
    View parent=(View)view.getParent();
@@ -3994,7 +4010,7 @@ public class MainActivity extends Activity {
     for(int i=index+1;i<group.getChildCount();i++){
      View child=group.getChildAt(i);
      if("board_branch_children".equals(child.getTag())){
-      child.setVisibility(expand?View.VISIBLE:View.GONE);
+      child.setVisibility(expand?View.VISIBLE:View.GONE);saveBoardBranch(child,expand);
       ((TextView)view).setText(expand?"▾":"▸");break;
      }
      if(child instanceof LinearLayout)break;
@@ -4039,9 +4055,9 @@ public class MainActivity extends Activity {
    addBoardPostingCount(row,counts.getOrDefault(name,0));
    row.setTag("board_row:"+(books?"m:":"n:")+name);
    if(sectionOpen&&maktabah==books&&name.equals(categoryFilter))row.setBackground(rounded(0xffe3eee7,0xffc9dfd0,5));
-   label.setOnClickListener(v->{sectionOpen=true;maktabah=books;categoryFilter=name;if(books)savedBooksScroll=0;else savedNotesScroll=0;notesPage(true);});
+   label.setOnClickListener(v->{sectionOpen=true;maktabah=books;categoryFilter=name;prefs.edit().putString(books?"board_last_m":"board_last_n",name).apply();if(books)savedBooksScroll=0;else savedNotesScroll=0;notesPage(true);});
    View rule=new View(this);rule.setBackgroundColor(0xffe5eae6);panel.addView(rule,new LinearLayout.LayoutParams(-1,dp(1)));
-   if(children){LinearLayout nested=new LinearLayout(this);nested.setOrientation(1);nested.setTag("board_branch_children");arrow.setTag("board_branch_arrow");panel.addView(nested);renderHomeBoardRows(nested,nodes,name,depth+1,books,counts);arrow.setOnClickListener(v->{boolean show=nested.getVisibility()!=View.VISIBLE;nested.setVisibility(show?View.VISIBLE:View.GONE);arrow.setText(show?"▾":"▸");});}
+   if(children){LinearLayout nested=new LinearLayout(this);nested.setOrientation(1);restoreBoardBranch(arrow,nested,"board_expand_"+(books?"m:":"n:")+name);panel.addView(nested);renderHomeBoardRows(nested,nodes,name,depth+1,books,counts);arrow.setOnClickListener(v->{boolean show=nested.getVisibility()!=View.VISIBLE;nested.setVisibility(show?View.VISIBLE:View.GONE);saveBoardBranch(nested,show);arrow.setText(show?"▾":"▸");});}
   }
  }
  String boardParent(String name){int i=Math.max(name.lastIndexOf(" / "),name.lastIndexOf(" › "));return i<0?"":name.substring(0,i);}
@@ -4061,6 +4077,7 @@ public class MainActivity extends Activity {
   Button add=new Button(this);add.setText("+ Tambah Board");styleBoardButton(add,false);panel.addView(add);add.setOnClickListener(v->categoryDialog(null));
   addBoardExpandControls(panel);
   renderBoardRows(panel,null,nodes,"",0,boardPostingCounts(maktabah));
+  rememberBoardScroll(scroll,maktabah?"board_scroll_manage_m":"board_scroll_manage_n");
  }
  void renderBoardRows(LinearLayout panel,AlertDialog dialog,LinkedHashSet<String> nodes,String parent,int depth,java.util.Map<String,Integer> counts){
   for(String name:nodes){if(!boardParent(name).equals(parent))continue;
@@ -4072,8 +4089,8 @@ public class MainActivity extends Activity {
    Button more=new Button(this);more.setText("⋮");styleBoardButton(more,false);row.addView(more,new LinearLayout.LayoutParams(dp(48),dp(44)));
    more.setOnClickListener(v->{if(dialog!=null)dialog.dismiss();new AlertDialog.Builder(this).setTitle(name).setItems(new String[]{"Tambah Sub-board","Urus kategori"},(d,w)->{if(w==0)addBoardChild(name);else categoryActions(name);}).setNegativeButton("Batal",null).show();});
    LinearLayout nested=new LinearLayout(this);nested.setOrientation(1);panel.addView(nested);
-   label.setOnClickListener(v->{if(dialog!=null)dialog.dismiss();sectionOpen=true;categoryFilter=name;if(maktabah)savedBooksScroll=0;else savedNotesScroll=0;notesPage();});
-   if(hasChildren){nested.setTag("board_branch_children");arrow.setTag("board_branch_arrow");renderBoardRows(nested,dialog,nodes,name,depth+1,counts);arrow.setContentDescription("Kembang atau lipat "+boardLeaf(name));arrow.setOnClickListener(v->{boolean show=nested.getVisibility()!=View.VISIBLE;nested.setVisibility(show?View.VISIBLE:View.GONE);arrow.setText(show?"▾":"▸");});}
+   label.setOnClickListener(v->{if(dialog!=null)dialog.dismiss();sectionOpen=true;categoryFilter=name;prefs.edit().putString(maktabah?"board_last_m":"board_last_n",name).apply();if(maktabah)savedBooksScroll=0;else savedNotesScroll=0;notesPage();});
+   if(hasChildren){restoreBoardBranch(arrow,nested,"board_expand_"+(maktabah?"m:":"n:")+name);renderBoardRows(nested,dialog,nodes,name,depth+1,counts);arrow.setContentDescription("Kembang atau lipat "+boardLeaf(name));arrow.setOnClickListener(v->{boolean show=nested.getVisibility()!=View.VISIBLE;nested.setVisibility(show?View.VISIBLE:View.GONE);saveBoardBranch(nested,show);arrow.setText(show?"▾":"▸");});}
   }
  }
  void styleBoardButton(Button button,boolean active){button.setAllCaps(false);button.setTextColor(0xff216e4e);button.setTextSize(14);button.setElevation(0);button.setStateListAnimator(null);button.setBackground(rounded(active?0xffe3eee7:0xfff8faf8,0xffd4dfd7,8));button.setPadding(dp(8),dp(4),dp(8),dp(4));}
