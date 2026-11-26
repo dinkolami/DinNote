@@ -1004,9 +1004,9 @@ public class MainActivity extends Activity {
    heading.setSingleLine(true);heading.setEllipsize(android.text.TextUtils.TruncateAt.END);
    heading.setTooltipText(title);card.addView(heading);
    String preview=cleanCardPreview(content);
-   if(preview.length()>100)preview=preview.substring(0,100)+"…";
+   
    TextView detail=dashboardText(preview,13,false);detail.setTextColor(0xff57635e);
-   detail.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
+   detail.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);detail.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START);
    detail.setMaxLines(2);detail.setEllipsize(android.text.TextUtils.TruncateAt.END);
    card.addView(detail);
    card.setMinimumHeight(dp(48));applyTouchFeedback(card);
@@ -1031,17 +1031,8 @@ public class MainActivity extends Activity {
   cleaned=cleaned.replaceAll("(?i)</?[biu]>","");
   cleaned=formattedReadingText(cleaned).toString();
   cleaned=cleaned.replaceAll("(?<!\\S)---(?!\\S)"," ").replaceAll("\\s+"," ").trim();
-  // Wrap Arabic runs individually to preserve natural RTL order within Malay sentences.
-  java.util.regex.Matcher matcher=java.util.regex.Pattern.compile("[\\p{InArabic}]+(?:\\s+[\\p{InArabic}]+)*").matcher(cleaned);
-  StringBuffer result=new StringBuffer();
-  android.text.BidiFormatter formatter=android.text.BidiFormatter.getInstance(false);
-  while(matcher.find()){
-   String run=matcher.group();
-   if(!run.matches(".*[\\p{InArabic}].*"))continue;
-   matcher.appendReplacement(result,java.util.regex.Matcher.quoteReplacement(formatter.unicodeWrap(run.trim(),android.text.TextDirectionHeuristics.RTL)));
-  }
-  matcher.appendTail(result);
-  return result.toString();
+  // Keep logical text order; Android resolves mixed-direction text as a whole.
+  return cleaned;
  }
  void chooseBulkPostings(){
   final boolean books=maktabah;
@@ -1129,7 +1120,7 @@ public class MainActivity extends Activity {
    }
   }
  }else displayKeys.addAll(visibleKeys);
- for(String k:displayKeys){String v=prefs.getString(k,"");String heading=prefs.getString("title_"+k,"");String shown=(heading.trim().isEmpty()?(cleanCardPreview(v).isEmpty()?"Tanpa tajuk":cleanCardPreview(v)):heading.trim());shown=shown.replaceAll("\\s+"," ").trim();if(shown.length()>70)shown=shown.substring(0,70)+"…";if(shown.trim().isEmpty())shown="Tanpa tajuk";if(!matchesSearch(heading+" "+v+" "+prefs.getString("cat_"+k,"Tanpa kategori"),terms))continue;if(!categoryFilter.equals("Semua")&&!categoryFilter.equals(prefs.getString("cat_"+k,"Tanpa kategori")))continue;String preview=cleanCardPreview(v);if(preview.isEmpty())preview="Belum ada kandungan";String cat=prefs.getString("cat_"+k,"Tanpa kategori").trim();if(cat.isEmpty())cat="Tanpa kategori";long stamp=prefs.getLong("updated_"+k,0);String date=stamp>0?new java.text.SimpleDateFormat("dd/MM/yyyy",java.util.Locale.getDefault()).format(new java.util.Date(stamp)):"Belum dikemas kini";String previewText=preview.length()>80?preview.substring(0,80)+"…":preview;
+ for(String k:displayKeys){String v=prefs.getString(k,"");String heading=prefs.getString("title_"+k,"");String shown=(heading.trim().isEmpty()?(cleanCardPreview(v).isEmpty()?"Tanpa tajuk":cleanCardPreview(v)):heading.trim());shown=shown.replaceAll("\\s+"," ").trim();if(shown.length()>70)shown=shown.substring(0,70)+"…";if(shown.trim().isEmpty())shown="Tanpa tajuk";if(!matchesSearch(heading+" "+v+" "+prefs.getString("cat_"+k,"Tanpa kategori"),terms))continue;if(!categoryFilter.equals("Semua")&&!categoryFilter.equals(prefs.getString("cat_"+k,"Tanpa kategori")))continue;String preview=cleanCardPreview(v);if(preview.isEmpty())preview="Belum ada kandungan";String cat=prefs.getString("cat_"+k,"Tanpa kategori").trim();if(cat.isEmpty())cat="Tanpa kategori";long stamp=prefs.getLong("updated_"+k,0);String date=stamp>0?new java.text.SimpleDateFormat("dd/MM/yyyy",java.util.Locale.getDefault()).format(new java.util.Date(stamp)):"Belum dikemas kini";String previewText=preview;
  String cardTitle=(prefs.getBoolean("pinned_"+k,false)?"📌  ":"")+(maktabah?"▤  ":"✎  ")+shown;
  LinearLayout card=new LinearLayout(this);card.setOrientation(LinearLayout.VERTICAL);
  card.setBackground(homeInsetSurface(k.equals(lastOpenedCard)?0xfff2faf5:0xffffffff,k.equals(lastOpenedCard)?0xfff2faf5:0xffffffff,k.equals(lastOpenedCard)?0xffb7d8c2:0xffd4ddd7,16));
@@ -1138,7 +1129,7 @@ public class MainActivity extends Activity {
  headingView.setIncludeFontPadding(false);headingView.setSingleLine(true);headingView.setEllipsize(android.text.TextUtils.TruncateAt.END);headingView.setTextColor(0xff30343b);
  LinearLayout.LayoutParams compactTitleParams=new LinearLayout.LayoutParams(-1,-2);compactTitleParams.bottomMargin=-dp(8);card.addView(headingView,compactTitleParams);
  TextView previewView=text(previewText,15);previewView.setTextColor(0xff30343b);
- previewView.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);previewView.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
+ previewView.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);previewView.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START);
  previewView.setIncludeFontPadding(false);previewView.setMaxLines(2);previewView.setMinLines(twoColumnList?2:1);previewView.setEllipsize(android.text.TextUtils.TruncateAt.END);
  previewView.setLineSpacing(dp(1),1.0f);card.addView(previewView,new LinearLayout.LayoutParams(-1,-2));
  LinearLayout meta=new LinearLayout(this);meta.setGravity(Gravity.CENTER_VERTICAL);
