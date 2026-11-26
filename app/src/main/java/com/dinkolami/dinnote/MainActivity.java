@@ -3244,7 +3244,8 @@ public class MainActivity extends Activity {
    active.requestFocus();active.setSelection(p);active.post(()->revealEditorCursor(active));
   }).setNegativeButton("Tutup",null).show();
  }
- void editContentSafely(String key){readerDetector=null;if(key!=null){
+ boolean restoringEditorCursor=false;
+ void editContentSafely(String key){readerDetector=null;restoringEditorCursor=false;final int savedCursor=key==null?0:prefs.getInt("edit_cursor_"+key,0);if(key!=null){
   if(!prefs.contains(key)){
    Toast.makeText(this,"Nota tidak ditemui atau telah dipadam",Toast.LENGTH_LONG).show();
    selected=null;editor=null;titleEditor=null;categoryPicker=null;
@@ -3427,11 +3428,12 @@ public class MainActivity extends Activity {
    }
   });
   editor.setOnTouchListener((v,event)->{editorSwipe.onTouchEvent(event);return false;});
-  if(key!=null){int remembered=prefs.getInt("edit_cursor_"+key,0);editor.setText(formattedReadingText(repairBoxStructure(normalizeStructuralMarkers(isLectureTemplate(prefs.getString(key,""))?markLectureHeadings(prefs.getString(key,"")):prefs.getString(key,"")))));editor.setSelection(Math.max(0,Math.min(remembered,editor.length())));}
+  restoringEditorCursor=true;
+  if(key!=null){int remembered=savedCursor;editor.setText(formattedReadingText(repairBoxStructure(normalizeStructuralMarkers(isLectureTemplate(prefs.getString(key,""))?markLectureHeadings(prefs.getString(key,"")):prefs.getString(key,"")))));editor.setSelection(Math.max(0,Math.min(remembered,editor.length())));}
   if(key!=null&&isLectureTemplate(prefs.getString(key,""))){attachLectureEditorPanel(editor);preserveLectureHeading(editor);}
   final EditText activeBody=editor;
-  final int resumeCursor=activeBody.getSelectionEnd();
-  activeBody.post(()->{if(editor!=activeBody||activeBody.getParent()==null)return;if(resumeCursor>=0)activeBody.setSelection(Math.min(resumeCursor,activeBody.length()));revealEditorCursor(activeBody);});
+  final int resumeCursor=Math.max(0,Math.min(savedCursor,activeBody.length()));
+  activeBody.post(()->{if(editor!=activeBody||activeBody.getParent()==null)return;activeBody.requestFocus();activeBody.setSelection(Math.min(resumeCursor,activeBody.length()));restoringEditorCursor=false;persistEditorPosition();revealEditorCursor(activeBody);});
   // Match the reader's optional Arabic serif typeface in the editor as well.
   // Without this, Arabic glyph widths and line wrapping differ after Selesai.
   if(prefs.getBoolean("reader_arabic_clear_font",false)&&
@@ -4067,7 +4069,7 @@ public class MainActivity extends Activity {
   }catch(Exception e){Toast.makeText(this,"Sejarah tidak dapat dibuka",Toast.LENGTH_LONG).show();}
  }
  void persistEditorPosition(){
-  if(editor==null||selected==null||editor.getSelectionEnd()<0)return;
+  if(restoringEditorCursor||editor==null||selected==null||editor.getSelectionEnd()<0)return;
   prefs.edit().putInt("edit_cursor_"+selected,editor.getSelectionEnd()).apply();
  }
  static class EditorSnapshot{
