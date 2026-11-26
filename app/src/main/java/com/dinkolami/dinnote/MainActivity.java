@@ -162,7 +162,7 @@ public class MainActivity extends Activity {
   view.setClickable(true);view.setFocusable(true);view.setScaleType(ImageView.ScaleType.FIT_CENTER);
   android.graphics.drawable.GradientDrawable frame=new android.graphics.drawable.GradientDrawable();frame.setColor(0xfffdf9eb);frame.setCornerRadius(dp(10));frame.setStroke(dp(1),0xffb8c2ca);view.setBackground(frame);
   view.setPadding(dp(5),dp(5),dp(5),dp(5));
-  LinearLayout.LayoutParams iconParams=new LinearLayout.LayoutParams(dp(34),dp(34));iconParams.leftMargin=dp(3);iconParams.rightMargin=dp(3);view.setLayoutParams(iconParams);
+  LinearLayout.LayoutParams iconParams=new LinearLayout.LayoutParams(dp(30),dp(30));iconParams.leftMargin=dp(3);iconParams.rightMargin=dp(3);view.setLayoutParams(iconParams);
   return view;
  }
  void showMainMenu(){
