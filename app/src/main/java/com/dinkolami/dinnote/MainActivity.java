@@ -4179,14 +4179,28 @@ public class MainActivity extends Activity {
   Button back=new Button(this);back.setText("‹");styleBoardButton(back,false);tabs.addView(back);back.setOnClickListener(v->openSection(maktabah));
   Button notes=new Button(this);notes.setText("Nota");styleBoardButton(notes,!maktabah);tabs.addView(notes,new LinearLayout.LayoutParams(0,-2,1));notes.setEnabled(maktabah);notes.setOnClickListener(v->{maktabah=false;manageCategories();});
   Button books=new Button(this);books.setText("Maktabah");styleBoardButton(books,maktabah);tabs.addView(books,new LinearLayout.LayoutParams(0,-2,1));books.setEnabled(!maktabah);books.setOnClickListener(v->{maktabah=true;manageCategories();});
-  TextView heading=text("Board Tree",18);heading.setTextColor(0xff216e4e);heading.setPadding(dp(12),dp(8),dp(12),dp(4));
-  LinearLayout boardTitle=new LinearLayout(this);boardTitle.setGravity(Gravity.CENTER_VERTICAL);root.addView(boardTitle);boardTitle.addView(heading,new LinearLayout.LayoutParams(0,-2,1));
-  TextView boardSearch=text("⌕",23);boardSearch.setGravity(Gravity.CENTER);boardSearch.setTextColor(0xff216e4e);boardSearch.setContentDescription("Cari Board "+(maktabah?"Maktabah":"Nota"));boardSearch.setBackground(rounded(0xfff8faf8,0xffdce5df,8));LinearLayout.LayoutParams searchButtonParams=new LinearLayout.LayoutParams(dp(40),dp(36));searchButtonParams.rightMargin=dp(12);boardTitle.addView(boardSearch,searchButtonParams);applyTouchFeedback(boardSearch);boardSearch.setOnClickListener(v->showBoardSearch(maktabah));
+  TextView heading=text("Board Tree",16);heading.setTextColor(0xff216e4e);heading.setPadding(dp(12),0,dp(4),0);heading.setSingleLine(true);
+  LinearLayout boardTitle=new LinearLayout(this);boardTitle.setGravity(Gravity.CENTER_VERTICAL);boardTitle.setPadding(0,dp(4),dp(8),dp(4));root.addView(boardTitle);boardTitle.addView(heading,new LinearLayout.LayoutParams(0,-2,1));
+  addBoardToolbarIcon(boardTitle,0,"Cari Board",()->showBoardSearch(maktabah));
+  addBoardToolbarIcon(boardTitle,1,"Tambah Board",()->categoryDialog(null));
+  addBoardToolbarIcon(boardTitle,2,"Lipat semua",()->setAllBoardBranches(panel,false));
+  addBoardToolbarIcon(boardTitle,3,"Kembang semua",()->setAllBoardBranches(panel,true));
   ScrollView scroll=new ScrollView(this);scroll.addView(panel);root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
-  Button add=new Button(this);add.setText("+ Tambah Board");styleBoardButton(add,false);panel.addView(add);add.setOnClickListener(v->categoryDialog(null));
-  addBoardExpandControls(panel);
   renderBoardRows(panel,null,nodes,"",0,boardPostingCounts(maktabah));
   rememberBoardScroll(scroll,maktabah?"board_scroll_manage_m":"board_scroll_manage_n");
+ }
+ void addBoardToolbarIcon(LinearLayout row,int kind,String label,Runnable action){
+  View icon=new View(this){
+   @Override protected void onDraw(android.graphics.Canvas c){
+    super.onDraw(c);c.save();c.translate(getWidth()/2f,getHeight()/2f);float scale=dp(20)/20f;c.scale(scale,scale);
+    android.graphics.Paint p=new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);p.setColor(0xff216e4e);p.setStyle(android.graphics.Paint.Style.STROKE);p.setStrokeWidth(1.8f);p.setStrokeCap(android.graphics.Paint.Cap.ROUND);p.setStrokeJoin(android.graphics.Paint.Join.ROUND);
+    if(kind==0){c.drawCircle(-2,-2,5.5f,p);c.drawLine(2,2,7,7,p);}
+    else if(kind==1){c.drawLine(-6,0,6,0,p);c.drawLine(0,-6,0,6,p);}
+    else {float y=kind==2?1:-1; c.drawLine(-5,3*y,0,-3*y,p);c.drawLine(0,-3*y,5,3*y,p);}
+    c.restore();
+   }
+  };
+  icon.setContentDescription(label);icon.setFocusable(true);icon.setBackground(rounded(0xfff8faf8,0xffdce5df,8));LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(dp(36),dp(36));lp.leftMargin=dp(4);row.addView(icon,lp);applyTouchFeedback(icon);icon.setOnClickListener(v->action.run());
  }
  void appendOrderedBoardCategories(LinkedHashSet<String> nodes,java.util.Set<String> actual,String parent,ArrayList<String> ordered){
   for(String node:nodes)if(boardParent(node).equals(parent)){
