@@ -4003,8 +4003,8 @@ public class MainActivity extends Activity {
    if(children){LinearLayout nested=new LinearLayout(this);nested.setOrientation(1);panel.addView(nested);renderHomeBoardRows(nested,nodes,name,depth+1,books);arrow.setOnClickListener(v->{boolean show=nested.getVisibility()!=View.VISIBLE;nested.setVisibility(show?View.VISIBLE:View.GONE);arrow.setText(show?"▾":"▸");});}
   }
  }
- String boardParent(String name){int i=name.lastIndexOf(" / ");return i<0?"":name.substring(0,i);}
- String boardLeaf(String name){int i=name.lastIndexOf(" / ");return i<0?name:name.substring(i+3);}
+ String boardParent(String name){int i=Math.max(name.lastIndexOf(" / "),name.lastIndexOf(" › "));return i<0?"":name.substring(0,i);}
+ String boardLeaf(String name){int i=Math.max(name.lastIndexOf(" / "),name.lastIndexOf(" › "));return i<0?name:name.substring(i+3);}
  void manageCategories(){
   ArrayList<String> all=categories();LinkedHashSet<String> nodes=new LinkedHashSet<>();
   for(String name:all){ArrayList<String> chain=new ArrayList<>();for(String n=name;!n.isEmpty();n=boardParent(n))chain.add(0,n);nodes.addAll(chain);}
@@ -4060,7 +4060,7 @@ public class MainActivity extends Activity {
     if(old!=null&&!old.equals(name)){
      ArrayList<String> updated=new ArrayList<>();
      for(String cat:c){
-      String next=cat.equals(old)?name:(cat.startsWith(old+" / ")?name+cat.substring(old.length()):cat);
+      String next=cat.equals(old)?name:((cat.startsWith(old+" / ")||cat.startsWith(old+" › "))?name+cat.substring(old.length()):cat);
       if(updated.contains(next)){Toast.makeText(this,"Nama kategori bertindih",Toast.LENGTH_LONG).show();return;}
       updated.add(next);
      }
@@ -4070,7 +4070,7 @@ public class MainActivity extends Activity {
       if(!k.startsWith(maktabah?"m_":"n_"))continue;
       String cat=prefs.getString("cat_"+k,"");
       if(cat.equals(old))changes.putString("cat_"+k,name);
-      else if(cat.startsWith(old+" / "))changes.putString("cat_"+k,name+cat.substring(old.length()));
+      else if((cat.startsWith(old+" / ")||cat.startsWith(old+" › ")))changes.putString("cat_"+k,name+cat.substring(old.length()));
      }
      if(!changes.commit()){Toast.makeText(this,"Gagal mengemas kini kategori",Toast.LENGTH_LONG).show();return;}
     }else if(old==null)c.add(name);
