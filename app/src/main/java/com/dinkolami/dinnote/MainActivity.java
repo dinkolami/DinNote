@@ -1025,6 +1025,7 @@ public class MainActivity extends Activity {
   // Some imported samples contain escaped newline sequences rather than line breaks.
   String cleaned=raw.replace("\\r\\n","\n").replace("\\n","\n").replace("\\r","\n").replace("\\t"," ");
   // Remove entire subtopic heading lines before flattening the card preview.
+  cleaned=lectureHeadingPattern().matcher(cleaned).replaceAll("");
   cleaned=cleaned.replaceAll("(?m)^[\\t ]*#+[^\\r\\n]*","");
   cleaned=cleaned.replaceAll("(?i)---(?:MATAN|SYARAHAN|DALIL|TERJEMAHAN|KHULASAH|IKTIBAR|SYAFII|HANAFI|MALIKI|HANBALI|MUQARAN|TAMAT|FLOWER|GEOMETRIC|CLASSIC|KOTAK(?:DALIL|HIKMAH|CATATAN|FIRMAN|SABDA|SAHABAT|TABII|ULAMA|TAMAT))---"," ");
   cleaned=cleaned.replaceAll("(?i)</?[biu]>","");
