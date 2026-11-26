@@ -3336,7 +3336,7 @@ public class MainActivity extends Activity {
   });
   editor.setGravity(Gravity.TOP);editor.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);editor.setBreakStrategy(android.text.Layout.BREAK_STRATEGY_SIMPLE);editor.setHyphenationFrequency(android.text.Layout.HYPHENATION_FREQUENCY_NONE);editor.setTextSize(new int[]{13,15,16,18}[Math.max(0,Math.min(3,prefs.getInt("reader_font_level",1)))]);editor.setTextColor(0xff30343b);editor.setCursorVisible(true);
   // Preserve the system caret drawable; custom GradientDrawable cursors were invisible on device.
-  editor.setPadding(dp(10),dp(10),dp(10),dp(12));editor.setLineSpacing(prefs.getBoolean("reader_wide_spacing",false)?dp(5):dp(1),prefs.getBoolean("reader_wide_spacing",false)?1.15f:1.0f);editor.setIncludeFontPadding(true);applySharedTextMetrics(editor);editor.setHint(maktabah?"Tulis kandungan kitab di sini…":"Tulis nota di sini…");editor.setContentDescription(maktabah?"Kandungan kitab":"Kandungan nota");editor.setBackground(rounded(0xfffffefb,0xffb8d5c2,12));editor.setOnFocusChangeListener((v,focused)->editor.setBackground(rounded(0xfffffefb,focused?0xff168254:0xffb8d5c2,12)));editor.setInputType(android.text.InputType.TYPE_CLASS_TEXT|android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE|android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);LinearLayout formatBar=new LinearLayout(this);
+  editor.setPadding(dp(10),dp(10),dp(10),dp(12));editor.setLineSpacing(prefs.getBoolean("reader_wide_spacing",false)?dp(5):dp(1),prefs.getBoolean("reader_wide_spacing",false)?1.15f:1.0f);editor.setIncludeFontPadding(true);applySharedTextMetrics(editor);editor.setHint(maktabah?"Tulis kandungan kitab di sini…":"Tulis nota di sini…");editor.setContentDescription(maktabah?"Kandungan kitab":"Kandungan nota");editor.setBackground(rounded(0xfffffefb,0xffb8d5c2,12));editor.setOnFocusChangeListener((v,focused)->v.setBackground(rounded(0xfffffefb,focused?0xff168254:0xffb8d5c2,12)));editor.setInputType(android.text.InputType.TYPE_CLASS_TEXT|android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE|android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);LinearLayout formatBar=new LinearLayout(this);
   formatBar.setTag("editor_format_toolbar");
   formatBar.setGravity(Gravity.CENTER_VERTICAL);
   formatBar.setPadding(dp(5),dp(2),dp(5),dp(2));
@@ -3430,7 +3430,8 @@ public class MainActivity extends Activity {
   if(key!=null){int remembered=prefs.getInt("edit_cursor_"+key,0);editor.setText(formattedReadingText(repairBoxStructure(normalizeStructuralMarkers(isLectureTemplate(prefs.getString(key,""))?markLectureHeadings(prefs.getString(key,"")):prefs.getString(key,"")))));editor.setSelection(Math.max(0,Math.min(remembered,editor.length())));}
   if(key!=null&&isLectureTemplate(prefs.getString(key,""))){attachLectureEditorPanel(editor);preserveLectureHeading(editor);}
   final EditText activeBody=editor;
-  activeBody.post(()->revealEditorCursor(activeBody));
+  final int resumeCursor=activeBody.getSelectionEnd();
+  activeBody.post(()->{if(editor!=activeBody||activeBody.getParent()==null)return;if(resumeCursor>=0)activeBody.setSelection(Math.min(resumeCursor,activeBody.length()));revealEditorCursor(activeBody);});
   // Match the reader's optional Arabic serif typeface in the editor as well.
   // Without this, Arabic glyph widths and line wrapping differ after Selesai.
   if(prefs.getBoolean("reader_arabic_clear_font",false)&&
@@ -5492,6 +5493,8 @@ public class MainActivity extends Activity {
   // onStop has already checkpointed the reader/editor. Never reopen its screen automatically.
   stopAutoReading();
   lectureBackReveal=null;readerDetector=null;readerScroll=null;
+  if(editor!=null){editor.setOnFocusChangeListener(null);android.view.inputmethod.InputMethodManager imm=(android.view.inputmethod.InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);if(imm!=null&&editor.getWindowToken()!=null)imm.hideSoftInputFromWindow(editor.getWindowToken(),0);editor.clearFocus();}
+  if(titleEditor!=null)titleEditor.clearFocus();
   editor=null;titleEditor=null;saveIndicator=null;selected=null;
   prefs.edit().putBoolean("reader_clean_mode",false).apply();
   openHomeSafely();
