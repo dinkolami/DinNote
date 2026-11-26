@@ -313,11 +313,11 @@ public class MainActivity extends Activity {
   if(existing!=null){listHost=existing;listHost.removeAllViews();refreshBoardSelection(root);}
   else if(homeWindowWidthDp()>=440){
    LinearLayout split=new LinearLayout(this);root.addView(split,new LinearLayout.LayoutParams(-1,0,1));
-   ScrollView boards=new ScrollView(this);split.addView(boards,new LinearLayout.LayoutParams(0,-1,1));
+   ScrollView boards=new ScrollView(this);boards.setTag("board_split_left");split.addView(boards,new LinearLayout.LayoutParams(0,-1,1));
    LinearLayout panel=new LinearLayout(this);panel.setOrientation(1);panel.setPadding(dp(8),dp(8),dp(8),dp(8));boards.addView(panel);
    renderHomeBoards(panel,false);renderHomeBoards(panel,true);
    rememberBoardScroll(boards,"board_scroll_split");
-   android.widget.FrameLayout divider=new android.widget.FrameLayout(this);divider.setContentDescription("Tarik untuk laras kelebaran panel");
+   android.widget.FrameLayout divider=new android.widget.FrameLayout(this);divider.setContentDescription("Tarik untuk laras kelebaran panel");divider.setTag("board_split_divider");
    View goldLine=new View(this);goldLine.setBackgroundColor(0xffd5bb72);divider.addView(goldLine,new android.widget.FrameLayout.LayoutParams(dp(1),-1,Gravity.CENTER));
    split.addView(divider,new LinearLayout.LayoutParams(dp(12),-1));
    listHost=new LinearLayout(this);listHost.setOrientation(1);listHost.setTag("board_list_pane");split.addView(listHost,new LinearLayout.LayoutParams(0,-1,1));
@@ -325,6 +325,8 @@ public class MainActivity extends Activity {
    float ratio=Math.max(0.30f,Math.min(0.65f,prefs.getFloat("board_split_ratio",0.5f)));
    boards.setLayoutParams(new LinearLayout.LayoutParams(0,-1,ratio));
    rightPane.setLayoutParams(new LinearLayout.LayoutParams(0,-1,1f-ratio));
+   if(prefs.getBoolean("board_split_hidden",false)){boards.setVisibility(View.GONE);divider.setVisibility(View.GONE);}
+
    divider.setOnTouchListener(new View.OnTouchListener(){
     float startX,startRatio,currentRatio;
     public boolean onTouch(View v,android.view.MotionEvent e){
@@ -364,7 +366,22 @@ public class MainActivity extends Activity {
    .setNeutralButton("Padam carian",(dialog,which)->search.setText(""))
    .setPositiveButton("Selesai",(dialog,which)->{})
    .show();
- });LinearLayout filters=new LinearLayout(this);filters.setPadding(dp(14),0,dp(14),0);TextView folder=text((maktabah?"▤  Maktabah":"✎  Nota")+"  /",14);folder.setTextColor(0xff60757b);folder.setTypeface(null,android.graphics.Typeface.BOLD);filters.addView(folder);Spinner catFilter=new Spinner(this);catFilter.setContentDescription("Tapis "+(maktabah?"kitab":"nota")+" mengikut kategori");ArrayList<String> cats=new ArrayList<>();cats.add("Semua");cats.addAll(categories());if(!cats.contains(categoryFilter))cats.add(categoryFilter);catFilter.setAdapter(new ArrayAdapter<>(this,android.R.layout.simple_spinner_dropdown_item,cats));int ci=cats.indexOf(categoryFilter);catFilter.setSelection(ci<0?0:ci);filters.addView(catFilter,new LinearLayout.LayoutParams(0,-2,1));
+ });LinearLayout filters=new LinearLayout(this);filters.setPadding(dp(14),0,dp(14),0);TextView folder=text((maktabah?"▤  Maktabah":"✎  Nota")+"  /",14);folder.setTextColor(0xff60757b);folder.setTypeface(null,android.graphics.Typeface.BOLD);filters.addView(folder);
+  if(listHost!=root){
+   View boardPane=root.findViewWithTag("board_split_left"),splitDivider=root.findViewWithTag("board_split_divider");
+   if(boardPane!=null&&splitDivider!=null){
+    TextView toggle=text(boardPane.getVisibility()==View.VISIBLE?"◀":"▶",16);toggle.setGravity(Gravity.CENTER);toggle.setTextColor(0xff216e4e);toggle.setBackground(rounded(0xfff8faf8,0xffdce5df,8));
+    toggle.setContentDescription(boardPane.getVisibility()==View.VISIBLE?"Sembunyikan Board":"Munculkan Board");
+    LinearLayout.LayoutParams toggleParams=new LinearLayout.LayoutParams(dp(32),dp(36));toggleParams.rightMargin=dp(6);filters.addView(toggle,0,toggleParams);
+    applyTouchFeedback(toggle);toggle.setOnClickListener(v->{
+     boolean hide=boardPane.getVisibility()==View.VISIBLE;
+     boardPane.setVisibility(hide?View.GONE:View.VISIBLE);splitDivider.setVisibility(hide?View.GONE:View.VISIBLE);
+     prefs.edit().putBoolean("board_split_hidden",hide).apply();
+     toggle.setText(hide?"▶":"◀");toggle.setContentDescription(hide?"Munculkan Board":"Sembunyikan Board");
+    });
+   }
+  }
+  Spinner catFilter=new Spinner(this);catFilter.setContentDescription("Tapis "+(maktabah?"kitab":"nota")+" mengikut kategori");ArrayList<String> cats=new ArrayList<>();cats.add("Semua");cats.addAll(categories());if(!cats.contains(categoryFilter))cats.add(categoryFilter);catFilter.setAdapter(new ArrayAdapter<>(this,android.R.layout.simple_spinner_dropdown_item,cats));int ci=cats.indexOf(categoryFilter);catFilter.setSelection(ci<0?0:ci);filters.addView(catFilter,new LinearLayout.LayoutParams(0,-2,1));
   compactSummary=null;
   if(homeWindowWidthDp()<440&&getResources().getConfiguration().screenWidthDp>=600){
    LinearLayout.LayoutParams categoryParams=(LinearLayout.LayoutParams)catFilter.getLayoutParams();
