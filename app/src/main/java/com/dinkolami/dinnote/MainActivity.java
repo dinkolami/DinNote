@@ -4176,9 +4176,10 @@ public class MainActivity extends Activity {
   editor=null;titleEditor=null;categoryPicker=null;selected=null;sectionOpen=true;
   base("DinNote");root.setTag("board_management");
   LinearLayout tabs=new LinearLayout(this);tabs.setGravity(Gravity.CENTER_VERTICAL);tabs.setPadding(dp(8),dp(6),dp(8),dp(4));root.addView(tabs);
-  Button back=new Button(this);back.setText("‹");styleBoardButton(back,false);tabs.addView(back);back.setOnClickListener(v->openSection(maktabah));
+  
   Button notes=new Button(this);notes.setText("Nota");styleBoardButton(notes,!maktabah);tabs.addView(notes,new LinearLayout.LayoutParams(0,-2,1));notes.setEnabled(maktabah);notes.setOnClickListener(v->{maktabah=false;manageCategories();});
   Button books=new Button(this);books.setText("Maktabah");styleBoardButton(books,maktabah);tabs.addView(books,new LinearLayout.LayoutParams(0,-2,1));books.setEnabled(!maktabah);books.setOnClickListener(v->{maktabah=true;manageCategories();});
+  Button back=new Button(this);back.setText("›");styleBoardButton(back,false);tabs.addView(back);back.setOnClickListener(v->openSection(maktabah));
   TextView heading=text("Board Tree",16);heading.setTextColor(0xff216e4e);heading.setPadding(dp(12),0,dp(4),0);heading.setSingleLine(true);
   LinearLayout boardTitle=new LinearLayout(this);boardTitle.setGravity(Gravity.CENTER_VERTICAL);boardTitle.setPadding(0,dp(4),dp(8),dp(4));root.addView(boardTitle);boardTitle.addView(heading,new LinearLayout.LayoutParams(0,-2,1));
   addBoardToolbarIcon(boardTitle,0,"Cari Board",()->showBoardSearch(maktabah));
