@@ -2302,6 +2302,19 @@ public class MainActivity extends Activity {
   prefs.edit().putString(key,updated).putLong("updated_"+key,System.currentTimeMillis()).apply();
   try{readContentSafely(key);}catch(Exception failure){showReaderRecovery(key,failure);}
  }
+ TextView copyLectureColumnText(TextView original,CharSequence value){
+  TextView copy=text("",15);
+  copy.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX,original.getTextSize());
+  copy.setTypeface(original.getTypeface());copy.setTextColor(original.getCurrentTextColor());
+  copy.setText(value);copy.setTextDirection(original.getTextDirection());copy.setGravity(original.getGravity());
+  copy.setTextAlignment(original.getTextAlignment());copy.setTextIsSelectable(true);
+  copy.setIncludeFontPadding(original.getIncludeFontPadding());
+  copy.setLineSpacing(original.getLineSpacingExtra(),original.getLineSpacingMultiplier());
+  copy.setPadding(original.getPaddingLeft(),original.getPaddingTop(),original.getPaddingRight(),original.getPaddingBottom());
+  if(original.getLayoutParams() instanceof LinearLayout.LayoutParams)
+   copy.setLayoutParams(new LinearLayout.LayoutParams((LinearLayout.LayoutParams)original.getLayoutParams()));
+  return copy;
+ }
  void renderLectureTemplate(LinearLayout body,String source,int size,String key){
   java.util.regex.Matcher m=lectureHeadingPattern().matcher(source);
   ArrayList<String> names=new ArrayList<>();ArrayList<Integer> starts=new ArrayList<>();ArrayList<Integer> ends=new ArrayList<>();
@@ -2601,11 +2614,43 @@ public class MainActivity extends Activity {
      ornament.setScaleType(android.widget.ImageView.ScaleType.FIT_CENTER);
      columns.addView(ornament,new LinearLayout.LayoutParams(dp(24),-1));
      columns.addView(right,new LinearLayout.LayoutParams(0,-2,1));
-     int midpoint=(count+1)/2;
+     // Measure rendered blocks at column width, preserving rich spans and whole boxes.
+     ArrayList<View> blocks=new ArrayList<>();
      for(int i=0;i<count;i++){
       View child=body.getChildAt(first);body.removeViewAt(first);
-      (i<midpoint?left:right).addView(child);
+      if(prefs.getInt("lecture_view_"+key,0)==2 && child instanceof TextView){
+       TextView original=(TextView)child;
+       CharSequence rich=original.getText();
+       java.util.regex.Matcher breaks=java.util.regex.Pattern.compile("\\n[ \\t]*\\n+").matcher(rich);
+       int start=0;
+       while(breaks.find()){
+        int end=breaks.end();
+        blocks.add(copyLectureColumnText(original,rich.subSequence(start,end)));start=end;
+       }
+       if(start<rich.length())blocks.add(copyLectureColumnText(original,rich.subSequence(start,rich.length())));
+      }else blocks.add(child);
      }
+     int columnWidth=Math.max(dp(80),(readerBuiltWidthPx-dp(72))/2);
+     int totalHeight=0;
+     int[] heights=new int[blocks.size()];
+     for(int i=0;i<blocks.size();i++){
+      View child=blocks.get(i);
+      ViewGroup.LayoutParams params=child.getLayoutParams();
+      int horizontal=0,vertical=0;
+      if(params instanceof ViewGroup.MarginLayoutParams){
+       ViewGroup.MarginLayoutParams margins=(ViewGroup.MarginLayoutParams)params;
+       horizontal=margins.leftMargin+margins.rightMargin;vertical=margins.topMargin+margins.bottomMargin;
+      }
+      child.measure(View.MeasureSpec.makeMeasureSpec(Math.max(1,columnWidth-horizontal),View.MeasureSpec.EXACTLY),
+       params!=null&&params.height>=0?View.MeasureSpec.makeMeasureSpec(params.height,View.MeasureSpec.EXACTLY):View.MeasureSpec.makeMeasureSpec(0,View.MeasureSpec.UNSPECIFIED));
+      heights[i]=child.getMeasuredHeight()+vertical;totalHeight+=heights[i];
+     }
+     int midpoint=blocks.size(),used=0,best=Integer.MAX_VALUE;
+     for(int i=1;i<blocks.size();i++){
+      used+=heights[i-1];int difference=Math.abs(totalHeight-2*used);
+      if(difference<best){best=difference;midpoint=i;}
+     }
+     for(int i=0;i<blocks.size();i++)(i<midpoint?left:right).addView(blocks.get(i));
      body.addView(columns);
     }
    }
