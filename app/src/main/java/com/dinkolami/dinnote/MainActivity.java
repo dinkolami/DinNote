@@ -478,6 +478,10 @@ public class MainActivity extends Activity {
  void home(){
   items=null;sectionOpen=false;editor=null;titleEditor=null;categoryPicker=null;selected=null;maktabah=false;
   base("DinNote");
+  // V4: extend the animated emerald aura behind the home header only.
+  final View homeHeader=root.getChildAt(0);
+  final LivingGradient headerGlow=new LivingGradient();
+  homeHeader.setBackground(headerGlow);
   final boolean splitHome=homeWindowWidthDp()>=440;
   LinearLayout dashboardHost=root;
   if(splitHome){
@@ -493,7 +497,7 @@ public class MainActivity extends Activity {
   dashboardHost.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
   LinearLayout page=new LinearLayout(this);page.setOrientation(1);
   page.setPadding(dp(10),dp(6),dp(10),dp(3));page.setBackground(new LivingGradient());page.setTag("dinnote_home");
-  android.animation.ValueAnimator homeGlow=android.animation.ValueAnimator.ofFloat(0f,1f);homeGlow.setDuration(8000L);homeGlow.setRepeatCount(android.animation.ValueAnimator.INFINITE);homeGlow.setRepeatMode(android.animation.ValueAnimator.RESTART);homeGlow.setInterpolator(new android.view.animation.LinearInterpolator());homeGlow.addUpdateListener(a->{if(page.isAttachedToWindow()){((LivingGradient)page.getBackground()).phase=(float)a.getAnimatedValue();page.invalidate();}});page.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener(){public void onViewAttachedToWindow(View v){if(!homeGlow.isStarted())homeGlow.start();}public void onViewDetachedFromWindow(View v){homeGlow.cancel();}});
+  android.animation.ValueAnimator homeGlow=android.animation.ValueAnimator.ofFloat(0f,1f);homeGlow.setDuration(8000L);homeGlow.setRepeatCount(android.animation.ValueAnimator.INFINITE);homeGlow.setRepeatMode(android.animation.ValueAnimator.RESTART);homeGlow.setInterpolator(new android.view.animation.LinearInterpolator());homeGlow.addUpdateListener(a->{if(page.isAttachedToWindow()){float phase=(float)a.getAnimatedValue();((LivingGradient)page.getBackground()).phase=phase;page.invalidate();headerGlow.phase=phase;homeHeader.invalidate();}});page.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener(){public void onViewAttachedToWindow(View v){if(!homeGlow.isStarted())homeGlow.start();}public void onViewDetachedFromWindow(View v){homeGlow.cancel();}});
   // Use the actual measured dashboard height. Avoid scaleY, synthetic spacer
   // and fixed-height wrapper: all three created a scrollable empty tail.
   scroll.addView(page,new ScrollView.LayoutParams(-1,-2));
