@@ -1559,7 +1559,7 @@ public class MainActivity extends Activity {
    else if(trim.equals("---TAMAT---")){active=false;paragraphStart=false;}
    else if(trim.equals("---KOTAKTAMAT---"))box=false;
    else if(trim.startsWith("---KOTAK"))box=true;
-   else if(trim.isEmpty()){paragraphStart=true;if(!box&&end<raw.length()&&!(value instanceof android.text.Editable))value.setSpan(new SectionGapSpan(),Math.max(0,start-1),end+1,android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);}
+   else if(trim.isEmpty()){paragraphStart=true;}
    else if(active&&paragraphStart&&!box&&!trim.isEmpty()&&!Character.isWhitespace(line.charAt(0))&&!Character.isSpaceChar(line.charAt(0))&&!trim.startsWith("---")&&!trim.matches("^(?:\\p{Nd}+[.)]|[-•●◦▪☐☑✓*#]|@#).*")){
     value.setSpan(new SectionIndentSpan(),start,end<raw.length()?end+1:end,android.text.Spanned.SPAN_PARAGRAPH);
    }
@@ -3856,10 +3856,8 @@ public class MainActivity extends Activity {
   if(value.isEmpty())return;
   TextView t=text("",fontSize);
   android.text.SpannableStringBuilder compact=readerLabelText(value);
-  java.util.regex.Matcher blankLines=java.util.regex.Pattern.compile("\\n[ \\t]*\\n+").matcher(compact.toString());
-  ArrayList<int[]> gaps=new ArrayList<>();
-  while(blankLines.find())gaps.add(new int[]{blankLines.start()+1,blankLines.end()});
-  if(readerBuiltWidthPx<dp(500)||!prefs.getBoolean("reader_two_columns",true))for(int i=gaps.size()-1;i>=0;i--)compact.delete(gaps.get(i)[0],gaps.get(i)[1]);
+  // Preserve user-entered blank lines in both reading column modes.
+  for(SectionGapSpan gap:compact.getSpans(0,compact.length(),SectionGapSpan.class))compact.removeSpan(gap);
   t.setText(compact);applySharedTextMetrics(t);
   // Give mixed Arabic/Malay paragraphs comfortable baseline clearance.
   if(value.codePoints().anyMatch(cp->cp>=0x0600&&cp<=0x06ff))t.setLineSpacing(dp(3),1.08f);t.setTextColor(0xff24292f);t.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);t.setTextIsSelectable(true);t.setPadding(dp(2),dp(2),dp(2),dp(2));
