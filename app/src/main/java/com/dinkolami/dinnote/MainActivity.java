@@ -2264,10 +2264,13 @@ public class MainActivity extends Activity {
    prefs.getBoolean("reader_wide_spacing",false)?1.15f:1.0f);
   view.setIncludeFontPadding(true);
  }
+ String cleanSelectableReadingText(String raw){
+  return raw.replaceAll("(?im)^[ \\t]*(?:---)?(?:MATAN|SYARAHAN|DALIL|TERJEMAHAN|KHULASAH|IKTIBAR|SYAFII|HANAFI|MALIKI|HANBALI|MUQARAN|TAMAT|FLOWER|GEOMETRIC|CLASSIC|KOTAK[A-Z]+)---[ \\t]*(?:\\r?\\n|$)","").replaceAll("(?m)^[ \\t]*---[ \\t]*(?:\\r?\\n|$)","").replace("\u2063","");
+ }
  void selectLongReadingText(String key){
   String raw=prefs.getString(key,"");
   // Hide decorative control markers in the continuous selection view and clipboard.
-  String cleanText=raw.replaceAll("(?m)^[ \\t]*---(?:CLASSIC|GEOMETRIC|FLOWER)---[ \\t]*(?:\\r?\\n)?","").replaceAll("(?m)^[ \\t]*---[ \\t]*(?:\\r?\\n)?","");
+  String cleanText=cleanSelectableReadingText(raw);
   ScrollView selectionScroll=new ScrollView(this);
   selectionScroll.setFillViewport(false);
   selectionScroll.setPadding(dp(12),dp(8),dp(12),dp(8));
@@ -2284,7 +2287,7 @@ public class MainActivity extends Activity {
    .setView(selectionScroll)
    .setNeutralButton("Salin semua",(d,w)->{
     android.content.ClipboardManager clipboard=(android.content.ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
-    clipboard.setPrimaryClip(android.content.ClipData.newPlainText("DinNote",cleanText));
+    clipboard.setPrimaryClip(android.content.ClipData.newPlainText("DinNote",selectable.getText().toString()));
     Toast.makeText(this,"Semua teks disalin",Toast.LENGTH_SHORT).show();
    })
    .setNegativeButton("Tutup",null).create();
@@ -3223,7 +3226,7 @@ public class MainActivity extends Activity {
   LinearLayout header=new LinearLayout(this);header.setGravity(Gravity.CENTER_VERTICAL);left.addView(header);
   TextView title=text(prefs.getString("title_"+key,"Kitab"),14);title.setTextColor(0xff216e4e);header.addView(title,new LinearLayout.LayoutParams(0,-2,1));
   action("×",header,()->closeStudyReference());
-  ScrollView scroll=new ScrollView(this);TextView body=text("",15);body.setText(formattedReadingText(prefs.getString(key,"")));body.setTextIsSelectable(true);body.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);body.setPadding(dp(10),dp(8),dp(10),dp(12));scroll.addView(body);left.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
+  ScrollView scroll=new ScrollView(this);TextView body=text("",15);body.setText(formattedReadingText(cleanSelectableReadingText(prefs.getString(key,""))));body.setTextIsSelectable(true);body.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);body.setPadding(dp(10),dp(8),dp(10),dp(12));scroll.addView(body);left.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
   View handle=new View(this);handle.setBackgroundColor(0xffc6ad70);
   root.removeView(active);root.addView(split,index,new LinearLayout.LayoutParams(-1,0,1));
   split.addView(left,new LinearLayout.LayoutParams(0,-1,1));split.addView(handle,new LinearLayout.LayoutParams(dp(8),-1));split.addView(active,new LinearLayout.LayoutParams(0,-1,1));
