@@ -299,9 +299,13 @@ public class MainActivity extends Activity {
  for(int i=0;i<verses.length;i++){String id="m_qurtubi_fatihah_"+(i+1);if(!prefs.contains(id)&&!prefs.getBoolean("deleted_"+id,false))e.putString(id,verses[i]+"\n\nالنَّصُّ الْعَرَبِيُّ\nTeks tafsir asal belum diimport.\n\nTerjemahan Indonesia\nPadanan terjemahan belum diimport.").putString("title_"+id,"Tafsir al-Qurthubi — al-Fatihah, Ayat "+(i+1)).putString("cat_"+id,"Kitab-Kitab › Tafsir");}
  e.putBoolean("qurtubi_posts_v1",true).apply();
  }
- void notesPage(){if(maktabah)seedQurtubiPosts();editor=null;titleEditor=null;categoryPicker=null;selected=null;base("DinNote");
+ void notesPage(){notesPage(false);}
+ void notesPage(boolean keepBoards){if(maktabah)seedQurtubiPosts();editor=null;titleEditor=null;categoryPicker=null;selected=null;
+  LinearLayout existing=keepBoards&&root!=null?root.findViewWithTag("board_list_pane"):null;
+  if(existing==null)base("DinNote");
   LinearLayout listHost=root;
-  if(homeWindowWidthDp()>=440){
+  if(existing!=null){listHost=existing;listHost.removeAllViews();refreshBoardSelection(root);}
+  else if(homeWindowWidthDp()>=440){
    LinearLayout split=new LinearLayout(this);root.addView(split,new LinearLayout.LayoutParams(-1,0,1));
    ScrollView boards=new ScrollView(this);split.addView(boards,new LinearLayout.LayoutParams(0,-1,1));
    LinearLayout panel=new LinearLayout(this);panel.setOrientation(1);panel.setPadding(dp(8),dp(8),dp(8),dp(8));boards.addView(panel);
@@ -3978,14 +3982,23 @@ public class MainActivity extends Activity {
   renderHomeBoardRows(panel,nodes,"",0,books);
   TextView manage=dashboardText("+ Tambah / Urus Board",13,true);manage.setTextColor(0xff216e4e);manage.setPadding(dp(5),dp(8),dp(5),dp(8));panel.addView(manage);manage.setOnClickListener(v->{maktabah=books;manageCategories();});
  }
+ void refreshBoardSelection(View view){
+  Object tag=view.getTag();
+  if(tag instanceof String&&((String)tag).startsWith("board_row:")){
+   boolean active=sectionOpen&&tag.equals("board_row:"+(maktabah?"m:":"n:")+categoryFilter);
+   view.setBackground(active?rounded(0xffe3eee7,0xffc9dfd0,5):null);
+  }
+  if(view instanceof android.view.ViewGroup){android.view.ViewGroup group=(android.view.ViewGroup)view;for(int i=0;i<group.getChildCount();i++)refreshBoardSelection(group.getChildAt(i));}
+ }
  void renderHomeBoardRows(LinearLayout panel,LinkedHashSet<String> nodes,String parent,int depth,boolean books){
   for(String name:nodes){if(!boardParent(name).equals(parent))continue;
    LinearLayout row=new LinearLayout(this);row.setGravity(Gravity.CENTER_VERTICAL);row.setPadding(dp(Math.min(depth,8)*14),0,0,0);panel.addView(row);
    boolean children=false;for(String n:nodes)if(boardParent(n).equals(name)){children=true;break;}
    TextView arrow=dashboardText(children?"▾":" ",15,true);arrow.setGravity(Gravity.CENTER);row.addView(arrow,new LinearLayout.LayoutParams(dp(24),dp(38)));
    TextView label=dashboardText((depth==0?"▣  ":"↳  ")+boardLeaf(name),14,depth==0);label.setTextColor(0xff365c48);label.setGravity(Gravity.CENTER_VERTICAL);row.addView(label,new LinearLayout.LayoutParams(0,dp(38),1));
+   row.setTag("board_row:"+(books?"m:":"n:")+name);
    if(sectionOpen&&maktabah==books&&name.equals(categoryFilter))row.setBackground(rounded(0xffe3eee7,0xffc9dfd0,5));
-   label.setOnClickListener(v->{sectionOpen=true;maktabah=books;categoryFilter=name;if(books)savedBooksScroll=0;else savedNotesScroll=0;notesPage();});
+   label.setOnClickListener(v->{sectionOpen=true;maktabah=books;categoryFilter=name;if(books)savedBooksScroll=0;else savedNotesScroll=0;notesPage(true);});
    View rule=new View(this);rule.setBackgroundColor(0xffe5eae6);panel.addView(rule,new LinearLayout.LayoutParams(-1,dp(1)));
    if(children){LinearLayout nested=new LinearLayout(this);nested.setOrientation(1);panel.addView(nested);renderHomeBoardRows(nested,nodes,name,depth+1,books);arrow.setOnClickListener(v->{boolean show=nested.getVisibility()!=View.VISIBLE;nested.setVisibility(show?View.VISIBLE:View.GONE);arrow.setText(show?"▾":"▸");});}
   }
