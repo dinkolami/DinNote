@@ -4113,10 +4113,31 @@ public class MainActivity extends Activity {
    controls.addView(action,new LinearLayout.LayoutParams(0,-2,1));action.setOnClickListener(v->setAllBoardBranches(panel,expand));
   }
  }
+ void showBoardSearch(boolean books){
+  LinkedHashSet<String> nodes=new LinkedHashSet<>();
+  for(String name:prefs.getString(books?"categories_m":"categories_n","").split("\\|")){ArrayList<String> chain=new ArrayList<>();for(String n=name.trim();!n.isEmpty();n=boardParent(n))chain.add(0,n);nodes.addAll(chain);}
+  LinearLayout content=new LinearLayout(this);content.setOrientation(1);content.setPadding(dp(12),dp(6),dp(12),0);
+  EditText field=new EditText(this);field.setSingleLine(true);field.setHint("Cari Board atau Sub-board");content.addView(field);
+  android.widget.ListView results=new android.widget.ListView(this);content.addView(results,new LinearLayout.LayoutParams(-1,dp(280)));
+  ArrayList<String> matches=new ArrayList<>();
+  ArrayAdapter<String> adapter=new ArrayAdapter<>(this,android.R.layout.simple_list_item_1,matches);results.setAdapter(adapter);
+  Runnable refresh=()->{matches.clear();String q=field.getText().toString().trim().toLowerCase(java.util.Locale.ROOT);for(String n:nodes)if(n.toLowerCase(java.util.Locale.ROOT).contains(q))matches.add(n);adapter.notifyDataSetChanged();};
+  field.addTextChangedListener(new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int b,int c){refresh.run();}public void afterTextChanged(Editable e){}});
+  AlertDialog dialog=new AlertDialog.Builder(this).setTitle("Cari Board "+(books?"Maktabah":"Nota")).setView(content).setNegativeButton("Tutup",null).create();
+  results.setOnItemClickListener((p,v,i,id)->{
+   String target=matches.get(i);dialog.dismiss();sectionOpen=true;maktabah=books;categoryFilter=target;
+   android.content.SharedPreferences.Editor changes=prefs.edit();changes.putString(books?"board_last_m":"board_last_n",target);
+   for(String parent=boardParent(target);!parent.isEmpty();parent=boardParent(parent))changes.putBoolean("board_expand_"+(books?"m:":"n:")+parent,true);
+   changes.apply();if(books)savedBooksScroll=0;else savedNotesScroll=0;notesPage();
+   View row=root.findViewWithTag("board_row:"+(books?"m:":"n:")+target);
+   if(row!=null)row.post(()->row.requestRectangleOnScreen(new android.graphics.Rect(0,0,row.getWidth(),row.getHeight()),true));
+  });refresh.run();dialog.show();
+ }
  void renderHomeBoards(LinearLayout outer,boolean books){
   LinearLayout panel=new LinearLayout(this);panel.setOrientation(1);panel.setPadding(dp(2),dp(2),dp(2),dp(2));panel.setBackground(rounded(0xfffdfefe,0xffd8c68a,8));
   LinearLayout.LayoutParams boxParams=new LinearLayout.LayoutParams(-1,-2);boxParams.bottomMargin=dp(8);outer.addView(panel,boxParams);
-  TextView heading=dashboardText(books?"▤  Maktabah":"✎  Nota",16,true);heading.setTextColor(0xff216e4e);heading.setPadding(dp(8),dp(7),dp(5),dp(7));heading.setBackground(rounded(0xffe3eee7,0xffdce7df,5));panel.addView(heading);
+  TextView heading=dashboardText(books?"▤  Maktabah":"✎  Nota",16,true);heading.setTextColor(0xff216e4e);heading.setPadding(dp(8),dp(7),dp(5),dp(7));heading.setBackground(rounded(0xffe3eee7,0xffdce7df,5));LinearLayout boardHeader=new LinearLayout(this);boardHeader.setGravity(Gravity.CENTER_VERTICAL);boardHeader.setBackground(rounded(0xffe3eee7,0xffdce7df,5));panel.addView(boardHeader);boardHeader.addView(heading,new LinearLayout.LayoutParams(0,-2,1));
+  TextView boardSearch=text("⌕",22);boardSearch.setGravity(Gravity.CENTER);boardSearch.setTextColor(0xff216e4e);boardSearch.setContentDescription("Cari Board "+(books?"Maktabah":"Nota"));boardHeader.addView(boardSearch,new LinearLayout.LayoutParams(dp(36),dp(38)));boardSearch.setOnClickListener(v->showBoardSearch(books));
   heading.setOnClickListener(v->openSection(books));
   addBoardExpandControls(panel);
   LinkedHashSet<String> nodes=new LinkedHashSet<>();
