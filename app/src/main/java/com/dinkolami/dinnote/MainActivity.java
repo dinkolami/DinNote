@@ -2625,7 +2625,7 @@ public class MainActivity extends Activity {
        int start=0;
        while(breaks.find()){
         int end=breaks.end();
-        blocks.add(copyLectureColumnText(original,rich.subSequence(start,end)));start=end;
+        blocks.add(copyLectureColumnText(original,rich.subSequence(start,breaks.start())));start=end;
        }
        if(start<rich.length())blocks.add(copyLectureColumnText(original,rich.subSequence(start,rich.length())));
       }else blocks.add(child);
