@@ -2481,7 +2481,7 @@ public class MainActivity extends Activity {
   }
   }
   // Page-by-page reader for long Nota and Maktabah content.
-  if(!isLectureTemplate(selectedReadingText(key)) && selectedReadingText(key).length()>=100 && availableReaderWidthDp>=500 && prefs.getBoolean("reader_swipe_mode",false)){ // Optional unfolded swipe reader.
+  if(selectedReadingText(key).length()>=100 && availableReaderWidthDp>=500 && prefs.getBoolean("reader_swipe_mode",false) && (!isLectureTemplate(selectedReadingText(key)) || prefs.getInt("lecture_view_"+key,0)==2)){ // Optional unfolded swipe reader.
    try{showPagedReader(key);return;}
    catch(RuntimeException problem){
     android.util.Log.e("DinNote","Paged reader failed; using safe scrolling",problem);
@@ -2581,7 +2581,34 @@ public class MainActivity extends Activity {
   }
   boolean twoColumnReading=availableReaderWidthDp>=500&&prefs.getBoolean("reader_two_columns",true)&&fullReadingText.length()>=100;
   if(isLectureTemplate(fullReadingText)&&!bilingualReading){
+   int lectureStart=body.getChildCount();
    renderLectureTemplate(body,fullReadingText,readingSizes[fontLevel],key);
+   if(twoColumnReading){
+    int first=lectureStart;
+    if(prefs.getInt("lecture_view_"+key,0)!=2 && lectureHeadingPattern().matcher(fullReadingText).find()){
+     java.util.regex.Matcher firstHeading=lectureHeadingPattern().matcher(fullReadingText);
+     if(firstHeading.find()&&firstHeading.start()>0)first++;
+    }
+    first++; // Keep the lecture controls full width.
+    int count=body.getChildCount()-first;
+    if(count>1){
+     LinearLayout columns=new LinearLayout(this);columns.setOrientation(LinearLayout.HORIZONTAL);
+     LinearLayout left=new LinearLayout(this);left.setOrientation(LinearLayout.VERTICAL);
+     LinearLayout right=new LinearLayout(this);right.setOrientation(LinearLayout.VERTICAL);
+     columns.addView(left,new LinearLayout.LayoutParams(0,-2,1));
+     android.widget.ImageView ornament=new android.widget.ImageView(this);
+     ornament.setImageResource(R.drawable.reader_center_ornament);
+     ornament.setScaleType(android.widget.ImageView.ScaleType.FIT_CENTER);
+     columns.addView(ornament,new LinearLayout.LayoutParams(dp(24),-1));
+     columns.addView(right,new LinearLayout.LayoutParams(0,-2,1));
+     int midpoint=(count+1)/2;
+     for(int i=0;i<count;i++){
+      View child=body.getChildAt(first);body.removeViewAt(first);
+      (i<midpoint?left:right).addView(child);
+     }
+     body.addView(columns);
+    }
+   }
   }
   else if(hasBoxes){
    if(bilingualReading){body.removeViewAt(body.getChildCount()-1);}
