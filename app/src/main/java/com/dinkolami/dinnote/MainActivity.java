@@ -3993,12 +3993,12 @@ public class MainActivity extends Activity {
  void restoreBoardBranch(TextView arrow,LinearLayout nested,String key){
   nested.setTag("board_branch_children");
   arrow.setTag("board_branch_arrow");
-  nested.setTag(android.R.id.custom,key);
+  nested.setTag(0x7f0f00fe,key);
   boolean expanded=prefs.getBoolean(key,true);
   nested.setVisibility(expanded?View.VISIBLE:View.GONE);arrow.setText(expanded?"▾":"▸");
  }
  void saveBoardBranch(View nested,boolean expanded){
-  Object key=nested.getTag(android.R.id.custom);
+  Object key=nested.getTag(0x7f0f00fe);
   if(key instanceof String)prefs.edit().putBoolean((String)key,expanded).apply();
  }
  void setAllBoardBranches(View view,boolean expand){
