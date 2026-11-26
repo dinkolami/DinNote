@@ -464,14 +464,14 @@ public class MainActivity extends Activity {
    android.graphics.Rect b=getBounds();float w=b.width(),h=b.height();if(w<=0||h<=0)return;
    canvas.drawRect(b,basePaint);
    // V2: visible, slow-moving emerald and gold orbs; content remains above the background.
-   float radius=Math.max(w*0.9f,h*0.32f);
+   float radius=Math.max(w*0.82f,h*0.48f);
    float theta=phase*(float)Math.PI*2f;
-   float x=w*(0.30f+0.36f*(float)Math.sin(theta));
-   float y=h*(0.17f+0.13f*(float)Math.cos(theta));
-   paint.setShader(new android.graphics.RadialGradient(x,y,radius,new int[]{0x9973cba2,0x5575cda9,0x1875cda9,0x0075cda9},new float[]{0f,0.30f,0.68f,1f},android.graphics.Shader.TileMode.CLAMP));canvas.drawRect(b,paint);
-   float goldX=w*(0.70f-0.28f*(float)Math.sin(theta));
-   float goldY=h*(0.72f+0.10f*(float)Math.cos(theta));
-   paint.setShader(new android.graphics.RadialGradient(goldX,goldY,radius*0.65f,new int[]{0x99e7b6c5,0x55ebcdd3,0x00ebcdd3},null,android.graphics.Shader.TileMode.CLAMP));canvas.drawRect(b,paint);paint.setShader(null);
+   float x=w*(0.45f+0.48f*(float)Math.sin(theta));
+   float y=h*(0.28f+0.24f*(float)Math.cos(theta));
+   paint.setColor(0xffffffff);paint.setShader(new android.graphics.RadialGradient(x,y,radius,new int[]{0xd973cba2,0x7875cda9,0x2275cda9,0x0075cda9},new float[]{0f,0.30f,0.68f,1f},android.graphics.Shader.TileMode.CLAMP));canvas.drawRect(b,paint);
+   float goldX=w*(0.55f-0.45f*(float)Math.sin(theta));
+   float goldY=h*(0.64f+0.24f*(float)Math.cos(theta));
+   paint.setShader(new android.graphics.RadialGradient(goldX,goldY,radius*0.85f,new int[]{0xd9e7b6c5,0x78ebcdd3,0x00ebcdd3},null,android.graphics.Shader.TileMode.CLAMP));canvas.drawRect(b,paint);paint.setShader(null);
    // Static, subtle mosque silhouette in the shared lower background.
    canvas.save();canvas.translate(w*0.72f,h*0.99f);float u=Math.min(w,h)*0.12f;paint.setColor(0x23619b80);canvas.drawRect(-u,-u*0.55f,u,0,paint);android.graphics.Path dome=new android.graphics.Path();dome.moveTo(-u,-u*0.55f);dome.cubicTo(-u,-u*1.12f,-u*0.32f,-u*1.12f,0,-u*1.45f);dome.cubicTo(u*0.32f,-u*1.12f,u,-u*1.12f,u,-u*0.55f);dome.close();canvas.drawPath(dome,paint);for(int side:new int[]{-1,1}){float cx=side*u*1.45f;canvas.drawRect(cx-u*0.12f,-u*1.4f,cx+u*0.12f,0,paint);android.graphics.Path tip=new android.graphics.Path();tip.moveTo(cx-u*0.17f,-u*1.4f);tip.lineTo(cx,-u*1.75f);tip.lineTo(cx+u*0.17f,-u*1.4f);tip.close();canvas.drawPath(tip,paint);}canvas.restore();
   }
