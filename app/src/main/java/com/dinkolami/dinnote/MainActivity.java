@@ -99,9 +99,9 @@ public class MainActivity extends Activity {
   LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(dp(34),dp(34));lp.leftMargin=dp(6);lp.rightMargin=dp(5);header.addView(logo,lp);
   logo.setOnClickListener(v->home());
   TextView name=text("DinNote",16);name.setTypeface(android.graphics.Typeface.create("serif",android.graphics.Typeface.ITALIC));name.setTextColor(0xff075033);
-  name.setGravity(Gravity.CENTER_VERTICAL);name.setPadding(dp(3),0,0,0);header.addView(name,new LinearLayout.LayoutParams(0,dp(40),1));
+  name.setGravity(Gravity.CENTER_VERTICAL);name.setPadding(dp(3),0,0,0);name.setSingleLine(true);name.setAutoSizeTextTypeUniformWithConfiguration(10,16,1,android.util.TypedValue.COMPLEX_UNIT_SP);header.addView(name,new LinearLayout.LayoutParams(0,dp(40),1));
   name.setOnClickListener(v->home());
-  ImageView inbox=headerIcon("▣",0xff9daeb9,"Buka nota");header.addView(inbox);
+  ImageView inbox=headerIcon("▣",0xff9daeb9,"Buka nota");// Nota is accessible through the category tile and main menu.
   inbox.setOnClickListener(v->openSection(false));
   ImageView bell=headerIcon("▦",0xff216e4e,"Board & Sub-board");header.addView(bell);
   bell.setOnClickListener(v->{if(editor!=null){save();if(selected==null)return;}manageCategories();});
@@ -546,13 +546,14 @@ public class MainActivity extends Activity {
    tile.setContentDescription((isBook?"Maktabah, ":"Nota, ")+(isBook?bookCount:noteCount)+" topik");
    tile.setOnClickListener(v->openSection(isBook));applyTouchFeedback(tile);
   }
-  // Scrollable home shortcuts beside the Nota/Maktabah summary tiles.
+  LinearLayout utilityRow=new LinearLayout(this);utilityRow.setGravity(Gravity.RIGHT|Gravity.CENTER_VERTICAL);utilityRow.setPadding(dp(10),0,dp(10),dp(2));dashboardHost.addView(utilityRow,splitHome?1:2,new LinearLayout.LayoutParams(-1,dp(40)));
+  // Home utilities on a separate row, preserving both actions.
   TextView recentIcon=dashboardText("◷",19,true);
   recentIcon.setGravity(Gravity.CENTER);recentIcon.setTextColor(0xff47745d);
   recentIcon.setBackground(rounded(0xfffdfefe,0xffcdd6df,9));
   recentIcon.setContentDescription("Baru dilihat: pilih paparan");
   LinearLayout.LayoutParams recentIconParams=new LinearLayout.LayoutParams(dp(36),dp(38));
-  recentIconParams.leftMargin=dp(5);tiles.addView(recentIcon,recentIconParams);
+  recentIconParams.leftMargin=dp(5);utilityRow.addView(recentIcon,recentIconParams);
   recentIcon.setOnClickListener(v->new AlertDialog.Builder(this).setItems(new String[]{"Baru dilihat","Semua nota","Maktabah"},(d,i)->{if(i==2)openSection(true);else openSection(false);}).show());
   applyTouchFeedback(recentIcon);
   TextView searchIcon=dashboardText("⌕",22,true);
@@ -560,7 +561,7 @@ public class MainActivity extends Activity {
   searchIcon.setBackground(rounded(0xfffdfefe,0xffcdd6df,9));
   searchIcon.setContentDescription("Cari nota atau kitab");
   LinearLayout.LayoutParams searchIconParams=new LinearLayout.LayoutParams(dp(36),dp(38));
-  searchIconParams.leftMargin=dp(4);tiles.addView(searchIcon,searchIconParams);
+  searchIconParams.leftMargin=dp(4);utilityRow.addView(searchIcon,searchIconParams);
   searchIcon.setOnClickListener(v->{
    EditText queryInput=new EditText(this);
    queryInput.setSingleLine(true);queryInput.setTextSize(15);queryInput.setHint("Cari nota atau kitab");
