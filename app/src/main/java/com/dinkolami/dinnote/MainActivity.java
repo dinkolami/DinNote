@@ -103,8 +103,8 @@ public class MainActivity extends Activity {
   name.setOnClickListener(v->home());
   ImageView inbox=headerIcon("▣",0xff9daeb9,"Buka nota");header.addView(inbox);
   inbox.setOnClickListener(v->openSection(false));
-  ImageView bell=headerIcon("♧",0xff9daeb9,"Peringatan nota");header.addView(bell);
-  bell.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Peringatan").setMessage("Peringatan nota belum tersedia.").setPositiveButton("OK",null).show());
+  ImageView bell=headerIcon("▦",0xff216e4e,"Board & Sub-board");header.addView(bell);
+  bell.setOnClickListener(v->{if(editor!=null){save();if(selected==null)return;}manageCategories();});
   ImageView avatar=headerIcon("☪",0xff9daeb9,"Urus kategori");header.addView(avatar);
   avatar.setOnClickListener(v->manageCategories());
   root.addView(header,new LinearLayout.LayoutParams(-1,dp(54)));
@@ -3954,11 +3954,16 @@ public class MainActivity extends Activity {
   ArrayList<String> all=categories();LinkedHashSet<String> nodes=new LinkedHashSet<>();
   for(String name:all){ArrayList<String> chain=new ArrayList<>();for(String n=name;!n.isEmpty();n=boardParent(n))chain.add(0,n);nodes.addAll(chain);}
   LinearLayout panel=new LinearLayout(this);panel.setOrientation(1);panel.setPadding(dp(12),dp(8),dp(12),dp(8));
-  ScrollView scroll=new ScrollView(this);scroll.addView(panel);
-  AlertDialog dialog=new AlertDialog.Builder(this).setTitle("Pengurusan kategori · "+(maktabah?"Maktabah":"Nota")).setView(scroll).setNegativeButton("Tutup",null).create();
-  Button add=new Button(this);add.setText("+ Tambah Board");panel.addView(add);add.setOnClickListener(v->{dialog.dismiss();categoryDialog(null);});
-  renderBoardRows(panel,dialog,nodes,"",0);
-  dialog.show();
+  editor=null;titleEditor=null;categoryPicker=null;selected=null;sectionOpen=true;
+  base("DinNote");root.setTag("board_management");
+  LinearLayout tabs=new LinearLayout(this);tabs.setGravity(Gravity.CENTER_VERTICAL);root.addView(tabs);
+  Button back=new Button(this);back.setText("‹");tabs.addView(back);back.setOnClickListener(v->openSection(maktabah));
+  Button notes=new Button(this);notes.setText("Nota");tabs.addView(notes,new LinearLayout.LayoutParams(0,-2,1));notes.setEnabled(maktabah);notes.setOnClickListener(v->{maktabah=false;manageCategories();});
+  Button books=new Button(this);books.setText("Maktabah");tabs.addView(books,new LinearLayout.LayoutParams(0,-2,1));books.setEnabled(!maktabah);books.setOnClickListener(v->{maktabah=true;manageCategories();});
+  TextView heading=text("Board & Sub-board",18);heading.setTextColor(0xff216e4e);heading.setPadding(dp(12),dp(8),dp(12),dp(4));root.addView(heading);
+  ScrollView scroll=new ScrollView(this);scroll.addView(panel);root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
+  Button add=new Button(this);add.setText("+ Tambah Board");panel.addView(add);add.setOnClickListener(v->categoryDialog(null));
+  renderBoardRows(panel,null,nodes,"",0);
  }
  void renderBoardRows(LinearLayout panel,AlertDialog dialog,LinkedHashSet<String> nodes,String parent,int depth){
   for(String name:nodes){if(!boardParent(name).equals(parent))continue;
@@ -3967,7 +3972,7 @@ public class MainActivity extends Activity {
    final boolean hasChildren=children;
    TextView label=text((children?"▾  ":"    ")+(depth==0?"▣  ":"↳  ")+boardLeaf(name),16);label.setTextColor(0xff216e4e);label.setMinHeight(dp(44));label.setGravity(Gravity.CENTER_VERTICAL);row.addView(label,new LinearLayout.LayoutParams(0,-2,1));
    Button more=new Button(this);more.setText("⋮");row.addView(more,new LinearLayout.LayoutParams(dp(48),dp(44)));
-   more.setOnClickListener(v->{dialog.dismiss();new AlertDialog.Builder(this).setTitle(name).setItems(new String[]{"Tambah Sub-board","Urus kategori"},(d,w)->{if(w==0)addBoardChild(name);else categoryActions(name);}).setNegativeButton("Batal",null).show();});
+   more.setOnClickListener(v->{if(dialog!=null)dialog.dismiss();new AlertDialog.Builder(this).setTitle(name).setItems(new String[]{"Tambah Sub-board","Urus kategori"},(d,w)->{if(w==0)addBoardChild(name);else categoryActions(name);}).setNegativeButton("Batal",null).show();});
    LinearLayout nested=new LinearLayout(this);nested.setOrientation(1);panel.addView(nested);
    if(hasChildren){renderBoardRows(nested,dialog,nodes,name,depth+1);label.setOnClickListener(v->{boolean show=nested.getVisibility()!=View.VISIBLE;nested.setVisibility(show?View.VISIBLE:View.GONE);label.setText((show?"▾  ":"▸  ")+(depth==0?"▣  ":"↳  ")+boardLeaf(name));});}
   }
@@ -4012,7 +4017,7 @@ public class MainActivity extends Activity {
      }
      if(!changes.commit()){Toast.makeText(this,"Gagal mengemas kini kategori",Toast.LENGTH_LONG).show();return;}
     }else if(old==null)c.add(name);
-    storeCategories(c);categoryFilter="Semua";openSection(maktabah);
+    storeCategories(c);categoryFilter="Semua";if("board_management".equals(root.getTag()))manageCategories();else openSection(maktabah);
    }).setNegativeButton("Batal",null).show();
  }
 
@@ -5025,5 +5030,5 @@ public class MainActivity extends Activity {
   }
   return super.onKeyDown(keyCode,event);
  }
- public void onBackPressed(){if(editor!=null){finishEditingSafely();}else if(selected!=null){returnFromReader();}else if(sectionOpen){home();}else super.onBackPressed();}
+ public void onBackPressed(){if(root!=null&&"board_management".equals(root.getTag())){openSection(maktabah);return;}if(editor!=null){finishEditingSafely();}else if(selected!=null){returnFromReader();}else if(sectionOpen){home();}else super.onBackPressed();}
 }
