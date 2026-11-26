@@ -2342,6 +2342,23 @@ public class MainActivity extends Activity {
    copy.setLayoutParams(new LinearLayout.LayoutParams((LinearLayout.LayoutParams)original.getLayoutParams()));
   return copy;
  }
+ void showLectureMindMap(String key,int size){
+  String raw=prefs.getString(key,"");ArrayList<String> names=new ArrayList<>();ArrayList<Integer> starts=new ArrayList<>(),ends=new ArrayList<>();
+  java.util.regex.Matcher m=lectureHeadingPattern().matcher(raw);while(m.find()){names.add(m.group(1));starts.add(m.start());ends.add(m.end());}
+  LinearLayout root=new LinearLayout(this);root.setOrientation(1);root.setPadding(dp(10),dp(8),dp(10),dp(8));
+  TextView title=text(prefs.getString("title_"+key,"Peta Minda"),18);title.setGravity(Gravity.CENTER);title.setPadding(dp(8),dp(12),dp(8),dp(12));title.setBackground(homeGlossy(0,12));root.addView(title);
+  LinearLayout columns=new LinearLayout(this);boolean wide=getResources().getConfiguration().screenWidthDp>=600;columns.setOrientation(wide?0:1);root.addView(columns,new LinearLayout.LayoutParams(-1,0,1));
+  ScrollView treeScroll=new ScrollView(this),contentScroll=new ScrollView(this);
+  columns.addView(treeScroll,wide?new LinearLayout.LayoutParams(0,-1,1):new LinearLayout.LayoutParams(-1,0,1));
+  columns.addView(contentScroll,wide?new LinearLayout.LayoutParams(0,-1,2):new LinearLayout.LayoutParams(-1,0,2));
+  LinearLayout tree=new LinearLayout(this),detail=new LinearLayout(this);tree.setOrientation(1);detail.setOrientation(1);detail.setPadding(dp(8),dp(8),dp(8),dp(8));treeScroll.addView(tree);contentScroll.addView(detail);
+  TextView hint=text("Pilih subtopik untuk membaca kandungan.",14);detail.addView(hint);
+  final int[] zoom={size};final int[] chosen={-1};
+  Runnable refresh=()->{if(chosen[0]<0)return;int i=chosen[0];detail.removeAllViews();TextView h=text(names.get(i),zoom[0]+2);h.setTextColor(0xff174d37);detail.addView(h);renderBoxReading(detail,raw.substring(ends.get(i),i+1<starts.size()?starts.get(i+1):raw.length()).trim(),zoom[0],key);contentScroll.scrollTo(0,0);};
+  for(int i=0;i<names.size();i++){final int index=i;TextView connector=text("│",15);connector.setGravity(Gravity.CENTER);connector.setTextColor(0xffb58b29);tree.addView(connector);TextView node=text(names.get(i),15);node.setGravity(Gravity.CENTER);node.setTextColor(0xff174d37);node.setPadding(dp(8),dp(10),dp(8),dp(10));node.setBackground(homeGlossy(0,10));tree.addView(node);node.setOnClickListener(v->{chosen[0]=index;refresh.run();});}
+  LinearLayout controls=new LinearLayout(this);root.addView(controls);for(String label:new String[]{"A−","A+","Lipat / Kembang"}){TextView b=text(label,14);b.setGravity(Gravity.CENTER);b.setBackground(homeGlossy(0,10));controls.addView(b,new LinearLayout.LayoutParams(0,dp(42),1));b.setOnClickListener(v->{if(label.equals("A−")){zoom[0]=Math.max(12,zoom[0]-1);refresh.run();}else if(label.equals("A+")){zoom[0]=Math.min(32,zoom[0]+1);refresh.run();}else treeScroll.setVisibility(treeScroll.getVisibility()==View.VISIBLE?View.GONE:View.VISIBLE);});}
+  AlertDialog dialog=new AlertDialog.Builder(this).setTitle("Peta Minda").setView(root).setPositiveButton("Tutup",null).create();dialog.show();if(dialog.getWindow()!=null)dialog.getWindow().setLayout(-1,(int)(getResources().getDisplayMetrics().heightPixels*0.85));
+ }
  void renderLectureTemplate(LinearLayout body,String source,int size,String key){
   java.util.regex.Matcher m=lectureHeadingPattern().matcher(source);
   ArrayList<String> names=new ArrayList<>();ArrayList<Integer> starts=new ArrayList<>();ArrayList<Integer> ends=new ArrayList<>();
@@ -2353,6 +2370,7 @@ public class MainActivity extends Activity {
   LinearLayout lectureMenu=new LinearLayout(this);lectureMenu.setGravity(Gravity.CENTER_VERTICAL);body.addView(lectureMenu);
   TextView ready=text(mode==2?"☷  Subtopik":"▤  Paparan Siap",15);ready.setTextColor(0xff216e4e);ready.setGravity(Gravity.CENTER);ready.setTypeface(null,android.graphics.Typeface.BOLD);ready.setPadding(dp(8),dp(6),dp(8),dp(6));ready.setMinHeight(dp(40));LinearLayout.LayoutParams readyLp=new LinearLayout.LayoutParams(0,-2,1);readyLp.setMargins(0,dp(4),dp(4),dp(8));lectureMenu.addView(ready,readyLp);ready.setBackground(rounded(0xfffffefd,0xff9bbbab,10));ready.setOnClickListener(v->{prefs.edit().putInt("lecture_view_"+key,mode==2?0:2).apply();try{readContentSafely(key);}catch(Exception failure){showReaderRecovery(key,failure);}});
   TextView sectionTitle=text("✎  Edit Penuh",15);sectionTitle.setTextColor(0xff216e4e);sectionTitle.setGravity(Gravity.CENTER);sectionTitle.setTypeface(null,android.graphics.Typeface.BOLD);sectionTitle.setPadding(dp(8),dp(6),dp(8),dp(6));sectionTitle.setMinHeight(dp(40));LinearLayout.LayoutParams editLp=new LinearLayout.LayoutParams(0,-2,1);editLp.setMargins(dp(4),dp(4),0,dp(8));lectureMenu.addView(sectionTitle,editLp);sectionTitle.setBackground(rounded(0xfffffefd,0xff9bbbab,10));sectionTitle.setOnClickListener(v->edit(key));
+  TextView mind=text("⌘  Peta Minda",13);mind.setGravity(Gravity.CENTER);mind.setTextColor(0xff174d37);mind.setBackground(homeGlossy(0,10));lectureMenu.addView(mind,new LinearLayout.LayoutParams(0,dp(40),1));mind.setOnClickListener(v->showLectureMindMap(key,size));
   if(mode==2){
    // Render each section independently to prevent box leakage.
    String prefix=source.substring(0,starts.get(0)).trim();
