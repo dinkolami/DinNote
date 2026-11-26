@@ -3972,6 +3972,19 @@ public class MainActivity extends Activity {
  void seedOne(String key,String[] defaults){if(prefs.contains(key))return;prefs.edit().putString(key,android.text.TextUtils.join("|",defaults)).apply();}
  ArrayList<String> categories(){String raw=prefs.getString(maktabah?"categories_m":"categories_n","");ArrayList<String> out=new ArrayList<>();for(String x:raw.split("\\|"))if(!x.trim().isEmpty())out.add(x.trim());return out;}
  void storeCategories(ArrayList<String> c){prefs.edit().putString(maktabah?"categories_m":"categories_n",android.text.TextUtils.join("|",c)).apply();}
+ java.util.Map<String,Integer> boardPostingCounts(boolean books){
+  java.util.Map<String,Integer> counts=new java.util.HashMap<>();
+  java.util.Map<String,?> snapshot=prefs.getAll();
+  for(String key:snapshot.keySet()){
+   if(!key.startsWith(books?"m_":"n_")||!(snapshot.get(key) instanceof String)||prefs.getBoolean("deleted_"+key,false))continue;
+   String category=prefs.getString("cat_"+key,"Tanpa kategori");
+   counts.put(category,counts.getOrDefault(category,0)+1);
+  }
+  return counts;
+ }
+ void addBoardPostingCount(LinearLayout row,int count){
+  TextView number=text(String.valueOf(count),12);number.setTextColor(0xff687b70);number.setGravity(Gravity.END|Gravity.CENTER_VERTICAL);number.setPadding(dp(4),0,dp(8),0);number.setContentDescription(count+" posting");row.addView(number,new LinearLayout.LayoutParams(-2,dp(38)));
+ }
  void renderHomeBoards(LinearLayout outer,boolean books){
   LinearLayout panel=new LinearLayout(this);panel.setOrientation(1);panel.setPadding(dp(2),dp(2),dp(2),dp(2));panel.setBackground(rounded(0xfffdfefe,0xffd8c68a,8));
   LinearLayout.LayoutParams boxParams=new LinearLayout.LayoutParams(-1,-2);boxParams.bottomMargin=dp(8);outer.addView(panel,boxParams);
@@ -3979,7 +3992,7 @@ public class MainActivity extends Activity {
   heading.setOnClickListener(v->openSection(books));
   LinkedHashSet<String> nodes=new LinkedHashSet<>();
   for(String name:prefs.getString(books?"categories_m":"categories_n","").split("\\|")){ArrayList<String> chain=new ArrayList<>();for(String n=name.trim();!n.isEmpty();n=boardParent(n))chain.add(0,n);nodes.addAll(chain);}
-  renderHomeBoardRows(panel,nodes,"",0,books);
+  renderHomeBoardRows(panel,nodes,"",0,books,boardPostingCounts(books));
   TextView manage=dashboardText("+ Tambah / Urus Board",13,true);manage.setTextColor(0xff216e4e);manage.setPadding(dp(5),dp(8),dp(5),dp(8));panel.addView(manage);manage.setOnClickListener(v->{maktabah=books;manageCategories();});
  }
  void refreshBoardSelection(View view){
@@ -3990,17 +4003,18 @@ public class MainActivity extends Activity {
   }
   if(view instanceof android.view.ViewGroup){android.view.ViewGroup group=(android.view.ViewGroup)view;for(int i=0;i<group.getChildCount();i++)refreshBoardSelection(group.getChildAt(i));}
  }
- void renderHomeBoardRows(LinearLayout panel,LinkedHashSet<String> nodes,String parent,int depth,boolean books){
+ void renderHomeBoardRows(LinearLayout panel,LinkedHashSet<String> nodes,String parent,int depth,boolean books,java.util.Map<String,Integer> counts){
   for(String name:nodes){if(!boardParent(name).equals(parent))continue;
    LinearLayout row=new LinearLayout(this);row.setGravity(Gravity.CENTER_VERTICAL);row.setPadding(dp(Math.min(depth,8)*14),0,0,0);panel.addView(row);
    boolean children=false;for(String n:nodes)if(boardParent(n).equals(name)){children=true;break;}
    TextView arrow=dashboardText(children?"▾":" ",15,true);arrow.setGravity(Gravity.CENTER);row.addView(arrow,new LinearLayout.LayoutParams(dp(24),dp(38)));
    TextView label=dashboardText((depth==0?"▣  ":"↳  ")+boardLeaf(name),14,depth==0);label.setTextColor(0xff365c48);label.setGravity(Gravity.CENTER_VERTICAL);row.addView(label,new LinearLayout.LayoutParams(0,dp(38),1));
+   addBoardPostingCount(row,counts.getOrDefault(name,0));
    row.setTag("board_row:"+(books?"m:":"n:")+name);
    if(sectionOpen&&maktabah==books&&name.equals(categoryFilter))row.setBackground(rounded(0xffe3eee7,0xffc9dfd0,5));
    label.setOnClickListener(v->{sectionOpen=true;maktabah=books;categoryFilter=name;if(books)savedBooksScroll=0;else savedNotesScroll=0;notesPage(true);});
    View rule=new View(this);rule.setBackgroundColor(0xffe5eae6);panel.addView(rule,new LinearLayout.LayoutParams(-1,dp(1)));
-   if(children){LinearLayout nested=new LinearLayout(this);nested.setOrientation(1);panel.addView(nested);renderHomeBoardRows(nested,nodes,name,depth+1,books);arrow.setOnClickListener(v->{boolean show=nested.getVisibility()!=View.VISIBLE;nested.setVisibility(show?View.VISIBLE:View.GONE);arrow.setText(show?"▾":"▸");});}
+   if(children){LinearLayout nested=new LinearLayout(this);nested.setOrientation(1);panel.addView(nested);renderHomeBoardRows(nested,nodes,name,depth+1,books,counts);arrow.setOnClickListener(v->{boolean show=nested.getVisibility()!=View.VISIBLE;nested.setVisibility(show?View.VISIBLE:View.GONE);arrow.setText(show?"▾":"▸");});}
   }
  }
  String boardParent(String name){int i=Math.max(name.lastIndexOf(" / "),name.lastIndexOf(" › "));return i<0?"":name.substring(0,i);}
@@ -4018,19 +4032,20 @@ public class MainActivity extends Activity {
   TextView heading=text("Board Tree",18);heading.setTextColor(0xff216e4e);heading.setPadding(dp(12),dp(8),dp(12),dp(4));root.addView(heading);
   ScrollView scroll=new ScrollView(this);scroll.addView(panel);root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
   Button add=new Button(this);add.setText("+ Tambah Board");styleBoardButton(add,false);panel.addView(add);add.setOnClickListener(v->categoryDialog(null));
-  renderBoardRows(panel,null,nodes,"",0);
+  renderBoardRows(panel,null,nodes,"",0,boardPostingCounts(maktabah));
  }
- void renderBoardRows(LinearLayout panel,AlertDialog dialog,LinkedHashSet<String> nodes,String parent,int depth){
+ void renderBoardRows(LinearLayout panel,AlertDialog dialog,LinkedHashSet<String> nodes,String parent,int depth,java.util.Map<String,Integer> counts){
   for(String name:nodes){if(!boardParent(name).equals(parent))continue;
    LinearLayout row=new LinearLayout(this);row.setGravity(Gravity.CENTER_VERTICAL);row.setPadding(dp(Math.min(depth,8)*14),dp(2),dp(3),dp(2));row.setBackground(rounded(0xfffdfefe,0xffe0e7e2,7));panel.addView(row);
    boolean children=false;for(String n:nodes)if(boardParent(n).equals(name)){children=true;break;}
    final boolean hasChildren=children;
    TextView arrow=text(children?"▾":"",15);arrow.setGravity(Gravity.CENTER);arrow.setTextColor(0xff216e4e);row.addView(arrow,new LinearLayout.LayoutParams(dp(28),dp(40)));TextView label=text((depth==0?"▣  ":"↳  ")+boardLeaf(name),15);label.setTextColor(0xff216e4e);label.setMinHeight(dp(44));label.setGravity(Gravity.CENTER_VERTICAL);row.addView(label,new LinearLayout.LayoutParams(0,-2,1));
+   addBoardPostingCount(row,counts.getOrDefault(name,0));
    Button more=new Button(this);more.setText("⋮");styleBoardButton(more,false);row.addView(more,new LinearLayout.LayoutParams(dp(48),dp(44)));
    more.setOnClickListener(v->{if(dialog!=null)dialog.dismiss();new AlertDialog.Builder(this).setTitle(name).setItems(new String[]{"Tambah Sub-board","Urus kategori"},(d,w)->{if(w==0)addBoardChild(name);else categoryActions(name);}).setNegativeButton("Batal",null).show();});
    LinearLayout nested=new LinearLayout(this);nested.setOrientation(1);panel.addView(nested);
    label.setOnClickListener(v->{if(dialog!=null)dialog.dismiss();sectionOpen=true;categoryFilter=name;if(maktabah)savedBooksScroll=0;else savedNotesScroll=0;notesPage();});
-   if(hasChildren){renderBoardRows(nested,dialog,nodes,name,depth+1);arrow.setContentDescription("Kembang atau lipat "+boardLeaf(name));arrow.setOnClickListener(v->{boolean show=nested.getVisibility()!=View.VISIBLE;nested.setVisibility(show?View.VISIBLE:View.GONE);arrow.setText(show?"▾":"▸");});}
+   if(hasChildren){renderBoardRows(nested,dialog,nodes,name,depth+1,counts);arrow.setContentDescription("Kembang atau lipat "+boardLeaf(name));arrow.setOnClickListener(v->{boolean show=nested.getVisibility()!=View.VISIBLE;nested.setVisibility(show?View.VISIBLE:View.GONE);arrow.setText(show?"▾":"▸");});}
   }
  }
  void styleBoardButton(Button button,boolean active){button.setAllCaps(false);button.setTextColor(0xff216e4e);button.setTextSize(14);button.setElevation(0);button.setStateListAnimator(null);button.setBackground(rounded(active?0xffe3eee7:0xfff8faf8,0xffd4dfd7,8));button.setPadding(dp(8),dp(4),dp(8),dp(4));}
