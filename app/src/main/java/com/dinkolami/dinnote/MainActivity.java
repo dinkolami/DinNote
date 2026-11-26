@@ -390,9 +390,19 @@ public class MainActivity extends Activity {
  void home(){
   items=null;sectionOpen=false;editor=null;titleEditor=null;categoryPicker=null;selected=null;maktabah=false;
   base("DinNote");
+  final boolean splitHome=homeWindowWidthDp()>=440;
+  LinearLayout dashboardHost=root;
+  if(splitHome){
+   LinearLayout split=new LinearLayout(this);root.addView(split,new LinearLayout.LayoutParams(-1,0,1));
+   ScrollView boardScroll=new ScrollView(this);split.addView(boardScroll,new LinearLayout.LayoutParams(0,-1,1));
+   LinearLayout boardPanel=new LinearLayout(this);boardPanel.setOrientation(1);boardPanel.setPadding(dp(8),dp(8),dp(8),dp(8));boardScroll.addView(boardPanel);
+   renderHomeBoards(boardPanel,false);renderHomeBoards(boardPanel,true);
+   View separator=new View(this);separator.setBackgroundColor(0xffd5bb72);split.addView(separator,new LinearLayout.LayoutParams(dp(1),-1));
+   dashboardHost=new LinearLayout(this);dashboardHost.setOrientation(1);split.addView(dashboardHost,new LinearLayout.LayoutParams(0,-1,1));
+  }
   ScrollView scroll=new ScrollView(this);scroll.setFillViewport(false);scroll.setVerticalScrollBarEnabled(false);
   scroll.setOverScrollMode(View.OVER_SCROLL_NEVER);scroll.setSmoothScrollingEnabled(true);
-  root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
+  dashboardHost.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
   LinearLayout page=new LinearLayout(this);page.setOrientation(1);
   page.setPadding(dp(10),dp(6),dp(10),dp(3));page.setBackgroundColor(0xfff7f8f4);page.setTag("dinnote_home");
   // Use the actual measured dashboard height. Avoid scaleY, synthetic spacer
@@ -418,7 +428,7 @@ public class MainActivity extends Activity {
    if(postingKey.startsWith("n_"))noteCount++;
    else if(postingKey.startsWith("m_"))bookCount++;
   }
-  LinearLayout tiles=new LinearLayout(this);tiles.setGravity(Gravity.CENTER_VERTICAL);tiles.setPadding(dp(10),dp(2),dp(10),dp(3));tiles.setBackgroundColor(0xfff7f8f4);root.addView(tiles,1,new LinearLayout.LayoutParams(-1,dp(48)));
+  LinearLayout tiles=new LinearLayout(this);tiles.setGravity(Gravity.CENTER_VERTICAL);tiles.setPadding(dp(10),dp(2),dp(10),dp(3));tiles.setBackgroundColor(0xfff7f8f4);dashboardHost.addView(tiles,splitHome?0:1,new LinearLayout.LayoutParams(-1,dp(48)));
   for(int j=0;j<2;j++){
    final boolean isBook=j==1;
    LinearLayout tile=new LinearLayout(this);tile.setGravity(Gravity.CENTER_VERTICAL);
@@ -470,7 +480,7 @@ public class MainActivity extends Activity {
   // Compact GitHub-style shortcuts, without changing the approved header.
   LinearLayout shortcuts=new LinearLayout(this);shortcuts.setOrientation(1);
   shortcuts.setPadding(0,0,0,dp(1));page.addView(shortcuts);
-  if(homeWindowWidthDp()>=440){
+  if(false){
    LinearLayout sectionColumns=new LinearLayout(this);
    sectionColumns.setOrientation(LinearLayout.HORIZONTAL);
    LinearLayout pinnedColumn=new LinearLayout(this);pinnedColumn.setOrientation(LinearLayout.VERTICAL);
@@ -506,7 +516,7 @@ public class MainActivity extends Activity {
   TextView latestHeading=dashboardText("Terkini Dimasukkan  "+(latestCollapsed?"▸":"▾"),15,true);
   latestHeading.setTextColor(0xff365c48);
   latestHeading.setIncludeFontPadding(false);
-  latestHeading.setPadding(dp(8),dp(homeWindowWidthDp()<440?6:8),dp(8),dp(homeWindowWidthDp()<440?6:8));
+  latestHeading.setPadding(dp(8),dp(6),dp(8),dp(homeWindowWidthDp()<440?6:8));
   ImageView latestIcon=new ImageView(this);latestIcon.setImageResource(R.drawable.home_icon_history);
   LinearLayout.LayoutParams latestIconParams=new LinearLayout.LayoutParams(dp(16),dp(16));latestIconParams.leftMargin=dp(9);latestIconParams.rightMargin=dp(2);latestHeader.addView(latestIcon,latestIconParams);
   latestHeader.addView(latestHeading,new LinearLayout.LayoutParams(0,-2,1));
@@ -526,7 +536,7 @@ public class MainActivity extends Activity {
   ArrayList<String> keys=new ArrayList<>();
   for(String k:prefs.getAll().keySet())if((k.startsWith("n_")||k.startsWith("m_"))&&prefs.getAll().get(k) instanceof String&&!prefs.getBoolean("deleted_"+k,false)&&prefs.getLong("viewed_"+k,0L)>0L)keys.add(k);
   Collections.sort(keys,(firstKey,secondKey)->{int order=Long.compare(prefs.getLong("viewed_"+secondKey,0L),prefs.getLong("viewed_"+firstKey,0L));return order!=0?order:firstKey.compareTo(secondKey);});
-  TextView latestCount=dashboardText(Math.min(homeWindowWidthDp()>=440?20:5,keys.size())+" Topik",10,true);
+  TextView latestCount=dashboardText(Math.min(5,keys.size())+" Topik",10,true);
   latestCount.setTextColor(0xff416653);latestCount.setGravity(Gravity.CENTER);
   latestCount.setPadding(dp(5),dp(3),dp(5),dp(3));
   latestCount.setBackground(homeInsetSurface(0xffedf5ee,0xffe4efe7,0xffc1d4c5,9));
@@ -544,7 +554,7 @@ public class MainActivity extends Activity {
    hint.setGravity(Gravity.CENTER);hint.setTextColor(0xff656d76);hint.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);hint.setTextSize(13);hint.setPadding(dp(12),dp(6),dp(12),dp(12));recentNotes.addView(hint);
   }else {
    // Two balanced columns of ten on an unfolded Fold6; one column of five on narrow screens.
-   boolean wide=homeWindowWidthDp()>=440;
+   boolean wide=false;
    LinearLayout columns=null,left=null,right=null;
    if(wide){
     columns=new LinearLayout(this);columns.setOrientation(LinearLayout.HORIZONTAL);
@@ -615,12 +625,12 @@ public class MainActivity extends Activity {
   footer.setPadding(dp(10),dp(3),dp(10),dp(4));
   footer.setBackgroundColor(0xfffdfefe);
   footer.setElevation(dp(3));
-  root.addView(footer,new LinearLayout.LayoutParams(-1,-2));
+  dashboardHost.addView(footer,new LinearLayout.LayoutParams(-1,-2));
   LinearLayout.LayoutParams ap=new LinearLayout.LayoutParams(-1,dp(42));
   LinearLayout actions=new LinearLayout(this);actions.setOrientation(LinearLayout.HORIZONTAL);
   // Compact Hikmah Ringkas preview: fixed above the home actions on the folded screen only.
   // Use existing sample wisdom text for layout testing; do not touch user notes.
-  if(homeWindowWidthDp()<440){
+  if(true){
    final java.util.ArrayList<String> sampleWisdom=homeWisdomEntries();
    LinearLayout wisdomCard=new LinearLayout(this);wisdomCard.setOrientation(LinearLayout.VERTICAL);
    wisdomCard.setPadding(dp(12),dp(2),dp(12),dp(5));
@@ -3948,6 +3958,24 @@ public class MainActivity extends Activity {
  void seedOne(String key,String[] defaults){if(prefs.contains(key))return;prefs.edit().putString(key,android.text.TextUtils.join("|",defaults)).apply();}
  ArrayList<String> categories(){String raw=prefs.getString(maktabah?"categories_m":"categories_n","");ArrayList<String> out=new ArrayList<>();for(String x:raw.split("\\|"))if(!x.trim().isEmpty())out.add(x.trim());return out;}
  void storeCategories(ArrayList<String> c){prefs.edit().putString(maktabah?"categories_m":"categories_n",android.text.TextUtils.join("|",c)).apply();}
+ void renderHomeBoards(LinearLayout panel,boolean books){
+  TextView heading=dashboardText(books?"▤  Maktabah":"✎  Nota",16,true);heading.setTextColor(0xff216e4e);heading.setPadding(dp(5),dp(10),dp(5),dp(6));panel.addView(heading);
+  heading.setOnClickListener(v->openSection(books));
+  LinkedHashSet<String> nodes=new LinkedHashSet<>();
+  for(String name:prefs.getString(books?"categories_m":"categories_n","").split("\\|")){ArrayList<String> chain=new ArrayList<>();for(String n=name.trim();!n.isEmpty();n=boardParent(n))chain.add(0,n);nodes.addAll(chain);}
+  renderHomeBoardRows(panel,nodes,"",0,books);
+  TextView manage=dashboardText("+ Tambah / Urus Board",13,true);manage.setTextColor(0xff216e4e);manage.setPadding(dp(5),dp(8),dp(5),dp(8));panel.addView(manage);manage.setOnClickListener(v->{maktabah=books;manageCategories();});
+ }
+ void renderHomeBoardRows(LinearLayout panel,LinkedHashSet<String> nodes,String parent,int depth,boolean books){
+  for(String name:nodes){if(!boardParent(name).equals(parent))continue;
+   LinearLayout row=new LinearLayout(this);row.setGravity(Gravity.CENTER_VERTICAL);row.setPadding(dp(Math.min(depth,8)*14),0,0,0);panel.addView(row);
+   boolean children=false;for(String n:nodes)if(boardParent(n).equals(name)){children=true;break;}
+   TextView arrow=dashboardText(children?"▾":" ",15,true);arrow.setGravity(Gravity.CENTER);row.addView(arrow,new LinearLayout.LayoutParams(dp(24),dp(38)));
+   TextView label=dashboardText((depth==0?"▣  ":"↳  ")+boardLeaf(name),14,depth==0);label.setTextColor(0xff365c48);label.setGravity(Gravity.CENTER_VERTICAL);row.addView(label,new LinearLayout.LayoutParams(0,dp(38),1));
+   label.setOnClickListener(v->{sectionOpen=true;maktabah=books;categoryFilter=name;notesPage();});
+   if(children){LinearLayout nested=new LinearLayout(this);nested.setOrientation(1);panel.addView(nested);renderHomeBoardRows(nested,nodes,name,depth+1,books);arrow.setOnClickListener(v->{boolean show=nested.getVisibility()!=View.VISIBLE;nested.setVisibility(show?View.VISIBLE:View.GONE);arrow.setText(show?"▾":"▸");});}
+  }
+ }
  String boardParent(String name){int i=name.lastIndexOf(" / ");return i<0?"":name.substring(0,i);}
  String boardLeaf(String name){int i=name.lastIndexOf(" / ");return i<0?name:name.substring(i+3);}
  void manageCategories(){
