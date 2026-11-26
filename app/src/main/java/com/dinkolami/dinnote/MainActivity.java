@@ -2650,7 +2650,31 @@ public class MainActivity extends Activity {
       used+=heights[i-1];int difference=Math.abs(totalHeight-2*used);
       if(difference<best){best=difference;midpoint=i;}
      }
-     for(int i=0;i<blocks.size();i++)(i<midpoint?left:right).addView(blocks.get(i));
+     // Allow a prose paragraph to continue across the gutter at a measured line boundary.
+     int prefixHeight=0;
+     for(int i=0;i<blocks.size();i++){
+      View child=blocks.get(i);
+      if(prefs.getInt("lecture_view_"+key,0)==2 && child instanceof TextView
+       && prefixHeight<totalHeight/2 && prefixHeight+heights[i]>totalHeight/2){
+       TextView paragraph=(TextView)child;
+       android.text.Layout layout=paragraph.getLayout();
+       if(layout!=null && layout.getLineCount()>1){
+        int target=totalHeight/2-prefixHeight-paragraph.getPaddingTop();
+        int line=0;
+        while(line+1<layout.getLineCount() && layout.getLineBottom(line)<=target)line++;
+        int offset=layout.getLineStart(line);
+        CharSequence rich=paragraph.getText();
+        if(offset>0 && offset<rich.length()){
+         left.addView(copyLectureColumnText(paragraph,rich.subSequence(0,offset)));
+         right.addView(copyLectureColumnText(paragraph,rich.subSequence(offset,rich.length())));
+         for(int j=i+1;j<blocks.size();j++)right.addView(blocks.get(j));
+         break;
+        }
+       }
+      }
+      (i<midpoint?left:right).addView(child);
+      prefixHeight+=heights[i];
+     }
      body.addView(columns);
     }
    }
