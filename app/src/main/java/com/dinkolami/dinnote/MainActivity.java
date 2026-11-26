@@ -317,10 +317,35 @@ public class MainActivity extends Activity {
    LinearLayout panel=new LinearLayout(this);panel.setOrientation(1);panel.setPadding(dp(8),dp(8),dp(8),dp(8));boards.addView(panel);
    renderHomeBoards(panel,false);renderHomeBoards(panel,true);
    rememberBoardScroll(boards,"board_scroll_split");
-   View divider=new View(this);divider.setBackgroundColor(0xffd5bb72);split.addView(divider,new LinearLayout.LayoutParams(dp(1),-1));
+   android.widget.FrameLayout divider=new android.widget.FrameLayout(this);divider.setContentDescription("Tarik untuk laras kelebaran panel");
+   View goldLine=new View(this);goldLine.setBackgroundColor(0xffd5bb72);divider.addView(goldLine,new android.widget.FrameLayout.LayoutParams(dp(1),-1,Gravity.CENTER));
+   split.addView(divider,new LinearLayout.LayoutParams(dp(12),-1));
    listHost=new LinearLayout(this);listHost.setOrientation(1);listHost.setTag("board_list_pane");split.addView(listHost,new LinearLayout.LayoutParams(0,-1,1));
+   final LinearLayout rightPane=listHost;
+   float ratio=Math.max(0.30f,Math.min(0.65f,prefs.getFloat("board_split_ratio",0.5f)));
+   boards.setLayoutParams(new LinearLayout.LayoutParams(0,-1,ratio));
+   rightPane.setLayoutParams(new LinearLayout.LayoutParams(0,-1,1f-ratio));
+   divider.setOnTouchListener(new View.OnTouchListener(){
+    float startX,startRatio,currentRatio;
+    public boolean onTouch(View v,android.view.MotionEvent e){
+     int width=split.getWidth()-divider.getWidth();if(width<=0)return false;
+     switch(e.getActionMasked()){
+      case android.view.MotionEvent.ACTION_DOWN:
+       startX=e.getRawX();startRatio=boards.getWidth()/(float)width;currentRatio=startRatio;v.getParent().requestDisallowInterceptTouchEvent(true);return true;
+      case android.view.MotionEvent.ACTION_MOVE:
+       float min=Math.min(0.5f,Math.max(0.30f,dp(145)/(float)width));
+       float max=Math.max(min,Math.min(0.65f,1f-dp(220)/(float)width));
+       currentRatio=Math.max(min,Math.min(max,startRatio+(e.getRawX()-startX)/width));
+       boards.setLayoutParams(new LinearLayout.LayoutParams(0,-1,currentRatio));
+       rightPane.setLayoutParams(new LinearLayout.LayoutParams(0,-1,1f-currentRatio));return true;
+      case android.view.MotionEvent.ACTION_UP:
+      case android.view.MotionEvent.ACTION_CANCEL:
+       prefs.edit().putFloat("board_split_ratio",currentRatio).apply();v.getParent().requestDisallowInterceptTouchEvent(false);return true;
+     }return true;
+    }
+   });
   }
-  LinearLayout tabs=new LinearLayout(this);tabs.setPadding(dp(12),dp(7),dp(12),dp(5));tabs.setGravity(Gravity.CENTER_VERTICAL);int toolbarWidth=homeWindowWidthDp()>=440?homeWindowWidthDp()/2:getResources().getConfiguration().screenWidthDp;boolean narrowToolbar=toolbarWidth<370;int toolbarIconWidth=narrowToolbar?36:43;TextView notes=text(toolbarWidth<300?"✎":"✎ Nota",narrowToolbar?12:13);TextView books=text(toolbarWidth<300?"▤":"▤ Maktabah",narrowToolbar?12:13);notes.setSingleLine(true);books.setSingleLine(true);notes.setAutoSizeTextTypeUniformWithConfiguration(9,13,1,android.util.TypedValue.COMPLEX_UNIT_SP);books.setAutoSizeTextTypeUniformWithConfiguration(9,13,1,android.util.TypedValue.COMPLEX_UNIT_SP);notes.setGravity(Gravity.CENTER);books.setGravity(Gravity.CENTER);notes.setTypeface(null,maktabah?android.graphics.Typeface.NORMAL:android.graphics.Typeface.BOLD);books.setTypeface(null,maktabah?android.graphics.Typeface.BOLD:android.graphics.Typeface.NORMAL);notes.setPadding(dp(3),0,dp(3),0);books.setPadding(dp(3),0,dp(3),0);notes.setBackground(rounded(maktabah?0xfff8faf8:0xfff0f3f6,maktabah?0xffe0e6e2:0xffb7c1c9,16));notes.setTextColor(maktabah?0xff65777b:0xff566a70);notes.setContentDescription(maktabah?"Buka Nota":"Nota, bahagian dipilih");books.setBackground(rounded(maktabah?0xfff0f3f6:0xfff8faf8,maktabah?0xffb7c1c9:0xffe0e6e2,16));books.setTextColor(maktabah?0xff566a70:0xff65777b);books.setContentDescription(maktabah?"Maktabah, bahagian dipilih":"Buka Maktabah");LinearLayout.LayoutParams noteTabParams=new LinearLayout.LayoutParams(0,dp(44),1f);noteTabParams.rightMargin=dp(4);tabs.addView(notes,noteTabParams);
+  LinearLayout tabs=new LinearLayout(this);tabs.setPadding(dp(12),dp(7),dp(12),dp(5));tabs.setGravity(Gravity.CENTER_VERTICAL);int toolbarWidth=homeWindowWidthDp()>=440?(int)(homeWindowWidthDp()*(1f-Math.max(0.30f,Math.min(0.65f,prefs.getFloat("board_split_ratio",0.5f))))):getResources().getConfiguration().screenWidthDp;boolean narrowToolbar=toolbarWidth<370;int toolbarIconWidth=narrowToolbar?36:43;TextView notes=text(toolbarWidth<300?"✎":"✎ Nota",narrowToolbar?12:13);TextView books=text(toolbarWidth<300?"▤":"▤ Maktabah",narrowToolbar?12:13);notes.setSingleLine(true);books.setSingleLine(true);notes.setAutoSizeTextTypeUniformWithConfiguration(9,13,1,android.util.TypedValue.COMPLEX_UNIT_SP);books.setAutoSizeTextTypeUniformWithConfiguration(9,13,1,android.util.TypedValue.COMPLEX_UNIT_SP);notes.setGravity(Gravity.CENTER);books.setGravity(Gravity.CENTER);notes.setTypeface(null,maktabah?android.graphics.Typeface.NORMAL:android.graphics.Typeface.BOLD);books.setTypeface(null,maktabah?android.graphics.Typeface.BOLD:android.graphics.Typeface.NORMAL);notes.setPadding(dp(3),0,dp(3),0);books.setPadding(dp(3),0,dp(3),0);notes.setBackground(rounded(maktabah?0xfff8faf8:0xfff0f3f6,maktabah?0xffe0e6e2:0xffb7c1c9,16));notes.setTextColor(maktabah?0xff65777b:0xff566a70);notes.setContentDescription(maktabah?"Buka Nota":"Nota, bahagian dipilih");books.setBackground(rounded(maktabah?0xfff0f3f6:0xfff8faf8,maktabah?0xffb7c1c9:0xffe0e6e2,16));books.setTextColor(maktabah?0xff566a70:0xff65777b);books.setContentDescription(maktabah?"Maktabah, bahagian dipilih":"Buka Maktabah");LinearLayout.LayoutParams noteTabParams=new LinearLayout.LayoutParams(0,dp(44),1f);noteTabParams.rightMargin=dp(4);tabs.addView(notes,noteTabParams);
  LinearLayout.LayoutParams bookTabParams=new LinearLayout.LayoutParams(0,dp(44),1.25f);bookTabParams.rightMargin=dp(7);tabs.addView(books,bookTabParams);
  TextView quickSearch=text("⌕",23);quickSearch.setGravity(Gravity.CENTER);quickSearch.setTextColor(0xff566a70);quickSearch.setBackground(rounded(0xfff8faf8,0xffdce5df,12));quickSearch.setContentDescription("Cari tajuk, isi atau kategori");applyTouchFeedback(quickSearch);LinearLayout.LayoutParams quickSearchParams=new LinearLayout.LayoutParams(dp(toolbarIconWidth),dp(44));quickSearchParams.rightMargin=dp(5);tabs.addView(quickSearch,quickSearchParams);
  TextView quickAdd=text("✚",20);quickAdd.setGravity(Gravity.CENTER);quickAdd.setTextColor(0xff566a70);quickAdd.setBackground(rounded(0xffeaf4ee,0xffc9dfd0,12));quickAdd.setContentDescription(maktabah?"Kitab baharu":"Nota baharu");quickAdd.setOnClickListener(v->{if(maktabah)showBookAddMenu();else showNoteCreationMenu();});applyTouchFeedback(quickAdd);
