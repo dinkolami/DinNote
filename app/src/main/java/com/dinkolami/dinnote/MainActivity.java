@@ -3998,27 +3998,29 @@ public class MainActivity extends Activity {
   LinearLayout panel=new LinearLayout(this);panel.setOrientation(1);panel.setPadding(dp(12),dp(8),dp(12),dp(8));
   editor=null;titleEditor=null;categoryPicker=null;selected=null;sectionOpen=true;
   base("DinNote");root.setTag("board_management");
-  LinearLayout tabs=new LinearLayout(this);tabs.setGravity(Gravity.CENTER_VERTICAL);root.addView(tabs);
-  Button back=new Button(this);back.setText("‹");tabs.addView(back);back.setOnClickListener(v->openSection(maktabah));
-  Button notes=new Button(this);notes.setText("Nota");tabs.addView(notes,new LinearLayout.LayoutParams(0,-2,1));notes.setEnabled(maktabah);notes.setOnClickListener(v->{maktabah=false;manageCategories();});
-  Button books=new Button(this);books.setText("Maktabah");tabs.addView(books,new LinearLayout.LayoutParams(0,-2,1));books.setEnabled(!maktabah);books.setOnClickListener(v->{maktabah=true;manageCategories();});
-  TextView heading=text("Board & Sub-board",18);heading.setTextColor(0xff216e4e);heading.setPadding(dp(12),dp(8),dp(12),dp(4));root.addView(heading);
+  LinearLayout tabs=new LinearLayout(this);tabs.setGravity(Gravity.CENTER_VERTICAL);tabs.setPadding(dp(8),dp(6),dp(8),dp(4));root.addView(tabs);
+  Button back=new Button(this);back.setText("‹");styleBoardButton(back,false);tabs.addView(back);back.setOnClickListener(v->openSection(maktabah));
+  Button notes=new Button(this);notes.setText("Nota");styleBoardButton(notes,!maktabah);tabs.addView(notes,new LinearLayout.LayoutParams(0,-2,1));notes.setEnabled(maktabah);notes.setOnClickListener(v->{maktabah=false;manageCategories();});
+  Button books=new Button(this);books.setText("Maktabah");styleBoardButton(books,maktabah);tabs.addView(books,new LinearLayout.LayoutParams(0,-2,1));books.setEnabled(!maktabah);books.setOnClickListener(v->{maktabah=true;manageCategories();});
+  TextView heading=text("Board Tree",18);heading.setTextColor(0xff216e4e);heading.setPadding(dp(12),dp(8),dp(12),dp(4));root.addView(heading);
   ScrollView scroll=new ScrollView(this);scroll.addView(panel);root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
-  Button add=new Button(this);add.setText("+ Tambah Board");panel.addView(add);add.setOnClickListener(v->categoryDialog(null));
+  Button add=new Button(this);add.setText("+ Tambah Board");styleBoardButton(add,false);panel.addView(add);add.setOnClickListener(v->categoryDialog(null));
   renderBoardRows(panel,null,nodes,"",0);
  }
  void renderBoardRows(LinearLayout panel,AlertDialog dialog,LinkedHashSet<String> nodes,String parent,int depth){
   for(String name:nodes){if(!boardParent(name).equals(parent))continue;
-   LinearLayout row=new LinearLayout(this);row.setGravity(Gravity.CENTER_VERTICAL);row.setPadding(dp(Math.min(depth,8)*18),dp(3),0,dp(3));panel.addView(row);
+   LinearLayout row=new LinearLayout(this);row.setGravity(Gravity.CENTER_VERTICAL);row.setPadding(dp(Math.min(depth,8)*14),dp(2),dp(3),dp(2));row.setBackground(rounded(0xfffdfefe,0xffe0e7e2,7));panel.addView(row);
    boolean children=false;for(String n:nodes)if(boardParent(n).equals(name)){children=true;break;}
    final boolean hasChildren=children;
-   TextView label=text((children?"▾  ":"    ")+(depth==0?"▣  ":"↳  ")+boardLeaf(name),16);label.setTextColor(0xff216e4e);label.setMinHeight(dp(44));label.setGravity(Gravity.CENTER_VERTICAL);row.addView(label,new LinearLayout.LayoutParams(0,-2,1));
-   Button more=new Button(this);more.setText("⋮");row.addView(more,new LinearLayout.LayoutParams(dp(48),dp(44)));
+   TextView arrow=text(children?"▾":"",15);arrow.setGravity(Gravity.CENTER);arrow.setTextColor(0xff216e4e);row.addView(arrow,new LinearLayout.LayoutParams(dp(28),dp(40)));TextView label=text((depth==0?"▣  ":"↳  ")+boardLeaf(name),15);label.setTextColor(0xff216e4e);label.setMinHeight(dp(44));label.setGravity(Gravity.CENTER_VERTICAL);row.addView(label,new LinearLayout.LayoutParams(0,-2,1));
+   Button more=new Button(this);more.setText("⋮");styleBoardButton(more,false);row.addView(more,new LinearLayout.LayoutParams(dp(48),dp(44)));
    more.setOnClickListener(v->{if(dialog!=null)dialog.dismiss();new AlertDialog.Builder(this).setTitle(name).setItems(new String[]{"Tambah Sub-board","Urus kategori"},(d,w)->{if(w==0)addBoardChild(name);else categoryActions(name);}).setNegativeButton("Batal",null).show();});
    LinearLayout nested=new LinearLayout(this);nested.setOrientation(1);panel.addView(nested);
-   if(hasChildren){renderBoardRows(nested,dialog,nodes,name,depth+1);label.setOnClickListener(v->{boolean show=nested.getVisibility()!=View.VISIBLE;nested.setVisibility(show?View.VISIBLE:View.GONE);label.setText((show?"▾  ":"▸  ")+(depth==0?"▣  ":"↳  ")+boardLeaf(name));});}
+   label.setOnClickListener(v->{if(dialog!=null)dialog.dismiss();sectionOpen=true;categoryFilter=name;if(maktabah)savedBooksScroll=0;else savedNotesScroll=0;notesPage();});
+   if(hasChildren){renderBoardRows(nested,dialog,nodes,name,depth+1);arrow.setContentDescription("Kembang atau lipat "+boardLeaf(name));arrow.setOnClickListener(v->{boolean show=nested.getVisibility()!=View.VISIBLE;nested.setVisibility(show?View.VISIBLE:View.GONE);arrow.setText(show?"▾":"▸");});}
   }
  }
+ void styleBoardButton(Button button,boolean active){button.setAllCaps(false);button.setTextColor(0xff216e4e);button.setTextSize(14);button.setElevation(0);button.setStateListAnimator(null);button.setBackground(rounded(active?0xffe3eee7:0xfff8faf8,0xffd4dfd7,8));button.setPadding(dp(8),dp(4),dp(8),dp(4));}
  void addBookSubcategory(){manageCategories();}
  void addBoardChild(String parent){
   EditText field=new EditText(this);field.setSingleLine(true);field.setHint("Nama Sub-board");
