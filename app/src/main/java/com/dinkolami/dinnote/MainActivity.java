@@ -3826,7 +3826,13 @@ public class MainActivity extends Activity {
  void addPlainBoxText(LinearLayout body,String value,int fontSize){
   value=value.replaceAll("(?m)^[ \\t]*\\*{1,2}[ \\t]*$","").trim();
   if(value.isEmpty())return;
-  TextView t=text("",fontSize);t.setText(readerLabelText(value));applySharedTextMetrics(t);
+  TextView t=text("",fontSize);
+  android.text.SpannableStringBuilder compact=readerLabelText(value);
+  java.util.regex.Matcher blankLines=java.util.regex.Pattern.compile("\\n[ \\t]*\\n+").matcher(compact.toString());
+  ArrayList<int[]> gaps=new ArrayList<>();
+  while(blankLines.find())gaps.add(new int[]{blankLines.start()+1,blankLines.end()});
+  if(readerBuiltWidthPx<dp(500)||!prefs.getBoolean("reader_two_columns",true))for(int i=gaps.size()-1;i>=0;i--)compact.delete(gaps.get(i)[0],gaps.get(i)[1]);
+  t.setText(compact);applySharedTextMetrics(t);
   // Give mixed Arabic/Malay paragraphs comfortable baseline clearance.
   if(value.codePoints().anyMatch(cp->cp>=0x0600&&cp<=0x06ff))t.setLineSpacing(dp(3),1.08f);t.setTextColor(0xff24292f);t.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);t.setTextIsSelectable(true);t.setPadding(dp(2),dp(2),dp(2),dp(2));
   LinearLayout.LayoutParams paragraphParams=new LinearLayout.LayoutParams(-1,-2);
