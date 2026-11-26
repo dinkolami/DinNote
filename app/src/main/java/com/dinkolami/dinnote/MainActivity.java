@@ -3985,11 +3985,38 @@ public class MainActivity extends Activity {
  void addBoardPostingCount(LinearLayout row,int count){
   TextView number=text(String.valueOf(count),12);number.setTextColor(0xff687b70);number.setGravity(Gravity.END|Gravity.CENTER_VERTICAL);number.setPadding(dp(4),0,dp(8),0);number.setContentDescription(count+" posting");row.addView(number,new LinearLayout.LayoutParams(-2,dp(38)));
  }
+ void setAllBoardBranches(View view,boolean expand){
+  if(view instanceof TextView&&"board_branch_arrow".equals(view.getTag())){
+   View parent=(View)view.getParent();
+   if(parent instanceof android.view.ViewGroup){
+    android.view.ViewGroup group=(android.view.ViewGroup)parent.getParent();
+    int index=group.indexOfChild(parent);
+    for(int i=index+1;i<group.getChildCount();i++){
+     View child=group.getChildAt(i);
+     if("board_branch_children".equals(child.getTag())){
+      child.setVisibility(expand?View.VISIBLE:View.GONE);
+      ((TextView)view).setText(expand?"▾":"▸");break;
+     }
+     if(child instanceof LinearLayout)break;
+    }
+   }
+  }
+  if(view instanceof android.view.ViewGroup){android.view.ViewGroup group=(android.view.ViewGroup)view;for(int i=0;i<group.getChildCount();i++)setAllBoardBranches(group.getChildAt(i),expand);}
+ }
+ void addBoardExpandControls(LinearLayout panel){
+  LinearLayout controls=new LinearLayout(this);controls.setGravity(Gravity.END);panel.addView(controls);
+  for(boolean expand:new boolean[]{true,false}){
+   TextView action=dashboardText(expand?"▾ Kembang semua":"▸ Lipat semua",11,false);
+   action.setTextColor(0xff216e4e);action.setGravity(Gravity.CENTER);action.setPadding(dp(2),dp(5),dp(2),dp(5));
+   controls.addView(action,new LinearLayout.LayoutParams(0,-2,1));action.setOnClickListener(v->setAllBoardBranches(panel,expand));
+  }
+ }
  void renderHomeBoards(LinearLayout outer,boolean books){
   LinearLayout panel=new LinearLayout(this);panel.setOrientation(1);panel.setPadding(dp(2),dp(2),dp(2),dp(2));panel.setBackground(rounded(0xfffdfefe,0xffd8c68a,8));
   LinearLayout.LayoutParams boxParams=new LinearLayout.LayoutParams(-1,-2);boxParams.bottomMargin=dp(8);outer.addView(panel,boxParams);
   TextView heading=dashboardText(books?"▤  Maktabah":"✎  Nota",16,true);heading.setTextColor(0xff216e4e);heading.setPadding(dp(8),dp(7),dp(5),dp(7));heading.setBackground(rounded(0xffe3eee7,0xffdce7df,5));panel.addView(heading);
   heading.setOnClickListener(v->openSection(books));
+  addBoardExpandControls(panel);
   LinkedHashSet<String> nodes=new LinkedHashSet<>();
   for(String name:prefs.getString(books?"categories_m":"categories_n","").split("\\|")){ArrayList<String> chain=new ArrayList<>();for(String n=name.trim();!n.isEmpty();n=boardParent(n))chain.add(0,n);nodes.addAll(chain);}
   renderHomeBoardRows(panel,nodes,"",0,books,boardPostingCounts(books));
@@ -4014,7 +4041,7 @@ public class MainActivity extends Activity {
    if(sectionOpen&&maktabah==books&&name.equals(categoryFilter))row.setBackground(rounded(0xffe3eee7,0xffc9dfd0,5));
    label.setOnClickListener(v->{sectionOpen=true;maktabah=books;categoryFilter=name;if(books)savedBooksScroll=0;else savedNotesScroll=0;notesPage(true);});
    View rule=new View(this);rule.setBackgroundColor(0xffe5eae6);panel.addView(rule,new LinearLayout.LayoutParams(-1,dp(1)));
-   if(children){LinearLayout nested=new LinearLayout(this);nested.setOrientation(1);panel.addView(nested);renderHomeBoardRows(nested,nodes,name,depth+1,books,counts);arrow.setOnClickListener(v->{boolean show=nested.getVisibility()!=View.VISIBLE;nested.setVisibility(show?View.VISIBLE:View.GONE);arrow.setText(show?"▾":"▸");});}
+   if(children){LinearLayout nested=new LinearLayout(this);nested.setOrientation(1);nested.setTag("board_branch_children");arrow.setTag("board_branch_arrow");panel.addView(nested);renderHomeBoardRows(nested,nodes,name,depth+1,books,counts);arrow.setOnClickListener(v->{boolean show=nested.getVisibility()!=View.VISIBLE;nested.setVisibility(show?View.VISIBLE:View.GONE);arrow.setText(show?"▾":"▸");});}
   }
  }
  String boardParent(String name){int i=Math.max(name.lastIndexOf(" / "),name.lastIndexOf(" › "));return i<0?"":name.substring(0,i);}
@@ -4032,6 +4059,7 @@ public class MainActivity extends Activity {
   TextView heading=text("Board Tree",18);heading.setTextColor(0xff216e4e);heading.setPadding(dp(12),dp(8),dp(12),dp(4));root.addView(heading);
   ScrollView scroll=new ScrollView(this);scroll.addView(panel);root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
   Button add=new Button(this);add.setText("+ Tambah Board");styleBoardButton(add,false);panel.addView(add);add.setOnClickListener(v->categoryDialog(null));
+  addBoardExpandControls(panel);
   renderBoardRows(panel,null,nodes,"",0,boardPostingCounts(maktabah));
  }
  void renderBoardRows(LinearLayout panel,AlertDialog dialog,LinkedHashSet<String> nodes,String parent,int depth,java.util.Map<String,Integer> counts){
@@ -4045,7 +4073,7 @@ public class MainActivity extends Activity {
    more.setOnClickListener(v->{if(dialog!=null)dialog.dismiss();new AlertDialog.Builder(this).setTitle(name).setItems(new String[]{"Tambah Sub-board","Urus kategori"},(d,w)->{if(w==0)addBoardChild(name);else categoryActions(name);}).setNegativeButton("Batal",null).show();});
    LinearLayout nested=new LinearLayout(this);nested.setOrientation(1);panel.addView(nested);
    label.setOnClickListener(v->{if(dialog!=null)dialog.dismiss();sectionOpen=true;categoryFilter=name;if(maktabah)savedBooksScroll=0;else savedNotesScroll=0;notesPage();});
-   if(hasChildren){renderBoardRows(nested,dialog,nodes,name,depth+1,counts);arrow.setContentDescription("Kembang atau lipat "+boardLeaf(name));arrow.setOnClickListener(v->{boolean show=nested.getVisibility()!=View.VISIBLE;nested.setVisibility(show?View.VISIBLE:View.GONE);arrow.setText(show?"▾":"▸");});}
+   if(hasChildren){nested.setTag("board_branch_children");arrow.setTag("board_branch_arrow");renderBoardRows(nested,dialog,nodes,name,depth+1,counts);arrow.setContentDescription("Kembang atau lipat "+boardLeaf(name));arrow.setOnClickListener(v->{boolean show=nested.getVisibility()!=View.VISIBLE;nested.setVisibility(show?View.VISIBLE:View.GONE);arrow.setText(show?"▾":"▸");});}
   }
  }
  void styleBoardButton(Button button,boolean active){button.setAllCaps(false);button.setTextColor(0xff216e4e);button.setTextSize(14);button.setElevation(0);button.setStateListAnimator(null);button.setBackground(rounded(active?0xffe3eee7:0xfff8faf8,0xffd4dfd7,8));button.setPadding(dp(8),dp(4),dp(8),dp(4));}
