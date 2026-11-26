@@ -3948,21 +3948,40 @@ public class MainActivity extends Activity {
  void seedOne(String key,String[] defaults){if(prefs.contains(key))return;prefs.edit().putString(key,android.text.TextUtils.join("|",defaults)).apply();}
  ArrayList<String> categories(){String raw=prefs.getString(maktabah?"categories_m":"categories_n","");ArrayList<String> out=new ArrayList<>();for(String x:raw.split("\\|"))if(!x.trim().isEmpty())out.add(x.trim());return out;}
  void storeCategories(ArrayList<String> c){prefs.edit().putString(maktabah?"categories_m":"categories_n",android.text.TextUtils.join("|",c)).apply();}
- void manageCategories(){ArrayList<String> c=categories();String[] options=new String[c.size()+(maktabah?2:1)];options[0]="+ Tambah kategori";int offset=1;if(maktabah){options[1]="+ Tambah subkategori";offset=2;}for(int i=0;i<c.size();i++)options[i+offset]=c.get(i).replace(" / ","  ›  ");final int first=offset;new AlertDialog.Builder(this).setTitle(maktabah?"Urus kategori & subkategori Maktabah":"Urus kategori").setItems(options,(d,which)->{if(which==0)categoryDialog(null);else if(maktabah&&which==1)addBookSubcategory();else categoryActions(c.get(which-first));}).setNegativeButton("Tutup",null).show();}
- void addBookSubcategory(){
-  ArrayList<String> all=categories(),parents=new ArrayList<>();
-  for(String name:all)if(!name.contains(" / "))parents.add(name);
-  if(parents.isEmpty()){new AlertDialog.Builder(this).setMessage("Cipta kategori utama terlebih dahulu.").setPositiveButton("Tambah kategori",(d,w)->categoryDialog(null)).setNegativeButton("Batal",null).show();return;}
-  new AlertDialog.Builder(this).setTitle("Pilih kategori utama").setItems(parents.toArray(new String[0]),(d,which)->{
-   String parent=parents.get(which);
-   EditText field=new EditText(this);field.setSingleLine(true);field.setHint("Nama subkategori");
-   new AlertDialog.Builder(this).setTitle("Subkategori dalam "+parent).setView(field).setPositiveButton("Simpan",(dialog,w)->{
-    String child=field.getText().toString().trim().replace("|","").replace("/","").trim();
-    if(child.isEmpty()||child.equals("Semua")||child.equals("Tanpa kategori")){Toast.makeText(this,"Nama subkategori tidak sah",Toast.LENGTH_SHORT).show();return;}
-    String full=parent+" / "+child;ArrayList<String> existing=categories();
-    if(existing.contains(full)){Toast.makeText(this,"Subkategori sudah wujud",Toast.LENGTH_SHORT).show();return;}
-    existing.add(full);storeCategories(existing);categoryFilter="Semua";openSection(true);
-   }).setNegativeButton("Batal",null).show();
+ String boardParent(String name){int i=name.lastIndexOf(" / ");return i<0?"":name.substring(0,i);}
+ String boardLeaf(String name){int i=name.lastIndexOf(" / ");return i<0?name:name.substring(i+3);}
+ void manageCategories(){
+  ArrayList<String> all=categories();LinkedHashSet<String> nodes=new LinkedHashSet<>();
+  for(String name:all){ArrayList<String> chain=new ArrayList<>();for(String n=name;!n.isEmpty();n=boardParent(n))chain.add(0,n);nodes.addAll(chain);}
+  LinearLayout panel=new LinearLayout(this);panel.setOrientation(1);panel.setPadding(dp(12),dp(8),dp(12),dp(8));
+  ScrollView scroll=new ScrollView(this);scroll.addView(panel);
+  AlertDialog dialog=new AlertDialog.Builder(this).setTitle("Pengurusan kategori · "+(maktabah?"Maktabah":"Nota")).setView(scroll).setNegativeButton("Tutup",null).create();
+  Button add=new Button(this);add.setText("+ Tambah Board");panel.addView(add);add.setOnClickListener(v->{dialog.dismiss();categoryDialog(null);});
+  renderBoardRows(panel,dialog,nodes,"",0);
+  dialog.show();
+ }
+ void renderBoardRows(LinearLayout panel,AlertDialog dialog,LinkedHashSet<String> nodes,String parent,int depth){
+  for(String name:nodes){if(!boardParent(name).equals(parent))continue;
+   LinearLayout row=new LinearLayout(this);row.setGravity(Gravity.CENTER_VERTICAL);row.setPadding(dp(Math.min(depth,8)*18),dp(3),0,dp(3));panel.addView(row);
+   boolean children=false;for(String n:nodes)if(boardParent(n).equals(name)){children=true;break;}
+   final boolean hasChildren=children;
+   TextView label=text((children?"▾  ":"    ")+(depth==0?"▣  ":"↳  ")+boardLeaf(name),16);label.setTextColor(0xff216e4e);label.setMinHeight(dp(44));label.setGravity(Gravity.CENTER_VERTICAL);row.addView(label,new LinearLayout.LayoutParams(0,-2,1));
+   Button more=new Button(this);more.setText("⋮");row.addView(more,new LinearLayout.LayoutParams(dp(48),dp(44)));
+   more.setOnClickListener(v->{dialog.dismiss();new AlertDialog.Builder(this).setTitle(name).setItems(new String[]{"Tambah Sub-board","Urus kategori"},(d,w)->{if(w==0)addBoardChild(name);else categoryActions(name);}).setNegativeButton("Batal",null).show();});
+   LinearLayout nested=new LinearLayout(this);nested.setOrientation(1);panel.addView(nested);
+   if(hasChildren){renderBoardRows(nested,dialog,nodes,name,depth+1);label.setOnClickListener(v->{boolean show=nested.getVisibility()!=View.VISIBLE;nested.setVisibility(show?View.VISIBLE:View.GONE);label.setText((show?"▾  ":"▸  ")+(depth==0?"▣  ":"↳  ")+boardLeaf(name));});}
+  }
+ }
+ void addBookSubcategory(){manageCategories();}
+ void addBoardChild(String parent){
+  EditText field=new EditText(this);field.setSingleLine(true);field.setHint("Nama Sub-board");
+  new AlertDialog.Builder(this).setTitle("Sub-board dalam "+parent).setView(field).setPositiveButton("Simpan",(d,w)->{
+   String child=field.getText().toString().trim().replace("|","").replace("/","").trim();
+   if(child.isEmpty()||child.equals("Semua")||child.equals("Tanpa kategori"))return;
+   ArrayList<String> all=categories();String full=parent+" / "+child;
+   if(!all.contains(parent))all.add(parent);
+   if(!all.contains(full)){all.add(full);storeCategories(all);}
+   categoryFilter="Semua";openSection(maktabah);manageCategories();
   }).setNegativeButton("Batal",null).show();
  }
  void categoryActions(String old){new AlertDialog.Builder(this).setTitle(old).setItems(new String[]{"Ubah nama","Padam kategori"},(d,which)->{if(which==0)categoryDialog(old);else new AlertDialog.Builder(this).setMessage("Padam kategori? Nota tidak akan dipadam.").setPositiveButton("Padam",(a,b)->{ArrayList<String> c=categories();c.remove(old);storeCategories(c);for(String k:prefs.getAll().keySet())if(k.startsWith(maktabah?"m_":"n_")&&old.equals(prefs.getString("cat_"+k,"")))prefs.edit().putString("cat_"+k,"Tanpa kategori").apply();categoryFilter="Semua";openSection(maktabah);}).setNegativeButton("Batal",null).show();}).show();}
@@ -3979,7 +3998,7 @@ public class MainActivity extends Activity {
     if(old!=null&&!old.equals(name)){
      ArrayList<String> updated=new ArrayList<>();
      for(String cat:c){
-      String next=cat.equals(old)?name:(maktabah&&cat.startsWith(old+" / ")?name+cat.substring(old.length()):cat);
+      String next=cat.equals(old)?name:(cat.startsWith(old+" / ")?name+cat.substring(old.length()):cat);
       if(updated.contains(next)){Toast.makeText(this,"Nama kategori bertindih",Toast.LENGTH_LONG).show();return;}
       updated.add(next);
      }
@@ -3989,7 +4008,7 @@ public class MainActivity extends Activity {
       if(!k.startsWith(maktabah?"m_":"n_"))continue;
       String cat=prefs.getString("cat_"+k,"");
       if(cat.equals(old))changes.putString("cat_"+k,name);
-      else if(maktabah&&cat.startsWith(old+" / "))changes.putString("cat_"+k,name+cat.substring(old.length()));
+      else if(cat.startsWith(old+" / "))changes.putString("cat_"+k,name+cat.substring(old.length()));
      }
      if(!changes.commit()){Toast.makeText(this,"Gagal mengemas kini kategori",Toast.LENGTH_LONG).show();return;}
     }else if(old==null)c.add(name);
