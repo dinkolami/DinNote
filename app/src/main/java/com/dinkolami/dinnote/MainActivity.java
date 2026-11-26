@@ -3200,6 +3200,16 @@ public class MainActivity extends Activity {
   android.text.InputFilter[] old=active.getFilters();
   android.text.InputFilter[] next=java.util.Arrays.copyOf(old,old.length+1);next[old.length]=guard;active.setFilters(next);
  }
+ void compactFormatButtons(LinearLayout formatBar,boolean compact){
+  formatBar.setPadding(dp(compact?1:5),dp(2),dp(compact?1:5),dp(2));
+  for(int i=0;i<formatBar.getChildCount();i++){
+   View child=formatBar.getChildAt(i);
+   if(!(child instanceof Button)||!(child.getLayoutParams() instanceof LinearLayout.LayoutParams))continue;
+   LinearLayout.LayoutParams p=(LinearLayout.LayoutParams)child.getLayoutParams();
+   p.setMargins(dp(compact?1:3),dp(3),dp(compact?1:3),dp(3));
+   child.setLayoutParams(p);child.setPadding(dp(compact?4:8),dp(2),dp(compact?4:8),dp(2));
+  }
+ }
  void chooseStudyReference(){
   if(editor==null)return;
   if(homeWindowWidthDp()<600){Toast.makeText(this,"Buka skrin Unfold untuk Dual View",Toast.LENGTH_SHORT).show();return;}
@@ -3388,7 +3398,7 @@ public class MainActivity extends Activity {
   root.addView(formatScroll);
   formatScroll.addView(formatBar);
   final LinearLayout editorRoot=root;
-  editorRoot.addOnLayoutChangeListener((v,l,t,rr,b,ol,ot,orr,ob)->{boolean wide=rr-l>=dp(600);if(wide&&formatScroll.getParent()==editorRoot){editorRoot.removeView(formatScroll);spacer.setVisibility(View.GONE);bar.addView(formatScroll,bar.indexOfChild(spacer),new LinearLayout.LayoutParams(0,-2,1));}else if(!wide&&formatScroll.getParent()==bar){bar.removeView(formatScroll);spacer.setVisibility(View.VISIBLE);editorRoot.addView(formatScroll,editorRoot.indexOfChild(metadataTitle)+1,new LinearLayout.LayoutParams(-1,-2));}});
+  editorRoot.addOnLayoutChangeListener((v,l,t,rr,b,ol,ot,orr,ob)->{boolean wide=rr-l>=dp(600);if(wide&&formatScroll.getParent()==editorRoot){compactFormatButtons(formatBar,true);editorRoot.removeView(formatScroll);spacer.setVisibility(View.GONE);bar.addView(formatScroll,bar.indexOfChild(spacer),new LinearLayout.LayoutParams(0,-2,1));formatScroll.post(()->formatScroll.scrollTo(0,0));}else if(!wide&&formatScroll.getParent()==bar){compactFormatButtons(formatBar,false);bar.removeView(formatScroll);spacer.setVisibility(View.VISIBLE);editorRoot.addView(formatScroll,editorRoot.indexOfChild(metadataTitle)+1,new LinearLayout.LayoutParams(-1,-2));}});
   if(key!=null&&isLectureTemplate(prefs.getString(key,""))){
    Button lectureIndex=action("☷",formatBar,()->showLectureEditorIndex());
    lectureIndex.setContentDescription("Indeks subtopik Nota Kuliah");
