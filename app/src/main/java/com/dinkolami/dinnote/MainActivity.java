@@ -458,6 +458,19 @@ public class MainActivity extends Activity {
   }
   target.setText(arabic.length()>0?arabic.toString():entry.split("\\r?\\n",2)[0].trim());
  }
+ class LivingGradient extends android.graphics.drawable.Drawable {
+  float phase=0f;final android.graphics.Paint paint=new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
+  @Override public void draw(android.graphics.Canvas canvas){
+   android.graphics.Rect b=getBounds();float w=b.width(),h=b.height();if(w<=0||h<=0)return;
+   canvas.drawColor(0xfff7f8f4);
+   float radius=Math.max(w,h)*0.75f;
+   float x=w*(0.45f+0.18f*(float)Math.sin(phase*Math.PI*2));
+   float y=h*(0.23f+0.10f*(float)Math.cos(phase*Math.PI*2));
+   paint.setShader(new android.graphics.RadialGradient(x,y,radius,new int[]{0x2375b99a,0x0ce5f3e9,0x00ffffff},null,android.graphics.Shader.TileMode.CLAMP));canvas.drawRect(b,paint);
+   paint.setShader(new android.graphics.RadialGradient(w*(0.7f-0.14f*(float)Math.sin(phase*Math.PI*2)),h*0.65f,radius*0.7f,new int[]{0x16d5b66d,0x08fffaf0,0x00ffffff},null,android.graphics.Shader.TileMode.CLAMP));canvas.drawRect(b,paint);paint.setShader(null);
+  }
+  @Override public void setAlpha(int alpha){} @Override public void setColorFilter(android.graphics.ColorFilter filter){} @Override public int getOpacity(){return android.graphics.PixelFormat.OPAQUE;}
+ }
  void home(){
   items=null;sectionOpen=false;editor=null;titleEditor=null;categoryPicker=null;selected=null;maktabah=false;
   base("DinNote");
@@ -475,7 +488,8 @@ public class MainActivity extends Activity {
   scroll.setOverScrollMode(View.OVER_SCROLL_NEVER);scroll.setSmoothScrollingEnabled(true);
   dashboardHost.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
   LinearLayout page=new LinearLayout(this);page.setOrientation(1);
-  page.setPadding(dp(10),dp(6),dp(10),dp(3));page.setBackgroundColor(0xfff7f8f4);page.setTag("dinnote_home");
+  page.setPadding(dp(10),dp(6),dp(10),dp(3));page.setBackground(new LivingGradient());page.setTag("dinnote_home");
+  android.animation.ValueAnimator homeGlow=android.animation.ValueAnimator.ofFloat(0f,1f);homeGlow.setDuration(14000L);homeGlow.setRepeatCount(android.animation.ValueAnimator.INFINITE);homeGlow.setRepeatMode(android.animation.ValueAnimator.RESTART);homeGlow.setInterpolator(new android.view.animation.LinearInterpolator());homeGlow.addUpdateListener(a->{if(page.isAttachedToWindow()){((LivingGradient)page.getBackground()).phase=(float)a.getAnimatedValue();page.invalidate();}});page.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener(){public void onViewAttachedToWindow(View v){if(!homeGlow.isStarted())homeGlow.start();}public void onViewDetachedFromWindow(View v){homeGlow.cancel();}});
   // Use the actual measured dashboard height. Avoid scaleY, synthetic spacer
   // and fixed-height wrapper: all three created a scrollable empty tail.
   scroll.addView(page,new ScrollView.LayoutParams(-1,-2));
