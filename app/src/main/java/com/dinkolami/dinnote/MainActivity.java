@@ -1028,9 +1028,19 @@ public class MainActivity extends Activity {
   if(keys.isEmpty())return;
   String[] labels=new String[keys.size()];boolean[] checked=new boolean[keys.size()];
   for(int i=0;i<keys.size();i++){String k=keys.get(i);labels[i]=prefs.getString("title_"+k,"Tanpa tajuk")+" — "+prefs.getString("cat_"+k,"Tanpa kategori");}
-  AlertDialog picker=new AlertDialog.Builder(this).setTitle("Pilih posting untuk pindah").setMultiChoiceItems(labels,checked,(d,i,on)->checked[i]=on).setNeutralButton("Pilih semua",null).setNegativeButton("Batal",null).setPositiveButton("Seterusnya",(d,w)->{
+  AlertDialog picker=new AlertDialog.Builder(this).setTitle("Pilih posting").setMultiChoiceItems(labels,checked,(d,i,on)->checked[i]=on).setNeutralButton("Pilih semua",null).setNegativeButton("Batal",null).setPositiveButton("Seterusnya",(d,w)->{
    ArrayList<String> chosen=new ArrayList<>();for(int i=0;i<keys.size();i++)if(checked[i])chosen.add(keys.get(i));
    if(chosen.isEmpty()){Toast.makeText(this,"Tiada posting dipilih",Toast.LENGTH_SHORT).show();return;}
+   new AlertDialog.Builder(this).setTitle(chosen.size()+" posting dipilih").setItems(new String[]{"Pindah","Padam"},(action,which)->{
+    if(which==1){
+     new AlertDialog.Builder(this).setTitle("Alih ke Tong Sampah").setMessage("Alih "+chosen.size()+" posting ke Tong Sampah? Boleh dipulihkan melalui Tetapan > Tong sampah.").setNegativeButton("Batal",null).setPositiveButton("Padam",(confirm,button)->{
+      if(maktabah!=books)return;
+      android.content.SharedPreferences.Editor changes=prefs.edit();int removed=0;long now=System.currentTimeMillis();
+      for(String k:chosen)if(k.startsWith(prefix)&&prefs.contains(k)&&!prefs.getBoolean("deleted_"+k,false)){changes.putBoolean("deleted_"+k,true).putLong("trashed_at_"+k,now);removed++;}
+      if(!changes.commit()){Toast.makeText(this,"Gagal mengalihkan posting",Toast.LENGTH_LONG).show();return;}
+      Toast.makeText(this,removed+" posting dialihkan ke Tong Sampah",Toast.LENGTH_SHORT).show();notesPage();
+     }).show();return;
+    }
    ArrayList<String> destinations=new ArrayList<>();destinations.add("Tanpa kategori");
    for(String cat:categories())if(!destinations.contains(cat)&&!cat.equals("Semua"))destinations.add(cat);
    new AlertDialog.Builder(this).setTitle("Pindah ke Board").setItems(destinations.toArray(new String[0]),(a,i)->{
@@ -1042,6 +1052,7 @@ public class MainActivity extends Activity {
      if(!changes.commit()){Toast.makeText(this,"Gagal menyimpan pemindahan",Toast.LENGTH_LONG).show();return;}
      Toast.makeText(this,moved+" posting dipindahkan",Toast.LENGTH_SHORT).show();notesPage();
     }).show();
+   }).setNegativeButton("Batal",null).show();
    }).setNegativeButton("Batal",null).show();
   }).create();
   picker.setOnShowListener(d->picker.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener(v->{boolean all=true;for(boolean on:checked)if(!on){all=false;break;}for(int i=0;i<checked.length;i++){checked[i]=!all;picker.getListView().setItemChecked(i,!all);}}));
@@ -1058,7 +1069,7 @@ public class MainActivity extends Activity {
   });int matches=0;for(String k:keys){String v=prefs.getString(k,"");String heading=prefs.getString("title_"+k,"");if(!matchesSearch(heading+" "+v+" "+prefs.getString("cat_"+k,"Tanpa kategori"),terms))continue;if(!categoryFilter.equals("Semua")&&!categoryFilter.equals(prefs.getString("cat_"+k,"Tanpa kategori")))continue;matches++;}if(matches>0){
  LinearLayout countRow=new LinearLayout(this);countRow.setOrientation(LinearLayout.HORIZONTAL);countRow.setGravity(Gravity.CENTER_VERTICAL);countRow.setPadding(dp(16),dp(3),dp(12),dp(3));
  TextView countLabel=text(matches+" "+(maktabah?"kitab":"nota"),12);countLabel.setTextColor(0xff687078);countRow.addView(countLabel,new LinearLayout.LayoutParams(0,-2,1));
- TextView bulk=text("☑",19);bulk.setTextColor(0xff216e4e);bulk.setGravity(Gravity.CENTER);bulk.setContentDescription("Pilih posting untuk pindah");countRow.addView(bulk,new LinearLayout.LayoutParams(dp(36),dp(36)));bulk.setOnClickListener(v->chooseBulkPostings());
+ TextView bulk=text("☑",19);bulk.setTextColor(0xff216e4e);bulk.setGravity(Gravity.CENTER);bulk.setContentDescription("Pilih posting untuk pindah atau padam");countRow.addView(bulk,new LinearLayout.LayoutParams(dp(36),dp(36)));bulk.setOnClickListener(v->chooseBulkPostings());
  String resumeKey=prefs.getString(maktabah?"reading_last_m":"reading_last_n","");
  if(resumeKey.startsWith(maktabah?"m_":"n_")&&prefs.contains(resumeKey)&&!prefs.getBoolean("deleted_"+resumeKey,false)){
   String resumeTitle=prefs.getString("title_"+resumeKey,"Tanpa tajuk").trim();
