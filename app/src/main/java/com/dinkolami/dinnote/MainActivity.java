@@ -570,7 +570,7 @@ public class MainActivity extends Activity {
    new AlertDialog.Builder(this).setTitle("Carian").setView(searchContainer)
     .setPositiveButton("Cari",(dialog,which)->{
      String q=queryInput.getText().toString().trim();
-     if(!q.isEmpty()){openSection(false);list(q);}
+     if(!q.isEmpty())showAllSearchResults(q);
     }).setNegativeButton("Batal",null).show();
   });
   applyTouchFeedback(searchIcon);
@@ -845,6 +845,13 @@ public class MainActivity extends Activity {
     else confirmDelete(key);
    }).show();
  }
+ void showAllSearchResults(String query){
+  String needle=normalizeCompareText(query);if(needle.isEmpty())return;
+  ArrayList<String> keys=new ArrayList<>(),labels=new ArrayList<>();
+  for(java.util.Map.Entry<String,?> entry:prefs.getAll().entrySet()){String k=entry.getKey();if(!(k.startsWith("n_")||k.startsWith("m_"))||!(entry.getValue() instanceof String)||prefs.getBoolean("deleted_"+k,false))continue;String title=prefs.getString("title_"+k,"Tanpa tajuk"),body=(String)entry.getValue();if(!normalizeCompareText(title+" "+body).contains(needle))continue;keys.add(k);labels.add((k.startsWith("m_")?"▤ ":"✎ ")+title);}
+  if(keys.isEmpty()){new AlertDialog.Builder(this).setTitle("Hasil carian").setMessage("Tiada padanan").setPositiveButton("Tutup",null).show();return;}
+  new AlertDialog.Builder(this).setTitle("Hasil carian ("+keys.size()+")").setItems(labels.toArray(new String[0]),(d,i)->{String k=keys.get(i);maktabah=k.startsWith("m_");if(normalizeCompareText(prefs.getString(k,"")).contains(needle))searchInsideReader(k,query);else read(k);}).setNegativeButton("Tutup",null).show();
+ }
  void showHomeSearchResults(String query){
   int hits=0;String first="";
   for(String k:prefs.getAll().keySet())if(k.startsWith("n_")||k.startsWith("m_")){
@@ -1091,14 +1098,14 @@ public class MainActivity extends Activity {
  TextView countLabel=text(matches+" "+(maktabah?"kitab":"nota"),12);countLabel.setTextColor(0xff687078);countRow.addView(countLabel,new LinearLayout.LayoutParams(0,-2,1));
  TextView bulk=text("☑",19);bulk.setTextColor(0xff216e4e);bulk.setGravity(Gravity.CENTER);bulk.setContentDescription("Pilih posting untuk pindah atau padam");countRow.addView(bulk,new LinearLayout.LayoutParams(dp(36),dp(36)));bulk.setOnClickListener(v->chooseBulkPostings());
  String resumeKey=prefs.getString(maktabah?"reading_last_m":"reading_last_n","");
- if(resumeKey.startsWith(maktabah?"m_":"n_")&&prefs.contains(resumeKey)&&!prefs.getBoolean("deleted_"+resumeKey,false)){
+ if(query.isEmpty()&&resumeKey.startsWith(maktabah?"m_":"n_")&&prefs.contains(resumeKey)&&!prefs.getBoolean("deleted_"+resumeKey,false)){
   String resumeTitle=prefs.getString("title_"+resumeKey,"Tanpa tajuk").trim();
   TextView resume=text("Sambung: "+resumeTitle+"  →",12);
   resume.setTypeface(null,android.graphics.Typeface.BOLD);resume.setTextColor(0xff566a70);
   resume.setSingleLine(true);resume.setEllipsize(android.text.TextUtils.TruncateAt.END);
   resume.setGravity(Gravity.END|Gravity.CENTER_VERTICAL);
   resume.setContentDescription("Sambung bacaan "+resumeTitle);resume.setPadding(dp(6),dp(5),0,dp(5));
-  applyTouchFeedback(resume);resume.setOnClickListener(v->read(resumeKey));
+  applyTouchFeedback(resume);resume.setOnClickListener(v->resumeReading(resumeKey));
   countRow.addView(resume,new LinearLayout.LayoutParams(0,-2,2));
  }
  if(compactSummary!=null){compactSummary.removeAllViews();compactSummary.addView(countRow,new LinearLayout.LayoutParams(-1,-2));}else items.addView(countRow);
@@ -2284,6 +2291,8 @@ public class MainActivity extends Activity {
   dialog.show();
   if(dialog.getWindow()!=null)dialog.getWindow().setLayout(-1,(int)(getResources().getDisplayMetrics().heightPixels*0.82f));
  }
+ boolean resumeNextReading=false;
+ void resumeReading(String key){resumeNextReading=true;read(key);}
  void read(String key){
   try{if(key!=null&&prefs.contains(key)&&isLectureTemplate(prefs.getString(key,"")))prefs.edit().putInt("lecture_view_"+key,2).apply();readContentSafely(key);}
   catch(Exception failure){
@@ -2430,6 +2439,7 @@ public class MainActivity extends Activity {
   }
  }
  void readContentSafely(String key){
+  final boolean restoreReading=resumeNextReading||(key!=null&&key.equals(selected)&&readerScroll!=null&&editor==null);resumeNextReading=false;
   if("m_qurtubi_fatihah_1".equals(key))appendQurtubiLecture();
   if(key!=null&&prefs.contains("pdf_original_"+key)){showOriginalPdf(key);return;}
   stopAutoReading();
@@ -2983,7 +2993,7 @@ public class MainActivity extends Activity {
    scroll.post(()->{
     int maxScroll=Math.max(0,scroll.getChildAt(0).getHeight()-scroll.getHeight());
     int savedFraction=prefs.getInt("reading_progress_permille_"+key,-1);
-    int target=savedFraction>=0?Math.round(maxScroll*Math.max(0,Math.min(1000,savedFraction))/1000f):prefs.getInt("reading_scroll_"+key,0);
+    int target=!restoreReading?0:(savedFraction>=0?Math.round(maxScroll*Math.max(0,Math.min(1000,savedFraction))/1000f):prefs.getInt("reading_scroll_"+key,0));
     scroll.scrollTo(0,Math.max(0,Math.min(maxScroll,target)));
     positionRestored[0]=true;
     updateReadingProgress.run();
