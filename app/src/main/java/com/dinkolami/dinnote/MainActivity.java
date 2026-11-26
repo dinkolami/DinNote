@@ -4125,7 +4125,7 @@ public class MainActivity extends Activity {
     }
    });
    Button more=new Button(this);more.setText("⋮");styleBoardButton(more,false);row.addView(more,new LinearLayout.LayoutParams(dp(48),dp(44)));
-   more.setOnClickListener(v->{if(dialog!=null)dialog.dismiss();new AlertDialog.Builder(this).setTitle(name).setItems(new String[]{"Tambah Sub-board","Urus kategori"},(d,w)->{if(w==0)addBoardChild(name);else categoryActions(name);}).setNegativeButton("Batal",null).show();});
+   more.setOnClickListener(v->{if(dialog!=null)dialog.dismiss();new AlertDialog.Builder(this).setTitle(name).setItems(new String[]{"Tambah Sub-board","Pindah Board","Urus kategori"},(d,w)->{if(w==0)addBoardChild(name);else if(w==1)chooseBoardDestination(name);else categoryActions(name);}).setNegativeButton("Batal",null).show();});
    LinearLayout nested=new LinearLayout(this);nested.setOrientation(1);panel.addView(nested);
    label.setOnClickListener(v->{if(dialog!=null)dialog.dismiss();sectionOpen=true;categoryFilter=name;prefs.edit().putString(maktabah?"board_last_m":"board_last_n",name).apply();if(maktabah)savedBooksScroll=0;else savedNotesScroll=0;notesPage();});
    if(hasChildren){restoreBoardBranch(arrow,nested,"board_expand_"+(maktabah?"m:":"n:")+name);renderBoardRows(nested,dialog,nodes,name,depth+1,counts);arrow.setContentDescription("Kembang atau lipat "+boardLeaf(name));arrow.setOnClickListener(v->{boolean show=nested.getVisibility()!=View.VISIBLE;nested.setVisibility(show?View.VISIBLE:View.GONE);saveBoardBranch(nested,show);arrow.setText(show?"▾":"▸");});}
@@ -4133,6 +4133,54 @@ public class MainActivity extends Activity {
  }
  void styleBoardButton(Button button,boolean active){button.setAllCaps(false);button.setTextColor(0xff216e4e);button.setTextSize(14);button.setElevation(0);button.setStateListAnimator(null);button.setBackground(rounded(active?0xffe3eee7:0xfff8faf8,0xffd4dfd7,8));button.setPadding(dp(8),dp(4),dp(8),dp(4));}
  void addBookSubcategory(){manageCategories();}
+ boolean isBoardBelow(String name,String parent){
+  return name.startsWith(parent+" / ")||name.startsWith(parent+" › ");
+ }
+ void chooseBoardDestination(String source){
+  ArrayList<String> destinations=new ArrayList<>();destinations.add("");
+  LinkedHashSet<String> nodes=new LinkedHashSet<>();
+  for(String name:categories()){ArrayList<String> chain=new ArrayList<>();for(String n=name;!n.isEmpty();n=boardParent(n))chain.add(0,n);nodes.addAll(chain);}
+  for(String node:nodes)if(!node.equals(source)&&!isBoardBelow(node,source))destinations.add(node);
+  String[] labels=new String[destinations.size()];
+  for(int i=0;i<labels.length;i++)labels[i]=i==0?"Peringkat utama":destinations.get(i);
+  new AlertDialog.Builder(this).setTitle("Pindah "+boardLeaf(source)+" ke").setItems(labels,(d,w)->{
+   String target=destinations.get(w);
+   new AlertDialog.Builder(this).setMessage("Pindah Board bersama semua posting dan Sub-board ke "+labels[w]+"?").setPositiveButton("Pindah",(a,b)->moveBoardToParent(source,target)).setNegativeButton("Batal",null).show();
+  }).setNegativeButton("Batal",null).show();
+ }
+ void moveBoardToParent(String source,String parent){
+  if(source.equals(parent)||isBoardBelow(parent,source)||boardParent(source).equals(parent))return;
+  String target=parent.isEmpty()?boardLeaf(source):parent+" / "+boardLeaf(source);
+  ArrayList<String> original=categories(),updated=new ArrayList<>();
+  LinkedHashSet<String> existing=new LinkedHashSet<>();
+  for(String cat:original)for(String n=cat;!n.isEmpty();n=boardParent(n))existing.add(n);
+  for(String n:existing)if(!n.equals(source)&&!isBoardBelow(n,source)&&boardParent(n).equals(parent)&&boardLeaf(n).equals(boardLeaf(source))){
+   Toast.makeText(this,"Nama Board sudah wujud",Toast.LENGTH_LONG).show();return;
+  }
+  for(String cat:original){
+   String next=cat.equals(source)?target:isBoardBelow(cat,source)?target+cat.substring(source.length()):cat;
+   if(updated.contains(next)){Toast.makeText(this,"Nama Board bertindih",Toast.LENGTH_LONG).show();return;}
+   updated.add(next);
+  }
+  android.content.SharedPreferences.Editor changes=prefs.edit();
+  String prefix=maktabah?"m_":"n_";
+  for(String key:prefs.getAll().keySet())if(key.startsWith(prefix)&&prefs.getAll().get(key) instanceof String){
+   String cat=prefs.getString("cat_"+key,"");
+   if(cat.equals(source)||isBoardBelow(cat,source))changes.putString("cat_"+key,target+cat.substring(source.length()));
+  }
+  String lastKey=maktabah?"board_last_m":"board_last_n";
+  String last=prefs.getString(lastKey,"Semua");
+  if(last.equals(source)||isBoardBelow(last,source))changes.putString(lastKey,target+last.substring(source.length()));
+  String statePrefix="board_expand_"+(maktabah?"m:":"n:");
+  for(String key:prefs.getAll().keySet())if(key.startsWith(statePrefix)){
+   String cat=key.substring(statePrefix.length());
+   if(cat.equals(source)||isBoardBelow(cat,source)){changes.putBoolean(statePrefix+target+cat.substring(source.length()),prefs.getBoolean(key,true));changes.remove(key);}
+  }
+  changes.putString(maktabah?"categories_m":"categories_n",android.text.TextUtils.join("|",updated));
+  if(!changes.commit()){Toast.makeText(this,"Gagal menyimpan pemindahan",Toast.LENGTH_LONG).show();return;}
+  if(categoryFilter.equals(source)||isBoardBelow(categoryFilter,source))categoryFilter=target+categoryFilter.substring(source.length());
+  manageCategories();
+ }
  void addBoardChild(String parent){
   EditText field=new EditText(this);field.setSingleLine(true);field.setHint("Nama Sub-board");
   new AlertDialog.Builder(this).setTitle("Sub-board dalam "+parent).setView(field).setPositiveButton("Simpan",(d,w)->{
