@@ -532,9 +532,9 @@ public class MainActivity extends Activity {
    tile.setPadding(dp(5),0,dp(5),0);
    tile.setBackground(homeGlossy(isBook?1:0,12));tile.setElevation(dp(1));
    TextView symbol=dashboardText(isBook?"▤":"✎",20,false);
-   symbol.setTextColor(Color.WHITE);symbol.setTextSize(15);symbol.setPadding(0,0,dp(3),0);tile.addView(symbol);
+   symbol.setTextColor(0xff174d37);symbol.setTextSize(15);symbol.setPadding(0,0,dp(3),0);tile.addView(symbol);
    TextView label=dashboardText(isBook?"Maktabah":"Nota",isBook?11:12,true);
-   label.setTextColor(Color.WHITE);label.setSingleLine(true);label.setAutoSizeTextTypeUniformWithConfiguration(8,12,1,android.util.TypedValue.COMPLEX_UNIT_SP);label.setPadding(0,0,0,0);
+   label.setTextColor(0xff174d37);label.setSingleLine(true);label.setAutoSizeTextTypeUniformWithConfiguration(8,12,1,android.util.TypedValue.COMPLEX_UNIT_SP);label.setPadding(0,0,0,0);
    tile.addView(label,new LinearLayout.LayoutParams(0,-2,1));
    TextView count=dashboardText(String.valueOf(isBook?bookCount:noteCount),14,true);
    count.setTextColor(0xff52725e);count.setGravity(Gravity.CENTER);count.setPadding(dp(3),0,dp(3),0);
@@ -549,7 +549,7 @@ public class MainActivity extends Activity {
   LinearLayout utilityRow=tiles;
   // Home utilities on a separate row, preserving both actions.
   TextView recentIcon=dashboardText("◷",19,true);
-  recentIcon.setGravity(Gravity.CENTER);recentIcon.setTextColor(Color.WHITE);
+  recentIcon.setGravity(Gravity.CENTER);recentIcon.setTextColor(0xff174d37);
   recentIcon.setBackground(homeGlossy(2,12));
   recentIcon.setContentDescription("Baru dilihat: pilih paparan");
   LinearLayout.LayoutParams recentIconParams=new LinearLayout.LayoutParams(dp(36),dp(38));
@@ -557,7 +557,7 @@ public class MainActivity extends Activity {
   recentIcon.setOnClickListener(v->new AlertDialog.Builder(this).setItems(new String[]{"Baru dilihat","Semua nota","Maktabah"},(d,i)->{if(i==2)openSection(true);else openSection(false);}).show());
   applyTouchFeedback(recentIcon);
   TextView searchIcon=dashboardText("⌕",22,true);
-  searchIcon.setGravity(Gravity.CENTER);searchIcon.setTextColor(Color.WHITE);
+  searchIcon.setGravity(Gravity.CENTER);searchIcon.setTextColor(0xff174d37);
   searchIcon.setBackground(homeGlossy(3,12));
   searchIcon.setContentDescription("Cari nota atau kitab");
   LinearLayout.LayoutParams searchIconParams=new LinearLayout.LayoutParams(dp(36),dp(38));
@@ -637,7 +637,7 @@ public class MainActivity extends Activity {
   TextView latestCount=dashboardText(Math.min(5,keys.size())+" Topik",10,true);
   latestCount.setTextColor(0xff416653);latestCount.setGravity(Gravity.CENTER);
   latestCount.setPadding(dp(5),dp(3),dp(5),dp(3));
-  latestCount.setBackground(homeInsetSurface(0xffedf5ee,0xffe4efe7,0xffc1d4c5,9));
+  latestCount.setBackground(homeGlossy(0,20));
   LinearLayout.LayoutParams latestCountParams=new LinearLayout.LayoutParams(-2,-2);
   latestCountParams.rightMargin=dp(5);
   latestHeader.addView(latestCount,latestCountParams);
@@ -690,7 +690,7 @@ public class MainActivity extends Activity {
     if(when>0L){
      TextView date=dashboardText(new java.text.SimpleDateFormat("dd MMM",new java.util.Locale("ms","MY")).format(new java.util.Date(when)),12,false);
      date.setTextColor(0xff416653);date.setGravity(Gravity.CENTER);date.setSingleLine(true);date.setTextDirection(View.TEXT_DIRECTION_LTR);
-     date.setBackground(homeGlossy(new int[]{0,1,3}[i%3],20));date.setTextColor(Color.WHITE);date.setIncludeFontPadding(false);date.setMaxLines(1);date.setEllipsize(android.text.TextUtils.TruncateAt.END);
+     date.setBackground(homeGlossy(new int[]{0,1,3}[i%3],20));date.setTextColor(0xff174d37);date.setIncludeFontPadding(false);date.setMaxLines(1);date.setEllipsize(android.text.TextUtils.TruncateAt.END);
      date.setPadding(dp(7),dp(3),dp(7),dp(3));
      FrameLayout.LayoutParams dateParams=new FrameLayout.LayoutParams(-2,-2,Gravity.RIGHT|Gravity.CENTER_VERTICAL);
      dateParams.rightMargin=dp(8);row.addView(date,dateParams);date.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);date.setContentDescription("Dilihat pada "+new java.text.SimpleDateFormat("dd MMMM",new java.util.Locale("ms","MY")).format(new java.util.Date(when)));
@@ -714,7 +714,7 @@ public class MainActivity extends Activity {
    }
   }
   TextView add=dashboardText("＋  Nota baharu",15,true);add.setGravity(Gravity.CENTER);
-  add.setBackground(homeInsetSurface(0xfffafbfa,0xffeef2ef,0xffc1ccc8,10));add.setTextColor(0xff566a70);
+  add.setBackground(homeGlossy(0,12));add.setTextColor(0xff174d37);
   add.setPadding(dp(12),dp(8),dp(12),dp(8));
   // Fixed home footer: keep the primary action visible above Android navigation,
   // independent of dashboard scrolling and window size.
@@ -734,7 +734,7 @@ public class MainActivity extends Activity {
    wisdomCard.setPadding(dp(12),dp(2),dp(12),dp(5));
    final int[] wisdomBorders={0xffd8c69c,0xffb7d2be,0xffd4c5df};
    final int wisdomStyle=new java.util.Random().nextInt(wisdomBorders.length);
-   wisdomCard.setBackground(rounded(0x55fdfcf7,wisdomBorders[wisdomStyle],11));
+   wisdomCard.setBackground(rounded(0x55fdfcf7,0xffc69a28,11));
    wisdomCard.setClipToOutline(true);
    wisdomCard.setClipChildren(true);
    LinearLayout.LayoutParams wisdomParams=new LinearLayout.LayoutParams(-1,dp(126));
@@ -801,7 +801,7 @@ public class MainActivity extends Activity {
    TextView resumeIcon=dashboardText("✎",19,true);
    resumeIcon.setGravity(Gravity.CENTER);
    resumeIcon.setTextColor(0xff47745d);
-   resumeIcon.setBackground(homeInsetSurface(0xfffdfcf7,0xfff7f2e5,0xffd8c69c,10));
+   resumeIcon.setBackground(homeGlossy(0,12));
    LinearLayout.LayoutParams resumeIconParams=new LinearLayout.LayoutParams(dp(38),-1);
    resumeIconParams.leftMargin=dp(3);resumeIconParams.rightMargin=dp(3);
    actions.addView(resumeIcon,resumeIconParams);
@@ -812,7 +812,7 @@ public class MainActivity extends Activity {
   }
   TextView addBook=dashboardText("＋  Kitab baharu",15,true);
   addBook.setGravity(Gravity.CENTER);addBook.setTextColor(0xff365c48);
-  addBook.setBackground(homeInsetSurface(0xfff6fbf7,0xffe4efe6,0xffc4d8c8,10));
+  addBook.setBackground(homeGlossy(0,12));
   LinearLayout.LayoutParams bookActionParams=new LinearLayout.LayoutParams(0,-1,1);bookActionParams.leftMargin=dp(4);
   actions.addView(addBook,bookActionParams);
   addBook.setContentDescription("Cipta kitab baharu");addBook.setOnClickListener(v->{maktabah=true;edit(null);});applyTouchFeedback(addBook);
@@ -925,7 +925,7 @@ public class MainActivity extends Activity {
   headingRow.addView(title,new LinearLayout.LayoutParams(0,-2,1));
   TextView topicCount=dashboardText(Math.min(3,keys.size())+" Topik",10,true);
   topicCount.setTextColor(0xff416653);topicCount.setGravity(Gravity.CENTER);topicCount.setPadding(dp(5),dp(3),dp(5),dp(3));
-  topicCount.setBackground(homeInsetSurface(0xffedf5ee,0xffe4efe7,0xffc1d4c5,9));
+  topicCount.setBackground(homeGlossy(0,20));
   headingRow.addView(topicCount,new LinearLayout.LayoutParams(-2,-2));target.addView(headingRow,titleParams);
   headingRow.setOnClickListener(v->title.performClick());topicCount.setOnClickListener(v->title.performClick());
   title.setFocusable(true);applyTouchFeedback(title);
@@ -974,7 +974,7 @@ public class MainActivity extends Activity {
     if(!pin)date+=" · "+new java.text.SimpleDateFormat("HHmm",java.util.Locale.ROOT).format(new java.util.Date(stamp));
     TextView time=dashboardText(date,10,true);time.setTextColor(0xff68756c);time.setSingleLine(true);time.setTextDirection(View.TEXT_DIRECTION_LTR);time.setIncludeFontPadding(false);time.setGravity(Gravity.RIGHT|Gravity.CENTER_VERTICAL);time.setPadding(dp(5),0,0,0);
     time.setBackground(homeGlossy(new int[]{0,1,3}[i%3],20));
-    time.setTextColor(Color.WHITE);time.setTypeface(android.graphics.Typeface.create("sans-serif-medium",android.graphics.Typeface.NORMAL));time.setGravity(Gravity.CENTER);time.setPadding(dp(5),0,dp(5),0);
+    time.setTextColor(0xff174d37);time.setTypeface(android.graphics.Typeface.create("sans-serif-medium",android.graphics.Typeface.NORMAL));time.setGravity(Gravity.CENTER);time.setPadding(dp(5),0,dp(5),0);
     LinearLayout.LayoutParams dateParams=new LinearLayout.LayoutParams(-2,dp(24));dateParams.leftMargin=dp(4);
     line.addView(time,dateParams);
    }
@@ -985,8 +985,7 @@ public class MainActivity extends Activity {
   }
  }
  android.graphics.drawable.GradientDrawable homeGlossy(int index,int radius){
-  int[][] palette={{0xff48b98a,0xff07864d,0xff08663d},{0xff54b9fa,0xff1679db,0xff0754ad},{0xffffd36a,0xffc88a10,0xff986000},{0xffc18af5,0xff923cdb,0xff6822a9}};
-  android.graphics.drawable.GradientDrawable d=new android.graphics.drawable.GradientDrawable(android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,palette[index]);d.setCornerRadius(dp(radius));d.setStroke(dp(1),0xfff5f7ef);return d;
+  android.graphics.drawable.GradientDrawable d=new android.graphics.drawable.GradientDrawable(android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,new int[]{0xfffffefa,0xfff3faf2,0xffdcefd9});d.setCornerRadius(dp(radius));d.setStroke(dp(1),0xffc99a20);return d;
  }
  android.graphics.drawable.GradientDrawable rounded(int fill,int stroke,int radius){
   android.graphics.drawable.GradientDrawable d=new android.graphics.drawable.GradientDrawable();
