@@ -3197,6 +3197,39 @@ public class MainActivity extends Activity {
   android.text.InputFilter[] old=active.getFilters();
   android.text.InputFilter[] next=java.util.Arrays.copyOf(old,old.length+1);next[old.length]=guard;active.setFilters(next);
  }
+ void chooseStudyReference(){
+  if(editor==null)return;
+  if(homeWindowWidthDp()<600){Toast.makeText(this,"Buka skrin Unfold untuk Dual View",Toast.LENGTH_SHORT).show();return;}
+  if(editor.getParent() instanceof LinearLayout && "study_split".equals(((View)editor.getParent()).getTag())){closeStudyReference();return;}
+  ArrayList<String> keys=new ArrayList<>(),labels=new ArrayList<>();
+  for(String k:prefs.getAll().keySet())if(k.startsWith("m_")&&prefs.getAll().get(k) instanceof String&&!prefs.getBoolean("deleted_"+k,false)){keys.add(k);labels.add(prefs.getString("title_"+k,"Tanpa tajuk"));}
+  if(keys.isEmpty()){Toast.makeText(this,"Tiada kitab dalam Maktabah",Toast.LENGTH_SHORT).show();return;}
+  final EditText active=editor;
+  new AlertDialog.Builder(this).setTitle("Pilih kitab rujukan").setItems(labels.toArray(new String[0]),(d,i)->{if(editor==active)openStudyReference(keys.get(i));}).setNegativeButton("Batal",null).show();
+ }
+ void closeStudyReference(){
+  if(editor==null||!(editor.getParent() instanceof LinearLayout))return;
+  LinearLayout split=(LinearLayout)editor.getParent();
+  if(!"study_split".equals(split.getTag())||split.getParent()!=root)return;
+  int index=root.indexOfChild(split);split.removeView(editor);root.removeView(split);
+  LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,0,1);p.setMargins(dp(4),0,dp(4),0);root.addView(editor,index,p);
+  final EditText active=editor;active.post(()->revealEditorCursor(active));
+ }
+ void openStudyReference(String key){
+  if(editor==null||editor.getParent()!=root||homeWindowWidthDp()<600)return;
+  final EditText active=editor;int index=root.indexOfChild(active);
+  LinearLayout split=new LinearLayout(this);split.setOrientation(LinearLayout.HORIZONTAL);split.setTag("study_split");
+  LinearLayout left=new LinearLayout(this);left.setOrientation(LinearLayout.VERTICAL);left.setBackgroundColor(0xfff5faf6);
+  LinearLayout header=new LinearLayout(this);header.setGravity(Gravity.CENTER_VERTICAL);left.addView(header);
+  TextView title=text(prefs.getString("title_"+key,"Kitab"),14);title.setTextColor(0xff216e4e);header.addView(title,new LinearLayout.LayoutParams(0,-2,1));
+  action("×",header,()->closeStudyReference());
+  ScrollView scroll=new ScrollView(this);TextView body=text("",15);body.setText(formattedReadingText(prefs.getString(key,"")));body.setTextIsSelectable(true);body.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);body.setPadding(dp(10),dp(8),dp(10),dp(12));scroll.addView(body);left.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
+  View handle=new View(this);handle.setBackgroundColor(0xffc6ad70);
+  root.removeView(active);root.addView(split,index,new LinearLayout.LayoutParams(-1,0,1));
+  split.addView(left,new LinearLayout.LayoutParams(0,-1,1));split.addView(handle,new LinearLayout.LayoutParams(dp(8),-1));split.addView(active,new LinearLayout.LayoutParams(0,-1,1));
+  handle.setOnTouchListener((v,event)->{if(event.getActionMasked()==android.view.MotionEvent.ACTION_DOWN)return true;if(event.getActionMasked()==android.view.MotionEvent.ACTION_MOVE){int[] xy=new int[2];split.getLocationOnScreen(xy);float f=Math.max(.30f,Math.min(.70f,(event.getRawX()-xy[0])/Math.max(1,split.getWidth())));left.setLayoutParams(new LinearLayout.LayoutParams(0,-1,f));active.setLayoutParams(new LinearLayout.LayoutParams(0,-1,1-f));return true;}return true;});
+  active.post(()->revealEditorCursor(active));
+ }
  void attachLectureEditorPanel(final EditText active){
   active.setTransformationMethod(new LectureHeadingTransformation());
   LinearLayout panel=new LinearLayout(this);panel.setOrientation(1);
@@ -3409,6 +3442,7 @@ public class MainActivity extends Activity {
     if(i==0)showEditorFindReplace();else if(i==1){clearSelectedFormatting();refreshFormatting.run();}else showEditorFormatPresets();
    }).show());
   toolsButton.setContentDescription("Alat penyuntingan tambahan");
+  Button referenceButton=action("▥",formatBar,()->chooseStudyReference());referenceButton.setContentDescription("Dual View Maktabah");
 
   LinearLayout.LayoutParams editBodyFrame=new LinearLayout.LayoutParams(-1,0,1);editBodyFrame.setMargins(dp(4),0,dp(4),0);root.addView(editor,editBodyFrame);
 
@@ -5418,6 +5452,7 @@ public class MainActivity extends Activity {
    return;
   }
   if(editor!=null){
+   if(homeWindowWidthDp()<600)closeStudyReference();
    // Keep the active editor and unsaved typing intact across fold/unfold.
    // Reflow text using Android's new width without recreating the editor.
    final EditText activeEditor=editor;
