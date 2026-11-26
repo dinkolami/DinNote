@@ -4179,7 +4179,9 @@ public class MainActivity extends Activity {
   Button back=new Button(this);back.setText("‹");styleBoardButton(back,false);tabs.addView(back);back.setOnClickListener(v->openSection(maktabah));
   Button notes=new Button(this);notes.setText("Nota");styleBoardButton(notes,!maktabah);tabs.addView(notes,new LinearLayout.LayoutParams(0,-2,1));notes.setEnabled(maktabah);notes.setOnClickListener(v->{maktabah=false;manageCategories();});
   Button books=new Button(this);books.setText("Maktabah");styleBoardButton(books,maktabah);tabs.addView(books,new LinearLayout.LayoutParams(0,-2,1));books.setEnabled(!maktabah);books.setOnClickListener(v->{maktabah=true;manageCategories();});
-  TextView heading=text("Board Tree",18);heading.setTextColor(0xff216e4e);heading.setPadding(dp(12),dp(8),dp(12),dp(4));root.addView(heading);
+  TextView heading=text("Board Tree",18);heading.setTextColor(0xff216e4e);heading.setPadding(dp(12),dp(8),dp(12),dp(4));
+  LinearLayout boardTitle=new LinearLayout(this);boardTitle.setGravity(Gravity.CENTER_VERTICAL);root.addView(boardTitle);boardTitle.addView(heading,new LinearLayout.LayoutParams(0,-2,1));
+  TextView boardSearch=text("⌕",23);boardSearch.setGravity(Gravity.CENTER);boardSearch.setTextColor(0xff216e4e);boardSearch.setContentDescription("Cari Board "+(maktabah?"Maktabah":"Nota"));boardSearch.setBackground(rounded(0xfff8faf8,0xffdce5df,8));LinearLayout.LayoutParams searchButtonParams=new LinearLayout.LayoutParams(dp(40),dp(36));searchButtonParams.rightMargin=dp(12);boardTitle.addView(boardSearch,searchButtonParams);applyTouchFeedback(boardSearch);boardSearch.setOnClickListener(v->showBoardSearch(maktabah));
   ScrollView scroll=new ScrollView(this);scroll.addView(panel);root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
   Button add=new Button(this);add.setText("+ Tambah Board");styleBoardButton(add,false);panel.addView(add);add.setOnClickListener(v->categoryDialog(null));
   addBoardExpandControls(panel);
