@@ -463,11 +463,15 @@ public class MainActivity extends Activity {
   @Override public void draw(android.graphics.Canvas canvas){
    android.graphics.Rect b=getBounds();float w=b.width(),h=b.height();if(w<=0||h<=0)return;
    canvas.drawColor(0xfff7f8f4);
-   float radius=Math.max(w,h)*0.75f;
-   float x=w*(0.45f+0.18f*(float)Math.sin(phase*Math.PI*2));
-   float y=h*(0.23f+0.10f*(float)Math.cos(phase*Math.PI*2));
-   paint.setShader(new android.graphics.RadialGradient(x,y,radius,new int[]{0x2375b99a,0x0ce5f3e9,0x00ffffff},null,android.graphics.Shader.TileMode.CLAMP));canvas.drawRect(b,paint);
-   paint.setShader(new android.graphics.RadialGradient(w*(0.7f-0.14f*(float)Math.sin(phase*Math.PI*2)),h*0.65f,radius*0.7f,new int[]{0x16d5b66d,0x08fffaf0,0x00ffffff},null,android.graphics.Shader.TileMode.CLAMP));canvas.drawRect(b,paint);paint.setShader(null);
+   // V2: visible, slow-moving emerald and gold orbs; content remains above the background.
+   float radius=Math.max(w*0.9f,h*0.32f);
+   float theta=phase*(float)Math.PI*2f;
+   float x=w*(0.30f+0.36f*(float)Math.sin(theta));
+   float y=h*(0.17f+0.13f*(float)Math.cos(theta));
+   paint.setShader(new android.graphics.RadialGradient(x,y,radius,new int[]{0x9973cba2,0x5575cda9,0x1875cda9,0x0075cda9},new float[]{0f,0.30f,0.68f,1f},android.graphics.Shader.TileMode.CLAMP));canvas.drawRect(b,paint);
+   float goldX=w*(0.70f-0.28f*(float)Math.sin(theta));
+   float goldY=h*(0.72f+0.10f*(float)Math.cos(theta));
+   paint.setShader(new android.graphics.RadialGradient(goldX,goldY,radius*0.65f,new int[]{0x77e7c778,0x33f0dca0,0x00ffffff},null,android.graphics.Shader.TileMode.CLAMP));canvas.drawRect(b,paint);paint.setShader(null);
   }
   @Override public void setAlpha(int alpha){} @Override public void setColorFilter(android.graphics.ColorFilter filter){} @Override public int getOpacity(){return android.graphics.PixelFormat.OPAQUE;}
  }
