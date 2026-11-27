@@ -458,6 +458,18 @@ public class MainActivity extends Activity {
   }
   target.setText(arabic.length()>0?arabic.toString():entry.split("\\r?\\n",2)[0].trim());
  }
+ class PostingOutline extends android.graphics.drawable.Drawable {
+  private final boolean book;
+  private final android.graphics.Paint p=new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
+  PostingOutline(boolean book){this.book=book;p.setColor(0xff536a5c);p.setStyle(android.graphics.Paint.Style.STROKE);p.setStrokeWidth(1.35f);p.setStrokeCap(android.graphics.Paint.Cap.ROUND);p.setStrokeJoin(android.graphics.Paint.Join.ROUND);}
+  @Override public void draw(android.graphics.Canvas c){android.graphics.Rect b=getBounds();c.save();c.translate(b.left,b.top);c.scale(b.width()/24f,b.height()/24f);android.graphics.Path q=new android.graphics.Path();
+   if(book){q.moveTo(12,5);q.cubicTo(8,2,4,3,2,4);q.lineTo(2,19);q.cubicTo(6,17,9,18,12,20);q.cubicTo(15,18,18,17,22,19);q.lineTo(22,4);q.cubicTo(18,3,15,2,12,5);q.close();c.drawPath(q,p);c.drawLine(12,5,12,20,p);}
+   else{q.moveTo(5,3);q.lineTo(14,3);q.lineTo(19,8);q.lineTo(19,12);q.moveTo(19,8);q.lineTo(14,8);q.lineTo(14,3);q.moveTo(5,3);q.lineTo(5,21);q.lineTo(12,21);c.drawPath(q,p);c.drawLine(8,10,12,10,p);c.drawLine(8,14,12,14,p);q.reset();q.moveTo(13,19);q.lineTo(14,15);q.lineTo(20,9);q.lineTo(23,12);q.lineTo(17,18);q.close();c.drawPath(q,p);}
+   c.restore();}
+  @Override public void setAlpha(int a){p.setAlpha(a);invalidateSelf();}
+  @Override public void setColorFilter(android.graphics.ColorFilter f){p.setColorFilter(f);invalidateSelf();}
+  @Override public int getOpacity(){return android.graphics.PixelFormat.TRANSLUCENT;}
+ }
  class LivingGradient extends android.graphics.drawable.Drawable {
   float phase=0f;final android.graphics.Paint basePaint=new android.graphics.Paint(); {basePaint.setColor(0xfff7f8f4);} final android.graphics.Paint paint=new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
   @Override public void draw(android.graphics.Canvas canvas){
@@ -680,7 +692,7 @@ public class MainActivity extends Activity {
     item.setPadding(dp(33),dp(4),dp(prefs.getLong("viewed_"+k,0L)>0L?88:10),dp(4));
     row.addView(item,new FrameLayout.LayoutParams(-1,-2,Gravity.CENTER_VERTICAL));
     android.widget.ImageView dashboardRowIcon=new android.widget.ImageView(this);
-    dashboardRowIcon.setImageResource(k.startsWith("m_")?android.R.drawable.ic_menu_agenda:android.R.drawable.ic_menu_edit);
+    dashboardRowIcon.setImageDrawable(new PostingOutline(k.startsWith("m_")));
     dashboardRowIcon.setColorFilter(0xff536a5c);
     dashboardRowIcon.setScaleType(android.widget.ImageView.ScaleType.FIT_CENTER);
     FrameLayout.LayoutParams dashboardRowIconParams=new FrameLayout.LayoutParams(dp(17),dp(17),Gravity.LEFT|Gravity.CENTER_VERTICAL);
@@ -958,7 +970,7 @@ public class MainActivity extends Activity {
    LinearLayout line=new LinearLayout(this);line.setOrientation(LinearLayout.HORIZONTAL);line.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);line.setGravity(Gravity.CENTER_VERTICAL);
    line.setPadding(dp(7),dp(3),dp(7),dp(3));line.setBackground(homeInsetSurface(0xffffffff,0xffffffff,0xffd4ddd7,10));line.setMinimumHeight(dp(folded?38:42));
    android.widget.ImageView entryIcon=new android.widget.ImageView(this);
-   entryIcon.setImageResource(key.startsWith("m_")?android.R.drawable.ic_menu_agenda:android.R.drawable.ic_menu_edit);
+   entryIcon.setImageDrawable(new PostingOutline(key.startsWith("m_")));
    entryIcon.setColorFilter(pin?0xff8b6925:0xff536a5c);
    entryIcon.setScaleType(android.widget.ImageView.ScaleType.FIT_CENTER);
    LinearLayout.LayoutParams iconParams=new LinearLayout.LayoutParams(dp(17),dp(17));iconParams.rightMargin=dp(9);
