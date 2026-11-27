@@ -1296,10 +1296,10 @@ public class MainActivity extends Activity {
    fixedDivider.setClickable(false);
    android.graphics.drawable.GradientDrawable line=new android.graphics.drawable.GradientDrawable(
     android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
-    new int[]{0xffc5d0d9,0xff566d75,0xffb8c2ca,0xff566d75,0xffc5d0d9});
+    new int[]{0xffdce7e0,0xffa4bfb0,0xffcbdcd2,0xffa4bfb0,0xffdce7e0});
    line.setCornerRadius(dp(1));
    View centralLine=new View(this);centralLine.setBackground(line);
-   fixedDivider.addView(centralLine,new FrameLayout.LayoutParams(dp(2),-1,Gravity.CENTER));
+   fixedDivider.addView(centralLine,new FrameLayout.LayoutParams(dp(1),-1,Gravity.CENTER));
    android.widget.ImageView motif=new android.widget.ImageView(this);
    motif.setImageResource(com.dinkolami.dinnote.R.drawable.reader_center_ornament);
    motif.setScaleType(android.widget.ImageView.ScaleType.FIT_CENTER);
