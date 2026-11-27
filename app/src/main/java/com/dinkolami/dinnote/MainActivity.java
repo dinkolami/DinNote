@@ -1269,9 +1269,23 @@ public class MainActivity extends Activity {
  FrameLayout.LayoutParams lectureSettingsParams(){
   FrameLayout.LayoutParams p=new FrameLayout.LayoutParams(dp(44),dp(44),Gravity.CENTER);p.topMargin=dp(140);return p;
  }
+ void switchLectureView(String key,int mode){
+  prefs.edit().putInt("lecture_view_"+key,mode).apply();
+  try{readContentSafely(key);}catch(Exception failure){showReaderRecovery(key,failure);}
+ }
+ void addLectureModeBar(LinearLayout parent,String key,int mode,boolean editing){
+  LinearLayout menu=new LinearLayout(this);menu.setGravity(Gravity.CENTER_VERTICAL);menu.setBaselineAligned(false);parent.addView(menu,new LinearLayout.LayoutParams(-1,-2));
+  String[] labels={"☷ Expand","▤ Paparan Siap","✎ Edit Penuh","⌘ Peta Minda"};
+  for(int i=0;i<labels.length;i++){
+   final int choice=i;TextView item=text(labels[i],12);item.setGravity(Gravity.CENTER);item.setSingleLine(true);item.setAutoSizeTextTypeUniformWithConfiguration(9,12,1,android.util.TypedValue.COMPLEX_UNIT_SP);item.setTextColor(0xff216e4e);item.setTypeface(null,android.graphics.Typeface.BOLD);item.setBackground(rounded((editing?i==2:(mode==2?i==1:i==0))?0xffedf4eb:0xfffffefd,0xff9db9ad,10));
+   LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(0,dp(36),1);lp.setMargins(dp(2),dp(2),dp(2),dp(3));menu.addView(item,lp);
+   item.setOnClickListener(v->{if(editing){if(choice==2)return;finishEditingSafely(choice==0?0:choice==1?2:3);return;}if(choice==0)switchLectureView(key,0);else if(choice==1)switchLectureView(key,2);else if(choice==2)edit(key);else showLectureMindMap(key,15);});
+  }
+ }
  void showPagedReader(String key){
   enableLectureZoom(key);startLectureTimer(key);
   final String rawPagedText=selectedReadingText(key);
+  if(isLectureTemplate(rawPagedText)&&!prefs.getBoolean("reader_clean_mode",false))addLectureModeBar(root,key,2,false);
   final android.text.SpannableStringBuilder source=readerLabelText(rawPagedText);
   if(isLectureTemplate(rawPagedText)){
    java.util.regex.Matcher headings=lectureHeadingPattern().matcher(source.toString());
@@ -2420,14 +2434,7 @@ public class MainActivity extends Activity {
   if(prefs.getInt("lecture_view_"+key,0)!=2&&starts.get(0)>0){TextView prefix=text("",size);prefix.setText(readerLabelText(source.substring(0,starts.get(0))));body.addView(prefix);}
   ArrayList<View> panels=new ArrayList<>();ArrayList<TextView> headers=new ArrayList<>();
   int mode=prefs.getInt("lecture_view_"+key,0);
-  LinearLayout lectureMenu=new LinearLayout(this);lectureMenu.setGravity(Gravity.CENTER_VERTICAL);body.addView(lectureMenu);
-  lectureMenu.setBaselineAligned(false);
-  String[] lectureLabels={mode==2?"☷  Subtopik":"▤  Paparan Siap","✎  Edit Penuh","⌘  Peta Minda"};
-  for(int j=0;j<lectureLabels.length;j++){
-   TextView item=text(lectureLabels[j],12);item.setTextColor(0xff216e4e);item.setGravity(Gravity.CENTER);item.setTypeface(null,android.graphics.Typeface.BOLD);item.setIncludeFontPadding(false);item.setSingleLine(true);item.setAutoSizeTextTypeUniformWithConfiguration(9,12,1,android.util.TypedValue.COMPLEX_UNIT_SP);item.setPadding(dp(4),0,dp(4),0);item.setBackground(rounded(0xfffffefd,0xff9db9ad,10));
-   LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(0,dp(40),1);lp.setMargins(j==0?0:dp(4),dp(1),j==2?0:dp(4),dp(3));lectureMenu.addView(item,lp);
-   final int actionIndex=j;item.setOnClickListener(v->{if(actionIndex==0){prefs.edit().putInt("lecture_view_"+key,mode==2?0:2).apply();try{readContentSafely(key);}catch(Exception failure){showReaderRecovery(key,failure);}}else if(actionIndex==1)edit(key);else showLectureMindMap(key,size);});
-  }
+  addLectureModeBar(body,key,mode,false);
   if(mode==2){
    // Render each section independently to prevent box leakage.
    String prefix=source.substring(0,starts.get(0)).trim();
@@ -3186,7 +3193,8 @@ public class MainActivity extends Activity {
     }).show();
   }).setNegativeButton("Tutup",null).show();
  }
- void finishEditingSafely(){
+ void finishEditingSafely(){finishEditingSafely(2);}
+ void finishEditingSafely(int targetMode){
   if(editor==null)return;
   save();
   // Include the latest history snapshot in the same durable flush as the note.
@@ -3217,7 +3225,7 @@ public class MainActivity extends Activity {
   oldEditor.postDelayed(()->{
    if(isFinishing()||isDestroyed()||editor!=oldEditor)return;
    editor=null;titleEditor=null;saveIndicator=null;categoryPicker=null;
-   if(finishedKey!=null){prefs.edit().putBoolean("reader_safe_scroll_"+finishedKey,true).apply();read(finishedKey);}
+   if(finishedKey!=null){prefs.edit().putBoolean("reader_safe_scroll_"+finishedKey,true).apply();if(isLectureTemplate(prefs.getString(finishedKey,""))){switchLectureView(finishedKey,targetMode==0?0:2);if(targetMode==3)showLectureMindMap(finishedKey,15);}else read(finishedKey);}
    else if(sectionOpen)notesPage();else home();
   },180);
  }
@@ -3342,6 +3350,7 @@ public class MainActivity extends Activity {
  int countLectureHeadingsBefore(CharSequence value,int offset){int count=0;java.util.regex.Matcher m=lectureHeadingPattern().matcher(value);while(m.find()&&m.start()<offset)count++;return count;}
  int[] lectureQuickBounds(CharSequence value,int index){java.util.regex.Matcher m=lectureHeadingPattern().matcher(value);int i=0,start=-1;while(m.find()){if(i==index){start=m.end();if(start<value.length()&&value.charAt(start)=='\n')start++;}else if(i==index+1)return new int[]{start,m.start()};i++;}return start<0?null:new int[]{start,value.length()};}
  void attachLectureEditorPanel(final EditText active){
+  if(selected!=null){LinearLayout modes=new LinearLayout(this);modes.setOrientation(1);root.addView(modes,root.indexOfChild(active));addLectureModeBar(modes,selected,0,true);}
   active.setTransformationMethod(new LectureHeadingTransformation());
   LinearLayout panel=new LinearLayout(this);panel.setOrientation(1);
   TextView toggle=text("☷  Subtopik Nota Kuliah",16);toggle.setTextColor(0xff216e4e);toggle.setPadding(dp(10),dp(6),dp(10),dp(6));panel.addView(toggle);
