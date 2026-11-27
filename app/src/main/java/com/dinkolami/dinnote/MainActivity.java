@@ -3339,6 +3339,8 @@ public class MainActivity extends Activity {
   handle.setOnTouchListener((v,event)->{if(event.getActionMasked()==android.view.MotionEvent.ACTION_DOWN)return true;if(event.getActionMasked()==android.view.MotionEvent.ACTION_MOVE){int[] xy=new int[2];split.getLocationOnScreen(xy);float f=Math.max(.30f,Math.min(.70f,(event.getRawX()-xy[0])/Math.max(1,split.getWidth())));left.setLayoutParams(new LinearLayout.LayoutParams(0,-1,f));active.setLayoutParams(new LinearLayout.LayoutParams(0,-1,1-f));return true;}return true;});
   active.post(()->revealEditorCursor(active));
  }
+ int countLectureHeadingsBefore(CharSequence value,int offset){int count=0;java.util.regex.Matcher m=lectureHeadingPattern().matcher(value);while(m.find()&&m.start()<offset)count++;return count;}
+ int[] lectureQuickBounds(CharSequence value,int index){java.util.regex.Matcher m=lectureHeadingPattern().matcher(value);int i=0,start=-1;while(m.find()){if(i==index){start=m.end();if(start<value.length()&&value.charAt(start)=='\n')start++;}else if(i==index+1)return new int[]{start,m.start()};i++;}return start<0?null:new int[]{start,value.length()};}
  void attachLectureEditorPanel(final EditText active){
   active.setTransformationMethod(new LectureHeadingTransformation());
   LinearLayout panel=new LinearLayout(this);panel.setOrientation(1);
@@ -3361,9 +3363,27 @@ public class MainActivity extends Activity {
     TextView remove=text("×",16);remove.setGravity(Gravity.CENTER);remove.setTextColor(0xff397e58);line.addView(remove,new LinearLayout.LayoutParams(dp(26),dp(34)));remove.setContentDescription("Buang subtopik");remove.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Buang "+name+"?").setMessage("Kandungan subtopik ini juga akan dibuang.").setNegativeButton("Batal",null).setPositiveButton("Buang",(d,w)->{android.text.Editable e=active.getText();java.util.regex.Matcher hm=lectureHeadingPattern().matcher(e.toString());int end=e.length();while(hm.find()){if(hm.start()>headingStart){end=hm.start();break;}}if(headingStart<end&&end<=e.length()){e.delete(headingStart,end);save();refresh[0].run();}}).show());
     TextView arrow=text("›",14);arrow.setTextColor(0xff216e4e);arrow.setPadding(dp(8),0,dp(12),0);line.addView(arrow);arrow.setOnClickListener(v->row.performClick());
     row.setOnLongClickListener(v->{EditText input=new EditText(this);input.setSingleLine(true);input.setText(name);new AlertDialog.Builder(this).setTitle("Ubah subtopik").setView(input).setNegativeButton("Batal",null).setNeutralButton("Buang tajuk",(d,w)->{active.getText().delete(headingStart,Math.min(active.length(),headingEnd+1));save();refresh[0].run();}).setPositiveButton("Simpan",(d,w)->{String renamed=input.getText().toString().trim();if(!renamed.isEmpty()){active.getText().replace(headingStart,headingEnd,"\u2063"+renamed);save();refresh[0].run();}}).show();return true;});
+    final int sectionIndex=currentNames.size()==0?0:countLectureHeadingsBefore(active.getText(),headingStart);
+    final EditText quick=new EditText(this);quick.setTextSize(15);quick.setGravity(Gravity.TOP|Gravity.START);quick.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);quick.setMinLines(3);quick.setMaxLines(8);quick.setPadding(dp(10),dp(8),dp(10),dp(8));quick.setBackground(rounded(0xfffffefd,0xff92b7a2,8));quick.setVisibility(View.GONE);
+    groupRows.addView(quick,new LinearLayout.LayoutParams(-1,-2));
+    final boolean[] loadingQuick={false};
+    quick.addTextChangedListener(new android.text.TextWatcher(){
+     public void beforeTextChanged(CharSequence t,int start,int count,int after){}
+     public void onTextChanged(CharSequence t,int start,int before,int count){}
+     public void afterTextChanged(android.text.Editable t){
+      if(loadingQuick[0]||quick.getVisibility()!=View.VISIBLE)return;
+      int[] bounds=lectureQuickBounds(active.getText(),sectionIndex);if(bounds==null)return;
+      android.text.SpannableStringBuilder replacement=new android.text.SpannableStringBuilder(t);
+      if(bounds[1]<active.length())replacement.append("\n");
+      active.getText().replace(bounds[0],bounds[1],replacement);save();
+     }
+    });
     row.setOnClickListener(v->{
-     int p=Math.min(headingEnd,active.length());if(p<active.length()&&active.getText().charAt(p)=='\n')p++;
-     rows.setVisibility(View.GONE);active.setVisibility(View.VISIBLE);active.requestFocus();active.setSelection(p);active.post(()->revealEditorCursor(active));
+     if(quick.getVisibility()==View.VISIBLE){quick.clearFocus();quick.setVisibility(View.GONE);arrow.setText("›");refresh[0].run();return;}
+     int[] bounds=lectureQuickBounds(active.getText(),sectionIndex);if(bounds==null)return;
+     loadingQuick[0]=true;int end=bounds[1];if(end<active.length()&&end>bounds[0]&&active.getText().charAt(end-1)=='\n')end--;
+     quick.setText(active.getText().subSequence(bounds[0],end));loadingQuick[0]=false;
+     quick.setVisibility(View.VISIBLE);arrow.setText("⌄");quick.requestFocus();
     });
    }
   };
