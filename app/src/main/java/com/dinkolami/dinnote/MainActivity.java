@@ -2374,6 +2374,32 @@ public class MainActivity extends Activity {
   LinearLayout controls=new LinearLayout(this);root.addView(controls);for(String label:new String[]{"A−","A+","⇅","Tutup"}){TextView b=text(label,14);b.setGravity(Gravity.CENTER);b.setBackground(homeGlossy(0,10));controls.addView(b,new LinearLayout.LayoutParams(0,dp(32),1));b.setContentDescription(label.equals("⇅")?"Lipat atau kembang subtopik":label);b.setOnClickListener(v->{if(label.equals("Tutup")){dialog.dismiss();}else if(label.equals("A−")){zoom[0]=Math.max(12,zoom[0]-1);refresh.run();}else if(label.equals("A+")){zoom[0]=Math.min(32,zoom[0]+1);refresh.run();}else treeScroll.setVisibility(treeScroll.getVisibility()==View.VISIBLE?View.GONE:View.VISIBLE);});}
   dialog.show();if(dialog.getWindow()!=null)dialog.getWindow().setLayout(-1,(int)(getResources().getDisplayMetrics().heightPixels*0.92));
  }
+ int lectureGroup(String name){
+  switch(name){
+   case "Muqaddimah":
+   case "Maqasid Kuliah":
+   case "Pra Topik": return 0;
+   case "Ayat al-Quran":
+   case "Hadis Nabawi":
+   case "Kupasan Kalimah":
+   case "Nukilan Ulama": return 1;
+   case "Kalam Hikmah":
+   case "Kisah Renungan": return 2;
+   case "Perbahasan Hukum":
+   case "Kaedah Fiqh":
+   case "Realiti Semasa": return 3;
+   case "Persoalan Muhasabah":
+   case "Tuntutan Amalan":
+   case "Khulasah":
+   case "Penutup dan Doa": return 4;
+   default:return -1;
+  }
+ }
+ boolean groupedLecture(java.util.List<String> names){for(String n:names)if(n.equals("Maqasid Kuliah")||n.equals("Hadis Nabawi")||n.equals("Tuntutan Amalan"))return true;return false;}
+ int lectureGroupColor(int g){return new int[]{0xff15803d,0xff2563eb,0xffa16207,0xff9333ea,0xff0d9488}[g];}
+ void lectureGroupLabel(LinearLayout parent,int g){
+  LinearLayout line=new LinearLayout(this);line.setGravity(Gravity.CENTER_VERTICAL);View stripe=new View(this);stripe.setBackgroundColor(lectureGroupColor(g));line.addView(stripe,new LinearLayout.LayoutParams(dp(3),dp(20)));TextView label=text(new String[]{"Pembukaan","Pengisian Ilmiah","Pendidikan Hati","Kefaqihan","Penghayatan"}[g],13);label.setTextColor(lectureGroupColor(g));label.setPadding(dp(8),dp(5),0,dp(5));line.addView(label);parent.addView(line);
+ }
  void renderLectureTemplate(LinearLayout body,String source,int size,String key){
   java.util.regex.Matcher m=lectureHeadingPattern().matcher(source);
   ArrayList<String> names=new ArrayList<>();ArrayList<Integer> starts=new ArrayList<>();ArrayList<Integer> ends=new ArrayList<>();
@@ -2409,13 +2435,17 @@ public class MainActivity extends Activity {
    return;
   }
   final Runnable[] finishActive={null};
+  boolean grouped=groupedLecture(names);int previousGroup=-1;
   for(int i=0;i<names.size();i++){
+   int sectionGroup=grouped?lectureGroup(names.get(i)):-1;
+   if(sectionGroup>=0&&sectionGroup!=previousGroup)lectureGroupLabel(body,sectionGroup);
+   previousGroup=sectionGroup;
    String value=source.substring(ends.get(i),i+1<starts.size()?starts.get(i+1):source.length()).trim();
    if(value.isEmpty()&&mode==2)continue;
    final String name=names.get(i);
    LinearLayout group=new LinearLayout(this);group.setOrientation(1);
    if(mode!=2){group.setBackground(rounded(0xfffffefd,0xffdce5df,8));LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);lp.setMargins(0,dp(3),0,dp(3));body.addView(group,lp);}else body.addView(group);
-   TextView h=text("",Math.max(18,size));h.setText(formattedReadingText(name));h.setTextColor(0xff216e4e);h.setTypeface(android.graphics.Typeface.create("sans-serif-medium",android.graphics.Typeface.NORMAL));h.setPadding(dp(12),dp(12),dp(12),dp(12));h.setMinHeight(dp(52));LinearLayout headerRow=new LinearLayout(this);headerRow.setGravity(Gravity.CENTER_VERTICAL);group.addView(headerRow);headerRow.addView(h,new LinearLayout.LayoutParams(0,-2,1));TextView arrow=text(mode==1?"▴":"▾",18);arrow.setTextColor(0xff216e4e);arrow.setPadding(dp(8),0,dp(12),0);final int moveIndex=i;
+   TextView h=text("",Math.max(18,size));h.setText(formattedReadingText(name));h.setTextColor(0xff216e4e);h.setTypeface(android.graphics.Typeface.create("sans-serif-medium",android.graphics.Typeface.NORMAL));h.setPadding(dp(12),dp(12),dp(12),dp(12));h.setMinHeight(dp(52));if(sectionGroup>=0){h.setTextColor(lectureGroupColor(sectionGroup));h.setTextSize(Math.max(15,size));h.setPadding(dp(10),dp(4),dp(10),dp(4));h.setMinHeight(dp(36));}LinearLayout headerRow=new LinearLayout(this);headerRow.setGravity(Gravity.CENTER_VERTICAL);group.addView(headerRow);headerRow.addView(h,new LinearLayout.LayoutParams(0,-2,1));TextView arrow=text(mode==1?"▴":"▾",18);arrow.setTextColor(0xff216e4e);arrow.setPadding(dp(8),0,dp(12),0);final int moveIndex=i;
    for(int direction:new int[]{-1,1}){
     final int delta=direction;TextView move=text(delta<0?"+":"−",17);move.setGravity(Gravity.CENTER);move.setTextColor(0xff216e4e);headerRow.addView(move,new LinearLayout.LayoutParams(dp(30),dp(44)));move.setEnabled(moveIndex+delta>=0&&moveIndex+delta<names.size());move.setAlpha(move.isEnabled()?1f:0.3f);move.setContentDescription(delta<0?"Pindah ke atas":"Pindah ke bawah");move.setOnClickListener(v->{if(finishActive[0]!=null)finishActive[0].run();moveLectureSection(key,moveIndex,delta);});
    }
@@ -3208,7 +3238,7 @@ public class MainActivity extends Activity {
   dialog.setOnShowListener(v->dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(x->{
    String name=title.getText().toString().trim();if(name.isEmpty()){title.setError("Masukkan tajuk");return;}
    String key="n_"+java.util.UUID.randomUUID().toString();
-   String body="\u2063Muqaddimah\n\n\n\u2063Pra Topik\n\n\n\u2063Isi Pertama\n\n\n\u2063Isi Kedua\n\n\n\u2063Isi Ketiga\n\n\n\u2063Pengajaran\n\n\n\u2063Iktibar\n\n\n\u2063Khulasah\n\n\n\u2063Penutup\n\n\n";
+   String body="\u2063Muqaddimah\n\n\n\u2063Maqasid Kuliah\n\n\n\u2063Pra Topik\n\n\n\u2063Ayat al-Quran\n\n\n\u2063Hadis Nabawi\n\n\n\u2063Kupasan Kalimah\n\n\n\u2063Nukilan Ulama\n\n\n\u2063Kalam Hikmah\n\n\n\u2063Kisah Renungan\n\n\n\u2063Perbahasan Hukum\n\n\n\u2063Kaedah Fiqh\n\n\n\u2063Realiti Semasa\n\n\n\u2063Persoalan Muhasabah\n\n\n\u2063Tuntutan Amalan\n\n\n\u2063Khulasah\n\n\n\u2063Penutup dan Doa\n\n\n";
    boolean ok=prefs.edit().putString(key,body).putString("title_"+key,name).putString("cat_"+key,"Tanpa kategori").putLong("updated_"+key,System.currentTimeMillis()).commit();
    if(ok){dialog.dismiss();maktabah=false;edit(key);}else Toast.makeText(this,"Simpan gagal",Toast.LENGTH_SHORT).show();
   }));dialog.show();
@@ -3294,9 +3324,10 @@ public class MainActivity extends Activity {
   refresh[0]=()->{
    rows.removeAllViews();
    java.util.regex.Matcher m=lectureHeadingPattern().matcher(active.getText());
+   ArrayList<String> currentNames=new ArrayList<>();while(m.find())currentNames.add(m.group(1));m.reset();boolean grouped=groupedLecture(currentNames);int previousGroup=-1;
    while(m.find()){
-    final String name=m.group(1);final int headingEnd=m.end();
-    TextView row=text(name,16);row.setTextColor(0xff216e4e);row.setPadding(dp(12),dp(5),dp(12),dp(5));row.setBackground(rounded(0xfffffefd,0xffdce5df,8));row.setMinHeight(dp(48));row.setGravity(Gravity.CENTER_VERTICAL);LinearLayout.LayoutParams rp=new LinearLayout.LayoutParams(-1,-2);rp.setMargins(dp(8),0,dp(8),dp(4));LinearLayout line=new LinearLayout(this);line.setGravity(Gravity.CENTER_VERTICAL);line.setBackground(rounded(0xfffffefd,0xffdce5df,8));row.setBackgroundColor(Color.TRANSPARENT);rows.addView(line,rp);line.addView(row,new LinearLayout.LayoutParams(0,-2,1));
+    final String name=m.group(1);final int headingEnd=m.end();int sectionGroup=grouped?lectureGroup(name):-1;if(sectionGroup>=0&&sectionGroup!=previousGroup)lectureGroupLabel(rows,sectionGroup);previousGroup=sectionGroup;
+    TextView row=text(name,16);row.setTextColor(0xff216e4e);row.setPadding(dp(12),dp(5),dp(12),dp(5));row.setBackground(rounded(0xfffffefd,0xffdce5df,8));row.setMinHeight(dp(sectionGroup>=0?36:48));if(sectionGroup>=0)row.setTextColor(lectureGroupColor(sectionGroup));row.setGravity(Gravity.CENTER_VERTICAL);LinearLayout.LayoutParams rp=new LinearLayout.LayoutParams(-1,-2);rp.setMargins(dp(8),0,dp(8),dp(4));LinearLayout line=new LinearLayout(this);line.setGravity(Gravity.CENTER_VERTICAL);line.setBackground(rounded(0xfffffefd,0xffdce5df,8));row.setBackgroundColor(Color.TRANSPARENT);rows.addView(line,rp);line.addView(row,new LinearLayout.LayoutParams(0,-2,1));
     final int headingStart=m.start();
     for(int direction:new int[]{-1,1}){
      final int delta=direction;TextView move=text(delta<0?"+":"−",17);move.setGravity(Gravity.CENTER);move.setTextColor(0xff216e4e);line.addView(move,new LinearLayout.LayoutParams(dp(30),dp(44)));
