@@ -3431,7 +3431,7 @@ public class MainActivity extends Activity {
         int end=Math.max(start,Math.max(getSelectionStart(),getSelectionEnd()));
         start=Math.min(start,length());end=Math.min(end,length());
         getText().replace(start,end,clean);
-        setSelection(start+clean.length());
+        setSelection(Math.max(0,Math.min(length(),start+clean.length())));
         return true;
        }
       }
@@ -5633,14 +5633,8 @@ public class MainActivity extends Activity {
  }
  @Override protected void onRestart(){
   super.onRestart();
-  // onStop has already checkpointed the reader/editor. Never reopen its screen automatically.
-  stopAutoReading();
-  lectureBackReveal=null;readerDetector=null;readerScroll=null;
-  if(editor!=null){editor.setOnFocusChangeListener(null);android.view.inputmethod.InputMethodManager imm=(android.view.inputmethod.InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);if(imm!=null&&editor.getWindowToken()!=null)imm.hideSoftInputFromWindow(editor.getWindowToken(),0);editor.clearFocus();}
-  if(titleEditor!=null)titleEditor.clearFocus();
-  editor=null;titleEditor=null;saveIndicator=null;selected=null;
-  prefs.edit().putBoolean("reader_clean_mode",false).apply();
-  openHomeSafely();
+  // Clipboard and other temporary system activities can stop this Activity.
+  // Preserve the live screen; a fresh Activity still opens Home in onCreate.
  }
  @Override protected void onStop(){
   // Checkpoint the latest editor text before flushing when Android backgrounds the app.
