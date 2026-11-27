@@ -503,7 +503,7 @@ public class MainActivity extends Activity {
   if(splitHome){
    LinearLayout split=new LinearLayout(this);root.addView(split,new LinearLayout.LayoutParams(-1,0,1));
    ScrollView boardScroll=new ScrollView(this);split.addView(boardScroll,new LinearLayout.LayoutParams(0,-1,1));
-   LinearLayout boardPanel=new LinearLayout(this);boardPanel.setOrientation(1);boardPanel.setPadding(dp(8),dp(8),dp(8),dp(8));boardScroll.addView(boardPanel);
+   LinearLayout boardPanel=new LinearLayout(this);boardPanel.setOrientation(1);boardPanel.setPadding(dp(8),dp(8),dp(1),dp(8));boardScroll.addView(boardPanel);
    renderHomeBoards(boardPanel,false);renderHomeBoards(boardPanel,true);
    View separator=new View(this);separator.setBackgroundColor(Color.TRANSPARENT);split.addView(separator,new LinearLayout.LayoutParams(dp(1),-1));
    dashboardHost=new LinearLayout(this);dashboardHost.setOrientation(1);split.addView(dashboardHost,new LinearLayout.LayoutParams(0,-1,1));
@@ -512,7 +512,7 @@ public class MainActivity extends Activity {
   scroll.setOverScrollMode(View.OVER_SCROLL_NEVER);scroll.setSmoothScrollingEnabled(true);
   dashboardHost.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
   LinearLayout page=new LinearLayout(this);page.setOrientation(1);
-  page.setPadding(dp(10),dp(6),dp(10),dp(3));page.setBackgroundColor(Color.TRANSPARENT);page.setTag("dinnote_home");
+  page.setPadding(dp(splitHome?2:10),dp(6),dp(10),dp(3));page.setBackgroundColor(Color.TRANSPARENT);page.setTag("dinnote_home");
   android.animation.ValueAnimator homeGlow=android.animation.ValueAnimator.ofFloat(0f,1f);homeGlow.setDuration(4500L);homeGlow.setRepeatCount(android.animation.ValueAnimator.INFINITE);homeGlow.setRepeatMode(android.animation.ValueAnimator.RESTART);homeGlow.setInterpolator(new android.view.animation.LinearInterpolator());homeGlow.addUpdateListener(a->{if(page.isAttachedToWindow()){float phase=(float)a.getAnimatedValue();homeBackground.phase=phase;homeBackground.invalidateSelf();}});page.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener(){public void onViewAttachedToWindow(View v){if(!homeGlow.isStarted())homeGlow.start();}public void onViewDetachedFromWindow(View v){homeGlow.cancel();}});
   // Use the actual measured dashboard height. Avoid scaleY, synthetic spacer
   // and fixed-height wrapper: all three created a scrollable empty tail.
@@ -537,7 +537,7 @@ public class MainActivity extends Activity {
    if(postingKey.startsWith("n_"))noteCount++;
    else if(postingKey.startsWith("m_"))bookCount++;
   }
-  LinearLayout tiles=new LinearLayout(this);tiles.setGravity(Gravity.CENTER_VERTICAL);tiles.setPadding(dp(10),dp(2),dp(10),dp(3));tiles.setBackgroundColor(Color.TRANSPARENT);dashboardHost.addView(tiles,splitHome?0:1,new LinearLayout.LayoutParams(-1,dp(48)));
+  LinearLayout tiles=new LinearLayout(this);tiles.setGravity(Gravity.CENTER_VERTICAL);tiles.setPadding(dp(splitHome?2:10),dp(2),dp(10),dp(3));tiles.setBackgroundColor(Color.TRANSPARENT);dashboardHost.addView(tiles,splitHome?0:1,new LinearLayout.LayoutParams(-1,dp(48)));
   for(int j=0;j<2;j++){
    final boolean isBook=j==1;
    LinearLayout tile=new LinearLayout(this);tile.setGravity(Gravity.CENTER_VERTICAL);
@@ -732,7 +732,7 @@ public class MainActivity extends Activity {
   // independent of dashboard scrolling and window size.
   LinearLayout footer=new LinearLayout(this);
   footer.setOrientation(LinearLayout.VERTICAL);
-  footer.setPadding(dp(10),dp(3),dp(10),dp(4));
+  footer.setPadding(dp(splitHome?2:10),dp(3),dp(10),dp(4));
   footer.setBackgroundColor(Color.TRANSPARENT);
   footer.setElevation(0);
   dashboardHost.addView(footer,new LinearLayout.LayoutParams(-1,-2));
