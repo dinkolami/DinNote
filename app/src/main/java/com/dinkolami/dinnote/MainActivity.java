@@ -2400,6 +2400,9 @@ public class MainActivity extends Activity {
  void lectureGroupLabel(LinearLayout parent,int g){
   LinearLayout line=new LinearLayout(this);line.setGravity(Gravity.CENTER_VERTICAL);View stripe=new View(this);stripe.setBackgroundColor(lectureGroupColor(g));line.addView(stripe,new LinearLayout.LayoutParams(dp(2),dp(17)));TextView label=text(new String[]{"Pembukaan","Pengisian Ilmiah","Pendidikan Hati","Kefaqihan","Penghayatan"}[g],13);label.setTextColor(lectureGroupColor(g));label.setPadding(dp(8),dp(5),0,dp(5));line.addView(label);parent.addView(line);
  }
+ void changeLectureSection(String key,int index,String added){
+  String raw=prefs.getString(key,"");java.util.regex.Matcher m=lectureHeadingPattern().matcher(raw);ArrayList<Integer> offsets=new ArrayList<>();while(m.find())offsets.add(m.start());if(index<0||index>=offsets.size())return;int start=offsets.get(index),end=index+1<offsets.size()?offsets.get(index+1):raw.length();String updated=added==null?raw.substring(0,start)+raw.substring(end):raw.substring(0,end)+(end>0&&raw.charAt(end-1)!='\n'?"\n":"")+"\u2063"+added+"\n\n\n"+raw.substring(end);snapshotBeforeAutosave(key,raw,prefs.getString("title_"+key,""),prefs.getString("cat_"+key,"Tanpa kategori"));prefs.edit().putString(key,updated).putLong("updated_"+key,System.currentTimeMillis()).apply();try{readContentSafely(key);}catch(Exception failure){showReaderRecovery(key,failure);}
+ }
  void renderLectureTemplate(LinearLayout body,String source,int size,String key){
   java.util.regex.Matcher m=lectureHeadingPattern().matcher(source);
   ArrayList<String> names=new ArrayList<>();ArrayList<Integer> starts=new ArrayList<>();ArrayList<Integer> ends=new ArrayList<>();
@@ -2435,21 +2438,21 @@ public class MainActivity extends Activity {
    return;
   }
   final Runnable[] finishActive={null};
-  boolean grouped=groupedLecture(names);int previousGroup=-1;
+  boolean grouped=groupedLecture(names);int previousGroup=-1;LinearLayout groupBody=body;final boolean[] manage={false};ArrayList<View> management=new ArrayList<>();if(grouped){TextView manageButton=text("☷  Urus subtopik",12);manageButton.setTextColor(0xff397e58);body.addView(manageButton);manageButton.setOnClickListener(v->{manage[0]=!manage[0];for(View control:management)control.setVisibility(manage[0]?View.VISIBLE:View.GONE);});}
   for(int i=0;i<names.size();i++){
    int sectionGroup=grouped?lectureGroup(names.get(i)):-1;
-   if(sectionGroup>=0&&sectionGroup!=previousGroup)lectureGroupLabel(body,sectionGroup);
+   if(grouped&&sectionGroup!=previousGroup||grouped&&i==0){groupBody=body;if(sectionGroup>=0){LinearLayout band=new LinearLayout(this);band.setGravity(Gravity.TOP);LinearLayout.LayoutParams bp=new LinearLayout.LayoutParams(-1,-2);bp.setMargins(0,dp(6),0,dp(6));body.addView(band,bp);View stripe=new View(this);stripe.setBackground(rounded(lectureGroupColor(sectionGroup),lectureGroupColor(sectionGroup),3));band.addView(stripe,new LinearLayout.LayoutParams(dp(3),-1));groupBody=new LinearLayout(this);groupBody.setOrientation(1);groupBody.setPadding(dp(8),0,0,0);band.addView(groupBody,new LinearLayout.LayoutParams(0,-2,1));TextView label=text(new String[]{"Pembukaan","Pengisian Ilmiah","Pendidikan Hati","Kefaqihan","Penghayatan"}[sectionGroup],13);label.setTextColor(lectureGroupColor(sectionGroup));groupBody.addView(label);}}
    previousGroup=sectionGroup;
    String value=source.substring(ends.get(i),i+1<starts.size()?starts.get(i+1):source.length()).trim();
    if(value.isEmpty()&&mode==2)continue;
    final String name=names.get(i);
    LinearLayout group=new LinearLayout(this);group.setOrientation(1);
-   if(mode!=2){group.setBackground(rounded(0xfffffefd,0xffdce5df,8));LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);lp.setMargins(0,dp(sectionGroup>=0?2:3),0,dp(sectionGroup>=0?2:3));body.addView(group,lp);}else body.addView(group);
-   TextView h=text("",Math.max(18,size));h.setText(formattedReadingText(name));h.setTextColor(0xff216e4e);h.setTypeface(android.graphics.Typeface.create("sans-serif-medium",android.graphics.Typeface.NORMAL));h.setPadding(dp(12),dp(12),dp(12),dp(12));h.setMinHeight(dp(52));if(sectionGroup>=0){h.setTextColor(lectureGroupColor(sectionGroup));h.setTextSize(Math.max(14,size-1));h.setPadding(dp(10),dp(4),dp(10),dp(4));h.setMinHeight(dp(34));}LinearLayout headerRow=new LinearLayout(this);headerRow.setGravity(Gravity.CENTER_VERTICAL);group.addView(headerRow);headerRow.addView(h,new LinearLayout.LayoutParams(0,-2,1));TextView arrow=text(mode==1?"▴":"▾",sectionGroup>=0?14:18);arrow.setTextColor(0xff216e4e);arrow.setPadding(dp(8),0,dp(12),0);final int moveIndex=i;
+   if(grouped){groupBody.addView(group,new LinearLayout.LayoutParams(-1,-2));}else if(mode!=2){group.setBackground(rounded(0xfffffefd,0xffdce5df,8));LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);lp.setMargins(0,dp(sectionGroup>=0?2:3),0,dp(sectionGroup>=0?2:3));body.addView(group,lp);}else body.addView(group);
+   TextView h=text("",Math.max(18,size));h.setText(formattedReadingText(name));h.setTextColor(0xff216e4e);h.setTypeface(android.graphics.Typeface.create("sans-serif-medium",android.graphics.Typeface.NORMAL));h.setPadding(dp(12),dp(12),dp(12),dp(12));h.setMinHeight(dp(52));if(sectionGroup>=0){h.setTextColor(0xff303633);h.setTypeface(android.graphics.Typeface.DEFAULT);h.setTextSize(Math.max(14,size-1));h.setPadding(dp(10),dp(4),dp(10),dp(4));h.setMinHeight(dp(34));}LinearLayout headerRow=new LinearLayout(this);headerRow.setGravity(Gravity.CENTER_VERTICAL);group.addView(headerRow);TextView arrow=text(mode==1?"▾":(grouped?"›":"▾"),sectionGroup>=0?14:18);arrow.setTextColor(0xff216e4e);arrow.setPadding(dp(8),0,dp(12),0);final int moveIndex=i;if(grouped)headerRow.addView(arrow);headerRow.addView(h,new LinearLayout.LayoutParams(0,-2,1));
    for(int direction:new int[]{-1,1}){
-    final int delta=direction;TextView move=text(delta<0?"+":"−",sectionGroup>=0?14:17);move.setGravity(Gravity.CENTER);move.setTextColor(0xff216e4e);headerRow.addView(move,new LinearLayout.LayoutParams(dp(sectionGroup>=0?26:30),dp(sectionGroup>=0?36:44)));move.setEnabled(moveIndex+delta>=0&&moveIndex+delta<names.size());move.setAlpha(move.isEnabled()?1f:0.3f);move.setContentDescription(delta<0?"Pindah ke atas":"Pindah ke bawah");move.setOnClickListener(v->{if(finishActive[0]!=null)finishActive[0].run();moveLectureSection(key,moveIndex,delta);});
+    final int delta=direction;TextView move=text(delta<0?"↑":"↓",sectionGroup>=0?14:17);move.setGravity(Gravity.CENTER);move.setTextColor(0xff216e4e);headerRow.addView(move,new LinearLayout.LayoutParams(dp(sectionGroup>=0?26:30),dp(sectionGroup>=0?36:44)));if(grouped){management.add(move);move.setVisibility(View.GONE);}move.setEnabled(moveIndex+delta>=0&&moveIndex+delta<names.size());move.setAlpha(move.isEnabled()?1f:0.3f);move.setContentDescription(delta<0?"Pindah ke atas":"Pindah ke bawah");move.setOnClickListener(v->{if(finishActive[0]!=null)finishActive[0].run();moveLectureSection(key,moveIndex,delta);});
    }
-   headerRow.addView(arrow);
+   if(!grouped)headerRow.addView(arrow);else{for(String symbol:new String[]{"+","×"}){TextView control=text(symbol,14);control.setGravity(Gravity.CENTER);control.setTextColor(0xff397e58);headerRow.addView(control,new LinearLayout.LayoutParams(dp(26),dp(36)));management.add(control);control.setVisibility(View.GONE);control.setContentDescription(symbol.equals("+")?"Tambah subtopik":"Buang subtopik");control.setOnClickListener(v->{if(finishActive[0]!=null)finishActive[0].run();if(symbol.equals("+")){EditText input=new EditText(this);input.setSingleLine(true);new AlertDialog.Builder(this).setTitle("Tambah subtopik selepas "+name).setView(input).setNegativeButton("Batal",null).setPositiveButton("Tambah",(d,w)->{String title=input.getText().toString().trim();if(!title.isEmpty())changeLectureSection(key,moveIndex,title);}).show();}else new AlertDialog.Builder(this).setTitle("Buang "+name+"?").setMessage("Kandungan subtopik ini juga akan dibuang.").setNegativeButton("Batal",null).setPositiveButton("Buang",(d,w)->changeLectureSection(key,moveIndex,null)).show();});}}
    LinearLayout panel=new LinearLayout(this);panel.setOrientation(1);panel.setPadding(dp(8),0,dp(8),dp(6));group.addView(panel);
    if(value.isEmpty()){
     TextView empty=text("Tiada kandungan",Math.max(13,size-2));empty.setTextColor(0xff718078);empty.setPadding(dp(4),dp(8),dp(4),dp(8));panel.addView(empty);
@@ -2502,14 +2505,14 @@ public class MainActivity extends Activity {
     Runnable finish=()->{
      persist.run();finishActive[0]=null;
      panel.removeAllViews();renderBoxReading(panel,encodeLectureEditable(input.getText()),size,key);panel.addView(quick);
-     panel.setVisibility(View.GONE);arrow.setText("▾");
+     panel.setVisibility(View.GONE);arrow.setText(grouped?"›":"▾");
     };
     finishActive[0]=finish;
     input.requestFocus();
    });
    panels.add(panel);headers.add(arrow);
    panel.setVisibility(mode==0?View.GONE:View.VISIBLE);
-   if(mode!=2)headerRow.setOnClickListener(v->{boolean open=panel.getVisibility()!=View.VISIBLE;if(finishActive[0]!=null)finishActive[0].run();panel.setVisibility(open?View.VISIBLE:View.GONE);arrow.setText(open?"▴":"▾");});
+   if(mode!=2)headerRow.setOnClickListener(v->{boolean open=panel.getVisibility()!=View.VISIBLE;if(finishActive[0]!=null)finishActive[0].run();panel.setVisibility(open?View.VISIBLE:View.GONE);arrow.setText(open?"▾":(grouped?"›":"▾"));});
   }
  }
  void readContentSafely(String key){
