@@ -471,7 +471,7 @@ public class MainActivity extends Activity {
    paint.setColor(0xffffffff);paint.setShader(new android.graphics.RadialGradient(x,y,radius,new int[]{0xd973cba2,0x7875cda9,0x2275cda9,0x0075cda9},new float[]{0f,0.30f,0.68f,1f},android.graphics.Shader.TileMode.CLAMP));canvas.drawRect(b,paint);
    float goldX=w*(0.55f-0.45f*(float)Math.sin(theta));
    float goldY=h*(0.64f+0.24f*(float)Math.cos(theta));
-   paint.setShader(new android.graphics.RadialGradient(goldX,goldY,radius*0.85f,new int[]{0xd9e7b6c5,0x78ebcdd3,0x00ebcdd3},null,android.graphics.Shader.TileMode.CLAMP));canvas.drawRect(b,paint);paint.setShader(null);
+   paint.setShader(new android.graphics.RadialGradient(goldX,goldY,radius*0.85f,new int[]{0xd9ffe59a,0x78fff2c8,0x00fff2c8},null,android.graphics.Shader.TileMode.CLAMP));canvas.drawRect(b,paint);paint.setShader(null);
    // Static, subtle mosque silhouette in the shared lower background.
    canvas.save();canvas.translate(w*0.72f,h*0.99f);float u=Math.min(w,h)*0.12f;paint.setColor(0x23619b80);canvas.drawRect(-u,-u*0.55f,u,0,paint);android.graphics.Path dome=new android.graphics.Path();dome.moveTo(-u,-u*0.55f);dome.cubicTo(-u,-u*1.12f,-u*0.32f,-u*1.12f,0,-u*1.45f);dome.cubicTo(u*0.32f,-u*1.12f,u,-u*1.12f,u,-u*0.55f);dome.close();canvas.drawPath(dome,paint);for(int side:new int[]{-1,1}){float cx=side*u*1.45f;canvas.drawRect(cx-u*0.12f,-u*1.4f,cx+u*0.12f,0,paint);android.graphics.Path tip=new android.graphics.Path();tip.moveTo(cx-u*0.17f,-u*1.4f);tip.lineTo(cx,-u*1.75f);tip.lineTo(cx+u*0.17f,-u*1.4f);tip.close();canvas.drawPath(tip,paint);}canvas.restore();
   }
