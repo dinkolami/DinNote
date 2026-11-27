@@ -1274,7 +1274,7 @@ public class MainActivity extends Activity {
   try{readContentSafely(key);}catch(Exception failure){showReaderRecovery(key,failure);}
  }
  void addLectureModeBar(LinearLayout parent,String key,int mode,boolean editing){
-  LinearLayout menu=new LinearLayout(this);menu.setGravity(Gravity.CENTER_VERTICAL);menu.setBaselineAligned(false);parent.addView(menu,new LinearLayout.LayoutParams(-1,-2));
+  LinearLayout menu=new LinearLayout(this);menu.setGravity(Gravity.CENTER_VERTICAL);menu.setBaselineAligned(false);parent.addView(menu,new LinearLayout.LayoutParams(-1,-2));menu.setPadding(dp(4),0,dp(4),0);
   String[] labels={"☷ Expand","▤ Paparan Siap","✎ Edit Penuh","⌘ Peta Minda"};
   for(int i=0;i<labels.length;i++){
    final int choice=i;TextView item=text(labels[i],12);item.setGravity(Gravity.CENTER);item.setSingleLine(true);item.setAutoSizeTextTypeUniformWithConfiguration(9,12,1,android.util.TypedValue.COMPLEX_UNIT_SP);item.setTextColor(0xff216e4e);item.setTypeface(null,android.graphics.Typeface.BOLD);item.setBackground(rounded((editing?i==2:(mode==2?i==1:i==0))?0xffedf4eb:0xfffffefd,0xff9db9ad,10));
@@ -2434,7 +2434,7 @@ public class MainActivity extends Activity {
   if(prefs.getInt("lecture_view_"+key,0)!=2&&starts.get(0)>0){TextView prefix=text("",size);prefix.setText(readerLabelText(source.substring(0,starts.get(0))));body.addView(prefix);}
   ArrayList<View> panels=new ArrayList<>();ArrayList<TextView> headers=new ArrayList<>();
   int mode=prefs.getInt("lecture_view_"+key,0);
-  addLectureModeBar(body,key,mode,false);
+
   if(mode==2){
    // Render each section independently to prevent box leakage.
    String prefix=source.substring(0,starts.get(0)).trim();
@@ -2646,7 +2646,7 @@ public class MainActivity extends Activity {
   // Lift the two metadata labels visibly without changing the title or reading boxes.
   sectionLabel.setTranslationY(-dp(7));
   categoryLine.setTranslationY(-dp(7));
-  if(!cleanReading)body.addView(metaRow,new LinearLayout.LayoutParams(-1,-2));
+  if(!cleanReading){if(isLectureTemplate(fullReadingText)&&!fullReadingText.contains(" || "))addLectureModeBar(root,key,prefs.getInt("lecture_view_"+key,0),false);else body.addView(metaRow,new LinearLayout.LayoutParams(-1,-2));}
   TextView title=text(heading,20);title.setMaxLines(Integer.MAX_VALUE);
   // Preserve complete long titles, including multi-line Arabic, without clipping.
   title.setEllipsize(null);title.setLineSpacing(dp(2),1.05f);
@@ -2717,7 +2717,7 @@ public class MainActivity extends Activity {
     int menuIndex=lectureStart;
     java.util.regex.Matcher headingMatcher=lectureHeadingPattern().matcher(fullReadingText);
     if(prefs.getInt("lecture_view_"+key,0)!=2&&headingMatcher.find()&&headingMatcher.start()>0)menuIndex++;
-    body.addView(deferredLectureTitle,menuIndex+1);lectureStart++;
+    body.addView(deferredLectureTitle,menuIndex);lectureStart++;
    }
    if(twoColumnReading){
     int first=lectureStart;
@@ -2725,7 +2725,7 @@ public class MainActivity extends Activity {
      java.util.regex.Matcher firstHeading=lectureHeadingPattern().matcher(fullReadingText);
      if(firstHeading.find()&&firstHeading.start()>0)first++;
     }
-    first++; // Keep the lecture controls full width.
+    // Lecture controls now live above the scrolling content.
     int count=body.getChildCount()-first;
     if(count>1){
      LinearLayout columns=new LinearLayout(this);columns.setOrientation(LinearLayout.HORIZONTAL);
@@ -3019,7 +3019,7 @@ public class MainActivity extends Activity {
   wordCounter.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);
   wordCounter.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
   wordCounter.setPadding(dp(4),dp(10),dp(4),0);
-  if(!cleanReading)body.addView(wordCounter);
+  if(!cleanReading){if(isLectureTemplate(fullReadingText)&&!fullReadingText.contains(" || ")){sectionLabel.setTranslationY(0);categoryLine.setTranslationY(0);metaRow.setPadding(dp(4),dp(8),dp(4),0);body.addView(metaRow,new LinearLayout.LayoutParams(-1,-2));}body.addView(wordCounter);}
   if(cleanReading){
    startLectureTimer(key);
    body.setBackgroundColor(lecturePaper());
@@ -3350,7 +3350,7 @@ public class MainActivity extends Activity {
  int countLectureHeadingsBefore(CharSequence value,int offset){int count=0;java.util.regex.Matcher m=lectureHeadingPattern().matcher(value);while(m.find()&&m.start()<offset)count++;return count;}
  int[] lectureQuickBounds(CharSequence value,int index){java.util.regex.Matcher m=lectureHeadingPattern().matcher(value);int i=0,start=-1;while(m.find()){if(i==index){start=m.end();if(start<value.length()&&value.charAt(start)=='\n')start++;}else if(i==index+1)return new int[]{start,m.start()};i++;}return start<0?null:new int[]{start,value.length()};}
  void attachLectureEditorPanel(final EditText active){
-  if(selected!=null){LinearLayout modes=new LinearLayout(this);modes.setOrientation(1);root.addView(modes,root.indexOfChild(active));addLectureModeBar(modes,selected,0,true);}
+  if(selected!=null){LinearLayout modes=new LinearLayout(this);modes.setOrientation(1);root.addView(modes,Math.min(1,root.getChildCount()));addLectureModeBar(modes,selected,0,true);}
   active.setTransformationMethod(new LectureHeadingTransformation());
   LinearLayout panel=new LinearLayout(this);panel.setOrientation(1);
   TextView toggle=text("☷  Subtopik Nota Kuliah",16);toggle.setTextColor(0xff216e4e);toggle.setPadding(dp(10),dp(6),dp(10),dp(6));panel.addView(toggle);
