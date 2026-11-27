@@ -1656,6 +1656,20 @@ public class MainActivity extends Activity {
   while(closingLines.find())closingRanges.add(new int[]{closingLines.start(),closingLines.end()});
   applySectionIndent(out);
   for(int i=closingRanges.size()-1;i>=0;i--){int[] range=closingRanges.get(i);out.delete(range[0],range[1]);}
+  java.util.regex.Matcher m=java.util.regex.Pattern.compile("(?m)^---KOTAK(DALIL|HIKMAH|CATATAN|FIRMAN|SABDA|SAHABAT|TABII|ULAMA|TAMAT)---[ \\t]*$").matcher(out.toString());
+  int body=-1,bg=0,ink=0,first=-1;
+  while(m.find()){
+   String kind=m.group(1);
+   if(kind.equals("TAMAT")){
+    if(first>=0){out.setSpan(new BoxBodySpan(bg,ink,first,m.end()),first,m.end(),33);if(body<m.start())out.setSpan(new BoxInsetSpan(),body,m.start(),33);}
+    out.setSpan(new BoxMarkerSpan("",ink,bg),m.start(),m.end(),33);body=-1;first=-1;continue;
+   }
+   boolean gold=kind.equals("SABDA"),gray=kind.equals("CATATAN"),wisdom=kind.equals("HIKMAH"),dalil=kind.equals("DALIL"),sahabat=kind.equals("SAHABAT"),tabii=kind.equals("TABII"),ulama=kind.equals("ULAMA");
+   bg=sahabat?0xfff1f6ec:tabii?0xfff1f4fa:ulama?0xfffaf1ed:gold?0xfffaf5e8:gray?0xfffcf0f2:wisdom?0xfff5eff9:dalil?0xffedf4fa:0xffedf5ee;
+   ink=sahabat?0xff607d42:tabii?0xff536f9b:ulama?0xff9b654b:gold?0xff96783e:gray?0xff946176:wisdom?0xff79549b:dalil?0xff426e96:0xff176b47;
+   String title=kind.equals("FIRMAN")?"Firman Allah SWT:":kind.equals("SABDA")?"Sabda Nabi SAW:":dalil?"Dalil":wisdom?"Kalam Hikmah":sahabat?"Kata Sahabat Rdh.":tabii?"Kata Tabi\u0027in Rhm.":ulama?"Kata Ulama\u0027 Rhm.":"Catatan Penting";
+   first=m.start();out.setSpan(new BoxMarkerSpan(title,ink,bg),m.start(),m.end(),33);body=Math.min(out.length(),m.end()+1);
+  }
   if(out.length()>0&&!prefs.getBoolean("reader_wide_spacing",false))out.setSpan(new CompactLatinReadingSpan(),0,out.length(),android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
   return out;
  }
