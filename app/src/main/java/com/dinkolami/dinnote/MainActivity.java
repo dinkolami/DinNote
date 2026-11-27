@@ -2433,6 +2433,8 @@ public class MainActivity extends Activity {
     for(int p=section.length()-1;p>=0&&Character.isWhitespace(section.charAt(p));p--)if(section.charAt(p)=='\n')trailing++;
     int extra=pendingBlank+Math.max(0,leading-1);
     if(hasContent||extra>0){View gap=new View(this);body.addView(gap,new LinearLayout.LayoutParams(-1,dp((hasContent?16:0)+extra*size)));}
+    LinearLayout headingBand=new LinearLayout(this);headingBand.setGravity(Gravity.CENTER);headingBand.setPadding(0,dp(2),0,dp(5));
+    TextView sectionTitle=text(names.get(i).trim().toUpperCase(java.util.Locale.ROOT),Math.max(16,size+1));sectionTitle.setGravity(Gravity.CENTER);sectionTitle.setTypeface(null,android.graphics.Typeface.BOLD);sectionTitle.setTextColor(0xff216e4e);sectionTitle.setPadding(dp(12),dp(6),dp(12),dp(6));sectionTitle.setBackground(rounded(0xffedf4eb,0xffc5ae76,12));headingBand.addView(sectionTitle,new LinearLayout.LayoutParams(-2,-2));body.addView(headingBand,new LinearLayout.LayoutParams(-1,-2));
     renderBoxReading(body,content,size,key);hasContent=true;pendingBlank=Math.max(0,trailing-1);
    }
    return;
