@@ -1271,7 +1271,16 @@ public class MainActivity extends Activity {
  }
  void showPagedReader(String key){
   enableLectureZoom(key);startLectureTimer(key);
-  final CharSequence source=readerLabelText(selectedReadingText(key));
+  final String rawPagedText=selectedReadingText(key);
+  final android.text.SpannableStringBuilder source=readerLabelText(rawPagedText);
+  if(isLectureTemplate(rawPagedText)){
+   java.util.regex.Matcher headings=lectureHeadingPattern().matcher(source.toString());
+   while(headings.find()){
+    int start=headings.start(),end=headings.end();
+    source.setSpan(new PagedLectureHeadingSpan(headings.group(1).trim()),start,end,33);
+    source.setSpan(new android.text.style.AlignmentSpan.Standard(android.text.Layout.Alignment.ALIGN_CENTER),start,end,33);
+   }
+  }
   final int availableWidthDp=Math.round(readerBuiltWidthPx/getResources().getDisplayMetrics().density);
   final boolean spread=availableWidthDp>=500&&prefs.getBoolean("reader_two_columns",true);
   final int fontLevel=Math.max(0,Math.min(3,prefs.getInt("reader_font_level",1)));
@@ -3625,6 +3634,23 @@ public class MainActivity extends Activity {
        trace.moveTo(8,11);trace.lineTo(24,11);trace.moveTo(8,15);trace.lineTo(24,15);trace.moveTo(8,19);trace.lineTo(19,19);
       }
       canvas.drawPath(trace,p);
+ }
+ class PagedLectureHeadingSpan extends android.text.style.ReplacementSpan {
+  final String title;
+  PagedLectureHeadingSpan(String title){this.title=title;}
+  android.graphics.Paint headingPaint(android.graphics.Paint p){android.graphics.Paint q=new android.graphics.Paint(p);q.setAntiAlias(true);q.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);q.setTextSize(p.getTextSize()*1.08f);return q;}
+  @Override public int getSize(android.graphics.Paint p,CharSequence t,int a,int b,android.graphics.Paint.FontMetricsInt fm){
+   android.graphics.Paint q=headingPaint(p);
+   if(fm!=null){fm.ascent=(int)Math.floor(q.ascent())-dp(6);fm.descent=(int)Math.ceil(q.descent())+dp(6);fm.top=fm.ascent;fm.bottom=fm.descent;}
+   return (int)Math.ceil(q.measureText(title))+dp(24);
+  }
+  @Override public void draw(android.graphics.Canvas c,CharSequence t,int a,int b,float x,int top,int y,int bottom,android.graphics.Paint p){
+   android.graphics.Paint q=headingPaint(p);float right=x+getSize(p,t,a,b,null)-dp(1);
+   float upper=y+q.ascent()-dp(3),lower=y+q.descent()+dp(3);
+   q.setColor(0xffedf4eb);c.drawRoundRect(x+dp(1),upper,right,lower,dp(10),dp(10),q);
+   q.setColor(0xffc5ae76);q.setStyle(android.graphics.Paint.Style.STROKE);q.setStrokeWidth(dp(1));c.drawRoundRect(x+dp(1),upper,right,lower,dp(10),dp(10),q);
+   q.setStyle(android.graphics.Paint.Style.FILL);q.setColor(0xff216e4e);q.setTextAlign(android.graphics.Paint.Align.CENTER);c.drawText(title,(x+right)/2,y,q);
+  }
  }
  class BoxMarkerSpan extends android.text.style.ReplacementSpan {
   final String title;final int ink,bg;
