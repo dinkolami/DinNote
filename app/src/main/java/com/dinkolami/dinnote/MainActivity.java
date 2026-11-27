@@ -2416,7 +2416,7 @@ public class MainActivity extends Activity {
   String[] lectureLabels={mode==2?"☷  Subtopik":"▤  Paparan Siap","✎  Edit Penuh","⌘  Peta Minda"};
   for(int j=0;j<lectureLabels.length;j++){
    TextView item=text(lectureLabels[j],12);item.setTextColor(0xff216e4e);item.setGravity(Gravity.CENTER);item.setTypeface(null,android.graphics.Typeface.BOLD);item.setIncludeFontPadding(false);item.setSingleLine(true);item.setAutoSizeTextTypeUniformWithConfiguration(9,12,1,android.util.TypedValue.COMPLEX_UNIT_SP);item.setPadding(dp(4),0,dp(4),0);item.setBackground(rounded(0xfffffefd,0xff9db9ad,10));
-   LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(0,dp(40),1);lp.setMargins(j==0?0:dp(4),dp(4),j==2?0:dp(4),dp(8));lectureMenu.addView(item,lp);
+   LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(0,dp(40),1);lp.setMargins(j==0?0:dp(4),dp(1),j==2?0:dp(4),dp(3));lectureMenu.addView(item,lp);
    final int actionIndex=j;item.setOnClickListener(v->{if(actionIndex==0){prefs.edit().putInt("lecture_view_"+key,mode==2?0:2).apply();try{readContentSafely(key);}catch(Exception failure){showReaderRecovery(key,failure);}}else if(actionIndex==1)edit(key);else showLectureMindMap(key,size);});
   }
   if(mode==2){
@@ -2638,6 +2638,7 @@ public class MainActivity extends Activity {
   title.setPadding(dp(12),dp(5),dp(8),dp(5));
   title.setGravity(Gravity.CENTER_VERTICAL|Gravity.START);title.setTextIsSelectable(true);
   title.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);title.setIncludeFontPadding(true);
+  LinearLayout deferredLectureTitle=null;
   if(!cleanReading&&!heading.isEmpty()){
    LinearLayout titleRow=new LinearLayout(this);titleRow.setOrientation(LinearLayout.HORIZONTAL);
    titleRow.setGravity(Gravity.CENTER_VERTICAL);
@@ -2646,7 +2647,7 @@ public class MainActivity extends Activity {
    LinearLayout.LayoutParams ruleParams=new LinearLayout.LayoutParams(dp(3),dp(30));
    titleRow.addView(emeraldRule,ruleParams);
    titleRow.addView(title,new LinearLayout.LayoutParams(0,-2,1));
-   body.addView(titleRow);
+   if(isLectureTemplate(fullReadingText)&&!fullReadingText.contains(" || ")){deferredLectureTitle=titleRow;titleRow.setPadding(dp(12),0,dp(8),dp(2));title.setPadding(dp(12),dp(2),dp(8),dp(2));}else body.addView(titleRow);
   }
   String firstReadingLine=fullReadingText.split("\\R",2)[0].trim();
   if(!cleanReading&&firstReadingLine.matches("(?i)^(bab|الفصل|باب)\\b.*")&&firstReadingLine.length()<110){
@@ -2694,6 +2695,12 @@ public class MainActivity extends Activity {
   if(isLectureTemplate(fullReadingText)&&!bilingualReading){
    int lectureStart=body.getChildCount();
    renderLectureTemplate(body,fullReadingText,readingSizes[fontLevel],key);
+   if(deferredLectureTitle!=null){
+    int menuIndex=lectureStart;
+    java.util.regex.Matcher headingMatcher=lectureHeadingPattern().matcher(fullReadingText);
+    if(prefs.getInt("lecture_view_"+key,0)!=2&&headingMatcher.find()&&headingMatcher.start()>0)menuIndex++;
+    body.addView(deferredLectureTitle,menuIndex+1);lectureStart++;
+   }
    if(twoColumnReading){
     int first=lectureStart;
     if(prefs.getInt("lecture_view_"+key,0)!=2 && lectureHeadingPattern().matcher(fullReadingText).find()){
@@ -2710,7 +2717,11 @@ public class MainActivity extends Activity {
      android.widget.ImageView ornament=new android.widget.ImageView(this);
      ornament.setImageResource(R.drawable.reader_center_ornament);
      ornament.setScaleType(android.widget.ImageView.ScaleType.FIT_CENTER);
-     columns.addView(ornament,new LinearLayout.LayoutParams(dp(24),-1));
+     FrameLayout lectureDivider=new FrameLayout(this);
+     View dividerLine=new View(this);dividerLine.setBackgroundColor(0xffd4e2da);
+     lectureDivider.addView(dividerLine,new FrameLayout.LayoutParams(dp(1),-1,Gravity.CENTER));
+     lectureDivider.addView(ornament,new FrameLayout.LayoutParams(dp(16),dp(40),Gravity.CENTER));
+     columns.addView(lectureDivider,new LinearLayout.LayoutParams(dp(24),-1));
      columns.addView(right,new LinearLayout.LayoutParams(0,-2,1));
      // Measure rendered blocks at column width, preserving rich spans and whole boxes.
      ArrayList<View> blocks=new ArrayList<>();
