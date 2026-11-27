@@ -1630,6 +1630,11 @@ public class MainActivity extends Activity {
  }
  android.text.SpannableStringBuilder readerLabelText(String source){
   android.text.SpannableStringBuilder out=formattedReadingText(source);
+  java.util.regex.Matcher pages=java.util.regex.Pattern.compile("(?m)^---MSASAL:([0-9]{1,7})---[ \\t]*$").matcher(out.toString());
+  while(pages.find()){
+   out.setSpan(new OriginalPageSpan("❖ Muka Surat "+pages.group(1)+" ❖"),pages.start(),pages.end(),33);
+   out.setSpan(new android.text.style.AlignmentSpan.Standard(android.text.Layout.Alignment.ALIGN_CENTER),pages.start(),pages.end(),33);
+  }
   java.util.regex.Matcher marks=java.util.regex.Pattern.compile("(?m)^---(MATAN|SYARAHAN|DALIL|TERJEMAHAN|KHULASAH|IKTIBAR|SYAFII|HANAFI|MALIKI|HANBALI|MUQARAN|TAMAT)---[ \\t]*$").matcher(out.toString());
   while(marks.find()){
    String k=marks.group(1);
@@ -3567,6 +3572,7 @@ public class MainActivity extends Activity {
    .show());
   readingTagPicker.setTextColor(0xff176b47);
   readingTagPicker.setContentDescription("Bahagian Teks: Matan, Syarahan, Dalil, Terjemahan, Khulasah, Pengajaran & Iktibar");
+  Button pageMarkerButton=action("▤",formatBar,()->insertOriginalPageMarker());pageMarkerButton.setContentDescription("Muka Surat Asal Kitab");
   Button dividerButton=action("✿",formatBar,()->showDividerPicker());
   dividerButton.setTextColor(0xff176b47);dividerButton.setContentDescription("Pilih pemisah perenggan Islamik");
   Button boxButton=action("▣",formatBar,()->showTextBoxPicker());
@@ -4186,6 +4192,24 @@ public class MainActivity extends Activity {
   String selectedText=editor.getText().subSequence(a,b).toString();
   editor.getText().replace(a,b,before+selectedText+after);
   editor.setSelection(a+before.length(),a+before.length()+selectedText.length());
+ }
+ void insertOriginalPageMarker(){
+  if(editor==null)return;
+  final EditText target=editor;final int cursor=Math.max(0,target.getSelectionStart());
+  final EditText number=new EditText(this);number.setSingleLine(true);number.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);number.setFilters(new android.text.InputFilter[]{new android.text.InputFilter.LengthFilter(7)});number.setHint("Contoh: 25");
+  AlertDialog dialog=new AlertDialog.Builder(this).setTitle("Muka Surat Asal Kitab").setView(number).setNegativeButton("Batal",null).setPositiveButton("Masukkan",null).create();
+  dialog.setOnShowListener(v->dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(w->{
+   String n=number.getText().toString().trim();if(!n.matches("[0-9]{1,7}")||Long.parseLong(n)==0){number.setError("Masukkan nombor muka surat");return;}
+   if(editor!=target){dialog.dismiss();return;}
+   int at=Math.min(cursor,target.length());String marker=(at>0&&target.getText().charAt(at-1)!='\n'?"\n":"")+"---MSASAL:"+n+"---"+(at<target.length()&&target.getText().charAt(at)=='\n'?"":"\n");
+   target.getText().insert(at,marker);target.setSelection(at+marker.length());save();dialog.dismiss();
+  }));dialog.show();
+ }
+ class OriginalPageSpan extends android.text.style.ReplacementSpan {
+  final String label;OriginalPageSpan(String label){this.label=label;}
+  android.graphics.Paint pagePaint(android.graphics.Paint p){android.graphics.Paint q=new android.graphics.Paint(p);q.setAntiAlias(true);q.setTextSize(dp(12));q.setTypeface(android.graphics.Typeface.DEFAULT);return q;}
+  @Override public int getSize(android.graphics.Paint p,CharSequence t,int a,int b,android.graphics.Paint.FontMetricsInt fm){if(fm!=null){fm.ascent=-dp(19);fm.top=fm.ascent;fm.descent=dp(7);fm.bottom=fm.descent;}return (int)Math.ceil(pagePaint(p).measureText(label))+dp(20);}
+  @Override public void draw(android.graphics.Canvas c,CharSequence t,int a,int b,float x,int top,int y,int bottom,android.graphics.Paint p){android.graphics.Paint q=pagePaint(p);float right=x+getSize(p,t,a,b,null);float upper=y-dp(15),lower=y+dp(5);q.setColor(0xffedf4eb);c.drawRoundRect(x,upper,right,lower,dp(8),dp(8),q);q.setColor(0xffc5ae76);q.setStyle(android.graphics.Paint.Style.STROKE);q.setStrokeWidth(dp(1)*0.7f);c.drawRoundRect(x,upper,right,lower,dp(8),dp(8),q);q.setStyle(android.graphics.Paint.Style.FILL);q.setColor(0xff216e4e);q.setTextAlign(android.graphics.Paint.Align.CENTER);c.drawText(label,(x+right)/2,y,q);}
  }
  void insertCurrentDateTime(int mode){
   if(editor==null)return;
