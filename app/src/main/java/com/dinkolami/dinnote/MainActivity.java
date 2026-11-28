@@ -2616,6 +2616,7 @@ public class MainActivity extends Activity {
     EditText input=new EditText(this);input.setTextSize(size);input.setGravity(Gravity.TOP);input.setMinLines(3);
     input.setText(formattedReadingText(raw.substring(start,end).trim()));
     panel.removeAllViews();panel.addView(input);
+    input.setTypeface(android.graphics.Typeface.create("sans-serif",android.graphics.Typeface.NORMAL));
     refreshEditorBoxes(input.getText());
     final String[] expected={raw};
     final int[] boundary={end};
@@ -3724,11 +3725,6 @@ public class MainActivity extends Activity {
   final EditText activeBody=editor;
   final int resumeCursor=Math.max(0,Math.min(savedCursor,activeBody.length()));
   activeBody.post(()->{if(editor!=activeBody||activeBody.getParent()==null)return;activeBody.requestFocus();activeBody.setSelection(Math.min(resumeCursor,activeBody.length()));restoringEditorCursor=false;persistEditorPosition();revealEditorCursor(activeBody);});
-  // Match the reader's optional Arabic serif typeface in the editor as well.
-  // Without this, Arabic glyph widths and line wrapping differ after Selesai.
-  if(prefs.getBoolean("reader_arabic_clear_font",false)&&
-     java.util.regex.Pattern.compile("[\\u0600-\\u06FF]").matcher(editor.getText()).find())
-   editor.setTypeface(android.graphics.Typeface.create("serif",android.graphics.Typeface.NORMAL));
   TextWatcher titleWatcher=new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){save();}public void afterTextChanged(Editable e){}};titleEditor.addTextChangedListener(titleWatcher);TextWatcher bodyWatcher=new TextWatcher(){String before="";EditorSnapshot snapshot;public void beforeTextChanged(CharSequence s,int st,int count,int after){if(!restoring[0]){before=s.toString();snapshot=new EditorSnapshot(editor);}}public void onTextChanged(CharSequence s,int st,int beforeCount,int count){}public void afterTextChanged(Editable e){
    // Samsung IME may still be composing Arabic or Malay text; never insert
    // numbering or repair structural markers until the composing span ends.
@@ -3739,13 +3735,6 @@ public class MainActivity extends Activity {
    // Samsung keyboard whitespace/composition could create a duplicate, hard-to-delete
    // next number. Users can explicitly type the next heading when needed.
    if(snapshot!=null)undoHistory.addLast(snapshot);if(undoHistory.size()>100)undoHistory.removeFirst();redoHistory.clear();historyButtons[0].setAlpha(1f);historyButtons[1].setAlpha(0.35f);}
-   // Recheck Arabic when text is typed or pasted into an initially Rumi-only note.
-   // Typeface updates do not modify Editable content or its autosave state.
-   if(editor!=null&&prefs.getBoolean("reader_arabic_clear_font",false)){
-    boolean arabic=java.util.regex.Pattern.compile("[\\u0600-\\u06FF]").matcher(e).find();
-    android.graphics.Typeface desired=android.graphics.Typeface.create(arabic?"serif":"sans-serif",android.graphics.Typeface.NORMAL);
-    if(!desired.equals(editor.getTypeface()))editor.setTypeface(desired);
-   }
    if(!restoring[0]&&!imeComposing&&repairTypedBoxMarkers(e,restoring))return;
    // Do not rebuild ReplacementSpans while the keyboard is composing a character:
    // doing so can leave the caret visually over the newly inserted glyph.
@@ -3942,7 +3931,19 @@ public class MainActivity extends Activity {
    e.setSpan(new EditorNumberSpace(),m.start(2),m.end(2),android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
   }
  }
+ class EditorArabicFontSpan extends android.text.style.MetricAffectingSpan {
+  private void apply(android.text.TextPaint p){android.graphics.Typeface old=p.getTypeface();p.setTypeface(android.graphics.Typeface.create("serif",old==null?0:old.getStyle()));}
+  @Override public void updateDrawState(android.text.TextPaint p){apply(p);}
+  @Override public void updateMeasureState(android.text.TextPaint p){apply(p);}
+ }
+ void refreshEditorArabicFont(android.text.Editable e){
+  for(EditorArabicFontSpan span:e.getSpans(0,e.length(),EditorArabicFontSpan.class))e.removeSpan(span);
+  if(!prefs.getBoolean("reader_arabic_clear_font",false))return;
+  java.util.regex.Matcher m=java.util.regex.Pattern.compile("[\\p{IsArabic}\\p{M}]+").matcher(e.toString());
+  while(m.find())e.setSpan(new EditorArabicFontSpan(),m.start(),m.end(),android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+ }
  void refreshEditorBoxes(android.text.Editable e){
+  refreshEditorArabicFont(e);
   for(LectureHeadingVisualSpan span:e.getSpans(0,e.length(),LectureHeadingVisualSpan.class))e.removeSpan(span);
   java.util.regex.Matcher heading=lectureHeadingPattern().matcher(e.toString());
   while(heading.find())if(heading.start()<heading.end()&&e.charAt(heading.start())=='\u2063')e.setSpan(new LectureHeadingVisualSpan(),heading.start(),heading.end(),android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
