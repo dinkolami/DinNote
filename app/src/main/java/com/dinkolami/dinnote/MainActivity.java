@@ -682,7 +682,7 @@ public class MainActivity extends Activity {
   LinearLayout.LayoutParams latestAccentParams=new LinearLayout.LayoutParams(dp(1),dp(15));
   latestAccentParams.leftMargin=dp(5);latestHeader.addView(latestAccent,latestAccentParams);
   boolean latestCollapsed=prefs.getBoolean("home_latest_collapsed",false);
-  TextView latestHeading=dashboardText("Terkini Dimasukkan  "+(latestCollapsed?"▸":"▾"),15,true);applyAllura(latestHeading,21);
+  TextView latestHeading=dashboardText("Terkini Dimasukkan",15,true);applyAllura(latestHeading,21);
   latestHeading.setTextColor(0xff365c48);
   latestHeading.setIncludeFontPadding(false);
   latestHeading.setPadding(dp(8),dp(6),dp(8),dp(homeWindowWidthDp()<440?6:8));
@@ -713,6 +713,7 @@ public class MainActivity extends Activity {
   latestCountParams.rightMargin=dp(5);
   latestHeader.addView(latestCount,latestCountParams);
   latestCount.setOnClickListener(v->latestHeader.performClick());
+  TextView latestArrow=dashboardText(latestCollapsed?"▸":"▾",12,true);latestArrow.setTextColor(0xffb29a60);latestArrow.setGravity(Gravity.CENTER);latestArrow.setPadding(0,0,dp(5),0);latestHeader.addView(latestArrow,new LinearLayout.LayoutParams(-2,-2));latestArrow.setOnClickListener(v->latestHeader.performClick());
   if(keys.isEmpty()){
    TextView create=dashboardText("＋  Cipta nota pertama",13,true);create.setGravity(Gravity.CENTER);create.setMinHeight(dp(48));create.setContentDescription("Cipta nota baharu");applyTouchFeedback(create);create.setOnClickListener(v->{maktabah=false;edit(null);});recentNotes.addView(create);
    TextView emblem=dashboardText("☪\n▤",36,true);emblem.setTextColor(0xff566a70);
@@ -988,7 +989,7 @@ public class MainActivity extends Activity {
   // Keep folded rows compact; unfolded columns retain comfortable touch targets.
   boolean folded=homeWindowWidthDp()<440;
   boolean collapsed=prefs.getBoolean(pin?"home_pinned_collapsed":"home_updated_collapsed",false);
-  TextView title=dashboardText(heading+"  "+(collapsed?"▸":"▾"),15,true);applyAllura(title,21);
+  TextView title=dashboardText(heading,15,true);applyAllura(title,21);
   title.setTextColor(0xff365c48);
   title.setElevation(0);title.setPadding(dp(8),dp(folded?6:8),0,dp(folded?6:8));title.setIncludeFontPadding(false);title.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);title.setSingleLine(true);title.setEllipsize(android.text.TextUtils.TruncateAt.END);title.setContentDescription(heading+", ketik untuk buka atau lipat");title.setTooltipText(heading);title.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);LinearLayout.LayoutParams titleParams=new LinearLayout.LayoutParams(-1,-2);titleParams.topMargin=dp(2);titleParams.bottomMargin=dp(2);
   LinearLayout headingRow=new LinearLayout(this);headingRow.setGravity(Gravity.CENTER_VERTICAL);
@@ -1002,7 +1003,8 @@ public class MainActivity extends Activity {
   TextView topicCount=dashboardText(Math.min(3,keys.size())+" Topik",10,true);
   topicCount.setTextColor(0xff416653);topicCount.setGravity(Gravity.CENTER);topicCount.setPadding(dp(5),dp(3),dp(5),dp(3));
   topicCount.setBackground(homeGlossy(0,20));
-  headingRow.addView(topicCount,new LinearLayout.LayoutParams(-2,-2));target.addView(headingRow,titleParams);
+  headingRow.addView(topicCount,new LinearLayout.LayoutParams(-2,-2));
+  TextView sectionArrow=dashboardText(collapsed?"▸":"▾",12,true);sectionArrow.setTextColor(0xffb29a60);sectionArrow.setGravity(Gravity.CENTER);sectionArrow.setPadding(dp(4),0,dp(2),0);headingRow.addView(sectionArrow,new LinearLayout.LayoutParams(-2,-2));sectionArrow.setOnClickListener(v->title.performClick());target.addView(headingRow,titleParams);
   headingRow.setOnClickListener(v->title.performClick());topicCount.setOnClickListener(v->title.performClick());
   title.setFocusable(true);applyTouchFeedback(title);
   title.setOnClickListener(v->{prefs.edit().putBoolean(pin?"home_pinned_collapsed":"home_updated_collapsed",!collapsed).apply();home();});
