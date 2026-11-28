@@ -1756,6 +1756,7 @@ public class MainActivity extends Activity {
    String title=kind.equals("FIRMAN")?"Firman Allah SWT:":kind.equals("SABDA")?"Sabda Nabi SAW:":dalil?"Dalil":wisdom?"Kalam Hikmah":sahabat?"Kata Sahabat Rdh.":tabii?"Kata Tabi\u0027in Rhm.":ulama?"Kata Ulama\u0027 Rhm.":"Catatan Penting";
    first=m.start();out.setSpan(new BoxMarkerSpan(title,ink,bg),m.start(),m.end(),33);body=Math.min(out.length(),m.end()+1);
   }
+  refreshSacredArabic(out);
   if(out.length()>0&&!prefs.getBoolean("reader_wide_spacing",false))out.setSpan(new CompactLatinReadingSpan(),0,out.length(),android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
   return out;
  }
@@ -3942,7 +3943,29 @@ public class MainActivity extends Activity {
   java.util.regex.Matcher m=java.util.regex.Pattern.compile("[\\p{IsArabic}\\p{M}]+").matcher(e.toString());
   while(m.find())e.setSpan(new EditorArabicFontSpan(),m.start(),m.end(),android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
  }
+ class SacredArabicSizeSpan extends android.text.style.MetricAffectingSpan {
+  private void apply(android.text.TextPaint p){p.setTextSize(p.getTextSize()+android.util.TypedValue.applyDimension(android.util.TypedValue.COMPLEX_UNIT_SP,2,getResources().getDisplayMetrics()));}
+  @Override public void updateDrawState(android.text.TextPaint p){apply(p);}
+  @Override public void updateMeasureState(android.text.TextPaint p){apply(p);}
+ }
+ void enlargeSacredArabic(android.text.Spannable value,int start,int end){
+  if(start<0||end<=start)return;
+  java.util.regex.Matcher m=java.util.regex.Pattern.compile("[\\p{IsArabic}\\p{M}]+(?:[ \\t]+[\\p{IsArabic}\\p{M}]+)*").matcher(value);
+  m.region(start,end);
+  while(m.find())value.setSpan(new SacredArabicSizeSpan(),m.start(),m.end(),33);
+ }
+ void refreshSacredArabic(android.text.Spannable value){
+  for(SacredArabicSizeSpan span:value.getSpans(0,value.length(),SacredArabicSizeSpan.class))value.removeSpan(span);
+  java.util.regex.Matcher m=java.util.regex.Pattern.compile("(?m)^---KOTAK(FIRMAN|SABDA|DALIL|HIKMAH|CATATAN|SAHABAT|TABII|ULAMA|TAMAT)---[ \\t]*$").matcher(value);
+  int start=-1;
+  while(m.find()){
+   if(start>=0)enlargeSacredArabic(value,start,m.start());
+   start=m.group(1).equals("FIRMAN")||m.group(1).equals("SABDA")?m.end():-1;
+  }
+  if(start>=0)enlargeSacredArabic(value,start,value.length());
+ }
  void refreshEditorBoxes(android.text.Editable e){
+  refreshSacredArabic(e);
   refreshEditorArabicFont(e);
   for(LectureHeadingVisualSpan span:e.getSpans(0,e.length(),LectureHeadingVisualSpan.class))e.removeSpan(span);
   java.util.regex.Matcher heading=lectureHeadingPattern().matcher(e.toString());
@@ -4173,7 +4196,7 @@ public class MainActivity extends Activity {
    label.setBackground(null);
    if(sacred){label.setText("❖ "+label.getText());label.setTextSize(11);label.setBackground(null);label.setPadding(0,0,0,dp(4));panel.addView(label,new LinearLayout.LayoutParams(-2,-2));}
    else {label.setTextSize(11);label.setPadding(0,0,0,dp(4));panel.addView(label,new LinearLayout.LayoutParams(-2,-2));}
-   TextView value=text("",fontSize);String boxContent=m.group(2).replaceFirst("\\n$","");value.setText(readerLabelText(boxContent));applySharedTextMetrics(value);value.setTextColor(0xff303c43);
+   TextView value=text("",fontSize);String boxContent=m.group(2).replaceFirst("\\n$","");android.text.SpannableStringBuilder boxText=readerLabelText(boxContent);if(sacred)enlargeSacredArabic(boxText,0,boxText.length());value.setText(boxText);applySharedTextMetrics(value);value.setTextColor(0xff303c43);
    value.setPadding(0,0,0,0);value.setIncludeFontPadding(false);value.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);value.setTextIsSelectable(true);value.setGravity(Gravity.START);value.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START);if(!boxContent.trim().isEmpty())panel.addView(value);
    LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);
    // Add a small breathing gap whenever two box blocks meet, regardless of their types.
