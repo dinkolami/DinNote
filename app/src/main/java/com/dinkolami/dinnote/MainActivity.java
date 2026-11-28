@@ -3414,6 +3414,7 @@ public class MainActivity extends Activity {
    LinearLayout row=new LinearLayout(this);row.setGravity(Gravity.CENTER_VERTICAL);row.setPadding(dp(10),dp(5),dp(8),dp(5));row.setBackground(rounded(0xfffffefd,0xffd7c69d,9));LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,dp(42));lp.bottomMargin=dp(6);list.addView(row,lp);
    TextView mark=text("❖",15);mark.setTextColor(0xffb59a55);row.addView(mark);
    TextView label=text(name,15);label.setTextColor(0xff216e4e);label.setPadding(dp(9),0,0,0);row.addView(label,new LinearLayout.LayoutParams(0,-2,1f));
+   if(manage!=null&&index<templates.size()-1){TextView options=text("⋮",20);options.setTextColor(0xff719384);options.setGravity(Gravity.CENTER);options.setContentDescription("Urus template "+name);row.addView(options,new LinearLayout.LayoutParams(dp(40),-1));options.setOnClickListener(v->{dialog.dismiss();manage.accept(index);});}
    TextView arrow=text("›",19);arrow.setTextColor(0xff719384);row.addView(arrow);row.setOnClickListener(v->{dialog.dismiss();choice.accept(index);});if(manage!=null)row.setOnLongClickListener(v->{if(index==templates.size()-1)return false;dialog.dismiss();manage.accept(index);return true;});
   }
   TextView cancel=text("Batal",14);cancel.setTextColor(0xff216e4e);cancel.setGravity(Gravity.RIGHT);cancel.setPadding(dp(8),dp(8),dp(4),dp(6));panel.addView(cancel);cancel.setOnClickListener(v->dialog.dismiss());
