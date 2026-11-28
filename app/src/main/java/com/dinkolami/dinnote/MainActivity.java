@@ -3922,6 +3922,25 @@ public class MainActivity extends Activity {
   @Override public void updateDrawState(android.text.TextPaint p){apply(p);}
   @Override public void updateMeasureState(android.text.TextPaint p){apply(p);}
  }
+ class EditorNumberIndent extends android.text.style.LeadingMarginSpan.Standard {
+  EditorNumberIndent(int width){super(0,width);}
+ }
+ class EditorNumberSpace extends android.text.style.ReplacementSpan {
+  @Override public int getSize(android.graphics.Paint p,CharSequence t,int a,int b,android.graphics.Paint.FontMetricsInt fm){return dp(5);}
+  @Override public void draw(android.graphics.Canvas c,CharSequence t,int a,int b,float x,int top,int y,int bottom,android.graphics.Paint p){}
+ }
+ void refreshEditorNumberIndent(android.text.Editable e){
+  for(EditorNumberIndent span:e.getSpans(0,e.length(),EditorNumberIndent.class))e.removeSpan(span);
+  for(EditorNumberSpace span:e.getSpans(0,e.length(),EditorNumberSpace.class))e.removeSpan(span);
+  if(editor==null||editor.getText()!=e)return;
+  java.util.regex.Matcher m=java.util.regex.Pattern.compile("(?m)^([0-9]+\\))([ \\t]+)(?=\\S)[^\\n]*").matcher(e.toString());
+  while(m.find()){
+   int width=(int)Math.ceil(editor.getPaint().measureText(m.group(1)))+dp(5);
+   int end=m.end();if(end<e.length()&&e.charAt(end)=='\n')end++;
+   e.setSpan(new EditorNumberIndent(width),m.start(),end,android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+   e.setSpan(new EditorNumberSpace(),m.start(2),m.end(2),android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+  }
+ }
  void refreshEditorBoxes(android.text.Editable e){
   for(LectureHeadingVisualSpan span:e.getSpans(0,e.length(),LectureHeadingVisualSpan.class))e.removeSpan(span);
   java.util.regex.Matcher heading=lectureHeadingPattern().matcher(e.toString());
@@ -3930,6 +3949,7 @@ public class MainActivity extends Activity {
   java.util.regex.Matcher pageMarks=java.util.regex.Pattern.compile("(?m)^---MSASAL:([0-9]{1,7})---[ \\t]*$").matcher(e.toString());
   while(pageMarks.find())e.setSpan(new OriginalPageSpan("❖ Muka Surat "+pageMarks.group(1)+" ❖"),pageMarks.start(),pageMarks.end(),33);
   applySectionIndent(e);
+  refreshEditorNumberIndent(e);
   for(EditorDividerSpan span:e.getSpans(0,e.length(),EditorDividerSpan.class))e.removeSpan(span);
   java.util.regex.Matcher div=java.util.regex.Pattern.compile("(?m)^---(FLOWER|GEOMETRIC|CLASSIC)---$").matcher(e.toString());
   while(div.find())e.setSpan(new EditorDividerSpan(div.group(1)),div.start(),div.end(),33);
