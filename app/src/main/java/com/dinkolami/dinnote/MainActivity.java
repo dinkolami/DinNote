@@ -3017,7 +3017,7 @@ public class MainActivity extends Activity {
      markerView.setIncludeFontPadding(false);
      markerView.setPadding(0,0,0,0);
      markerView.setSingleLine(true);
-     markerView.setTextColor(marker.equals("•")?0xffc9b478:0xff176b47);if(marker.equals("•")){markerView.setText("●");markerView.setTextSize(18); }
+     markerView.setTextColor(isIconHeading?android.graphics.Color.TRANSPARENT:marker.equals("•")?0xffc9b478:0xff176b47);if(marker.equals("•")){markerView.setText("●");markerView.setTextSize(18); }
      // Arabic-Indic digits sit optically low in some Android fonts.
      // Centre the glyph within the two rings without changing the 17sp size.
      if(arabicHeading&&isNumber){
@@ -4020,18 +4020,23 @@ public class MainActivity extends Activity {
   });dialog.show();
  }
  TextView centeredDiamondMarker(int size){
-  return new TextView(this){
-   { setWillNotDraw(false); }
-   @Override protected void onDraw(android.graphics.Canvas canvas){
-    android.graphics.Paint paint=new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
+  TextView marker=new TextView(this);
+  marker.setTextColor(android.graphics.Color.TRANSPARENT);
+  marker.setForeground(new android.graphics.drawable.Drawable(){
+   private final android.graphics.Paint paint=new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
+   @Override public void draw(android.graphics.Canvas canvas){
+    android.graphics.Rect b=getBounds();
+    float x=b.exactCenterX(),y=b.exactCenterY();
+    float unit=Math.min(b.width(),b.height())*0.15f;
     paint.setColor(0xff176b47);
-    float x=getWidth()/2f,y=getHeight()/2f;
-    float unit=Math.min(getWidth(),getHeight())*0.13f;
-    for(int i=0;i<4;i++){
-     canvas.drawCircle(x+((i%2==0)?-unit:unit),y+((i/2==0)?-unit:unit),unit*0.72f,paint);
-    }
+    for(int i=0;i<4;i++)canvas.drawCircle(x+(i%2==0?-unit:unit),y+(i/2==0?-unit:unit),unit*0.72f,paint);
    }
-  };
+   @Override public void setAlpha(int alpha){paint.setAlpha(alpha);}
+   @Override public void setColorFilter(android.graphics.ColorFilter filter){paint.setColorFilter(filter);}
+   @Override public int getOpacity(){return android.graphics.PixelFormat.TRANSLUCENT;}
+  });
+  marker.setForegroundGravity(Gravity.FILL);
+  return marker;
  }
  void insertNumberedList(){
   if(editor==null)return;
@@ -4158,7 +4163,7 @@ public class MainActivity extends Activity {
     android.graphics.drawable.GradientDrawable ring=new GoldGlowDrawable(0);
     ring.setShape(android.graphics.drawable.GradientDrawable.OVAL);ring.setColor(0xfffcf8ed);ring.setStroke(dp(1),0xffc3a35a);
     medallion.setBackground(ring);
-    TextView numeral=isIconHeading?centeredDiamondMarker(13):new TextView(this);numeral.setText(isBullet?"●":isIconHeading?"❖":numbered.group(1));numeral.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP,isBullet?18:13);numeral.setTypeface(android.graphics.Typeface.create("sans-serif-medium",android.graphics.Typeface.NORMAL));numeral.setGravity(Gravity.CENTER);numeral.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);numeral.setTextColor(isBullet?0xffc9b478:0xff176b47);numeral.setIncludeFontPadding(false);numeral.setPadding(0,0,0,0);numeral.setSingleLine(true);numeral.setMinHeight(0);numeral.setMinimumHeight(0);numeral.setMinWidth(0);numeral.setMinimumWidth(0);
+    TextView numeral=isIconHeading?centeredDiamondMarker(13):new TextView(this);numeral.setText(isBullet?"●":isIconHeading?"❖":numbered.group(1));numeral.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP,isBullet?18:13);numeral.setTypeface(android.graphics.Typeface.create("sans-serif-medium",android.graphics.Typeface.NORMAL));numeral.setGravity(Gravity.CENTER);numeral.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);numeral.setTextColor(isIconHeading?android.graphics.Color.TRANSPARENT:isBullet?0xffc9b478:0xff176b47);numeral.setIncludeFontPadding(false);numeral.setPadding(0,0,0,0);numeral.setSingleLine(true);numeral.setMinHeight(0);numeral.setMinimumHeight(0);numeral.setMinWidth(0);numeral.setMinimumWidth(0);
     FrameLayout.LayoutParams numeralParams=new FrameLayout.LayoutParams(-1,-1);medallion.addView(numeral,numeralParams);
     LinearLayout.LayoutParams medalParams=new LinearLayout.LayoutParams(dp(23),dp(23));medalParams.setMargins(dp(4),0,dp(1),0);heading.addView(medallion,medalParams);
     TextView title=text("",fontSize);title.setText(formattedReadingText(isBullet?line.trim().substring(2):isIconHeading?(iconHeading.group(1)==null?"Huraian":iconHeading.group(1)):numbered.group(2)));title.setTextColor(0xff303c43);title.setPadding(0,dp(2),dp(3),dp(2));heading.addView(title,new LinearLayout.LayoutParams(0,-2,1));
