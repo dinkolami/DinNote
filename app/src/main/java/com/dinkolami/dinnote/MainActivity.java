@@ -2148,25 +2148,30 @@ public class MainActivity extends Activity {
   editor.setSelection(Math.min(value.length(),start+opening.length()+(end-start)));
  }
  String selectedReadingText(String key,int mode){return selectedReadingText(key,mode,false);}
+ boolean matchesReadingMode(int mode,int type){return mode==0||mode==type||(mode==15&&(type==3||type==12||type==13||type==14));}
  String selectedReadingText(String key,int mode,boolean labels){
   String raw=prefs.getString(key,"");
   StringBuilder out=new StringBuilder();int type=0;
   for(String line:raw.split("\\r?\\n",-1)){
    String marker=line.trim();
-   if(marker.equals("---MATAN---")){type=1;if(labels&&(mode==0||mode==type))out.append(marker).append('\n');continue;}
-   if(marker.equals("---SYARAHAN---")){type=2;if(labels&&(mode==0||mode==type))out.append(marker).append('\n');continue;}
-   if(marker.equals("---DALIL---")){type=3;if(labels&&(mode==0||mode==type))out.append(marker).append('\n');continue;}
-   if(marker.equals("---TERJEMAHAN---")){type=4;if(labels&&(mode==0||mode==type))out.append(marker).append('\n');continue;}
-   if(marker.equals("---KHULASAH---")){type=5;if(labels&&(mode==0||mode==type))out.append(marker).append('\n');continue;}
-   if(marker.equals("---IKTIBAR---")){type=6;if(labels&&(mode==0||mode==type))out.append(marker).append('\n');continue;}
-   if(marker.equals("---SYAFII---")){type=7;if(labels&&(mode==0||mode==type))out.append(marker).append('\n');continue;}
-   if(marker.equals("---HANAFI---")){type=8;if(labels&&(mode==0||mode==type))out.append(marker).append('\n');continue;}
-   if(marker.equals("---MALIKI---")){type=9;if(labels&&(mode==0||mode==type))out.append(marker).append('\n');continue;}
-   if(marker.equals("---HANBALI---")){type=10;if(labels&&(mode==0||mode==type))out.append(marker).append('\n');continue;}
-   if(marker.equals("---MUQARAN---")){type=11;if(labels&&(mode==0||mode==type))out.append(marker).append('\n');continue;}
-   if(marker.equals("---TAMAT---")){if(labels&&type!=0&&(mode==0||mode==type))out.append(marker).append('\n');type=0;continue;}
+   if(marker.equals("---MATAN---")){type=1;if(labels&&(matchesReadingMode(mode,type)))out.append(marker).append('\n');continue;}
+   if(marker.equals("---SYARAHAN---")){type=2;if(labels&&(matchesReadingMode(mode,type)))out.append(marker).append('\n');continue;}
+   if(marker.equals("---DALIL---")){type=3;if(labels&&(matchesReadingMode(mode,type)))out.append(marker).append('\n');continue;}
+   if(marker.equals("---TERJEMAHAN---")){type=4;if(labels&&(matchesReadingMode(mode,type)))out.append(marker).append('\n');continue;}
+   if(marker.equals("---KHULASAH---")){type=5;if(labels&&(matchesReadingMode(mode,type)))out.append(marker).append('\n');continue;}
+   if(marker.equals("---IKTIBAR---")){type=6;if(labels&&(matchesReadingMode(mode,type)))out.append(marker).append('\n');continue;}
+   if(marker.equals("---SYAFII---")){type=7;if(labels&&(matchesReadingMode(mode,type)))out.append(marker).append('\n');continue;}
+   if(marker.equals("---HANAFI---")){type=8;if(labels&&(matchesReadingMode(mode,type)))out.append(marker).append('\n');continue;}
+   if(marker.equals("---MALIKI---")){type=9;if(labels&&(matchesReadingMode(mode,type)))out.append(marker).append('\n');continue;}
+   if(marker.equals("---HANBALI---")){type=10;if(labels&&(matchesReadingMode(mode,type)))out.append(marker).append('\n');continue;}
+   if(marker.equals("---MUQARAN---")){type=11;if(labels&&(matchesReadingMode(mode,type)))out.append(marker).append('\n');continue;}
+   if(marker.equals("---TAMAT---")){if(labels&&type!=0&&(matchesReadingMode(mode,type)))out.append(marker).append('\n');type=0;continue;}
    if(marker.equals("---KOTAKDALIL---")||marker.equals("---KOTAKFIRMAN---")||marker.equals("---KOTAKSABDA---"))type=3;
-   if(mode==0||type==mode)out.append(line).append('\n');
+   else if(marker.equals("---KOTAKSAHABAT---"))type=12;
+   else if(marker.equals("---KOTAKTABII---"))type=13;
+   else if(marker.equals("---KOTAKULAMA---")||marker.equals("---KOTAKHIKMAH---"))type=14;
+   else if(marker.equals("---KOTAKCATATAN---"))type=0;
+   if(matchesReadingMode(mode,type))out.append(line).append('\n');
    if(marker.equals("---KOTAKTAMAT---"))type=0;
   }
   return out.toString().trim();
@@ -2178,11 +2183,14 @@ public class MainActivity extends Activity {
   return selectedReadingText(key,mode,true);
  }
  void showSelectedReading(String key){
-  String[] names={"Teks lengkap","Matan sahaja","Syarahan sahaja","Dalil sahaja","Terjemahan sahaja","Khulasah sahaja","Pengajaran & Iktibar sahaja","Syafi‘i sahaja","Hanafi sahaja","Maliki sahaja","Hanbali sahaja","Fiqh Muqaran sahaja"};
-  new AlertDialog.Builder(this).setTitle("Mod Bacaan Terpilih").setSingleChoiceItems(names,Math.max(0,Math.min(11,prefs.getInt("reading_filter_"+key,0))),(d,i)->{
+  String[] names={"Teks lengkap","Matan sahaja","Syarahan sahaja","Dalil sahaja","Kata Sahabat sahaja","Kata Tabiin sahaja","Kalam Ulama & Hikmah sahaja","Dalil & Hikmah","Terjemahan sahaja","Khulasah sahaja","Pengajaran & Iktibar sahaja","Syafi‘i sahaja","Hanafi sahaja","Maliki sahaja","Hanbali sahaja","Fiqh Muqaran sahaja"};
+  final int[] modes={0,1,2,3,12,13,14,15,4,5,6,7,8,9,10,11};
+  int checked=0;for(int j=0;j<modes.length;j++)if(modes[j]==prefs.getInt("reading_filter_"+key,0))checked=j;
+  new AlertDialog.Builder(this).setTitle("Mod Bacaan Terpilih").setSingleChoiceItems(names,checked,(d,index)->{
+   int i=modes[index];
    if(i>0&&selectedReadingText(key,i).isEmpty()){Toast.makeText(this,"Tiada teks bertanda untuk pilihan ini",Toast.LENGTH_LONG).show();return;}
    prefs.edit().putInt("reading_filter_"+key,i).apply();d.dismiss();read(key);
-  }).setNeutralButton("Panduan tanda",(d,w)->new AlertDialog.Builder(this).setTitle("Penandaan dalam editor").setMessage("Letakkan tanda pada baris berasingan sebelum teks: ---MATAN---, ---SYARAHAN---, ---DALIL--- atau ---TERJEMAHAN--- atau ---KHULASAH--- atau ---IKTIBAR---. Akhiri bahagian dengan ---TAMAT---. Teks tanpa tanda kekal dalam mod lengkap.").setPositiveButton("OK",null).show()).setNegativeButton("Batal",null).show();
+  }).setNeutralButton("Panduan tanda",(d,w)->new AlertDialog.Builder(this).setTitle("Penandaan dalam editor").setMessage("Letakkan tanda pada baris berasingan sebelum teks: ---MATAN---, ---SYARAHAN---, ---DALIL--- atau ---TERJEMAHAN--- atau ---KHULASAH--- atau ---IKTIBAR---. Akhiri bahagian dengan ---TAMAT---. Untuk Kata Sahabat, Kata Tabiin, Kalam Ulama dan Hikmah, gunakan kotak berwarna yang sepadan dalam editor. Dalil & Hikmah menghimpunkan kotak tersebut bersama Firman, Sabda dan Dalil. Teks tanpa tanda kekal dalam mod lengkap.").setPositiveButton("OK",null).show()).setNegativeButton("Batal",null).show();
  }
  void showLayeredCommentary(String key){
   LinearLayout panel=new LinearLayout(this);panel.setOrientation(1);panel.setPadding(dp(12),dp(8),dp(12),dp(12));
