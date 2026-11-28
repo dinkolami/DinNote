@@ -4064,7 +4064,18 @@ public class MainActivity extends Activity {
    LinearLayout panel=new LinearLayout(this){
     @Override protected void dispatchDraw(android.graphics.Canvas c){
      super.dispatchDraw(c);
-     if(sacred)return;
+     if(sacred){
+      float h=getHeight();if(h<=0)return;
+      boolean green=type.equals("FIRMAN");
+      int dark=green?0xff649779:0xffb49a5d,light=green?0xffd5e8d4:0xfff2e5bc;
+      float phase=(android.os.SystemClock.uptimeMillis()%4200L)/4200f;
+      float center=(phase*1.8f-0.4f)*h;
+      android.graphics.Paint glow=new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
+      glow.setShader(new android.graphics.LinearGradient(0,center-h*0.4f,0,center+h*0.4f,new int[]{dark,light,dark},null,android.graphics.Shader.TileMode.CLAMP));
+      c.drawRect(0,0,dp(2),h,glow);
+      if(isShown())postInvalidateDelayed(40);
+      return;
+     }
      android.graphics.Paint p=new android.graphics.Paint(3);p.setColor(0xff789184);p.setAlpha(65);p.setStyle(android.graphics.Paint.Style.STROKE);p.setStrokeWidth(dp(1));
      float right=getWidth()-dp(4),top=dp(4);
      for(int n=0;n<3;n++){float d=dp(7+n*5);android.graphics.Path path=new android.graphics.Path();path.moveTo(right-d-dp(6),top);path.lineTo(right-d,top+dp(3));path.lineTo(right-d,top+dp(6));path.lineTo(right-dp(3),top+d);path.lineTo(right,top+d+dp(5));c.drawPath(path,p);}
