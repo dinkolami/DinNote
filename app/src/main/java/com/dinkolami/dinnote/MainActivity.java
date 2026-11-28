@@ -3427,60 +3427,8 @@ public class MainActivity extends Activity {
  void attachLectureEditorPanel(final EditText active){
   if(selected!=null){LinearLayout modes=new LinearLayout(this);modes.setOrientation(1);root.addView(modes,Math.min(1,root.getChildCount()));addLectureModeBar(modes,selected,0,true);}
   active.setTransformationMethod(new LectureHeadingTransformation());
-  LinearLayout panel=new LinearLayout(this);panel.setOrientation(1);
-  TextView toggle=text("☷  Subtopik Nota Kuliah",16);toggle.setTextColor(0xff216e4e);toggle.setPadding(dp(10),dp(6),dp(10),dp(6));panel.addView(toggle);
-  LinearLayout rows=new LinearLayout(this);rows.setOrientation(1);panel.addView(rows);
-  root.addView(panel,root.indexOfChild(active));
-  final Runnable[] refresh=new Runnable[1];
-  refresh[0]=()->{
-   rows.removeAllViews();
-   java.util.regex.Matcher m=lectureHeadingPattern().matcher(active.getText());
-   ArrayList<String> currentNames=new ArrayList<>();while(m.find())currentNames.add(m.group(1));m.reset();boolean grouped=groupedLecture(currentNames);int previousGroup=-1;LinearLayout groupRows=rows;
-   while(m.find()){
-    final String name=m.group(1);final int headingEnd=m.end();int sectionGroup=grouped?lectureGroup(name):-1;if(sectionGroup!=previousGroup){groupRows=rows;if(sectionGroup>=0){LinearLayout band=new LinearLayout(this);rows.addView(band,new LinearLayout.LayoutParams(-1,-2));View stripe=new View(this);stripe.setBackgroundColor(lectureGroupColor(sectionGroup));band.addView(stripe,new LinearLayout.LayoutParams(dp(2),-1));groupRows=new LinearLayout(this);groupRows.setOrientation(1);groupRows.setPadding(dp(8),0,0,0);band.addView(groupRows,new LinearLayout.LayoutParams(0,-2,1));TextView label=text(new String[]{"Pembukaan","Pengisian Ilmiah","Pendidikan Hati","Kefaqihan","Penghayatan"}[sectionGroup],13);label.setTextColor(lectureGroupColor(sectionGroup));label.setTypeface(null,android.graphics.Typeface.BOLD);groupRows.addView(label);}}previousGroup=sectionGroup;
-    TextView row=text(name,15);row.setTextColor(0xff216e4e);row.setPadding(dp(12),dp(5),dp(12),dp(5));row.setBackground(rounded(0xfffffefd,0xffdce5df,8));row.setMinHeight(dp(32));row.setTextColor(0xff303633);row.setGravity(Gravity.CENTER_VERTICAL);LinearLayout.LayoutParams rp=new LinearLayout.LayoutParams(-1,-2);rp.setMargins(dp(8),0,dp(8),dp(4));LinearLayout line=new LinearLayout(this);line.setGravity(Gravity.CENTER_VERTICAL);line.setBackgroundColor(Color.TRANSPARENT);row.setBackgroundColor(Color.TRANSPARENT);groupRows.addView(line,rp);line.addView(row,new LinearLayout.LayoutParams(0,-2,1));
-    final int headingStart=m.start();
-    for(int direction:new int[]{-1,1}){
-     final int delta=direction;TextView move=text(delta<0?"↑":"↓",14);move.setGravity(Gravity.CENTER);move.setTextColor(0xff216e4e);line.addView(move,new LinearLayout.LayoutParams(dp(26),dp(34)));
-     move.setOnClickListener(v->{android.text.Editable e=active.getText();java.util.regex.Matcher hm=lectureHeadingPattern().matcher(e.toString());ArrayList<Integer> offsets=new ArrayList<>();while(hm.find())offsets.add(hm.start());int index=offsets.indexOf(headingStart),other=index+delta;if(index<0||other<0||other>=offsets.size())return;int low=Math.min(index,other),high=low+1;int a=offsets.get(low),b=offsets.get(high),c=high+1<offsets.size()?offsets.get(high+1):e.length();android.text.SpannableStringBuilder swapped=new android.text.SpannableStringBuilder(e.subSequence(b,c));if(swapped.length()>0&&swapped.charAt(swapped.length()-1)!='\n')swapped.append("\n");swapped.append(e.subSequence(a,b));e.replace(a,c,swapped);save();refresh[0].run();});
-    }
-    TextView remove=text("×",16);remove.setGravity(Gravity.CENTER);remove.setTextColor(0xff397e58);line.addView(remove,new LinearLayout.LayoutParams(dp(26),dp(34)));remove.setContentDescription("Buang subtopik");remove.setOnClickListener(v->new AlertDialog.Builder(this).setTitle("Buang "+name+"?").setMessage("Kandungan subtopik ini juga akan dibuang.").setNegativeButton("Batal",null).setPositiveButton("Buang",(d,w)->{android.text.Editable e=active.getText();java.util.regex.Matcher hm=lectureHeadingPattern().matcher(e.toString());int end=e.length();while(hm.find()){if(hm.start()>headingStart){end=hm.start();break;}}if(headingStart<end&&end<=e.length()){e.delete(headingStart,end);save();refresh[0].run();}}).show());
-    TextView arrow=text("›",14);arrow.setTextColor(0xff216e4e);arrow.setPadding(dp(8),0,dp(12),0);line.addView(arrow);arrow.setOnClickListener(v->row.performClick());
-    row.setOnLongClickListener(v->{EditText input=new EditText(this);input.setSingleLine(true);input.setText(name);new AlertDialog.Builder(this).setTitle("Ubah subtopik").setView(input).setNegativeButton("Batal",null).setNeutralButton("Buang tajuk",(d,w)->{active.getText().delete(headingStart,Math.min(active.length(),headingEnd+1));save();refresh[0].run();}).setPositiveButton("Simpan",(d,w)->{String renamed=input.getText().toString().trim();if(!renamed.isEmpty()){active.getText().replace(headingStart,headingEnd,"\u2063"+renamed);save();refresh[0].run();}}).show();return true;});
-    final int sectionIndex=currentNames.size()==0?0:countLectureHeadingsBefore(active.getText(),headingStart);
-    final EditText quick=new EditText(this);quick.setTextSize(15);quick.setGravity(Gravity.TOP|Gravity.START);quick.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);quick.setMinLines(3);quick.setMaxLines(8);quick.setPadding(dp(10),dp(8),dp(10),dp(8));quick.setBackground(rounded(0xfffffefd,0xff92b7a2,8));quick.setVisibility(View.GONE);
-    groupRows.addView(quick,new LinearLayout.LayoutParams(-1,-2));
-    final boolean[] loadingQuick={false};
-    quick.addTextChangedListener(new android.text.TextWatcher(){
-     public void beforeTextChanged(CharSequence t,int start,int count,int after){}
-     public void onTextChanged(CharSequence t,int start,int before,int count){}
-     public void afterTextChanged(android.text.Editable t){
-      if(loadingQuick[0]||quick.getVisibility()!=View.VISIBLE)return;
-      int[] bounds=lectureQuickBounds(active.getText(),sectionIndex);if(bounds==null)return;
-      android.text.SpannableStringBuilder replacement=new android.text.SpannableStringBuilder(t);
-      if(bounds[1]<active.length())replacement.append("\n");
-      active.getText().replace(bounds[0],bounds[1],replacement);save();
-     }
-    });
-    row.setOnClickListener(v->{
-     if(quick.getVisibility()==View.VISIBLE){quick.clearFocus();quick.setVisibility(View.GONE);arrow.setText("›");refresh[0].run();return;}
-     int[] bounds=lectureQuickBounds(active.getText(),sectionIndex);if(bounds==null)return;
-     loadingQuick[0]=true;int end=bounds[1];if(end<active.length()&&end>bounds[0]&&active.getText().charAt(end-1)=='\n')end--;
-     quick.setText(active.getText().subSequence(bounds[0],end));loadingQuick[0]=false;
-     quick.setVisibility(View.VISIBLE);arrow.setText("⌄");quick.requestFocus();
-    });
-   }
-  };
-  Button addHeading=action("+ Subtopik",panel,()->{EditText input=new EditText(this);input.setSingleLine(true);new AlertDialog.Builder(this).setTitle("Tambah subtopik").setView(input).setNegativeButton("Batal",null).setPositiveButton("Seterusnya",(d,w)->{String name=input.getText().toString().trim();if(name.isEmpty())return;ArrayList<String> labels=new ArrayList<>();ArrayList<Integer> positions=new ArrayList<>();java.util.regex.Matcher hm=lectureHeadingPattern().matcher(active.getText().toString());while(hm.find()){labels.add("Sisip sebelum "+hm.group(1));positions.add(hm.start());}labels.add("Tambah paling bawah");positions.add(active.length());new AlertDialog.Builder(this).setTitle("Kedudukan subtopik").setItems(labels.toArray(new String[0]),(dd,index)->{int pos=positions.get(index);String prefix=pos>0&&active.getText().charAt(pos-1)!='\n'?"\n":"";active.getText().insert(pos,prefix+"\u2063"+name+"\n\n\n");save();refresh[0].run();}).setNegativeButton("Batal",null).show();}).show();});
-  final LinearLayout compactHeader=new LinearLayout(this);compactHeader.setGravity(Gravity.CENTER_VERTICAL);
-  panel.addView(compactHeader,0);
-  panel.addOnLayoutChangeListener((v,l,t,r,b,ol,ot,orr,ob)->{boolean wide=r-l>=dp(600);if(wide&&toggle.getParent()==panel){panel.removeView(toggle);panel.removeView(addHeading);compactHeader.addView(toggle,new LinearLayout.LayoutParams(0,-2,1));compactHeader.addView(addHeading,new LinearLayout.LayoutParams(-2,-2));}else if(!wide&&toggle.getParent()==compactHeader){compactHeader.removeView(toggle);compactHeader.removeView(addHeading);panel.addView(toggle,1);panel.addView(addHeading);}});
-  refresh[0].run();
-  rows.setVisibility(View.GONE);active.setVisibility(View.VISIBLE);
-  toggle.setOnClickListener(v->{
-   if(rows.getVisibility()==View.VISIBLE){rows.setVisibility(View.GONE);active.setVisibility(View.VISIBLE);}
-   else{refresh[0].run();active.clearFocus();active.setVisibility(View.GONE);rows.setVisibility(View.VISIBLE);}
-  });
+  // Subtopic management is centralized in Expand; keep the full editor visible.
+  active.setVisibility(View.VISIBLE);
  }
  void showLectureEditorIndex(){
   if(editor==null)return;
