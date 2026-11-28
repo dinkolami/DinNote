@@ -2888,7 +2888,7 @@ public class MainActivity extends Activity {
        int start=0;
        while(breaks.find()){
         int end=breaks.end();
-        blocks.add(copyLectureColumnText(original,rich.subSequence(start,breaks.start())));start=end;
+        blocks.add(copyLectureColumnText(original,rich.subSequence(start,end)));start=end;
        }
        if(start<rich.length())blocks.add(copyLectureColumnText(original,rich.subSequence(start,rich.length())));
       }else blocks.add(child);
@@ -4160,7 +4160,7 @@ public class MainActivity extends Activity {
    label.setBackground(null);
    if(sacred){label.setText("❖ "+label.getText());label.setTextSize(11);label.setBackground(null);label.setPadding(0,0,0,dp(4));panel.addView(label,new LinearLayout.LayoutParams(-2,-2));}
    else {label.setTextSize(11);label.setPadding(0,0,0,dp(4));panel.addView(label,new LinearLayout.LayoutParams(-2,-2));}
-   TextView value=text("",fontSize);String boxContent=m.group(2).replaceFirst("^\\n","").replaceFirst("\\n$","");value.setText(readerLabelText(boxContent));applySharedTextMetrics(value);value.setTextColor(0xff303c43);
+   TextView value=text("",fontSize);String boxContent=m.group(2).replaceFirst("\\n$","");value.setText(readerLabelText(boxContent));applySharedTextMetrics(value);value.setTextColor(0xff303c43);
    value.setPadding(0,0,0,0);value.setIncludeFontPadding(false);value.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);value.setTextIsSelectable(true);value.setGravity(Gravity.START);value.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START);if(!boxContent.trim().isEmpty())panel.addView(value);
    LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);
    // Add a small breathing gap whenever two box blocks meet, regardless of their types.
@@ -4221,7 +4221,10 @@ public class MainActivity extends Activity {
   addPlainBoxText(body,paragraph.toString(),fontSize);
  }
  void addPlainBoxText(LinearLayout body,String value,int fontSize){
-  value=value.replaceAll("(?m)^[ \\t]*\\*{1,2}[ \\t]*$","").trim();
+  value=value.replaceAll("(?m)^[ \\t]*\\*{1,2}[ \\t]*$","");
+  if(value.isEmpty())return;
+  // A structural newline separates blocks; all additional blank lines remain visible.
+  if(value.endsWith("\n"))value=value.substring(0,value.length()-1);
   if(value.isEmpty())return;
   TextView t=text("",fontSize);
   android.text.SpannableStringBuilder compact=readerLabelText(value);
