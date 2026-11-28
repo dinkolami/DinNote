@@ -2507,12 +2507,12 @@ public class MainActivity extends Activity {
   if(keys.isEmpty()){Toast.makeText(this,"Tiada nota kuliah lain",Toast.LENGTH_SHORT).show();return;}
   String[] labels=new String[keys.size()];for(int i=0;i<keys.size();i++)labels[i]=prefs.getString("title_"+keys.get(i),"Tanpa tajuk");
   new AlertDialog.Builder(this).setTitle("Salin subtopik ke nota").setItems(labels,(d,i)->{
-   String dest=keys.get(i);new AlertDialog.Builder(this).setTitle("Salin ke "+labels[i]+"?").setMessage("Subtopik akan ditambah di bahagian akhir nota. Nota asal kekal.").setNegativeButton("Batal",null).setPositiveButton("Salin",(dd,w)->{
+   String dest=keys.get(i);
     if(prefs.getBoolean("deleted_"+dest,false)||!prefs.contains(dest))return;
     String before=prefs.getString(dest,"");snapshotBeforeAutosave(dest,before,prefs.getString("title_"+dest,""),prefs.getString("cat_"+dest,"Tanpa kategori"));
     prefs.edit().putString(dest,before+(before.endsWith("\n")?"\n":"\n\n")+section).putLong("updated_"+dest,System.currentTimeMillis()).apply();
     Toast.makeText(this,"Subtopik disalin",Toast.LENGTH_SHORT).show();
-   }).show();
+    maktabah=false;read(dest);
   }).setNegativeButton("Batal",null).show();
  }
  void changeLectureSection(String key,int index,String added){
@@ -3851,6 +3851,9 @@ public class MainActivity extends Activity {
   for(LectureHeadingVisualSpan span:e.getSpans(0,e.length(),LectureHeadingVisualSpan.class))e.removeSpan(span);
   java.util.regex.Matcher heading=lectureHeadingPattern().matcher(e.toString());
   while(heading.find())if(heading.start()<heading.end()&&e.charAt(heading.start())=='\u2063')e.setSpan(new LectureHeadingVisualSpan(),heading.start(),heading.end(),android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+  for(OriginalPageSpan span:e.getSpans(0,e.length(),OriginalPageSpan.class))e.removeSpan(span);
+  java.util.regex.Matcher pageMarks=java.util.regex.Pattern.compile("(?m)^---MSASAL:([0-9]{1,7})---[ \\t]*$").matcher(e.toString());
+  while(pageMarks.find())e.setSpan(new OriginalPageSpan("❖ Muka Surat "+pageMarks.group(1)+" ❖"),pageMarks.start(),pageMarks.end(),33);
   applySectionIndent(e);
   for(EditorDividerSpan span:e.getSpans(0,e.length(),EditorDividerSpan.class))e.removeSpan(span);
   java.util.regex.Matcher div=java.util.regex.Pattern.compile("(?m)^---(FLOWER|GEOMETRIC|CLASSIC)---$").matcher(e.toString());
