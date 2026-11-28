@@ -2186,11 +2186,23 @@ public class MainActivity extends Activity {
   String[] names={"Teks lengkap","Matan sahaja","Syarahan sahaja","Dalil sahaja","Kata Sahabat sahaja","Kata Tabiin sahaja","Kalam Ulama & Hikmah sahaja","Dalil & Hikmah","Terjemahan sahaja","Khulasah sahaja","Pengajaran & Iktibar sahaja","Syafi‘i sahaja","Hanafi sahaja","Maliki sahaja","Hanbali sahaja","Fiqh Muqaran sahaja"};
   final int[] modes={0,1,2,3,12,13,14,15,4,5,6,7,8,9,10,11};
   int checked=0;for(int j=0;j<modes.length;j++)if(modes[j]==prefs.getInt("reading_filter_"+key,0))checked=j;
-  new AlertDialog.Builder(this).setTitle("Mod Bacaan Terpilih").setSingleChoiceItems(names,checked,(d,index)->{
+  android.widget.ArrayAdapter<String> compactAdapter=new android.widget.ArrayAdapter<String>(this,android.R.layout.simple_list_item_single_choice,names){
+   @Override public View getView(int position,View convertView,android.view.ViewGroup parent){
+    android.widget.CheckedTextView row=(android.widget.CheckedTextView)super.getView(position,convertView,parent);
+    row.setTextSize(14);row.setMinHeight(dp(40));row.setMinimumHeight(dp(40));row.setPadding(dp(12),dp(4),dp(12),dp(4));
+    row.setLayoutParams(new android.widget.AbsListView.LayoutParams(-1,-2));
+    return row;
+   }
+  };
+  AlertDialog compactDialog=new AlertDialog.Builder(this).setTitle("Mod Bacaan Terpilih").setSingleChoiceItems(compactAdapter,checked,(d,index)->{
    int i=modes[index];
    if(i>0&&selectedReadingText(key,i).isEmpty()){Toast.makeText(this,"Tiada teks bertanda untuk pilihan ini",Toast.LENGTH_LONG).show();return;}
    prefs.edit().putInt("reading_filter_"+key,i).apply();d.dismiss();read(key);
-  }).setNeutralButton("Panduan tanda",(d,w)->new AlertDialog.Builder(this).setTitle("Penandaan dalam editor").setMessage("Letakkan tanda pada baris berasingan sebelum teks: ---MATAN---, ---SYARAHAN---, ---DALIL--- atau ---TERJEMAHAN--- atau ---KHULASAH--- atau ---IKTIBAR---. Akhiri bahagian dengan ---TAMAT---. Untuk Kata Sahabat, Kata Tabiin, Kalam Ulama dan Hikmah, gunakan kotak berwarna yang sepadan dalam editor. Dalil & Hikmah menghimpunkan kotak tersebut bersama Firman, Sabda dan Dalil. Teks tanpa tanda kekal dalam mod lengkap.").setPositiveButton("OK",null).show()).setNegativeButton("Batal",null).show();
+  }).setNeutralButton("Panduan tanda",(d,w)->new AlertDialog.Builder(this).setTitle("Penandaan dalam editor").setMessage("Letakkan tanda pada baris berasingan sebelum teks: ---MATAN---, ---SYARAHAN---, ---DALIL--- atau ---TERJEMAHAN--- atau ---KHULASAH--- atau ---IKTIBAR---. Akhiri bahagian dengan ---TAMAT---. Untuk Kata Sahabat, Kata Tabiin, Kalam Ulama dan Hikmah, gunakan kotak berwarna yang sepadan dalam editor. Dalil & Hikmah menghimpunkan kotak tersebut bersama Firman, Sabda dan Dalil. Teks tanpa tanda kekal dalam mod lengkap.").setPositiveButton("OK",null).show()).setNegativeButton("Batal",null).create();
+  compactDialog.show();
+  compactDialog.getListView().setDividerHeight(0);
+  compactDialog.getButton(AlertDialog.BUTTON_NEUTRAL).setTextSize(12);
+  compactDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextSize(12);
  }
  void showLayeredCommentary(String key){
   LinearLayout panel=new LinearLayout(this);panel.setOrientation(1);panel.setPadding(dp(12),dp(8),dp(12),dp(12));
