@@ -3798,6 +3798,7 @@ public class MainActivity extends Activity {
    else edge.moveTo(r,top);
    edge.lineTo(r,tail?bottom-rad:bottom);
    if(tail){edge.quadTo(r,bottom,r-rad,bottom);edge.lineTo(l+rad,bottom);edge.quadTo(l,bottom,l,bottom-rad);}
+   if(bg==0xfff3f3f2){q.setStyle(android.graphics.Paint.Style.FILL);q.setColor(0xffb5bab7);c.drawRect(l,top,l+dp(2),bottom,q);return;}
    c.drawPath(edge,q);
    if(head){q.setAlpha(65);for(int j=0;j<3;j++){float d=dp(6+j*5);android.graphics.Path motif=new android.graphics.Path();motif.moveTo(r-d-dp(5),top+dp(2));motif.lineTo(r-d,top+dp(5));motif.lineTo(r-d,top+dp(8));motif.lineTo(r-dp(5),top+d);motif.lineTo(r-dp(2),top+d+dp(5));c.drawPath(motif,q);}}
   }
@@ -4093,6 +4094,7 @@ public class MainActivity extends Activity {
       if(isShown())postInvalidateDelayed(80);
       return;
      }
+     if(!sacred)return;
      android.graphics.Paint p=new android.graphics.Paint(3);p.setColor(0xff789184);p.setAlpha(65);p.setStyle(android.graphics.Paint.Style.STROKE);p.setStrokeWidth(dp(1));
      float right=getWidth()-dp(4),top=dp(4);
      for(int n=0;n<3;n++){float d=dp(7+n*5);android.graphics.Path path=new android.graphics.Path();path.moveTo(right-d-dp(6),top);path.lineTo(right-d,top+dp(3));path.lineTo(right-d,top+dp(6));path.lineTo(right-dp(3),top+d);path.lineTo(right,top+d+dp(5));c.drawPath(path,p);}
@@ -4105,12 +4107,12 @@ public class MainActivity extends Activity {
     android.graphics.drawable.GradientDrawable base=new android.graphics.drawable.GradientDrawable();base.setColor(bg);base.setCornerRadius(dp(2));
     android.graphics.drawable.GradientDrawable stripe=new android.graphics.drawable.GradientDrawable();stripe.setColor(type.equals("FIRMAN")?0xffbba66e:0xff83a98e);
     android.graphics.drawable.LayerDrawable layers=new android.graphics.drawable.LayerDrawable(new android.graphics.drawable.Drawable[]{stripe,base});layers.setLayerInset(1,dp(2),0,0,0);panel.setBackground(layers);panel.setPadding(dp(9),dp(3),dp(6),dp(3));
-   }else{panel.setBackground(rounded(bg,border,10));panel.setPadding(dp(7),dp(3),dp(7),dp(2));}
+   }else{android.graphics.drawable.GradientDrawable base=new android.graphics.drawable.GradientDrawable();base.setColor(bg);android.graphics.drawable.GradientDrawable stripe=new android.graphics.drawable.GradientDrawable();stripe.setColor(0xffb5bab7);android.graphics.drawable.LayerDrawable layers=new android.graphics.drawable.LayerDrawable(new android.graphics.drawable.Drawable[]{stripe,base});layers.setLayerInset(1,dp(2),0,0,0);panel.setBackground(layers);panel.setPadding(dp(9),dp(3),dp(6),dp(3));}
    TextView label=text(type.equals("FIRMAN")?"Firman Allah SWT:":type.equals("SABDA")?"Sabda Nabi SAW:":type.equals("DALIL")?"⚖  Dalil":type.equals("HIKMAH")?"✒  Kalam Hikmah":type.equals("SAHABAT")?"✦  Kata Sahabat Rdh.":type.equals("TABII")?"❖  Kata Tabi\u0027in Rhm.":type.equals("ULAMA")?"✧  Kata Ulama\u0027 Rhm.":"◎  Catatan Penting",13);
    label.setTextColor(type.equals("FIRMAN")?0xff96783e:type.equals("SABDA")?0xff176b47:0xff666b68);
    label.setTypeface(android.graphics.Typeface.create("sans-serif",android.graphics.Typeface.NORMAL));label.setIncludeFontPadding(false);
    label.setPadding(dp(5),dp(1),dp(7),dp(1));
-   label.setBackground(rounded(bg,border,12));
+   label.setBackground(null);
    if(sacred){label.setText("❖ "+label.getText());label.setTextSize(11);label.setBackground(null);label.setPadding(0,0,0,dp(4));panel.addView(label,new LinearLayout.LayoutParams(-2,-2));}
    else panel.addView(label,new LinearLayout.LayoutParams(-2,-2));
    TextView value=text("",fontSize);String boxContent=m.group(2).replaceFirst("^\\n","").replaceFirst("\\n$","");value.setText(readerLabelText(boxContent));applySharedTextMetrics(value);value.setTextColor(0xff303c43);
