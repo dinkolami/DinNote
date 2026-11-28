@@ -2809,7 +2809,7 @@ public class MainActivity extends Activity {
   boolean hasBoxes=fullReadingText.matches("(?s).*---KOTAK(?:DALIL|HIKMAH|CATATAN|FIRMAN|SABDA|SAHABAT|TABII|ULAMA)---.*");
   boolean hasLists=hasBoxes;
   for(String line:displayLines)if(line.trim().matches("---(?:FLOWER|GEOMETRIC|CLASSIC)?---|---")){hasLists=true;break;}
-  for(String line:displayLines)if(line.matches("^\\s*(?:\\d+\\.\\s+|[•☐☑✓]\\s+).*")){hasLists=true;break;}
+  for(String line:displayLines)if(line.matches("^\\s*(?:\\d+\\)\\s+|[•☐☑✓]\\s+).*")){hasLists=true;break;}
   // Optional aligned bilingual reading. Each paired line uses Arabic || Malay.
   boolean qurtubiPair=key.equals("m_qurtubi_fatihah_1")&&fullReadingText.contains(" || ");
   boolean bilingualReading=qurtubiPair||(key.startsWith("m_")&&availableReaderWidthDp>=500
@@ -2980,7 +2980,7 @@ public class MainActivity extends Activity {
         (after<displayLines.length&&displayLines[after].trim().matches("---(?:FLOWER|GEOMETRIC|CLASSIC)?---")))continue;
      // Multiple source blank lines before a numbered heading should not create
      // oversized gaps in reading mode. Preserve one small visual pause only.
-     if(after<displayLines.length&&displayLines[after].matches("^\\s*\\d+\\.\\s+.*$")){
+     if(after<displayLines.length&&displayLines[after].matches("^\\s*\\d+\\)\\s+.*$")){
       if(rowIndex==before+1){
        View headingGap=new View(this);
        readingRows.addView(headingGap,new LinearLayout.LayoutParams(-1,dp(4)));
@@ -2988,7 +2988,7 @@ public class MainActivity extends Activity {
       continue;
      }
     }
-    java.util.regex.Matcher numbered=java.util.regex.Pattern.compile("^\\s*(\\d+)\\.\\s+(.*)$").matcher(line);
+    java.util.regex.Matcher numbered=java.util.regex.Pattern.compile("^\\s*(\\d+)\\)\\s+(.*)$").matcher(line);
     java.util.regex.Matcher marked=java.util.regex.Pattern.compile("^\\s*([•☐☑✓])\\s+(.*)$").matcher(line);
     boolean isNumber=numbered.matches(),isMarked=!isNumber&&marked.matches();
     java.util.regex.Matcher iconHeading=java.util.regex.Pattern.compile("^\\s*@#(?:\\s+(.+))?$").matcher(line);
@@ -2998,7 +2998,7 @@ public class MainActivity extends Activity {
     }else if(isNumber||isMarked||isIconHeading){
      LinearLayout itemRow=new LinearLayout(this);itemRow.setOrientation(LinearLayout.HORIZONTAL);
      itemRow.setGravity(Gravity.CENTER_VERTICAL);itemRow.setPadding(dp(6),dp(2),dp(6),dp(2));
-     String marker=isNumber?numbered.group(1):(isIconHeading?"✦":marked.group(1));
+     String marker=isNumber?numbered.group(1):(isIconHeading?"❖":marked.group(1));
      String value=isNumber?numbered.group(2):(isIconHeading?(iconHeading.group(1)==null?"Huraian":iconHeading.group(1)):marked.group(2));
      boolean arabicHeading=java.util.regex.Pattern.compile("[\\u0600-\\u06FF]").matcher(value).find();
      // Pearl-and-gold medallion; Arabic headings put the number on the right.
@@ -3362,10 +3362,10 @@ public class MainActivity extends Activity {
   String[] lines=encodedEditorText().split("\\n",-1);
   ArrayList<Integer> positions=new ArrayList<>();ArrayList<String> labels=new ArrayList<>();
   for(int i=0;i<lines.length;i++){
-   java.util.regex.Matcher m=java.util.regex.Pattern.compile("^\\s*(\\d+)\\.\\s+(.*)$").matcher(lines[i]);
-   if(m.matches()){positions.add(i);labels.add(m.group(1)+". "+m.group(2));}
+   java.util.regex.Matcher m=java.util.regex.Pattern.compile("^\\s*(\\d+)\\)\\s+(.*)$").matcher(lines[i]);
+   if(m.matches()){positions.add(i);labels.add(m.group(1)+") "+m.group(2));}
   }
-  if(positions.isEmpty()){new AlertDialog.Builder(this).setTitle("Huraian bernombor").setMessage("Tulis senarai seperti 1. Pertama, 2. Kedua dan seterusnya terlebih dahulu.").setPositiveButton("Faham",null).show();return;}
+  if(positions.isEmpty()){new AlertDialog.Builder(this).setTitle("Huraian bernombor").setMessage("Tulis senarai seperti 1) Pertama, 2) Kedua dan seterusnya terlebih dahulu.").setPositiveButton("Faham",null).show();return;}
   new AlertDialog.Builder(this).setTitle("Huraian bernombor").setItems(labels.toArray(new String[0]),(d,which)->{
    String commentaryKey="syarahan_"+key+"_"+positions.get(which);
    EditText detail=new EditText(this);detail.setMinLines(4);detail.setMaxLines(12);detail.setGravity(Gravity.TOP);detail.setHint("Tulis huraian…");detail.setText(prefs.getString(commentaryKey,""));
@@ -3610,9 +3610,9 @@ public class MainActivity extends Activity {
   italicButton.setTypeface(null,android.graphics.Typeface.ITALIC);italicButton.setContentDescription("Condong: tandakan teks terpilih");
   // Keep underline next to bold and italic, visible before horizontally scrolled list tools.
   Button underlineButton=action("U̲",formatBar,()->applyLiveStyle(4));
-  Button bulletButton=action("☷",formatBar,()->insertEditorText("• "));
+  Button bulletButton=action("☷",formatBar,()->new AlertDialog.Builder(this).setTitle("List").setItems(new String[]{"•  Bullet biasa","1.  Nombor biasa","1)  Nombor dropdown","❖  Lambang dropdown"},(d,i)->{if(i==0)insertEditorText("• ");else if(i==1)insertEditorText("1. ");else if(i==2)insertNumberedList();else insertEditorText("@# ");}).show());
   bulletButton.setContentDescription("Masukkan senarai");
-  Button numberedButton=action("1.",formatBar,()->insertNumberedList());
+  Button numberedButton=action("1)",formatBar,()->insertNumberedList());
   numberedButton.setTextColor(0xff17814a);numberedButton.setContentDescription("Senarai bernombor automatik");
   Button checklistButton=action("☑",formatBar,()->insertEditorText("☐ "));
   checklistButton.setContentDescription("Masukkan kotak semak");
@@ -4024,12 +4024,12 @@ public class MainActivity extends Activity {
   String content=editor.getText().toString();
   int lineStart=content.lastIndexOf('\n',Math.max(0,cursor-1))+1;
   String line=content.substring(lineStart,cursor);
-  if(line.matches("\\s*\\d+\\.\\s*"))return;
+  if(line.matches("\\s*\\d+\\)\\s*"))return;
   int number=1;
-  java.util.regex.Matcher matcher=java.util.regex.Pattern.compile("(?m)^\\s*(\\d+)\\.\\s+").matcher(content.substring(0,lineStart));
+  java.util.regex.Matcher matcher=java.util.regex.Pattern.compile("(?m)^\\s*(\\d+)\\)\\s+").matcher(content.substring(0,lineStart));
   while(matcher.find()){try{number=Integer.parseInt(matcher.group(1))+1;}catch(NumberFormatException ignored){}}
-  editor.getText().insert(lineStart,number+". ");
-  editor.setSelection(cursor+(number+". ").length());
+  editor.getText().insert(lineStart,number+") ");
+  editor.setSelection(cursor+(number+") ").length());
  }
  String normalizeStructuralMarkers(String source){
   String[] lines=source.split("\\n",-1);
@@ -4117,7 +4117,7 @@ public class MainActivity extends Activity {
   String[] lines=value.split("\\n",-1);StringBuilder paragraph=new StringBuilder();
   for(int i=0;i<lines.length;i++){
    String line=lines[i];
-   java.util.regex.Matcher numbered=java.util.regex.Pattern.compile("^\\s*(\\d+)\\.\\s+(.*)$").matcher(line);
+   java.util.regex.Matcher numbered=java.util.regex.Pattern.compile("^\\s*(\\d+)\\)\\s+(.*)$").matcher(line);
    java.util.regex.Matcher iconHeading=java.util.regex.Pattern.compile("^\\s*@#(?:\\s+(.+))?$").matcher(line);
    boolean isIconHeading=!numbered.matches()&&iconHeading.matches();
    if(numbered.matches()||isIconHeading){
@@ -4130,7 +4130,7 @@ public class MainActivity extends Activity {
     android.graphics.drawable.GradientDrawable ring=new GoldGlowDrawable(0);
     ring.setShape(android.graphics.drawable.GradientDrawable.OVAL);ring.setColor(0xfffcf8ed);ring.setStroke(dp(1),0xffc3a35a);
     medallion.setBackground(ring);
-    TextView numeral=new TextView(this);numeral.setText(isIconHeading?"✦":numbered.group(1));numeral.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP,13);numeral.setTypeface(android.graphics.Typeface.create("sans-serif-medium",android.graphics.Typeface.NORMAL));numeral.setGravity(Gravity.CENTER);numeral.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);numeral.setTextColor(0xff176b47);numeral.setIncludeFontPadding(false);numeral.setPadding(0,0,0,0);numeral.setSingleLine(true);numeral.setMinHeight(0);numeral.setMinimumHeight(0);numeral.setMinWidth(0);numeral.setMinimumWidth(0);
+    TextView numeral=new TextView(this);numeral.setText(isIconHeading?"❖":numbered.group(1));numeral.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP,13);numeral.setTypeface(android.graphics.Typeface.create("sans-serif-medium",android.graphics.Typeface.NORMAL));numeral.setGravity(Gravity.CENTER);numeral.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);numeral.setTextColor(0xff176b47);numeral.setIncludeFontPadding(false);numeral.setPadding(0,0,0,0);numeral.setSingleLine(true);numeral.setMinHeight(0);numeral.setMinimumHeight(0);numeral.setMinWidth(0);numeral.setMinimumWidth(0);
     FrameLayout.LayoutParams numeralParams=new FrameLayout.LayoutParams(-1,-1);medallion.addView(numeral,numeralParams);
     LinearLayout.LayoutParams medalParams=new LinearLayout.LayoutParams(dp(23),dp(23));medalParams.setMargins(dp(4),0,dp(1),0);heading.addView(medallion,medalParams);
     TextView title=text("",fontSize);title.setText(formattedReadingText(isIconHeading?(iconHeading.group(1)==null?"Huraian":iconHeading.group(1)):numbered.group(2)));title.setTextColor(0xff303c43);title.setPadding(0,dp(2),dp(3),dp(2));heading.addView(title,new LinearLayout.LayoutParams(0,-2,1));
