@@ -467,8 +467,15 @@ public class MainActivity extends Activity {
    paint.setStyle(android.graphics.Paint.Style.STROKE);paint.setStrokeWidth(1f);paint.setColor(0xffd8c69c);canvas.drawRoundRect(rect,radius,radius,paint);
    float phase=(android.os.SystemClock.uptimeMillis()%8500L)/8500f;
    android.graphics.Path path=new android.graphics.Path();path.addRoundRect(rect,radius,radius,android.graphics.Path.Direction.CW);
-   android.graphics.PathMeasure measure=new android.graphics.PathMeasure(path,true);float length=measure.getLength();float[] pos=new float[2];measure.getPosTan(phase*length,pos,null);
-   float glowRadius=dp(55);paint.setShader(new android.graphics.RadialGradient(pos[0],pos[1],glowRadius,new int[]{0xff27986a,0x8858b98c,0x0058b98c},new float[]{0f,0.38f,1f},android.graphics.Shader.TileMode.CLAMP));paint.setStrokeWidth(Math.max(1f,dp(1)));canvas.drawPath(path,paint);paint.setShader(null);
+   android.graphics.PathMeasure measure=new android.graphics.PathMeasure(path,true);float length=measure.getLength();float[] pos=new float[2];
+   float glowRadius=dp(62);
+   for(int i=0;i<4;i++){
+    float offset=((phase+i*0.25f)%1f)*length;measure.getPosTan(offset,pos,null);
+    int[] colors=i%2==0?new int[]{0xff07864d,0xcc35b77b,0x0035b77b}:new int[]{0xffc58b0b,0xeef3c342,0x00f3c342};
+    paint.setShader(new android.graphics.RadialGradient(pos[0],pos[1],glowRadius,colors,new float[]{0f,0.42f,1f},android.graphics.Shader.TileMode.CLAMP));
+    paint.setStrokeWidth(Math.max(1.5f,dp(1)*1.15f));canvas.drawPath(path,paint);
+   }
+   paint.setShader(null);
    if(isVisible()&&getCallback()!=null)scheduleSelf(tick,android.os.SystemClock.uptimeMillis()+50L);
   }
   final Runnable tick=()->invalidateSelf();
