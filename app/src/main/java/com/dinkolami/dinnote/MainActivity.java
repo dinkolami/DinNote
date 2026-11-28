@@ -458,6 +458,25 @@ public class MainActivity extends Activity {
   }
   target.setText(arabic.length()>0?arabic.toString():entry.split("\\r?\\n",2)[0].trim());
  }
+ class WisdomGlowFrame extends android.graphics.drawable.Drawable {
+  final android.graphics.Paint paint=new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
+  @Override public void draw(android.graphics.Canvas canvas){
+   android.graphics.Rect b=getBounds();if(b.width()<2||b.height()<2)return;
+   float radius=dp(11);android.graphics.RectF rect=new android.graphics.RectF(b.left+1,b.top+1,b.right-1,b.bottom-1);
+   paint.setShader(null);paint.setStyle(android.graphics.Paint.Style.FILL);paint.setColor(0x55fdfcf7);canvas.drawRoundRect(rect,radius,radius,paint);
+   paint.setStyle(android.graphics.Paint.Style.STROKE);paint.setStrokeWidth(1f);paint.setColor(0xffd8c69c);canvas.drawRoundRect(rect,radius,radius,paint);
+   float phase=(android.os.SystemClock.uptimeMillis()%8500L)/8500f;
+   android.graphics.Path path=new android.graphics.Path();path.addRoundRect(rect,radius,radius,android.graphics.Path.Direction.CW);
+   android.graphics.PathMeasure measure=new android.graphics.PathMeasure(path,true);float length=measure.getLength();float[] pos=new float[2];measure.getPosTan(phase*length,pos,null);
+   float glowRadius=dp(55);paint.setShader(new android.graphics.RadialGradient(pos[0],pos[1],glowRadius,new int[]{0xff27986a,0x8858b98c,0x0058b98c},new float[]{0f,0.38f,1f},android.graphics.Shader.TileMode.CLAMP));paint.setStrokeWidth(Math.max(1f,dp(1)));canvas.drawPath(path,paint);paint.setShader(null);
+   if(isVisible()&&getCallback()!=null)scheduleSelf(tick,android.os.SystemClock.uptimeMillis()+50L);
+  }
+  final Runnable tick=()->invalidateSelf();
+  @Override public boolean setVisible(boolean visible,boolean restart){if(!visible)unscheduleSelf(tick);boolean changed=super.setVisible(visible,restart);if(visible)invalidateSelf();return changed;}
+  @Override public void setAlpha(int a){paint.setAlpha(a);}
+  @Override public void setColorFilter(android.graphics.ColorFilter f){paint.setColorFilter(f);}
+  @Override public int getOpacity(){return android.graphics.PixelFormat.TRANSLUCENT;}
+ }
  class PostingOutline extends android.graphics.drawable.Drawable {
   private final boolean book;
   private final android.graphics.Paint p=new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
@@ -746,7 +765,7 @@ public class MainActivity extends Activity {
    wisdomCard.setPadding(dp(12),dp(1),dp(12),dp(4));
    final int[] wisdomBorders={0xffd8c69c,0xffb7d2be,0xffd4c5df};
    final int wisdomStyle=new java.util.Random().nextInt(wisdomBorders.length);
-   android.graphics.drawable.GradientDrawable wisdomFrame=new android.graphics.drawable.GradientDrawable();wisdomFrame.setColor(0x55fdfcf7);wisdomFrame.setCornerRadius(dp(11));wisdomFrame.setStroke(1,0xffd8c69c);wisdomCard.setBackground(wisdomFrame);
+   wisdomCard.setBackground(new WisdomGlowFrame());
    wisdomCard.setClipToOutline(true);
    wisdomCard.setClipChildren(true);
    LinearLayout.LayoutParams wisdomParams=new LinearLayout.LayoutParams(-1,dp(126));
