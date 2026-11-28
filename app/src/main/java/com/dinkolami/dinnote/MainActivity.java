@@ -2266,6 +2266,23 @@ public class MainActivity extends Activity {
    }).show();
   }).setNegativeButton("Tutup",null).show();
  }
+ void showHafazan(String key){
+  String raw=repairBoxStructure(normalizeStructuralMarkers(prefs.getString(key,"")));
+  java.util.regex.Matcher m=java.util.regex.Pattern.compile("(?ms)^---KOTAK(DALIL|HIKMAH|CATATAN|FIRMAN|SABDA|SAHABAT|TABII|ULAMA)---[ \\t]*\\n(.*?)^---KOTAKTAMAT---[ \\t]*(?:\\n|$)").matcher(raw);
+  StringBuilder collection=new StringBuilder();int count=0;
+  while(m.find()){if(collection.length()>0)collection.append('\n');collection.append(m.group());count++;}
+  if(count==0){Toast.makeText(this,"Tiada kotak untuk ulangan dan hafazan",Toast.LENGTH_LONG).show();return;}
+  stopAutoReading();saveReaderPosition(key);
+  cleanBase();root.setTag("hafazan_reader");
+  LinearLayout bar=new LinearLayout(this);bar.setGravity(Gravity.CENTER_VERTICAL);root.addView(bar);
+  action("‹",bar,()->resumeReading(key)).setContentDescription("Kembali ke posting asal");
+  TextView title=text("Ulangan & Hafazan",18);title.setTextColor(0xff176b47);bar.addView(title,new LinearLayout.LayoutParams(0,-2,1));
+  TextView info=text(prefs.getString("title_"+key,"")+" · "+count+" kotak",13);info.setPadding(dp(12),dp(4),dp(12),dp(8));root.addView(info);
+  ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
+  LinearLayout body=new LinearLayout(this);body.setOrientation(1);body.setPadding(dp(12),dp(4),dp(12),dp(16));scroll.addView(body);
+  int level=Math.max(0,Math.min(3,prefs.getInt("reader_font_level",1)));
+  renderBoxReading(body,collection.toString(),new int[]{13,15,16,18}[level],key);
+ }
  void showReaderActions(String key,boolean compact){
   boolean book=key.startsWith("m_");
   String noun=book?"kitab":"nota";
@@ -2329,6 +2346,10 @@ public class MainActivity extends Activity {
   labels=java.util.Arrays.copyOf(labels,labels.length+1);icons=java.util.Arrays.copyOf(icons,icons.length+1);descriptions=java.util.Arrays.copyOf(descriptions,descriptions.length+1);
   labels[restartIndex+1]=labels[restartIndex];icons[restartIndex+1]=icons[restartIndex];descriptions[restartIndex+1]=descriptions[restartIndex];
   labels[restartIndex]="Kembali ke awal bacaan";icons[restartIndex]="↑";descriptions[restartIndex]="Mulakan semula bacaan nota atau kitab ini";
+  final int hafazanIndex=labels.length-1;
+  labels=java.util.Arrays.copyOf(labels,labels.length+1);icons=java.util.Arrays.copyOf(icons,icons.length+1);descriptions=java.util.Arrays.copyOf(descriptions,descriptions.length+1);
+  labels[hafazanIndex+1]=labels[hafazanIndex];icons[hafazanIndex+1]=icons[hafazanIndex];descriptions[hafazanIndex+1]=descriptions[hafazanIndex];
+  labels[hafazanIndex]="Hafazan";icons[hafazanIndex]="❖";descriptions[hafazanIndex]="Ulang kaji semua kotak dalam posting ini";
   ScrollView scroll=new ScrollView(this);scroll.setFillViewport(false);
   LinearLayout panel=new LinearLayout(this);panel.setOrientation(LinearLayout.VERTICAL);
   panel.setPadding(dp(12),dp(8),dp(12),dp(10));scroll.addView(panel);
@@ -2358,7 +2379,8 @@ public class MainActivity extends Activity {
    applyTouchFeedback(row);
    row.setOnClickListener(v->{
     dialog[0].dismiss();
-    if(option==restartIndex){stopAutoReading();if(readerScroll!=null&&key.equals(selected)){readerScroll.scrollTo(0,0);prefs.edit().putInt("reading_scroll_"+key,0).putInt("reading_progress_permille_"+key,0).apply();}}
+    if(option==hafazanIndex)showHafazan(key);
+    else if(option==restartIndex){stopAutoReading();if(readerScroll!=null&&key.equals(selected)){readerScroll.scrollTo(0,0);prefs.edit().putInt("reading_scroll_"+key,0).putInt("reading_progress_permille_"+key,0).apply();}}
     else if(option==contentsIndex)showAutomaticContents(key);
     else if(option==0)edit(key);
     else if(option==1){boolean pinned=prefs.getBoolean("pinned_"+key,false);prefs.edit().putBoolean("pinned_"+key,!pinned).putLong("pinned_at_"+key,!pinned?System.currentTimeMillis():0L).apply();Toast.makeText(this,pinned?"Sematan dibuang":"Disemat",Toast.LENGTH_SHORT).show();read(key);}
@@ -5922,5 +5944,5 @@ public class MainActivity extends Activity {
   }
   return super.onKeyDown(keyCode,event);
  }
- public void onBackPressed(){if(root!=null&&"board_management".equals(root.getTag())){openSection(maktabah);return;}if(editor!=null){finishEditingSafely();}else if(selected!=null){returnFromReader();}else if(sectionOpen){home();}else super.onBackPressed();}
+ public void onBackPressed(){if(root!=null&&"hafazan_reader".equals(root.getTag())&&selected!=null){resumeReading(selected);return;}if(root!=null&&"board_management".equals(root.getTag())){openSection(maktabah);return;}if(editor!=null){finishEditingSafely();}else if(selected!=null){returnFromReader();}else if(sectionOpen){home();}else super.onBackPressed();}
 }
