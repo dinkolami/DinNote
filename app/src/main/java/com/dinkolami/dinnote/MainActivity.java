@@ -3784,8 +3784,8 @@ public class MainActivity extends Activity {
   @Override public void drawBackground(android.graphics.Canvas c,android.graphics.Paint p,int left,int right,int top,int baseline,int bottom,CharSequence t,int start,int end,int line){
    boolean head=start<=first,tail=end>=last;
    if(head)top+=dp(2);if(tail)bottom-=dp(2);if(bottom<=top)return;
-   if(ink==0xff176b47||ink==0xff96783e){
-    android.graphics.Paint q=reusablePaint;q.reset();q.setAntiAlias(true);q.setColor(bg);c.drawRect(left+dp(1),top,right-dp(1),bottom,q);float phase=(android.os.SystemClock.uptimeMillis()%8500L)/8500f;float period=dp(360);float center=phase*period;int dark=ink==0xff176b47?0xff438b65:0xffb49a5d,light=ink==0xff176b47?0xffa5f5bb:0xffffe49a;q.setShader(new android.graphics.LinearGradient(0,center-period/2,0,center+period/2,new int[]{dark,light,dark},null,android.graphics.Shader.TileMode.REPEAT));c.drawRect(left+dp(1),top,left+dp(3),bottom,q);q.setShader(null);if(root!=null&&root.isShown())root.postInvalidateDelayed(80);return;
+   if(ink==0xff176b47||ink==0xff96783e||bg==0xfff3f3f2){
+    android.graphics.Paint q=reusablePaint;q.reset();q.setAntiAlias(true);q.setColor(bg);c.drawRect(left+dp(1),top,right-dp(1),bottom,q);float phase=(android.os.SystemClock.uptimeMillis()%8500L)/8500f;float period=dp(360);float center=phase*period;int dark=bg==0xfff3f3f2?0xff737976:ink==0xff176b47?0xff438b65:0xffb49a5d,light=bg==0xfff3f3f2?0xfff5f6f5:ink==0xff176b47?0xffa5f5bb:0xffffe49a;q.setShader(new android.graphics.LinearGradient(0,center-period/2,0,center+period/2,new int[]{dark,light,dark},null,android.graphics.Shader.TileMode.REPEAT));c.drawRect(left+dp(1),top,left+dp(4),bottom,q);q.setShader(null);if(root!=null&&root.isShown())root.postInvalidateDelayed(80);return;
    }
    float l=left+dp(1),r=right-dp(1),rad=dp(8);
    float[] corners={head?rad:0,head?rad:0,head?rad:0,head?rad:0,tail?rad:0,tail?rad:0,tail?rad:0,tail?rad:0};
@@ -4082,15 +4082,15 @@ public class MainActivity extends Activity {
    LinearLayout panel=new LinearLayout(this){
     @Override protected void dispatchDraw(android.graphics.Canvas c){
      super.dispatchDraw(c);
-     if(sacred){
+     if(sacred||!sacred){
       float h=getHeight();if(h<=0)return;
       boolean green=type.equals("SABDA");
-      int dark=green?0xff438b65:0xffb49a5d,light=green?0xffa5f5bb:0xffffe49a;
+      int dark=!sacred?0xff737976:green?0xff438b65:0xffb49a5d,light=!sacred?0xfff5f6f5:green?0xffa5f5bb:0xffffe49a;
       float phase=(android.os.SystemClock.uptimeMillis()%8500L)/8500f;
       float center=(phase*1.8f-0.4f)*h;
       android.graphics.Paint glow=new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
       glow.setShader(new android.graphics.LinearGradient(0,center-h*0.4f,0,center+h*0.4f,new int[]{dark,light,dark},null,android.graphics.Shader.TileMode.CLAMP));
-      c.drawRect(0,0,dp(2),h,glow);
+      c.drawRect(0,0,dp(3),h,glow);
       if(isShown())postInvalidateDelayed(80);
       return;
      }
@@ -4106,15 +4106,15 @@ public class MainActivity extends Activity {
    if(sacred){
     android.graphics.drawable.GradientDrawable base=new android.graphics.drawable.GradientDrawable();base.setColor(bg);base.setCornerRadius(dp(2));
     android.graphics.drawable.GradientDrawable stripe=new android.graphics.drawable.GradientDrawable();stripe.setColor(type.equals("FIRMAN")?0xffbba66e:0xff83a98e);
-    android.graphics.drawable.LayerDrawable layers=new android.graphics.drawable.LayerDrawable(new android.graphics.drawable.Drawable[]{stripe,base});layers.setLayerInset(1,dp(2),0,0,0);panel.setBackground(layers);panel.setPadding(dp(9),dp(3),dp(6),dp(3));
-   }else{android.graphics.drawable.GradientDrawable base=new android.graphics.drawable.GradientDrawable();base.setColor(bg);android.graphics.drawable.GradientDrawable stripe=new android.graphics.drawable.GradientDrawable();stripe.setColor(0xffb5bab7);android.graphics.drawable.LayerDrawable layers=new android.graphics.drawable.LayerDrawable(new android.graphics.drawable.Drawable[]{stripe,base});layers.setLayerInset(1,dp(2),0,0,0);panel.setBackground(layers);panel.setPadding(dp(9),dp(3),dp(6),dp(3));}
+    android.graphics.drawable.LayerDrawable layers=new android.graphics.drawable.LayerDrawable(new android.graphics.drawable.Drawable[]{stripe,base});layers.setLayerInset(1,dp(3),0,0,0);panel.setBackground(layers);panel.setPadding(dp(9),dp(3),dp(6),dp(3));
+   }else{android.graphics.drawable.GradientDrawable base=new android.graphics.drawable.GradientDrawable();base.setColor(bg);android.graphics.drawable.GradientDrawable stripe=new android.graphics.drawable.GradientDrawable();stripe.setColor(0xff737976);android.graphics.drawable.LayerDrawable layers=new android.graphics.drawable.LayerDrawable(new android.graphics.drawable.Drawable[]{stripe,base});layers.setLayerInset(1,dp(3),0,0,0);panel.setBackground(layers);panel.setPadding(dp(9),dp(3),dp(6),dp(3));}
    TextView label=text(type.equals("FIRMAN")?"Firman Allah SWT:":type.equals("SABDA")?"Sabda Nabi SAW:":type.equals("DALIL")?"⚖  Dalil":type.equals("HIKMAH")?"✒  Kalam Hikmah":type.equals("SAHABAT")?"✦  Kata Sahabat Rdh.":type.equals("TABII")?"❖  Kata Tabi\u0027in Rhm.":type.equals("ULAMA")?"✧  Kata Ulama\u0027 Rhm.":"◎  Catatan Penting",13);
    label.setTextColor(type.equals("FIRMAN")?0xff96783e:type.equals("SABDA")?0xff176b47:0xff666b68);
    label.setTypeface(android.graphics.Typeface.create("sans-serif",android.graphics.Typeface.NORMAL));label.setIncludeFontPadding(false);
    label.setPadding(dp(5),dp(1),dp(7),dp(1));
    label.setBackground(null);
    if(sacred){label.setText("❖ "+label.getText());label.setTextSize(11);label.setBackground(null);label.setPadding(0,0,0,dp(4));panel.addView(label,new LinearLayout.LayoutParams(-2,-2));}
-   else panel.addView(label,new LinearLayout.LayoutParams(-2,-2));
+   else {label.setTextSize(11);label.setPadding(0,0,0,dp(4));panel.addView(label,new LinearLayout.LayoutParams(-2,-2));}
    TextView value=text("",fontSize);String boxContent=m.group(2).replaceFirst("^\\n","").replaceFirst("\\n$","");value.setText(readerLabelText(boxContent));applySharedTextMetrics(value);value.setTextColor(0xff303c43);
    value.setPadding(0,0,0,0);value.setIncludeFontPadding(false);value.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);value.setTextIsSelectable(true);value.setGravity(Gravity.START);value.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START);if(!boxContent.trim().isEmpty())panel.addView(value);
    LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);
@@ -4122,7 +4122,7 @@ public class MainActivity extends Activity {
    boolean adjacentBox=previous>0&&source.substring(previous,m.start()).trim().isEmpty();
    // Give prose before and after a box a little more breathing room.
    // Adjacent boxes retain a compact separation rather than doubling the gap.
-   if(sacred)lp.setMargins(dp(2),dp(3),dp(2),dp(3));else lp.setMargins(dp(4),dp(adjacentBox?2:6),dp(4),dp(5));body.addView(panel,lp);
+   lp.setMargins(dp(2),dp(3),dp(2),dp(3));body.addView(panel,lp);
    previous=m.end();
   }
   addBoxParagraph(body,source.substring(previous),fontSize,key,source.substring(0,previous).split("\\n",-1).length-1);
