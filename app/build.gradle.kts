@@ -1,3 +1,5 @@
+import java.net.URI
+
 plugins { id("com.android.application") }
 android { namespace = "com.dinkolami.dinnote"; compileSdk = 35
  defaultConfig { applicationId = "com.dinkolami.dinnote.fresh"; minSdk = 26; targetSdk = 35; versionCode = 2; versionName = "1.0.1-fresh" }
@@ -17,7 +19,7 @@ val prepareAllura by tasks.registering {
         dir.mkdirs()
         for (name in listOf("Allura-Regular.ttf", "OFL.txt")) {
             val target = dir.resolve(name)
-            java.net.URI("https://raw.githubusercontent.com/google/fonts/main/ofl/allura/" + name).toURL().openStream().use { input -> target.outputStream().use { output -> input.copyTo(output) } }
+            URI("https://raw.githubusercontent.com/google/fonts/main/ofl/allura/" + name).toURL().openStream().use { input -> target.outputStream().use { output -> input.copyTo(output) } }
         }
     }
 }
