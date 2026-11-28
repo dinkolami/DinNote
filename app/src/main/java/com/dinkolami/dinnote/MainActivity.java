@@ -3410,8 +3410,22 @@ public class MainActivity extends Activity {
   new AlertDialog.Builder(this).setTitle("Template Nota Kuliah").setItems(new String[]{"Template Asal","Template Saya","Template Kosong"},(d,i)->{
    if(i==0)createLectureTemplateWith(null,false);
    else if(i==2)createLectureTemplateWith(null,true);
-   else{ArrayList<String> templates=new ArrayList<>();for(String k:prefs.getAll().keySet())if(k.startsWith("lecture_template_body_"))templates.add(k.substring("lecture_template_body_".length()));java.util.Collections.sort(templates);if(templates.isEmpty()){Toast.makeText(this,"Simpan template melalui Urus Subtopik dahulu",Toast.LENGTH_LONG).show();return;}new AlertDialog.Builder(this).setTitle("Template Saya").setItems(templates.toArray(new String[0]),(dd,j)->createLectureTemplateWith(templates.get(j),false)).setNegativeButton("Batal",null).show();}
+   else{ArrayList<String> templates=new ArrayList<>();for(String k:prefs.getAll().keySet())if(k.startsWith("lecture_template_body_"))templates.add(k.substring("lecture_template_body_".length()));java.util.Collections.sort(templates);if(templates.isEmpty()){Toast.makeText(this,"Simpan template melalui Urus Subtopik dahulu",Toast.LENGTH_LONG).show();return;}showPersonalTemplates(templates);}
   }).setNegativeButton("Batal",null).show();
+ }
+ void showPersonalTemplates(ArrayList<String> templates){
+  LinearLayout panel=new LinearLayout(this);panel.setOrientation(1);panel.setPadding(dp(14),dp(12),dp(14),dp(8));
+  TextView heading=text("◇  Template Saya",17);heading.setTextColor(0xff216e4e);heading.setTypeface(null,android.graphics.Typeface.BOLD);heading.setPadding(dp(4),0,0,dp(10));panel.addView(heading);
+  AlertDialog dialog=new AlertDialog.Builder(this).setView(panel).create();
+  ScrollView scroll=new ScrollView(this);LinearLayout list=new LinearLayout(this);list.setOrientation(1);scroll.addView(list);panel.addView(scroll,new LinearLayout.LayoutParams(-1,Math.min(dp(320),dp(48)*templates.size())));
+  for(String name:templates){
+   LinearLayout row=new LinearLayout(this);row.setGravity(Gravity.CENTER_VERTICAL);row.setPadding(dp(10),dp(5),dp(8),dp(5));row.setBackground(rounded(0xfffffefd,0xffd7c69d,9));LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,dp(42));lp.bottomMargin=dp(6);list.addView(row,lp);
+   TextView mark=text("❖",15);mark.setTextColor(0xffb59a55);row.addView(mark);
+   TextView label=text(name,15);label.setTextColor(0xff216e4e);label.setPadding(dp(9),0,0,0);row.addView(label,new LinearLayout.LayoutParams(0,-2,1f));
+   TextView arrow=text("›",19);arrow.setTextColor(0xff719384);row.addView(arrow);row.setOnClickListener(v->{dialog.dismiss();createLectureTemplateWith(name,false);});
+  }
+  TextView cancel=text("Batal",14);cancel.setTextColor(0xff216e4e);cancel.setGravity(Gravity.RIGHT);cancel.setPadding(dp(8),dp(8),dp(4),dp(6));panel.addView(cancel);cancel.setOnClickListener(v->dialog.dismiss());
+  dialog.show();android.view.Window window=dialog.getWindow();if(window!=null){window.setBackgroundDrawable(rounded(0xfff8faf7,0xffc5d9ce,14));window.setLayout(Math.min(getResources().getDisplayMetrics().widthPixels-dp(32),dp(340)),-2);}
  }
  void createLectureTemplateWith(String template,boolean blank){
   EditText title=new EditText(this);title.setSingleLine(true);title.setHint("Tajuk kuliah");
