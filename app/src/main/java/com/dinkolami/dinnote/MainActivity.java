@@ -682,7 +682,7 @@ public class MainActivity extends Activity {
   LinearLayout.LayoutParams latestAccentParams=new LinearLayout.LayoutParams(dp(1),dp(15));
   latestAccentParams.leftMargin=dp(5);latestHeader.addView(latestAccent,latestAccentParams);
   boolean latestCollapsed=prefs.getBoolean("home_latest_collapsed",false);
-  TextView latestHeading=dashboardText("Terkini Dimasukkan",15,true);applyAllura(latestHeading,21);
+  TextView latestHeading=dashboardText("Terkini Dimasukkan",15,true);applyAllura(latestHeading,19);
   latestHeading.setTextColor(0xff365c48);
   latestHeading.setIncludeFontPadding(false);
   latestHeading.setPadding(dp(8),dp(6),dp(8),dp(homeWindowWidthDp()<440?6:8));
@@ -811,7 +811,7 @@ public class MainActivity extends Activity {
    wisdomCard.setClipChildren(true);
    LinearLayout.LayoutParams wisdomParams=new LinearLayout.LayoutParams(-1,dp(126));
    wisdomParams.bottomMargin=dp(5);footer.addView(wisdomCard,wisdomParams);
-   TextView wisdomHeading=dashboardText("❀  Mutiara Hikmah  ❀",14,true);applyAllura(wisdomHeading,21);
+   TextView wisdomHeading=dashboardText("❀  Mutiara Hikmah  ❀",14,true);applyAllura(wisdomHeading,19);
    wisdomHeading.setTextColor(0xff365c48);wisdomHeading.setGravity(Gravity.CENTER);wisdomHeading.setIncludeFontPadding(false);
    wisdomCard.addView(wisdomHeading);
    TextView wisdomBody=dashboardText("",15,false);wisdomBody.setTextColor(0xff35453c);wisdomBody.setPadding(0,0,0,0);wisdomBody.setLineSpacing(0,1.0f);
@@ -977,7 +977,7 @@ public class MainActivity extends Activity {
  android.graphics.Typeface alluraFace;
  void applyAllura(TextView view,int size){
   if(alluraFace==null)try{alluraFace=android.graphics.Typeface.createFromAsset(getAssets(),"Allura-Regular.ttf");}catch(Exception e){alluraFace=android.graphics.Typeface.create("serif",android.graphics.Typeface.ITALIC);}
-  view.setTypeface(alluraFace);view.getPaint().setFakeBoldText(true);view.setTextSize(size);view.setTextColor(0xff075033);
+  view.setTypeface(alluraFace);view.getPaint().setFakeBoldText(false);view.setTextSize(size);view.setTextColor(0xff075033);
  }
  void dashboardSection(LinearLayout parent,String heading,ArrayList<String> keys,boolean pin){
   LinearLayout target=new LinearLayout(this);target.setOrientation(LinearLayout.VERTICAL);
@@ -989,7 +989,7 @@ public class MainActivity extends Activity {
   // Keep folded rows compact; unfolded columns retain comfortable touch targets.
   boolean folded=homeWindowWidthDp()<440;
   boolean collapsed=prefs.getBoolean(pin?"home_pinned_collapsed":"home_updated_collapsed",false);
-  TextView title=dashboardText(heading,15,true);applyAllura(title,21);
+  TextView title=dashboardText(heading,15,true);applyAllura(title,19);
   title.setTextColor(0xff365c48);
   title.setElevation(0);title.setPadding(dp(8),dp(folded?6:8),0,dp(folded?6:8));title.setIncludeFontPadding(false);title.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);title.setSingleLine(true);title.setEllipsize(android.text.TextUtils.TruncateAt.END);title.setContentDescription(heading+", ketik untuk buka atau lipat");title.setTooltipText(heading);title.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);LinearLayout.LayoutParams titleParams=new LinearLayout.LayoutParams(-1,-2);titleParams.topMargin=dp(2);titleParams.bottomMargin=dp(2);
   LinearLayout headingRow=new LinearLayout(this);headingRow.setGravity(Gravity.CENTER_VERTICAL);
