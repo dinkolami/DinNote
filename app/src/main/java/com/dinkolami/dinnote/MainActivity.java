@@ -3011,7 +3011,7 @@ public class MainActivity extends Activity {
       }
       displayMarker=digits.toString();
      }
-     TextView markerView=text(displayMarker,17);
+     TextView markerView=isIconHeading?centeredDiamondMarker(17):text(displayMarker,17);
      markerView.setGravity(Gravity.CENTER);
      markerView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
      markerView.setIncludeFontPadding(false);
@@ -4019,18 +4019,38 @@ public class MainActivity extends Activity {
    });
   });dialog.show();
  }
+ TextView centeredDiamondMarker(int size){
+  return new TextView(this){
+   @Override protected void onDraw(android.graphics.Canvas canvas){
+    android.graphics.Paint paint=new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
+    paint.setColor(0xff176b47);
+    float x=getWidth()/2f,y=getHeight()/2f;
+    float unit=Math.min(getWidth(),getHeight())*0.13f;
+    for(int i=0;i<4;i++){
+     float cx=x+(i==0?-unit:i==1?unit:0),cy=y+(i==2?-unit:i==3?unit:0);
+     float d=unit*0.83f;
+     android.graphics.Path path=new android.graphics.Path();path.moveTo(cx,cy-d);path.lineTo(cx+d,cy);path.lineTo(cx,cy+d);path.lineTo(cx-d,cy);path.close();canvas.drawPath(path,paint);
+    }
+   }
+  };
+ }
  void insertNumberedList(){
   if(editor==null)return;
-  int cursor=Math.max(0,editor.getSelectionStart());
+  int cursor=Math.max(0,Math.min(editor.getSelectionStart(),editor.getSelectionEnd()));
+  int selectionEnd=Math.max(cursor,Math.max(editor.getSelectionStart(),editor.getSelectionEnd()));
   String content=editor.getText().toString();
-  int lineStart=content.lastIndexOf('\n',Math.max(0,cursor-1))+1;
-  String line=content.substring(lineStart,cursor);
-  if(line.matches("\\s*\\d+\\)\\s*"))return;
+  int lineStart=content.lastIndexOf('\n',cursor-1)+1;
+  int lineEnd=content.indexOf('\n',lineStart);if(lineEnd<0)lineEnd=content.length();
+  if(content.substring(lineStart,lineEnd).matches("\\s*\\d+\\)\\s*.*"))return;
   int number=1;
-  java.util.regex.Matcher matcher=java.util.regex.Pattern.compile("(?m)^\\s*(\\d+)\\)\\s+").matcher(content.substring(0,lineStart));
-  while(matcher.find()){try{number=Integer.parseInt(matcher.group(1))+1;}catch(NumberFormatException ignored){}}
-  editor.getText().insert(lineStart,number+") ");
-  editor.setSelection(cursor+(number+") ").length());
+  if(lineStart>0){
+   int previousStart=content.lastIndexOf('\n',lineStart-2)+1;
+   java.util.regex.Matcher matcher=java.util.regex.Pattern.compile("^\\s*(\\d+)\\)\\s+.*$").matcher(content.substring(previousStart,lineStart-1));
+   if(matcher.matches()){try{number=Integer.parseInt(matcher.group(1))+1;}catch(NumberFormatException ignored){}}
+  }
+  String prefix=number+") ";
+  editor.getText().insert(lineStart,prefix);
+  editor.setSelection(cursor+prefix.length(),selectionEnd+prefix.length());
  }
  String normalizeStructuralMarkers(String source){
   String[] lines=source.split("\\n",-1);
@@ -4139,7 +4159,7 @@ public class MainActivity extends Activity {
     android.graphics.drawable.GradientDrawable ring=new GoldGlowDrawable(0);
     ring.setShape(android.graphics.drawable.GradientDrawable.OVAL);ring.setColor(0xfffcf8ed);ring.setStroke(dp(1),0xffc3a35a);
     medallion.setBackground(ring);
-    TextView numeral=new TextView(this);numeral.setText(isBullet?"●":isIconHeading?"❖":numbered.group(1));numeral.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP,13);numeral.setTypeface(android.graphics.Typeface.create("sans-serif-medium",android.graphics.Typeface.NORMAL));numeral.setGravity(Gravity.CENTER);numeral.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);numeral.setTextColor(isBullet?0xffc9b478:0xff176b47);numeral.setIncludeFontPadding(false);numeral.setPadding(0,0,0,0);numeral.setSingleLine(true);numeral.setMinHeight(0);numeral.setMinimumHeight(0);numeral.setMinWidth(0);numeral.setMinimumWidth(0);
+    TextView numeral=isIconHeading?centeredDiamondMarker(13):new TextView(this);numeral.setText(isBullet?"●":isIconHeading?"❖":numbered.group(1));numeral.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP,13);numeral.setTypeface(android.graphics.Typeface.create("sans-serif-medium",android.graphics.Typeface.NORMAL));numeral.setGravity(Gravity.CENTER);numeral.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);numeral.setTextColor(isBullet?0xffc9b478:0xff176b47);numeral.setIncludeFontPadding(false);numeral.setPadding(0,0,0,0);numeral.setSingleLine(true);numeral.setMinHeight(0);numeral.setMinimumHeight(0);numeral.setMinWidth(0);numeral.setMinimumWidth(0);
     FrameLayout.LayoutParams numeralParams=new FrameLayout.LayoutParams(-1,-1);medallion.addView(numeral,numeralParams);
     LinearLayout.LayoutParams medalParams=new LinearLayout.LayoutParams(dp(23),dp(23));medalParams.setMargins(dp(4),0,dp(1),0);heading.addView(medallion,medalParams);
     TextView title=text("",fontSize);title.setText(formattedReadingText(isBullet?line.trim().substring(2):isIconHeading?(iconHeading.group(1)==null?"Huraian":iconHeading.group(1)):numbered.group(2)));title.setTextColor(0xff303c43);title.setPadding(0,dp(2),dp(3),dp(2));heading.addView(title,new LinearLayout.LayoutParams(0,-2,1));
