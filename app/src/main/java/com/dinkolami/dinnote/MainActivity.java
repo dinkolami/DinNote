@@ -2966,6 +2966,7 @@ public class MainActivity extends Activity {
    LinearLayout readingRows=new LinearLayout(this);readingRows.setOrientation(1);
    readingRows.setPadding(readingSide,dp(8),readingSide,dp(12));
    body.addView(readingRows);
+   boolean previousNumber=false;
    for(int rowIndex=0;rowIndex<displayLines.length;rowIndex++){
     String line=displayLines[rowIndex];
     if(line.trim().isEmpty()){
@@ -2992,6 +2993,7 @@ public class MainActivity extends Activity {
     if(line.trim().equals("---")||line.trim().equals("---FLOWER---")||line.trim().equals("---GEOMETRIC---")||line.trim().equals("---CLASSIC---")){
      readingRows.addView(islamicOrnamentView(line.trim().equals("---")?"GEOMETRIC":line.trim().replace("---","")),new LinearLayout.LayoutParams(-1,dp(34)));
     }else if(isNumber||isMarked||isIconHeading){
+     if(isNumber){if(previousNumber)addNumberSeparator(readingRows);previousNumber=true;}
      LinearLayout itemRow=new LinearLayout(this);itemRow.setOrientation(LinearLayout.HORIZONTAL);
      itemRow.setGravity(Gravity.TOP);itemRow.setPadding(dp(6),dp(2),dp(6),dp(2));
      String marker=isNumber?numbered.group(1):(isIconHeading?"❖":marked.group(1));
@@ -3123,8 +3125,7 @@ public class MainActivity extends Activity {
       readingRows.addView(itemRow);
       if(isIconHeading||commentaryEditor.length()>0)readingRows.addView(commentaryPanel,commentaryParams);
      }else readingRows.addView(itemRow);
-     View fineDivider=new View(this);fineDivider.setBackgroundColor(0xffc5e7cb);
-     readingRows.addView(fineDivider,new LinearLayout.LayoutParams(-1,dp(1)));
+
     }else{
      if(line.trim().isEmpty()){View paragraphGap=new View(this);readingRows.addView(paragraphGap,new LinearLayout.LayoutParams(-1,dp(8)));continue;}
      TextView paragraph=text("",readingSizes[fontLevel]);paragraph.setText(readerLabelText(line));applySharedTextMetrics(paragraph);
@@ -4193,6 +4194,7 @@ public class MainActivity extends Activity {
   }
   addPlainBoxParagraph(body,value.substring(start),fontSize,key,baseLine+value.substring(0,start).split("\\n",-1).length-1);
  }
+ void addNumberSeparator(LinearLayout body){View divider=new View(this);divider.setBackgroundColor(0xffc5e7cb);body.addView(divider,new LinearLayout.LayoutParams(-1,dp(1)));}
  void addPlainBoxParagraph(LinearLayout body,String value,int fontSize,String key,int baseLine){
   // Mixed numbered headings and decorative boxes must retain expandable
   // per-heading commentary, rather than flattening every paragraph to a TextView.
@@ -4205,6 +4207,7 @@ public class MainActivity extends Activity {
    boolean isBullet=line.trim().startsWith("• ");
    if(numbered.matches()||isIconHeading||isBullet){
     addPlainBoxText(body,paragraph.toString(),fontSize);paragraph.setLength(0);
+    if(!isBullet&&!isIconHeading){if(Boolean.TRUE.equals(body.getTag(0x7f0f7ffe)))addNumberSeparator(body);body.setTag(0x7f0f7ffe,Boolean.TRUE);}
     final String commentaryKey="syarahan_"+key+"_"+(baseLine+i);
     LinearLayout wrapper=new LinearLayout(this);wrapper.setOrientation(1);
     LinearLayout heading=new LinearLayout(this);heading.setOrientation(0);heading.setGravity(Gravity.TOP);
@@ -4226,7 +4229,7 @@ public class MainActivity extends Activity {
     if(isIconHeading||(!isBullet&&note.length()>0)){wrapper.addView(details);if(!isIconHeading)details.setVisibility(View.VISIBLE);}
     View.OnClickListener toggle=v->{boolean open=details.getVisibility()!=View.VISIBLE;details.setVisibility(open?View.VISIBLE:View.GONE);};
     if(isIconHeading){heading.setOnClickListener(toggle);medallion.setOnClickListener(toggle);}
-    body.addView(wrapper);View divider=new View(this);divider.setBackgroundColor(0xffc5e7cb);body.addView(divider,new LinearLayout.LayoutParams(-1,dp(1)));
+    body.addView(wrapper);
    }else{paragraph.append(line);if(i<lines.length-1)paragraph.append('\n');}
   }
   addPlainBoxText(body,paragraph.toString(),fontSize);
