@@ -1010,10 +1010,10 @@ public class MainActivity extends Activity {
     String[] months={"Jan","Feb","Mac","Apr","Mei","Jun","Jul","Ogo","Sep","Okt","Nov","Dis"};
     String date=cal.get(java.util.Calendar.DAY_OF_MONTH)+" "+months[cal.get(java.util.Calendar.MONTH)];
     if(!pin)date+=" · "+new java.text.SimpleDateFormat("HHmm",java.util.Locale.ROOT).format(new java.util.Date(stamp));
-    TextView time=dashboardText(date,10,true);time.setTextColor(0xff68756c);time.setSingleLine(true);time.setTextDirection(View.TEXT_DIRECTION_LTR);time.setIncludeFontPadding(false);time.setGravity(Gravity.RIGHT|Gravity.CENTER_VERTICAL);time.setPadding(dp(5),0,0,0);
-    time.setBackground(homeGlossy(new int[]{0,1,3}[i%3],20));
-    time.setTextColor(0xff174d37);time.setTypeface(android.graphics.Typeface.create("sans-serif-medium",android.graphics.Typeface.NORMAL));time.setGravity(Gravity.CENTER);time.setPadding(dp(5),0,dp(5),0);
-    LinearLayout.LayoutParams dateParams=new LinearLayout.LayoutParams(-2,dp(24));dateParams.leftMargin=dp(4);
+    TextView time=dashboardText(date,9,false);time.setTextColor(0xff68756c);time.setSingleLine(true);time.setTextDirection(View.TEXT_DIRECTION_LTR);time.setIncludeFontPadding(false);time.setGravity(Gravity.RIGHT|Gravity.CENTER_VERTICAL);time.setPadding(dp(5),0,0,0);
+    android.graphics.drawable.GradientDrawable timeFrame=homeGlossy(new int[]{0,1,3}[i%3],20);timeFrame.setStroke(Math.max(1,Math.round(getResources().getDisplayMetrics().density*0.7f)),0xffc5ae76);time.setBackground(timeFrame);
+    time.setTextColor(0xff174d37);time.setTypeface(android.graphics.Typeface.DEFAULT);time.setGravity(Gravity.CENTER);time.setPadding(dp(4),dp(1),dp(4),dp(1));
+    LinearLayout.LayoutParams dateParams=new LinearLayout.LayoutParams(-2,-2);dateParams.leftMargin=dp(4);
     line.addView(time,dateParams);
    }
    LinearLayout.LayoutParams ep=new LinearLayout.LayoutParams(-1,dp(folded?38:42));ep.bottomMargin=dp(3);target.addView(line,ep);applyTouchFeedback(line);
