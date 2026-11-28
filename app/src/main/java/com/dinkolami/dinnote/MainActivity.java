@@ -2581,7 +2581,7 @@ public class MainActivity extends Activity {
    return;
   }
   final Runnable[] finishActive={null};
-  ArrayList<String> groupNames=new ArrayList<>(java.util.Arrays.asList("Pembukaan","Pengisian Ilmiah","Pendidikan Hati","Kefaqihan","Penghayatan")); boolean grouped=groupedLecture(names)||prefs.getBoolean("custom_groups_"+key,false);int previousGroup=-1;LinearLayout groupBody=body;final boolean[] manage={false};ArrayList<View> management=new ArrayList<>();if(grouped){TextView manageButton=text("☷  Urus subtopik",12);manageButton.setTextColor(0xff397e58);body.addView(manageButton);TextView addCategory=text("＋ Tambah Kategori",12);addCategory.setTextColor(0xff397e58);body.addView(addCategory);management.add(addCategory);addCategory.setVisibility(View.GONE);addCategory.setOnClickListener(v->{if(finishActive[0]!=null)finishActive[0].run();LinearLayout fields=new LinearLayout(this);fields.setOrientation(1);EditText category=new EditText(this);category.setHint("Nama kategori");category.setSingleLine(true);fields.addView(category);EditText topic=new EditText(this);topic.setHint("Nama subtopik pertama");topic.setSingleLine(true);fields.addView(topic);new AlertDialog.Builder(this).setTitle("Tambah Kategori").setView(fields).setNegativeButton("Batal",null).setPositiveButton("Tambah",(d,w)->{String cat=category.getText().toString().trim(),sub=topic.getText().toString().trim();if(cat.isEmpty()||sub.isEmpty()||names.contains(sub)){Toast.makeText(this,"Isi nama kategori dan subtopik baharu",Toast.LENGTH_SHORT).show();return;}prefs.edit().putBoolean("custom_groups_"+key,true).putString("lecture_group_"+key+"_"+sub,cat).apply();changeLectureSection(key,names.size()-1,sub);}).show();});manageButton.setOnClickListener(v->{manage[0]=!manage[0];for(View control:management)control.setVisibility(manage[0]?View.VISIBLE:View.GONE);});}
+  ArrayList<String> groupNames=new ArrayList<>(java.util.Arrays.asList("Pembukaan","Pengisian Ilmiah","Pendidikan Hati","Kefaqihan","Penghayatan")); boolean grouped=groupedLecture(names)||prefs.getBoolean("custom_groups_"+key,false);int previousGroup=-1;LinearLayout groupBody=body;final boolean[] manage={false};ArrayList<View> management=new ArrayList<>();if(grouped){TextView manageButton=text("☷  Urus subtopik",12);manageButton.setTextColor(0xff397e58);body.addView(manageButton);TextView saveTemplate=text("◇ Simpan Sebagai Template",12);saveTemplate.setTextColor(0xff397e58);body.addView(saveTemplate);management.add(saveTemplate);saveTemplate.setVisibility(View.GONE);saveTemplate.setOnClickListener(v->{if(finishActive[0]!=null)finishActive[0].run();saveLectureTemplate(key);});TextView addCategory=text("＋ Tambah Kategori",12);addCategory.setTextColor(0xff397e58);body.addView(addCategory);management.add(addCategory);addCategory.setVisibility(View.GONE);addCategory.setOnClickListener(v->{if(finishActive[0]!=null)finishActive[0].run();LinearLayout fields=new LinearLayout(this);fields.setOrientation(1);EditText category=new EditText(this);category.setHint("Nama kategori");category.setSingleLine(true);fields.addView(category);EditText topic=new EditText(this);topic.setHint("Nama subtopik pertama");topic.setSingleLine(true);fields.addView(topic);new AlertDialog.Builder(this).setTitle("Tambah Kategori").setView(fields).setNegativeButton("Batal",null).setPositiveButton("Tambah",(d,w)->{String cat=category.getText().toString().trim(),sub=topic.getText().toString().trim();if(cat.isEmpty()||sub.isEmpty()||names.contains(sub)){Toast.makeText(this,"Isi nama kategori dan subtopik baharu",Toast.LENGTH_SHORT).show();return;}prefs.edit().putBoolean("custom_groups_"+key,true).putString("lecture_group_"+key+"_"+sub,cat).apply();changeLectureSection(key,names.size()-1,sub);}).show();});manageButton.setOnClickListener(v->{manage[0]=!manage[0];for(View control:management)control.setVisibility(manage[0]?View.VISIBLE:View.GONE);});}
   for(int i=0;i<names.size();i++){
    int sectionGroup=grouped?lectureGroup(names.get(i)):-1;
    String customGroup=prefs.getString("lecture_group_"+key+"_"+names.get(i),"");if(grouped&&!customGroup.isEmpty()){if(!groupNames.contains(customGroup))groupNames.add(customGroup);sectionGroup=groupNames.indexOf(customGroup);}
@@ -3394,14 +3394,37 @@ public class MainActivity extends Activity {
   dialog.show();android.view.Window window=dialog.getWindow();
   if(window!=null){window.setBackgroundDrawable(rounded(0xfff8faf7,0xffc5d9ce,14));window.setLayout(Math.min(getResources().getDisplayMetrics().widthPixels-dp(32),dp(340)),-2);}
  }
+ void saveLectureTemplate(String key){
+  EditText input=new EditText(this);input.setSingleLine(true);input.setHint("Nama template");
+  new AlertDialog.Builder(this).setTitle("Simpan Sebagai Template").setView(input).setNegativeButton("Batal",null).setPositiveButton("Simpan",(d,w)->{
+   String name=input.getText().toString().trim();if(name.isEmpty())return;
+   StringBuilder structure=new StringBuilder();org.json.JSONObject groups=new org.json.JSONObject();
+   java.util.regex.Matcher m=lectureHeadingPattern().matcher(prefs.getString(key,""));
+   while(m.find()){String sub=m.group(1);structure.append("\u2063").append(sub).append("\n\n\n");String cat=prefs.getString("lecture_group_"+key+"_"+sub,"");if(!cat.isEmpty())try{groups.put(sub,cat);}catch(org.json.JSONException ignored){}}
+   if(structure.length()==0)return;
+   prefs.edit().putString("lecture_template_body_"+name,structure.toString()).putString("lecture_template_groups_"+name,groups.toString()).apply();
+   Toast.makeText(this,"Template disimpan",Toast.LENGTH_SHORT).show();
+  }).show();
+ }
  void createLectureTemplate(){
+  new AlertDialog.Builder(this).setTitle("Template Nota Kuliah").setItems(new String[]{"Template Asal","Template Saya","Template Kosong"},(d,i)->{
+   if(i==0)createLectureTemplateWith(null,false);
+   else if(i==2)createLectureTemplateWith(null,true);
+   else{ArrayList<String> templates=new ArrayList<>();for(String k:prefs.getAll().keySet())if(k.startsWith("lecture_template_body_"))templates.add(k.substring("lecture_template_body_".length()));java.util.Collections.sort(templates);if(templates.isEmpty()){Toast.makeText(this,"Simpan template melalui Urus Subtopik dahulu",Toast.LENGTH_LONG).show();return;}new AlertDialog.Builder(this).setTitle("Template Saya").setItems(templates.toArray(new String[0]),(dd,j)->createLectureTemplateWith(templates.get(j),false)).setNegativeButton("Batal",null).show();}
+  }).setNegativeButton("Batal",null).show();
+ }
+ void createLectureTemplateWith(String template,boolean blank){
   EditText title=new EditText(this);title.setSingleLine(true);title.setHint("Tajuk kuliah");
   AlertDialog dialog=new AlertDialog.Builder(this).setTitle("Nota Kuliah").setView(title).setNegativeButton("Batal",null).setPositiveButton("Cipta",null).create();
   dialog.setOnShowListener(v->dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(x->{
    String name=title.getText().toString().trim();if(name.isEmpty()){title.setError("Masukkan tajuk");return;}
    String key="n_"+java.util.UUID.randomUUID().toString();
    String body="\u2063Muqaddimah\n\n\n\u2063Maqasid Kuliah\n\n\n\u2063Pra Topik\n\n\n\u2063Ayat al-Quran\n\n\n\u2063Hadis Nabawi\n\n\n\u2063Kupasan Kalimah\n\n\n\u2063Nukilan Ulama\n\n\n\u2063Kalam Hikmah\n\n\n\u2063Kisah Renungan\n\n\n\u2063Perbahasan Hukum\n\n\n\u2063Kaedah Fiqh\n\n\n\u2063Realiti Semasa\n\n\n\u2063Persoalan Muhasabah\n\n\n\u2063Tuntutan Amalan\n\n\n\u2063Khulasah\n\n\n\u2063Penutup dan Doa\n\n\n";
-   boolean ok=prefs.edit().putString(key,body).putString("title_"+key,name).putString("cat_"+key,"Tanpa kategori").putLong("updated_"+key,System.currentTimeMillis()).commit();
+   if(blank)body="\u2063Subtopik 1\n\n\n";else if(template!=null)body=prefs.getString("lecture_template_body_"+template,body);
+   android.content.SharedPreferences.Editor changes=prefs.edit();
+   if(blank||template!=null)changes.putBoolean("custom_groups_"+key,true);
+   if(template!=null)try{org.json.JSONObject groups=new org.json.JSONObject(prefs.getString("lecture_template_groups_"+template,"{}"));java.util.Iterator<String> it=groups.keys();while(it.hasNext()){String sub=it.next();changes.putString("lecture_group_"+key+"_"+sub,groups.getString(sub));}}catch(org.json.JSONException ignored){}
+   boolean ok=changes.putString(key,body).putString("title_"+key,name).putString("cat_"+key,"Tanpa kategori").putLong("updated_"+key,System.currentTimeMillis()).commit();
    if(ok){dialog.dismiss();maktabah=false;try{readContentSafely(key);}catch(Exception failure){showReaderRecovery(key,failure);}}else Toast.makeText(this,"Simpan gagal",Toast.LENGTH_SHORT).show();
   }));dialog.show();
  }
