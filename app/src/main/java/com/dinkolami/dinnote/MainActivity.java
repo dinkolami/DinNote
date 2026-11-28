@@ -2993,7 +2993,7 @@ public class MainActivity extends Activity {
      readingRows.addView(islamicOrnamentView(line.trim().equals("---")?"GEOMETRIC":line.trim().replace("---","")),new LinearLayout.LayoutParams(-1,dp(34)));
     }else if(isNumber||isMarked||isIconHeading){
      LinearLayout itemRow=new LinearLayout(this);itemRow.setOrientation(LinearLayout.HORIZONTAL);
-     itemRow.setGravity(Gravity.CENTER_VERTICAL);itemRow.setPadding(dp(6),dp(2),dp(6),dp(2));
+     itemRow.setGravity(Gravity.TOP);itemRow.setPadding(dp(6),dp(2),dp(6),dp(2));
      String marker=isNumber?numbered.group(1):(isIconHeading?"❖":marked.group(1));
      String value=isNumber?numbered.group(2):(isIconHeading?(iconHeading.group(1)==null?"Huraian":iconHeading.group(1)):marked.group(2));
      boolean arabicHeading=java.util.regex.Pattern.compile("[\\u0600-\\u06FF]").matcher(value).find();
@@ -4186,7 +4186,7 @@ public class MainActivity extends Activity {
     addPlainBoxText(body,paragraph.toString(),fontSize);paragraph.setLength(0);
     final String commentaryKey="syarahan_"+key+"_"+(baseLine+i);
     LinearLayout wrapper=new LinearLayout(this);wrapper.setOrientation(1);
-    LinearLayout heading=new LinearLayout(this);heading.setOrientation(0);heading.setGravity(Gravity.CENTER_VERTICAL);
+    LinearLayout heading=new LinearLayout(this);heading.setOrientation(0);heading.setGravity(Gravity.TOP);
     // Match the original pearl-and-gold numbered medallion in the normal reader.
     FrameLayout medallion=new FrameLayout(this);
     android.graphics.drawable.GradientDrawable ring=new GoldGlowDrawable(0);
