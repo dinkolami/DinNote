@@ -3017,7 +3017,7 @@ public class MainActivity extends Activity {
      markerView.setIncludeFontPadding(false);
      markerView.setPadding(0,0,0,0);
      markerView.setSingleLine(true);
-     markerView.setTextColor(0xff176b47);
+     markerView.setTextColor(marker.equals("•")?0xffc9b478:0xff176b47);if(marker.equals("•")){markerView.setText("●");markerView.setTextSize(13); }
      // Arabic-Indic digits sit optically low in some Android fonts.
      // Centre the glyph within the two rings without changing the 17sp size.
      if(arabicHeading&&isNumber){
@@ -3052,7 +3052,7 @@ public class MainActivity extends Activity {
      itemRow.addView(valueView,new LinearLayout.LayoutParams(0,-2,1));
      if(arabicHeading)itemRow.addView(medallion,medalParams);
      // Expandable commentary stored separately from the source note.
-     if(isNumber||isIconHeading){
+     if(isIconHeading||isNumber){
       final String commentaryKey="syarahan_"+key+"_"+rowIndex;
       LinearLayout commentaryPanel=new LinearLayout(this);
       commentaryPanel.setOrientation(LinearLayout.VERTICAL);
@@ -3112,18 +3112,19 @@ public class MainActivity extends Activity {
       commentaryPanel.addView(commentaryEditor,new LinearLayout.LayoutParams(-1,-2));
       LinearLayout.LayoutParams commentaryParams=new LinearLayout.LayoutParams(-1,-2);
       commentaryParams.setMargins(dp(5),dp(2),dp(5),dp(5));
-      commentaryPanel.setVisibility(View.GONE);
+      commentaryPanel.setVisibility(isIconHeading?View.GONE:(commentaryEditor.length()>0?View.VISIBLE:View.GONE));
       View.OnClickListener toggleCommentary=v->{
        boolean opening=commentaryPanel.getVisibility()!=View.VISIBLE;
        commentaryPanel.setVisibility(opening?View.VISIBLE:View.GONE);
 
       };
-      lecturePanels.add(commentaryPanel);lectureArrows.add(markerView);
+      if(isIconHeading){lecturePanels.add(commentaryPanel);lectureArrows.add(markerView);
       lectureHeadings.add(itemRow);lectureTitles.add(readerLabelText(value));
       medallion.setOnClickListener(toggleCommentary);
       medallion.setContentDescription(isIconHeading?"Buka atau tutup huraian":("Buka atau tutup syarahan nombor "+marker));
+      }
       readingRows.addView(itemRow);
-      readingRows.addView(commentaryPanel,commentaryParams);
+      if(isIconHeading||commentaryEditor.length()>0)readingRows.addView(commentaryPanel,commentaryParams);
      }else readingRows.addView(itemRow);
      View fineDivider=new View(this);fineDivider.setBackgroundColor(0xffc5e7cb);
      readingRows.addView(fineDivider,new LinearLayout.LayoutParams(-1,dp(1)));
@@ -3610,7 +3611,7 @@ public class MainActivity extends Activity {
   italicButton.setTypeface(null,android.graphics.Typeface.ITALIC);italicButton.setContentDescription("Condong: tandakan teks terpilih");
   // Keep underline next to bold and italic, visible before horizontally scrolled list tools.
   Button underlineButton=action("U̲",formatBar,()->applyLiveStyle(4));
-  Button bulletButton=action("☷",formatBar,()->new AlertDialog.Builder(this).setTitle("List").setItems(new String[]{"•  Bullet biasa","1.  Nombor biasa","1)  Nombor dropdown","❖  Lambang dropdown"},(d,i)->{if(i==0)insertEditorText("• ");else if(i==1)insertEditorText("1. ");else if(i==2)insertNumberedList();else insertEditorText("@# ");}).show());
+  Button bulletButton=action("☷",formatBar,()->new AlertDialog.Builder(this).setTitle("List").setItems(new String[]{"●  Bullet Pearl Gold","1.  Nombor biasa","1)  Nombor bulat","❖  Lambang dropdown"},(d,i)->{if(i==0)insertEditorText("• ");else if(i==1)insertEditorText("1. ");else if(i==2)insertNumberedList();else insertEditorText("@# ");}).show());
   bulletButton.setContentDescription("Masukkan senarai");
   Button numberedButton=action("1)",formatBar,()->insertNumberedList());
   numberedButton.setTextColor(0xff17814a);numberedButton.setContentDescription("Senarai bernombor automatik");
@@ -4127,7 +4128,8 @@ public class MainActivity extends Activity {
    java.util.regex.Matcher numbered=java.util.regex.Pattern.compile("^\\s*(\\d+)\\)\\s+(.*)$").matcher(line);
    java.util.regex.Matcher iconHeading=java.util.regex.Pattern.compile("^\\s*@#(?:\\s+(.+))?$").matcher(line);
    boolean isIconHeading=!numbered.matches()&&iconHeading.matches();
-   if(numbered.matches()||isIconHeading){
+   boolean isBullet=line.trim().startsWith("• ");
+   if(numbered.matches()||isIconHeading||isBullet){
     addPlainBoxText(body,paragraph.toString(),fontSize);paragraph.setLength(0);
     final String commentaryKey="syarahan_"+key+"_"+(baseLine+i);
     LinearLayout wrapper=new LinearLayout(this);wrapper.setOrientation(1);
@@ -4137,20 +4139,20 @@ public class MainActivity extends Activity {
     android.graphics.drawable.GradientDrawable ring=new GoldGlowDrawable(0);
     ring.setShape(android.graphics.drawable.GradientDrawable.OVAL);ring.setColor(0xfffcf8ed);ring.setStroke(dp(1),0xffc3a35a);
     medallion.setBackground(ring);
-    TextView numeral=new TextView(this);numeral.setText(isIconHeading?"❖":numbered.group(1));numeral.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP,13);numeral.setTypeface(android.graphics.Typeface.create("sans-serif-medium",android.graphics.Typeface.NORMAL));numeral.setGravity(Gravity.CENTER);numeral.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);numeral.setTextColor(0xff176b47);numeral.setIncludeFontPadding(false);numeral.setPadding(0,0,0,0);numeral.setSingleLine(true);numeral.setMinHeight(0);numeral.setMinimumHeight(0);numeral.setMinWidth(0);numeral.setMinimumWidth(0);
+    TextView numeral=new TextView(this);numeral.setText(isBullet?"●":isIconHeading?"❖":numbered.group(1));numeral.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP,13);numeral.setTypeface(android.graphics.Typeface.create("sans-serif-medium",android.graphics.Typeface.NORMAL));numeral.setGravity(Gravity.CENTER);numeral.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);numeral.setTextColor(isBullet?0xffc9b478:0xff176b47);numeral.setIncludeFontPadding(false);numeral.setPadding(0,0,0,0);numeral.setSingleLine(true);numeral.setMinHeight(0);numeral.setMinimumHeight(0);numeral.setMinWidth(0);numeral.setMinimumWidth(0);
     FrameLayout.LayoutParams numeralParams=new FrameLayout.LayoutParams(-1,-1);medallion.addView(numeral,numeralParams);
     LinearLayout.LayoutParams medalParams=new LinearLayout.LayoutParams(dp(23),dp(23));medalParams.setMargins(dp(4),0,dp(1),0);heading.addView(medallion,medalParams);
-    TextView title=text("",fontSize);title.setText(formattedReadingText(isIconHeading?(iconHeading.group(1)==null?"Huraian":iconHeading.group(1)):numbered.group(2)));title.setTextColor(0xff303c43);title.setPadding(0,dp(2),dp(3),dp(2));heading.addView(title,new LinearLayout.LayoutParams(0,-2,1));
-    medallion.setContentDescription(isIconHeading?"Buka atau tutup huraian":("Buka atau tutup huraian nombor "+numbered.group(1)));
+    TextView title=text("",fontSize);title.setText(formattedReadingText(isBullet?line.trim().substring(2):isIconHeading?(iconHeading.group(1)==null?"Huraian":iconHeading.group(1)):numbered.group(2)));title.setTextColor(0xff303c43);title.setPadding(0,dp(2),dp(3),dp(2));heading.addView(title,new LinearLayout.LayoutParams(0,-2,1));
+    if(isIconHeading)medallion.setContentDescription("Buka atau tutup huraian");
     wrapper.addView(heading);
     LinearLayout details=new LinearLayout(this);details.setOrientation(1);details.setPadding(dp(10),dp(4),dp(10),dp(6));details.setBackground(rounded(0xfff8faf5,0xffd9e4d6,10));details.setVisibility(View.GONE);
     TextView label=text("Syarahan / Huraian",13);label.setTextColor(0xff176b47);details.addView(label);
     EditText note=new EditText(this);note.setTextSize(15);note.setHint("Tulis huraian di sini…");note.setMinLines(2);note.setText(prefs.getString(commentaryKey,""));details.addView(note);
     note.addTextChangedListener(new TextWatcher(){public void beforeTextChanged(CharSequence t,int a,int c,int f){}public void onTextChanged(CharSequence t,int a,int b,int c){prefs.edit().putString(commentaryKey,t.toString()).apply();}public void afterTextChanged(Editable e){}});
-    wrapper.addView(details);
+    if(isIconHeading||(!isBullet&&note.length()>0)){wrapper.addView(details);if(!isIconHeading)details.setVisibility(View.VISIBLE);}
     View.OnClickListener toggle=v->{boolean open=details.getVisibility()!=View.VISIBLE;details.setVisibility(open?View.VISIBLE:View.GONE);};
-    heading.setOnClickListener(toggle);medallion.setOnClickListener(toggle);
-    body.addView(wrapper);
+    if(isIconHeading){heading.setOnClickListener(toggle);medallion.setOnClickListener(toggle);}
+    body.addView(wrapper);View divider=new View(this);divider.setBackgroundColor(0xffc5e7cb);body.addView(divider,new LinearLayout.LayoutParams(-1,dp(1)));
    }else{paragraph.append(line);if(i<lines.length-1)paragraph.append('\n');}
   }
   addPlainBoxText(body,paragraph.toString(),fontSize);
