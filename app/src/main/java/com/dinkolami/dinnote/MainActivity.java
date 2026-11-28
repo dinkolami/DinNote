@@ -4060,35 +4060,31 @@ public class MainActivity extends Activity {
   while(m.find()){
    addBoxParagraph(body,source.substring(previous,m.start()),fontSize,key,source.substring(0,previous).split("\\n",-1).length-1);
    String type=m.group(1);
+   final boolean sacred=type.equals("FIRMAN")||type.equals("SABDA");
    LinearLayout panel=new LinearLayout(this){
     @Override protected void dispatchDraw(android.graphics.Canvas c){
      super.dispatchDraw(c);
+     if(sacred)return;
      android.graphics.Paint p=new android.graphics.Paint(3);p.setColor(0xff789184);p.setAlpha(65);p.setStyle(android.graphics.Paint.Style.STROKE);p.setStrokeWidth(dp(1));
      float right=getWidth()-dp(4),top=dp(4);
      for(int n=0;n<3;n++){float d=dp(7+n*5);android.graphics.Path path=new android.graphics.Path();path.moveTo(right-d-dp(6),top);path.lineTo(right-d,top+dp(3));path.lineTo(right-d,top+dp(6));path.lineTo(right-dp(3),top+d);path.lineTo(right,top+d+dp(5));c.drawPath(path,p);}
     }
    };panel.setOrientation(LinearLayout.VERTICAL);
-   int bg=type.equals("FIRMAN")?0xffedf5ee:type.equals("SABDA")?0xfffaf5e8:type.equals("DALIL")?0xffedf4fa:type.equals("HIKMAH")?0xfff5eff9:type.equals("SAHABAT")?0xfff1f6ec:type.equals("TABII")?0xfff1f4fa:type.equals("ULAMA")?0xfffaf1ed:0xfffcf0f2;
+   int bg=type.equals("FIRMAN")?0xfff5f8f1:type.equals("SABDA")?0xfffaf8f0:type.equals("DALIL")?0xffedf4fa:type.equals("HIKMAH")?0xfff5eff9:type.equals("SAHABAT")?0xfff1f6ec:type.equals("TABII")?0xfff1f4fa:type.equals("ULAMA")?0xfffaf1ed:0xfffcf0f2;
    int border=type.equals("FIRMAN")?0xffa5c3aa:type.equals("SABDA")?0xffd6c7a4:type.equals("DALIL")?0xff8eb4d2:type.equals("HIKMAH")?0xffbca5d0:type.equals("SAHABAT")?0xffb6c9a3:type.equals("TABII")?0xffb0bfd9:type.equals("ULAMA")?0xffd6b7a5:0xffd7a0b2;
    border=Color.rgb((Color.red(border)+Color.red(bg))/2,(Color.green(border)+Color.green(bg))/2,(Color.blue(border)+Color.blue(bg))/2);
-   panel.setBackground(rounded(bg,border,10));panel.setPadding(dp(7),dp(3),dp(7),dp(2));
+   if(sacred){
+    android.graphics.drawable.GradientDrawable base=new android.graphics.drawable.GradientDrawable();base.setColor(bg);base.setCornerRadius(dp(2));
+    android.graphics.drawable.GradientDrawable stripe=new android.graphics.drawable.GradientDrawable();stripe.setColor(type.equals("FIRMAN")?0xff83a98e:0xffbba66e);
+    android.graphics.drawable.LayerDrawable layers=new android.graphics.drawable.LayerDrawable(new android.graphics.drawable.Drawable[]{stripe,base});layers.setLayerInset(1,dp(2),0,0,0);panel.setBackground(layers);panel.setPadding(dp(9),dp(4),dp(6),dp(4));
+   }else{panel.setBackground(rounded(bg,border,10));panel.setPadding(dp(7),dp(3),dp(7),dp(2));}
    TextView label=text(type.equals("FIRMAN")?"Firman Allah SWT:":type.equals("SABDA")?"Sabda Nabi SAW:":type.equals("DALIL")?"⚖  Dalil":type.equals("HIKMAH")?"✒  Kalam Hikmah":type.equals("SAHABAT")?"✦  Kata Sahabat Rdh.":type.equals("TABII")?"❖  Kata Tabi\u0027in Rhm.":type.equals("ULAMA")?"✧  Kata Ulama\u0027 Rhm.":"◎  Catatan Penting",13);
    label.setTextColor(type.equals("FIRMAN")?0xff176b47:type.equals("SABDA")?0xff96783e:type.equals("DALIL")?0xff426e96:type.equals("HIKMAH")?0xff79549b:type.equals("SAHABAT")?0xff607d42:type.equals("TABII")?0xff536f9b:type.equals("ULAMA")?0xff9b654b:0xff946176);
    label.setTypeface(android.graphics.Typeface.create("sans-serif",android.graphics.Typeface.NORMAL));label.setIncludeFontPadding(false);
    label.setPadding(dp(5),dp(1),dp(7),dp(1));
    label.setBackground(rounded(bg,border,12));
-   if(type.equals("FIRMAN")||type.equals("SABDA")){
-    final boolean book=type.equals("FIRMAN");
-    final int ink=label.getCurrentTextColor();
-    LinearLayout heading=new LinearLayout(this);heading.setGravity(Gravity.CENTER_VERTICAL);
-    View symbol=new View(this){
-     @Override protected void onDraw(android.graphics.Canvas canvas){
-      super.onDraw(canvas);canvas.save();canvas.scale(getWidth()/32f,getHeight()/32f);
-      drawSacredBoxIcon(canvas,book,ink);canvas.restore();
-     }
-    };
-    heading.setBackground(rounded(bg,border,16));heading.setPadding(dp(6),dp(1),dp(8),dp(1));label.setBackground(null);label.setPadding(0,0,0,0);LinearLayout.LayoutParams iconParams=new LinearLayout.LayoutParams(dp(book?24:19),dp(book?24:19));iconParams.setMarginEnd(dp(4));heading.addView(symbol,iconParams);heading.addView(label);panel.addView(heading,new LinearLayout.LayoutParams(-2,-2));
-   }else panel.addView(label,new LinearLayout.LayoutParams(-2,-2));
+   if(sacred){label.setTextSize(11);label.setBackground(null);label.setPadding(0,0,0,dp(3));panel.addView(label,new LinearLayout.LayoutParams(-2,-2));}
+   else panel.addView(label,new LinearLayout.LayoutParams(-2,-2));
    TextView value=text("",fontSize);String boxContent=m.group(2).replaceFirst("^\\n","").replaceFirst("\\n$","");value.setText(readerLabelText(boxContent));applySharedTextMetrics(value);value.setTextColor(0xff303c43);
    value.setPadding(0,0,0,0);value.setIncludeFontPadding(false);value.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);value.setTextIsSelectable(true);value.setGravity(Gravity.START);value.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START);if(!boxContent.trim().isEmpty())panel.addView(value);
    LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);
@@ -4096,7 +4092,7 @@ public class MainActivity extends Activity {
    boolean adjacentBox=previous>0&&source.substring(previous,m.start()).trim().isEmpty();
    // Give prose before and after a box a little more breathing room.
    // Adjacent boxes retain a compact separation rather than doubling the gap.
-   lp.setMargins(dp(4),dp(adjacentBox?2:6),dp(4),dp(5));body.addView(panel,lp);
+   if(sacred)lp.setMargins(dp(2),dp(3),dp(2),dp(3));else lp.setMargins(dp(4),dp(adjacentBox?2:6),dp(4),dp(5));body.addView(panel,lp);
    previous=m.end();
   }
   addBoxParagraph(body,source.substring(previous),fontSize,key,source.substring(0,previous).split("\\n",-1).length-1);
