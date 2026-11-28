@@ -2497,6 +2497,24 @@ public class MainActivity extends Activity {
  void lectureGroupLabel(LinearLayout parent,int g){
   LinearLayout line=new LinearLayout(this);line.setGravity(Gravity.CENTER_VERTICAL);View stripe=new View(this);stripe.setBackgroundColor(lectureGroupColor(g));line.addView(stripe,new LinearLayout.LayoutParams(dp(2),dp(17)));TextView label=text(new String[]{"Pembukaan","Pengisian Ilmiah","Pendidikan Hati","Kefaqihan","Penghayatan"}[g],13);label.setTextColor(lectureGroupColor(g));label.setPadding(dp(8),dp(5),0,dp(5));line.addView(label);parent.addView(line);
  }
+ void copyLectureSectionToNote(String key,int index){
+  String raw=prefs.getString(key,"");java.util.regex.Matcher m=lectureHeadingPattern().matcher(raw);
+  ArrayList<Integer> offsets=new ArrayList<>();while(m.find())offsets.add(m.start());
+  if(index<0||index>=offsets.size())return;
+  final String section=raw.substring(offsets.get(index),index+1<offsets.size()?offsets.get(index+1):raw.length());
+  ArrayList<String> keys=new ArrayList<>();for(java.util.Map.Entry<String,?> e:prefs.getAll().entrySet()){String k=e.getKey();if(k.startsWith("n_")&&!k.equals(key)&&e.getValue() instanceof String&&!prefs.getBoolean("deleted_"+k,false)&&lectureHeadingPattern().matcher((String)e.getValue()).find())keys.add(k);}
+  keys.sort((a,b)->prefs.getString("title_"+a,"").compareToIgnoreCase(prefs.getString("title_"+b,"")));
+  if(keys.isEmpty()){Toast.makeText(this,"Tiada nota kuliah lain",Toast.LENGTH_SHORT).show();return;}
+  String[] labels=new String[keys.size()];for(int i=0;i<keys.size();i++)labels[i]=prefs.getString("title_"+keys.get(i),"Tanpa tajuk");
+  new AlertDialog.Builder(this).setTitle("Salin subtopik ke nota").setItems(labels,(d,i)->{
+   String dest=keys.get(i);new AlertDialog.Builder(this).setTitle("Salin ke "+labels[i]+"?").setMessage("Subtopik akan ditambah di bahagian akhir nota. Nota asal kekal.").setNegativeButton("Batal",null).setPositiveButton("Salin",(dd,w)->{
+    if(prefs.getBoolean("deleted_"+dest,false)||!prefs.contains(dest))return;
+    String before=prefs.getString(dest,"");snapshotBeforeAutosave(dest,before,prefs.getString("title_"+dest,""),prefs.getString("cat_"+dest,"Tanpa kategori"));
+    prefs.edit().putString(dest,before+(before.endsWith("\n")?"\n":"\n\n")+section).putLong("updated_"+dest,System.currentTimeMillis()).apply();
+    Toast.makeText(this,"Subtopik disalin",Toast.LENGTH_SHORT).show();
+   }).show();
+  }).setNegativeButton("Batal",null).show();
+ }
  void changeLectureSection(String key,int index,String added){
   String raw=prefs.getString(key,"");java.util.regex.Matcher m=lectureHeadingPattern().matcher(raw);ArrayList<Integer> offsets=new ArrayList<>();while(m.find())offsets.add(m.start());if(index<0||index>=offsets.size())return;int start=offsets.get(index),end=index+1<offsets.size()?offsets.get(index+1):raw.length();String updated=added==null?raw.substring(0,start)+raw.substring(end):raw.substring(0,end)+(end>0&&raw.charAt(end-1)!='\n'?"\n":"")+"\u2063"+added+"\n\n\n"+raw.substring(end);snapshotBeforeAutosave(key,raw,prefs.getString("title_"+key,""),prefs.getString("cat_"+key,"Tanpa kategori"));prefs.edit().putString(key,updated).putLong("updated_"+key,System.currentTimeMillis()).apply();try{readContentSafely(key);}catch(Exception failure){showReaderRecovery(key,failure);}
  }
@@ -2544,7 +2562,7 @@ public class MainActivity extends Activity {
    for(int direction:new int[]{-1,1}){
     final int delta=direction;TextView move=text(delta<0?"↑":"↓",sectionGroup>=0?14:17);move.setGravity(Gravity.CENTER);move.setTextColor(0xff216e4e);headerRow.addView(move,new LinearLayout.LayoutParams(dp(sectionGroup>=0?26:30),dp(sectionGroup>=0?36:44)));if(grouped){management.add(move);move.setVisibility(View.GONE);}move.setEnabled(moveIndex+delta>=0&&moveIndex+delta<names.size());move.setAlpha(move.isEnabled()?1f:0.3f);move.setContentDescription(delta<0?"Pindah ke atas":"Pindah ke bawah");move.setOnClickListener(v->{if(finishActive[0]!=null)finishActive[0].run();moveLectureSection(key,moveIndex,delta);});
    }
-   if(!grouped)headerRow.addView(arrow);else{for(String symbol:new String[]{"+","×"}){TextView control=text(symbol,14);control.setGravity(Gravity.CENTER);control.setTextColor(0xff397e58);headerRow.addView(control,new LinearLayout.LayoutParams(dp(26),dp(36)));management.add(control);control.setVisibility(View.GONE);control.setContentDescription(symbol.equals("+")?"Tambah subtopik":"Buang subtopik");control.setOnClickListener(v->{if(finishActive[0]!=null)finishActive[0].run();if(symbol.equals("+")){EditText input=new EditText(this);input.setSingleLine(true);new AlertDialog.Builder(this).setTitle("Tambah subtopik selepas "+name).setView(input).setNegativeButton("Batal",null).setPositiveButton("Tambah",(d,w)->{String title=input.getText().toString().trim();if(!title.isEmpty())changeLectureSection(key,moveIndex,title);}).show();}else new AlertDialog.Builder(this).setTitle("Buang "+name+"?").setMessage("Kandungan subtopik ini juga akan dibuang.").setNegativeButton("Batal",null).setPositiveButton("Buang",(d,w)->changeLectureSection(key,moveIndex,null)).show();});}}
+   if(!grouped)headerRow.addView(arrow);else{for(String symbol:new String[]{"+","⧉","×"}){TextView control=text(symbol,14);control.setGravity(Gravity.CENTER);control.setTextColor(0xff397e58);headerRow.addView(control,new LinearLayout.LayoutParams(dp(26),dp(36)));management.add(control);control.setVisibility(View.GONE);control.setContentDescription(symbol.equals("+")?"Tambah subtopik":symbol.equals("⧉")?"Salin subtopik ke nota lain":"Buang subtopik");control.setOnClickListener(v->{if(finishActive[0]!=null)finishActive[0].run();if(symbol.equals("⧉")){copyLectureSectionToNote(key,moveIndex);return;}if(symbol.equals("+")){EditText input=new EditText(this);input.setSingleLine(true);new AlertDialog.Builder(this).setTitle("Tambah subtopik selepas "+name).setView(input).setNegativeButton("Batal",null).setPositiveButton("Tambah",(d,w)->{String title=input.getText().toString().trim();if(!title.isEmpty())changeLectureSection(key,moveIndex,title);}).show();}else new AlertDialog.Builder(this).setTitle("Buang "+name+"?").setMessage("Kandungan subtopik ini juga akan dibuang.").setNegativeButton("Batal",null).setPositiveButton("Buang",(d,w)->changeLectureSection(key,moveIndex,null)).show();});}}
    LinearLayout panel=new LinearLayout(this);panel.setOrientation(1);panel.setPadding(dp(8),0,dp(8),dp(6));group.addView(panel);
    if(value.isEmpty()){
     TextView empty=text("Tiada kandungan",Math.max(13,size-2));empty.setTextColor(0xff718078);empty.setPadding(dp(4),dp(8),dp(4),dp(8));panel.addView(empty);
