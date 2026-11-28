@@ -920,7 +920,7 @@ public class MainActivity extends Activity {
   return out;
  }
  android.graphics.drawable.Drawable homeInsetSurface(int top,int bottom,int border,int radius){
-  android.graphics.drawable.GradientDrawable surface=new android.graphics.drawable.GradientDrawable(android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,new int[]{top,bottom});
+  android.graphics.drawable.GradientDrawable surface=isGoldBorder(border)?new GoldGlowDrawable(android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,new int[]{top,bottom},radius):new android.graphics.drawable.GradientDrawable(android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,new int[]{top,bottom});
   surface.setCornerRadius(dp(radius));
   surface.setStroke(Math.max(1,Math.round(0.5f*getResources().getDisplayMetrics().density)),border);
   android.graphics.drawable.GradientDrawable inner=new android.graphics.drawable.GradientDrawable(android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,new int[]{0x08000000,0x00000000,0x08ffffff});
@@ -1022,11 +1022,36 @@ public class MainActivity extends Activity {
    line.setOnLongClickListener(v->{showDashboardActions(key);return true;});
   }
  }
+ boolean isGoldBorder(int color){
+  int r=Color.red(color),g=Color.green(color),b=Color.blue(color);
+  return Color.alpha(color)>180&&r>=145&&r>g+8&&g>b+15;
+ }
+ class GoldGlowDrawable extends android.graphics.drawable.GradientDrawable {
+  final int corner;final android.graphics.Paint glow=new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
+  final android.graphics.Path path=new android.graphics.Path();final android.graphics.PathMeasure measure=new android.graphics.PathMeasure();final float[] pos=new float[2];
+  final Runnable tick=()->invalidateSelf();
+  GoldGlowDrawable(int radius){super();corner=radius;}
+  GoldGlowDrawable(Orientation orientation,int[] colors,int radius){super(orientation,colors);corner=radius;}
+  @Override public void draw(android.graphics.Canvas canvas){
+   super.draw(canvas);android.graphics.Rect b=getBounds();if(b.width()<4||b.height()<4)return;
+   float inset=Math.max(1f,dp(1)/2f),radius=Math.min(dp(corner),Math.min(b.width(),b.height())/2f);
+   path.reset();path.addRoundRect(new android.graphics.RectF(b.left+inset,b.top+inset,b.right-inset,b.bottom-inset),radius,radius,android.graphics.Path.Direction.CW);measure.setPath(path,true);
+   float length=measure.getLength(),phase=(android.os.SystemClock.uptimeMillis()%8500L)/8500f;
+   float reach=Math.max(dp(5),Math.min(dp(62),length*0.12f));
+   glow.setStyle(android.graphics.Paint.Style.STROKE);glow.setStrokeWidth(Math.max(1f,dp(1)));
+   for(int i=0;i<4;i++){measure.getPosTan(((phase+i*0.25f)%1f)*length,pos,null);
+    int[] colors=i%2==0?new int[]{0xff07864d,0xaa35b77b,0x0035b77b}:new int[]{0xffc58b0b,0xccf3c342,0x00f3c342};
+    glow.setShader(new android.graphics.RadialGradient(pos[0],pos[1],reach,colors,new float[]{0f,0.42f,1f},android.graphics.Shader.TileMode.CLAMP));canvas.drawPath(path,glow);
+   }
+   glow.setShader(null);if(isVisible()&&getCallback()!=null)scheduleSelf(tick,android.os.SystemClock.uptimeMillis()+80L);
+  }
+  @Override public boolean setVisible(boolean visible,boolean restart){if(!visible)unscheduleSelf(tick);boolean changed=super.setVisible(visible,restart);if(visible)invalidateSelf();return changed;}
+ }
  android.graphics.drawable.GradientDrawable homeGlossy(int index,int radius){
-  android.graphics.drawable.GradientDrawable d=new android.graphics.drawable.GradientDrawable(android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,new int[]{0xfffffefa,0xfff3faf2,0xffdcefd9});d.setCornerRadius(dp(radius));d.setStroke(dp(1),0xffc99a20);return d;
+  android.graphics.drawable.GradientDrawable d=new GoldGlowDrawable(android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,new int[]{0xfffffefa,0xfff3faf2,0xffdcefd9},radius);d.setCornerRadius(dp(radius));d.setStroke(dp(1),0xffc99a20);return d;
  }
  android.graphics.drawable.GradientDrawable rounded(int fill,int stroke,int radius){
-  android.graphics.drawable.GradientDrawable d=new android.graphics.drawable.GradientDrawable();
+  android.graphics.drawable.GradientDrawable d=isGoldBorder(stroke)?new GoldGlowDrawable(radius):new android.graphics.drawable.GradientDrawable();
   d.setColor(fill);d.setCornerRadius(dp(radius));d.setStroke(dp(1),stroke);return d;
  }
 
