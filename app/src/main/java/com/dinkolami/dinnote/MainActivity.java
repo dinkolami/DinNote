@@ -977,7 +977,7 @@ public class MainActivity extends Activity {
  android.graphics.Typeface alluraFace;
  void applyAllura(TextView view,int size){
   if(alluraFace==null)try{alluraFace=android.graphics.Typeface.createFromAsset(getAssets(),"Allura-Regular.ttf");}catch(Exception e){alluraFace=android.graphics.Typeface.create("serif",android.graphics.Typeface.ITALIC);}
-  view.setTypeface(alluraFace);view.getPaint().setFakeBoldText(false);view.setTextSize(size);view.setTextColor(0xff075033);
+  view.setTypeface(alluraFace);view.getPaint().setFakeBoldText(false);view.setTextSize(size);view.setTextColor(0xff033b25);
  }
  void dashboardSection(LinearLayout parent,String heading,ArrayList<String> keys,boolean pin){
   LinearLayout target=new LinearLayout(this);target.setOrientation(LinearLayout.VERTICAL);
