@@ -3813,7 +3813,10 @@ public class MainActivity extends Activity {
  class BoxBodySpan implements android.text.style.LineBackgroundSpan {
   final int bg,ink,first,last;final android.graphics.Paint reusablePaint=new android.graphics.Paint(3);final android.graphics.Path reusableShape=new android.graphics.Path();final android.graphics.Path reusableEdge=new android.graphics.Path();BoxBodySpan(int b,int i,int a,int z){bg=b;ink=i;first=a;last=z;}
   @Override public void drawBackground(android.graphics.Canvas c,android.graphics.Paint p,int left,int right,int top,int baseline,int bottom,CharSequence t,int start,int end,int line){
-   boolean head=start<=first,tail=end>=last;
+   // Span offsets are rebased when a paginated reader takes a subsequence.
+   int actualFirst=first,actualLast=last;
+   if(t instanceof android.text.Spanned){android.text.Spanned sp=(android.text.Spanned)t;actualFirst=sp.getSpanStart(this);actualLast=sp.getSpanEnd(this);}
+   boolean head=start<=actualFirst,tail=end>=actualLast;
    if(head)top+=dp(2);if(tail)bottom-=dp(2);if(bottom<=top)return;
    if(ink==0xff176b47||ink==0xff96783e||bg==0xfff3f3f2){
     android.graphics.Paint q=reusablePaint;q.reset();q.setAntiAlias(true);q.setColor(bg);c.drawRect(left+dp(1),top,right-dp(1),bottom,q);float phase=(android.os.SystemClock.uptimeMillis()%8500L)/8500f;float period=dp(360);float center=phase*period;int dark=bg==0xfff3f3f2?0xff737976:ink==0xff176b47?0xff438b65:0xffb49a5d,light=bg==0xfff3f3f2?0xfff5f6f5:ink==0xff176b47?0xffa5f5bb:0xffffe49a;q.setShader(new android.graphics.LinearGradient(0,center-period/2,0,center+period/2,new int[]{dark,light,dark},null,android.graphics.Shader.TileMode.REPEAT));c.drawRect(left+dp(1),top,left+dp(4),bottom,q);q.setShader(null);if(root!=null&&root.isShown())root.postInvalidateDelayed(80);return;
