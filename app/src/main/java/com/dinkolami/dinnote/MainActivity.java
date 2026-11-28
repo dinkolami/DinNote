@@ -3007,7 +3007,7 @@ public class MainActivity extends Activity {
       }
       displayMarker=digits.toString();
      }
-     TextView markerView=isIconHeading?centeredDiamondMarker(17):text(displayMarker,17);
+     TextView markerView=isIconHeading?centeredDiamondMarker(17):text(displayMarker,isNumber?15:17);
      markerView.setGravity(Gravity.CENTER);
      markerView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
      markerView.setIncludeFontPadding(false);
@@ -3037,7 +3037,8 @@ public class MainActivity extends Activity {
      FrameLayout.LayoutParams innerCircleParams=new FrameLayout.LayoutParams(-1,-1,Gravity.CENTER);
      innerCircleParams.setMargins(dp(2),dp(2),dp(2),dp(2));
      medallion.addView(markerView,innerCircleParams);
-     LinearLayout.LayoutParams medalParams=new LinearLayout.LayoutParams(dp(25),dp(25));
+     LinearLayout.LayoutParams medalParams=new LinearLayout.LayoutParams(dp(isNumber?22:25),dp(isNumber?22:25));
+     if(isNumber)medalParams.topMargin=dp(3);
      if(arabicHeading)medalParams.leftMargin=dp(2);else medalParams.rightMargin=dp(1);
      if(!arabicHeading)itemRow.addView(medallion,medalParams);
      TextView valueView=text("",readingSizes[fontLevel]);valueView.setText(readerLabelText(value));applySharedTextMetrics(valueView);valueView.setTextColor(0xff303c43);
@@ -4192,9 +4193,9 @@ public class MainActivity extends Activity {
     android.graphics.drawable.GradientDrawable ring=new GoldGlowDrawable(0);
     ring.setShape(android.graphics.drawable.GradientDrawable.OVAL);ring.setColor(0xfffcf8ed);ring.setStroke(dp(1),0xffc3a35a);
     medallion.setBackground(ring);
-    TextView numeral=isIconHeading?centeredDiamondMarker(13):new TextView(this);numeral.setText(isBullet?"●":isIconHeading?"❖":numbered.group(1));numeral.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP,isBullet?18:13);numeral.setTypeface(android.graphics.Typeface.create("sans-serif-medium",android.graphics.Typeface.NORMAL));numeral.setGravity(Gravity.CENTER);numeral.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);numeral.setTextColor(isBullet?0xffc9b478:0xff176b47);numeral.setIncludeFontPadding(false);numeral.setPadding(0,0,0,0);numeral.setSingleLine(true);numeral.setMinHeight(0);numeral.setMinimumHeight(0);numeral.setMinWidth(0);numeral.setMinimumWidth(0);
+    TextView numeral=isIconHeading?centeredDiamondMarker(13):new TextView(this);numeral.setText(isBullet?"●":isIconHeading?"❖":numbered.group(1));numeral.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP,isBullet?18:isIconHeading?13:12);numeral.setTypeface(android.graphics.Typeface.create("sans-serif-medium",android.graphics.Typeface.NORMAL));numeral.setGravity(Gravity.CENTER);numeral.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);numeral.setTextColor(isBullet?0xffc9b478:0xff176b47);numeral.setIncludeFontPadding(false);numeral.setPadding(0,0,0,0);numeral.setSingleLine(true);numeral.setMinHeight(0);numeral.setMinimumHeight(0);numeral.setMinWidth(0);numeral.setMinimumWidth(0);
     FrameLayout.LayoutParams numeralParams=new FrameLayout.LayoutParams(-1,-1);medallion.addView(numeral,numeralParams);
-    LinearLayout.LayoutParams medalParams=new LinearLayout.LayoutParams(dp(23),dp(23));medalParams.setMargins(dp(4),0,dp(1),0);heading.addView(medallion,medalParams);
+    LinearLayout.LayoutParams medalParams=new LinearLayout.LayoutParams(dp(!isBullet&&!isIconHeading?20:23),dp(!isBullet&&!isIconHeading?20:23));medalParams.setMargins(dp(4),!isBullet&&!isIconHeading?dp(3):0,dp(1),0);heading.addView(medallion,medalParams);
     TextView title=text("",fontSize);title.setText(formattedReadingText(isBullet?line.trim().substring(2):isIconHeading?(iconHeading.group(1)==null?"Huraian":iconHeading.group(1)):numbered.group(2)));title.setTextColor(0xff303c43);title.setPadding(0,dp(2),dp(3),dp(2));heading.addView(title,new LinearLayout.LayoutParams(0,-2,1));
     if(isIconHeading)medallion.setContentDescription("Buka atau tutup huraian");
     wrapper.addView(heading);
