@@ -1024,7 +1024,7 @@ public class MainActivity extends Activity {
  }
  boolean isGoldBorder(int color){
   int r=Color.red(color),g=Color.green(color),b=Color.blue(color);
-  return Color.alpha(color)>180&&r>=145&&r>g+8&&g>b+15;
+  return Color.alpha(color)>180&&r>=145&&r>g+5&&g>b+12;
  }
  class GoldGlowDrawable extends android.graphics.drawable.GradientDrawable {
   final int corner;final android.graphics.Paint glow=new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
@@ -1035,12 +1035,12 @@ public class MainActivity extends Activity {
   @Override public void draw(android.graphics.Canvas canvas){
    super.draw(canvas);android.graphics.Rect b=getBounds();if(b.width()<4||b.height()<4)return;
    float inset=Math.max(1f,dp(1)/2f),radius=Math.min(dp(corner),Math.min(b.width(),b.height())/2f);
-   path.reset();path.addRoundRect(new android.graphics.RectF(b.left+inset,b.top+inset,b.right-inset,b.bottom-inset),radius,radius,android.graphics.Path.Direction.CW);measure.setPath(path,true);
+   path.reset();android.graphics.RectF frame=new android.graphics.RectF(b.left+inset,b.top+inset,b.right-inset,b.bottom-inset);if(getShape()==android.graphics.drawable.GradientDrawable.OVAL)path.addOval(frame,android.graphics.Path.Direction.CW);else path.addRoundRect(frame,radius,radius,android.graphics.Path.Direction.CW);measure.setPath(path,true);
    float length=measure.getLength(),phase=(android.os.SystemClock.uptimeMillis()%8500L)/8500f;
-   float reach=Math.max(dp(5),Math.min(dp(62),length*0.12f));
-   glow.setStyle(android.graphics.Paint.Style.STROKE);glow.setStrokeWidth(Math.max(1f,dp(1)));
+   float reach=Math.max(dp(4),Math.min(dp(62),length*0.12f));
+   glow.setStyle(android.graphics.Paint.Style.STROKE);glow.setStrokeWidth(Math.max(1f,dp(1)*(length>dp(240)?1.15f:0.85f)));
    for(int i=0;i<4;i++){measure.getPosTan(((phase+i*0.25f)%1f)*length,pos,null);
-    int[] colors=i%2==0?new int[]{0xff07864d,0xaa35b77b,0x0035b77b}:new int[]{0xffc58b0b,0xccf3c342,0x00f3c342};
+    int[] colors=i%2==0?new int[]{0xff07864d,0xcc35b77b,0x0035b77b}:new int[]{0xffc58b0b,0xeef3c342,0x00f3c342};
     glow.setShader(new android.graphics.RadialGradient(pos[0],pos[1],reach,colors,new float[]{0f,0.42f,1f},android.graphics.Shader.TileMode.CLAMP));canvas.drawPath(path,glow);
    }
    glow.setShader(null);if(isVisible()&&getCallback()!=null)scheduleSelf(tick,android.os.SystemClock.uptimeMillis()+80L);
@@ -2969,13 +2969,13 @@ public class MainActivity extends Activity {
       markerView.setTypeface(android.graphics.Typeface.create("serif",android.graphics.Typeface.NORMAL));
       markerView.setTranslationY(-dp(1));
      }
-     android.graphics.drawable.GradientDrawable medal=new android.graphics.drawable.GradientDrawable();
+     android.graphics.drawable.GradientDrawable medal=new GoldGlowDrawable(0);
      medal.setShape(android.graphics.drawable.GradientDrawable.OVAL);
      medal.setColor(0xfffcf8ed);
      medal.setStroke(dp(1),0xffc3a35a);
      // Two concentric circles: a subtle outer gold ring and a brighter pearl centre.
      FrameLayout medallion=new FrameLayout(this);
-     android.graphics.drawable.GradientDrawable outerCircle=new android.graphics.drawable.GradientDrawable();
+     android.graphics.drawable.GradientDrawable outerCircle=new GoldGlowDrawable(0);
      outerCircle.setShape(android.graphics.drawable.GradientDrawable.OVAL);
      outerCircle.setColor(0xfff3ecd9);
      outerCircle.setStroke(dp(1),0xffc3a35a);
@@ -4121,7 +4121,7 @@ public class MainActivity extends Activity {
     LinearLayout heading=new LinearLayout(this);heading.setOrientation(0);heading.setGravity(Gravity.CENTER_VERTICAL);
     // Match the original pearl-and-gold numbered medallion in the normal reader.
     FrameLayout medallion=new FrameLayout(this);
-    android.graphics.drawable.GradientDrawable ring=new android.graphics.drawable.GradientDrawable();
+    android.graphics.drawable.GradientDrawable ring=new GoldGlowDrawable(0);
     ring.setShape(android.graphics.drawable.GradientDrawable.OVAL);ring.setColor(0xfffcf8ed);ring.setStroke(dp(1),0xffc3a35a);
     medallion.setBackground(ring);
     TextView numeral=new TextView(this);numeral.setText(isIconHeading?"✦":numbered.group(1));numeral.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP,13);numeral.setTypeface(android.graphics.Typeface.create("sans-serif-medium",android.graphics.Typeface.NORMAL));numeral.setGravity(Gravity.CENTER);numeral.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);numeral.setTextColor(0xff176b47);numeral.setIncludeFontPadding(false);numeral.setPadding(0,0,0,0);numeral.setSingleLine(true);numeral.setMinHeight(0);numeral.setMinimumHeight(0);numeral.setMinWidth(0);numeral.setMinimumWidth(0);
