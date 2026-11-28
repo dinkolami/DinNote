@@ -3394,13 +3394,24 @@ public class MainActivity extends Activity {
   showCreationChoices("Template Nota Kuliah",new ArrayList<>(java.util.Arrays.asList("Template Asal","Template Saya","Template Kosong")),i->{
    if(i==0)createLectureTemplateWith(null,false);
    else if(i==2)createLectureTemplateWith(null,true);
-   else{ArrayList<String> templates=new ArrayList<>();for(String k:prefs.getAll().keySet())if(k.startsWith("lecture_template_body_"))templates.add(k.substring("lecture_template_body_".length()));java.util.Collections.sort(templates);if(templates.isEmpty()){Toast.makeText(this,"Simpan template melalui Urus Subtopik dahulu",Toast.LENGTH_LONG).show();return;}showPersonalTemplates(templates);}
+   else{ArrayList<String> templates=new ArrayList<>();for(String k:prefs.getAll().keySet())if(k.startsWith("lecture_template_body_"))templates.add(k.substring("lecture_template_body_".length()));java.util.Collections.sort(templates);showPersonalTemplates(templates);}
   });
  }
  void showPersonalTemplates(ArrayList<String> templates){
-  showCreationChoices("Template Saya",templates,i->createLectureTemplateWith(templates.get(i),false));
+  ArrayList<String> choices=new ArrayList<>(templates);choices.add("＋ Tambah Template");
+  showCreationChoices("Template Saya",choices,i->{if(i==templates.size())createLectureTemplateWith(null,true);else createLectureTemplateWith(templates.get(i),false);},i->{if(i<templates.size())managePersonalTemplate(templates.get(i));});
  }
- void showCreationChoices(String title,ArrayList<String> templates,java.util.function.IntConsumer choice){
+ void managePersonalTemplate(String name){
+  new AlertDialog.Builder(this).setTitle(name).setItems(new String[]{"Tukar Nama","Padam Template"},(d,i)->{
+   if(i==0){EditText input=new EditText(this);input.setSingleLine(true);input.setText(name);new AlertDialog.Builder(this).setTitle("Tukar Nama Template").setView(input).setNegativeButton("Batal",null).setPositiveButton("Simpan",(dd,w)->{
+    String next=input.getText().toString().trim();if(next.isEmpty()||next.equals(name))return;if(prefs.contains("lecture_template_body_"+next)){Toast.makeText(this,"Nama template sudah digunakan",Toast.LENGTH_SHORT).show();return;}
+    boolean ok=prefs.edit().putString("lecture_template_body_"+next,prefs.getString("lecture_template_body_"+name,"")).putString("lecture_template_groups_"+next,prefs.getString("lecture_template_groups_"+name,"{}")).remove("lecture_template_body_"+name).remove("lecture_template_groups_"+name).commit();Toast.makeText(this,ok?"Nama ditukar":"Simpan gagal",Toast.LENGTH_SHORT).show();openPersonalTemplateList();
+   }).show();}else new AlertDialog.Builder(this).setTitle("Padam Template?").setMessage(name+" — Nota kuliah sedia ada tidak dipadam.").setNegativeButton("Batal",null).setPositiveButton("Padam",(dd,w)->{boolean ok=prefs.edit().remove("lecture_template_body_"+name).remove("lecture_template_groups_"+name).commit();Toast.makeText(this,ok?"Template dipadam":"Padam gagal",Toast.LENGTH_SHORT).show();openPersonalTemplateList();}).show();
+  }).setNegativeButton("Batal",null).show();
+ }
+ void openPersonalTemplateList(){ArrayList<String> names=new ArrayList<>();for(String k:prefs.getAll().keySet())if(k.startsWith("lecture_template_body_"))names.add(k.substring("lecture_template_body_".length()));java.util.Collections.sort(names);showPersonalTemplates(names);}
+ void showCreationChoices(String title,ArrayList<String> templates,java.util.function.IntConsumer choice){showCreationChoices(title,templates,choice,null);}
+ void showCreationChoices(String title,ArrayList<String> templates,java.util.function.IntConsumer choice,java.util.function.IntConsumer manage){
   LinearLayout panel=new LinearLayout(this);panel.setOrientation(1);panel.setPadding(dp(14),dp(12),dp(14),dp(8));
   TextView heading=text("◇  "+title,17);heading.setTextColor(0xff216e4e);heading.setTypeface(null,android.graphics.Typeface.BOLD);heading.setPadding(dp(4),0,0,dp(10));panel.addView(heading);
   AlertDialog dialog=new AlertDialog.Builder(this).setView(panel).create();
@@ -3409,7 +3420,7 @@ public class MainActivity extends Activity {
    LinearLayout row=new LinearLayout(this);row.setGravity(Gravity.CENTER_VERTICAL);row.setPadding(dp(10),dp(5),dp(8),dp(5));row.setBackground(rounded(0xfffffefd,0xffd7c69d,9));LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,dp(42));lp.bottomMargin=dp(6);list.addView(row,lp);
    TextView mark=text("❖",15);mark.setTextColor(0xffb59a55);row.addView(mark);
    TextView label=text(name,15);label.setTextColor(0xff216e4e);label.setPadding(dp(9),0,0,0);row.addView(label,new LinearLayout.LayoutParams(0,-2,1f));
-   TextView arrow=text("›",19);arrow.setTextColor(0xff719384);row.addView(arrow);row.setOnClickListener(v->{dialog.dismiss();choice.accept(index);});
+   TextView arrow=text("›",19);arrow.setTextColor(0xff719384);row.addView(arrow);row.setOnClickListener(v->{dialog.dismiss();choice.accept(index);});if(manage!=null)row.setOnLongClickListener(v->{if(index==templates.size()-1)return false;dialog.dismiss();manage.accept(index);return true;});
   }
   TextView cancel=text("Batal",14);cancel.setTextColor(0xff216e4e);cancel.setGravity(Gravity.RIGHT);cancel.setPadding(dp(8),dp(8),dp(4),dp(6));panel.addView(cancel);cancel.setOnClickListener(v->dialog.dismiss());
   dialog.show();android.view.Window window=dialog.getWindow();if(window!=null){window.setBackgroundDrawable(rounded(0xfff8faf7,0xffc5d9ce,14));window.setLayout(Math.min(getResources().getDisplayMetrics().widthPixels-dp(32),dp(340)),-2);}
