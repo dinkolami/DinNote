@@ -84,13 +84,13 @@ public class MainActivity extends Activity {
 
  void base(String title){
   readerDetector=null;
-  root=new LinearLayout(this);root.setOrientation(1);root.setBackgroundColor(Color.WHITE);
+  root=new LinearLayout(this);root.setOrientation(1);root.setBackground(pageShade());
   setContentView(root);applySystemBarInsets(root);
   // Subtle content fade on navigation; keep system bars and all controls unchanged.
   root.setAlpha(0.94f);
   root.animate().alpha(1f).setDuration(140L).start();
   LinearLayout header=new LinearLayout(this);header.setGravity(Gravity.CENTER_VERTICAL);
-  header.setPadding(dp(8),dp(3),dp(8),dp(3));header.setBackgroundColor(0xfffdfefe);
+  header.setPadding(dp(8),dp(3),dp(8),dp(3));header.setBackgroundColor(Color.TRANSPARENT);
   ImageView menu=headerIcon("⌂",0xff9daeb9,"Halaman utama DinNote");header.addView(menu);
   menu.setOnClickListener(v->home());
   ImageView settingsMenu=headerIcon("☰",0xff9daeb9,"Menu DinNote dan Tetapan");header.addView(settingsMenu);
@@ -1250,8 +1250,12 @@ public class MainActivity extends Activity {
   lectureHighlighted=paragraph;paragraph.setBackgroundColor(lectureDark()?0xff365746:0xffe3f2e7);
  }
 
+ // Shared quiet pearl shade for secondary screens; home retains its animated aura.
+ android.graphics.drawable.GradientDrawable pageShade(){
+  return new android.graphics.drawable.GradientDrawable(android.graphics.drawable.GradientDrawable.Orientation.TL_BR,new int[]{0xffe6f2e9,0xfffdfdf9,0xfffff5d9});
+ }
  void cleanBase(){
-  readerDetector=null;lectureScale=null;lectureHighlighted=null;root=new LinearLayout(this);root.setOrientation(1);root.setBackgroundColor(Color.WHITE);
+  readerDetector=null;lectureScale=null;lectureHighlighted=null;root=new LinearLayout(this);root.setOrientation(1);root.setBackground(pageShade());
   final LinearLayout activeRoot=root;
   final int[] lastWidth={0};
   activeRoot.addOnLayoutChangeListener((v,left,top,right,bottom,oldLeft,oldTop,oldRight,oldBottom)->{
