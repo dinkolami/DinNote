@@ -743,10 +743,10 @@ public class MainActivity extends Activity {
   if(true){
    final java.util.ArrayList<String> sampleWisdom=homeWisdomEntries();
    LinearLayout wisdomCard=new LinearLayout(this);wisdomCard.setOrientation(LinearLayout.VERTICAL);
-   wisdomCard.setPadding(dp(12),dp(2),dp(12),dp(5));
+   wisdomCard.setPadding(dp(12),dp(1),dp(12),dp(4));
    final int[] wisdomBorders={0xffd8c69c,0xffb7d2be,0xffd4c5df};
    final int wisdomStyle=new java.util.Random().nextInt(wisdomBorders.length);
-   wisdomCard.setBackground(rounded(0x55fdfcf7,0xffc69a28,11));
+   android.graphics.drawable.GradientDrawable wisdomFrame=new android.graphics.drawable.GradientDrawable();wisdomFrame.setColor(0x55fdfcf7);wisdomFrame.setCornerRadius(dp(11));wisdomFrame.setStroke(1,0xffd8c69c);wisdomCard.setBackground(wisdomFrame);
    wisdomCard.setClipToOutline(true);
    wisdomCard.setClipChildren(true);
    LinearLayout.LayoutParams wisdomParams=new LinearLayout.LayoutParams(-1,dp(126));
@@ -754,9 +754,9 @@ public class MainActivity extends Activity {
    TextView wisdomHeading=dashboardText("❀  Mutiara Hikmah  ❀",14,true);
    wisdomHeading.setTextColor(0xff47745d);wisdomHeading.setGravity(Gravity.CENTER);wisdomHeading.setIncludeFontPadding(false);
    wisdomCard.addView(wisdomHeading);
-   TextView wisdomBody=dashboardText("",13,false);wisdomBody.setTextColor(0xff35453c);
+   TextView wisdomBody=dashboardText("",15,false);wisdomBody.setTextColor(0xff35453c);wisdomBody.setPadding(0,0,0,0);wisdomBody.setLineSpacing(0,1.0f);
    // Rotate available Android Arabic typeface styles until dedicated font assets are bundled.
-   String[] wisdomFamilies={"serif","sans-serif","casual","serif-monospace"};
+   String[] wisdomFamilies={"serif","sans-serif"};
    String family=wisdomFamilies[new java.util.Random().nextInt(wisdomFamilies.length)];
    wisdomBody.setTypeface(android.graphics.Typeface.create(family,android.graphics.Typeface.NORMAL));
    wisdomBody.setGravity(Gravity.TOP|Gravity.CENTER_HORIZONTAL);wisdomBody.setIncludeFontPadding(false);wisdomBody.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
