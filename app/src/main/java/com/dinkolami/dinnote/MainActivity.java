@@ -811,7 +811,7 @@ public class MainActivity extends Activity {
    LinearLayout.LayoutParams wisdomParams=new LinearLayout.LayoutParams(-1,dp(126));
    wisdomParams.bottomMargin=dp(5);footer.addView(wisdomCard,wisdomParams);
    TextView wisdomHeading=dashboardText("❀  Mutiara Hikmah  ❀",14,true);applyAllura(wisdomHeading,21);
-   wisdomHeading.setTextColor(0xff47745d);wisdomHeading.setGravity(Gravity.CENTER);wisdomHeading.setIncludeFontPadding(false);
+   wisdomHeading.setTextColor(0xff365c48);wisdomHeading.setGravity(Gravity.CENTER);wisdomHeading.setIncludeFontPadding(false);
    wisdomCard.addView(wisdomHeading);
    TextView wisdomBody=dashboardText("",15,false);wisdomBody.setTextColor(0xff35453c);wisdomBody.setPadding(0,0,0,0);wisdomBody.setLineSpacing(0,1.0f);
    // Rotate available Android Arabic typeface styles until dedicated font assets are bundled.
