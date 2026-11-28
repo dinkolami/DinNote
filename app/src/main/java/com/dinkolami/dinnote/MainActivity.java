@@ -98,7 +98,7 @@ public class MainActivity extends Activity {
   ImageView logo=new ImageView(this);logo.setImageBitmap(transparentHeaderLogo());logo.setScaleType(ImageView.ScaleType.FIT_CENTER);logo.setContentDescription("Logo DinNote");logo.setClickable(true);logo.setPadding(dp(3),dp(3),dp(3),dp(3));logo.setBackground(rounded(0xfffdfefe,0xffb89543,50));logo.setClipToOutline(true);
   LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(dp(34),dp(34));lp.leftMargin=dp(6);lp.rightMargin=dp(5);header.addView(logo,lp);
   logo.setOnClickListener(v->home());
-  TextView name=text("DinNote",16);applyAllura(name,24);name.setTextColor(0xff075033);
+  TextView name=text("DinNote",16);name.setTypeface(android.graphics.Typeface.create("sans-serif",android.graphics.Typeface.BOLD));name.setTextColor(0xff075033);
   name.setGravity(Gravity.CENTER_VERTICAL);name.setPadding(dp(3),0,0,0);name.setSingleLine(true);name.setAutoSizeTextTypeUniformWithConfiguration(10,16,1,android.util.TypedValue.COMPLEX_UNIT_SP);header.addView(name,new LinearLayout.LayoutParams(0,dp(40),1));
   name.setOnClickListener(v->home());
   ImageView inbox=headerIcon("▣",0xff9daeb9,"Buka nota");// Nota is accessible through the category tile and main menu.
@@ -976,7 +976,7 @@ public class MainActivity extends Activity {
  android.graphics.Typeface alluraFace;
  void applyAllura(TextView view,int size){
   if(alluraFace==null)try{alluraFace=android.graphics.Typeface.createFromAsset(getAssets(),"Allura-Regular.ttf");}catch(Exception e){alluraFace=android.graphics.Typeface.create("serif",android.graphics.Typeface.ITALIC);}
-  view.setTypeface(alluraFace);view.setTextSize(size);
+  view.setTypeface(alluraFace);view.getPaint().setFakeBoldText(true);view.setTextSize(size);view.setTextColor(0xff075033);
  }
  void dashboardSection(LinearLayout parent,String heading,ArrayList<String> keys,boolean pin){
   LinearLayout target=new LinearLayout(this);target.setOrientation(LinearLayout.VERTICAL);
