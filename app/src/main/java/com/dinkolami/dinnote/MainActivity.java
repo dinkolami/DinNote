@@ -3376,23 +3376,7 @@ public class MainActivity extends Activity {
   }).setNegativeButton("Tutup",null).show();
  }
  void showNoteCreationMenu(){
-  LinearLayout panel=new LinearLayout(this);panel.setOrientation(1);panel.setPadding(dp(14),dp(12),dp(14),dp(8));
-  TextView heading=text("✎  Nota Baharu",18);heading.setTextColor(0xff216e4e);heading.setTypeface(null,android.graphics.Typeface.BOLD);heading.setPadding(dp(4),dp(2),dp(4),dp(12));panel.addView(heading);
-  AlertDialog dialog=new AlertDialog.Builder(this).setView(panel).create();
-  String[] labels={"Nota Umum","Nota Kuliah"};
-  int[] icons={android.R.drawable.ic_menu_edit,android.R.drawable.ic_menu_agenda};
-  for(int i=0;i<labels.length;i++){
-   final int option=i;
-   LinearLayout row=new LinearLayout(this);row.setGravity(Gravity.CENTER_VERTICAL);row.setPadding(dp(12),dp(7),dp(12),dp(7));row.setMinimumHeight(dp(48));row.setBackground(rounded(0xfffffefd,0xffc4d8cd,10));
-   LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);lp.bottomMargin=dp(8);panel.addView(row,lp);
-   android.widget.ImageView icon=new android.widget.ImageView(this);icon.setImageResource(icons[i]);icon.setColorFilter(0xff216e4e);row.addView(icon,new LinearLayout.LayoutParams(dp(20),dp(20)));
-   TextView label=text(labels[i],16);label.setTextColor(0xff216e4e);label.setPadding(dp(10),0,0,0);row.addView(label,new LinearLayout.LayoutParams(0,-2,1f));
-   TextView arrow=text("›",20);arrow.setTextColor(0xff719384);row.addView(arrow);
-   row.setOnClickListener(v->{dialog.dismiss();if(option==0)edit(null);else createLectureTemplate();});
-  }
-  TextView cancel=text("Batal",14);cancel.setTextColor(0xff216e4e);cancel.setGravity(Gravity.RIGHT|Gravity.CENTER_VERTICAL);cancel.setPadding(dp(8),dp(8),dp(8),dp(8));panel.addView(cancel);cancel.setOnClickListener(v->dialog.dismiss());
-  dialog.show();android.view.Window window=dialog.getWindow();
-  if(window!=null){window.setBackgroundDrawable(rounded(0xfff8faf7,0xffc5d9ce,14));window.setLayout(Math.min(getResources().getDisplayMetrics().widthPixels-dp(32),dp(340)),-2);}
+  showCreationChoices("Nota Baharu",new ArrayList<>(java.util.Arrays.asList("Nota Umum","Nota Kuliah")),i->{if(i==0)edit(null);else createLectureTemplate();});
  }
  void saveLectureTemplate(String key,ArrayList<String> names){
   EditText input=new EditText(this);input.setSingleLine(true);input.setHint("Nama template");
@@ -3407,22 +3391,25 @@ public class MainActivity extends Activity {
   }));dialog.show();
  }
  void createLectureTemplate(){
-  new AlertDialog.Builder(this).setTitle("Template Nota Kuliah").setItems(new String[]{"Template Asal","Template Saya","Template Kosong"},(d,i)->{
+  showCreationChoices("Template Nota Kuliah",new ArrayList<>(java.util.Arrays.asList("Template Asal","Template Saya","Template Kosong")),i->{
    if(i==0)createLectureTemplateWith(null,false);
    else if(i==2)createLectureTemplateWith(null,true);
    else{ArrayList<String> templates=new ArrayList<>();for(String k:prefs.getAll().keySet())if(k.startsWith("lecture_template_body_"))templates.add(k.substring("lecture_template_body_".length()));java.util.Collections.sort(templates);if(templates.isEmpty()){Toast.makeText(this,"Simpan template melalui Urus Subtopik dahulu",Toast.LENGTH_LONG).show();return;}showPersonalTemplates(templates);}
-  }).setNegativeButton("Batal",null).show();
+  });
  }
  void showPersonalTemplates(ArrayList<String> templates){
+  showCreationChoices("Template Saya",templates,i->createLectureTemplateWith(templates.get(i),false));
+ }
+ void showCreationChoices(String title,ArrayList<String> templates,java.util.function.IntConsumer choice){
   LinearLayout panel=new LinearLayout(this);panel.setOrientation(1);panel.setPadding(dp(14),dp(12),dp(14),dp(8));
-  TextView heading=text("◇  Template Saya",17);heading.setTextColor(0xff216e4e);heading.setTypeface(null,android.graphics.Typeface.BOLD);heading.setPadding(dp(4),0,0,dp(10));panel.addView(heading);
+  TextView heading=text("◇  "+title,17);heading.setTextColor(0xff216e4e);heading.setTypeface(null,android.graphics.Typeface.BOLD);heading.setPadding(dp(4),0,0,dp(10));panel.addView(heading);
   AlertDialog dialog=new AlertDialog.Builder(this).setView(panel).create();
   ScrollView scroll=new ScrollView(this);LinearLayout list=new LinearLayout(this);list.setOrientation(1);scroll.addView(list);panel.addView(scroll,new LinearLayout.LayoutParams(-1,Math.min(dp(320),dp(48)*templates.size())));
-  for(String name:templates){
+  for(int i=0;i<templates.size();i++){final int index=i;String name=templates.get(i);
    LinearLayout row=new LinearLayout(this);row.setGravity(Gravity.CENTER_VERTICAL);row.setPadding(dp(10),dp(5),dp(8),dp(5));row.setBackground(rounded(0xfffffefd,0xffd7c69d,9));LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,dp(42));lp.bottomMargin=dp(6);list.addView(row,lp);
    TextView mark=text("❖",15);mark.setTextColor(0xffb59a55);row.addView(mark);
    TextView label=text(name,15);label.setTextColor(0xff216e4e);label.setPadding(dp(9),0,0,0);row.addView(label,new LinearLayout.LayoutParams(0,-2,1f));
-   TextView arrow=text("›",19);arrow.setTextColor(0xff719384);row.addView(arrow);row.setOnClickListener(v->{dialog.dismiss();createLectureTemplateWith(name,false);});
+   TextView arrow=text("›",19);arrow.setTextColor(0xff719384);row.addView(arrow);row.setOnClickListener(v->{dialog.dismiss();choice.accept(index);});
   }
   TextView cancel=text("Batal",14);cancel.setTextColor(0xff216e4e);cancel.setGravity(Gravity.RIGHT);cancel.setPadding(dp(8),dp(8),dp(4),dp(6));panel.addView(cancel);cancel.setOnClickListener(v->dialog.dismiss());
   dialog.show();android.view.Window window=dialog.getWindow();if(window!=null){window.setBackgroundDrawable(rounded(0xfff8faf7,0xffc5d9ce,14));window.setLayout(Math.min(getResources().getDisplayMetrics().widthPixels-dp(32),dp(340)),-2);}
