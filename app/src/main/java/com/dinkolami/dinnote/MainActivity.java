@@ -1495,14 +1495,16 @@ public class MainActivity extends Activity {
     // Measure actual rendered lines, not an estimated character count.
     // Keep a small bottom reserve so the final line is never clipped.
     int width=Math.max(dp(80),(pageRow.getWidth()-dp(16)-(spread?dp(8):0))/(spread?2:1));
-    int textWidth=Math.max(dp(40),width-dp(32)); // Measure narrower than the actual page to avoid unexpected wraps.
-    int usableHeight=Math.max(dp(40),pageRow.getHeight()-dp(20)-dp(72)); // Reserve an extra full text line and font-descent safety margin.
+    int textWidth=Math.max(dp(40),width-dp(24)); // Measure narrower than the actual page to avoid unexpected wraps.
+    int usableHeight=Math.max(dp(40),pageRow.getHeight()-dp(20)-dp(32)); // Reserve an extra full text line and font-descent safety margin.
     // Use identical line spacing in the measuring layout and visible pages.
     final boolean arabic=java.util.regex.Pattern.compile("[\\u0600-\\u06FF]").matcher(source).find();
     final int extraLine=prefs.getBoolean("reader_wide_spacing",false)?dp(5):dp(1);
     final float lineMultiplier=prefs.getBoolean("reader_wide_spacing",false)?1.15f:1.0f;
     TextView probe=text("",fontSize);
     probe.setLineSpacing(extraLine,lineMultiplier);
+    if(arabic&&prefs.getBoolean("reader_arabic_clear_font",false))probe.setTypeface(android.graphics.Typeface.create("serif",android.graphics.Typeface.NORMAL));
+    probe.setIncludeFontPadding(true);
     probe.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
     android.text.TextPaint paint=probe.getPaint();
     ArrayList<CharSequence> parts=new ArrayList<>();
@@ -1520,6 +1522,7 @@ public class MainActivity extends Activity {
       .setAlignment(android.text.Layout.Alignment.ALIGN_NORMAL)
       .setTextDirection(android.text.TextDirectionHeuristics.FIRSTSTRONG_LTR)
       .setLineSpacing(extraLine,lineMultiplier)
+      .setBreakStrategy(probe.getBreakStrategy()).setHyphenationFrequency(probe.getHyphenationFrequency())
       .setIncludePad(true).build();
      int lastLine=0;
      for(int line=0;line<layout.getLineCount();line++){
@@ -1535,6 +1538,15 @@ public class MainActivity extends Activity {
      // Never split a surrogate pair, and preserve every character in order.
      if(stop<source.length()&&stop>cursor&&Character.isHighSurrogate(source.charAt(stop-1))&&Character.isLowSurrogate(source.charAt(stop)))stop--;
      if(stop<=cursor)stop=cursor+1;
+     // Verify the actual isolated page, including font padding and rich spans.
+     while(stop>cursor){
+      probe.setText(source.subSequence(cursor,stop));
+      probe.measure(View.MeasureSpec.makeMeasureSpec(textWidth,View.MeasureSpec.EXACTLY),View.MeasureSpec.makeMeasureSpec(0,View.MeasureSpec.UNSPECIFIED));
+      if(probe.getMeasuredHeight()<=usableHeight||lastLine<=1)break;
+      lastLine--;stop=cursor+layout.getLineEnd(lastLine-1);
+     }
+     chars=stop-cursor;
+     overlapStart=lastLine>1?layout.getLineStart(lastLine-1):0;
      starts.add(cursor);parts.add(source.subSequence(cursor,stop));
       repeatedPrefixLengths.add(Math.max(0,Math.min(stop-cursor,previousStop-cursor)));
       previousStop=stop;
@@ -1568,6 +1580,7 @@ public class MainActivity extends Activity {
       page.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
       if(arabic&&prefs.getBoolean("reader_arabic_clear_font",false))page.setTypeface(android.graphics.Typeface.create("serif",android.graphics.Typeface.NORMAL));
       page.setLineSpacing(extraLine,lineMultiplier);
+      page.setIncludeFontPadding(true);page.setBreakStrategy(probe.getBreakStrategy());page.setHyphenationFrequency(probe.getHyphenationFrequency());
       page.setPadding(dp(12),dp(10),dp(12),dp(10));
       page.setBackground(rounded(paper,lectureDark()?0xff53665a:0xffd3c197,5));page.setElevation(0);
       LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(0,-1,1);
