@@ -2577,11 +2577,12 @@ public class MainActivity extends Activity {
     String content=section.trim();
     int leading=0,trailing=0;
     for(int p=0;p<section.length()&&Character.isWhitespace(section.charAt(p));p++)if(section.charAt(p)=='\n')leading++;
-    if(content.isEmpty()){pendingBlank+=Math.max(0,leading-1);continue;}
+    if(content.isEmpty())continue; // Empty template sections must not accumulate visual gaps.
     for(int p=section.length()-1;p>=0&&Character.isWhitespace(section.charAt(p));p--)if(section.charAt(p)=='\n')trailing++;
     int extra=pendingBlank+Math.max(0,leading-1);
-    if(hasContent||extra>0){View gap=new View(this);body.addView(gap,new LinearLayout.LayoutParams(-1,dp((hasContent?16:0)+extra*size)));}
-    LinearLayout headingBand=new LinearLayout(this);headingBand.setGravity(Gravity.CENTER);headingBand.setPadding(0,dp(1),0,dp(3));
+    // Keep spacing attached to the heading so column balancing cannot orphan a spacer.
+    int sectionGap=(hasContent?8:0)+extra*size;
+    LinearLayout headingBand=new LinearLayout(this);headingBand.setGravity(Gravity.CENTER);headingBand.setPadding(0,dp(1+sectionGap),0,dp(3));
     TextView sectionTitle=text(names.get(i).trim().toUpperCase(java.util.Locale.ROOT),13);sectionTitle.setGravity(Gravity.CENTER);sectionTitle.setTypeface(null,android.graphics.Typeface.BOLD);sectionTitle.setTextColor(0xff216e4e);sectionTitle.setIncludeFontPadding(false);sectionTitle.setPadding(dp(9),dp(2),dp(9),dp(2));android.graphics.drawable.GradientDrawable sectionFrame=rounded(0xffedf4eb,0xffc5ae76,8);sectionFrame.setStroke(Math.max(1,Math.round(getResources().getDisplayMetrics().density*0.7f)),0xffc5ae76);sectionTitle.setBackground(sectionFrame);headingBand.addView(sectionTitle,new LinearLayout.LayoutParams(-2,-2));body.addView(headingBand,new LinearLayout.LayoutParams(-1,-2));
     renderBoxReading(body,content,size,key);hasContent=true;pendingBlank=Math.max(0,trailing-1);
    }
