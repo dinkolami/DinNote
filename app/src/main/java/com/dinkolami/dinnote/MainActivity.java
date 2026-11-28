@@ -726,10 +726,10 @@ public class MainActivity extends Activity {
     item.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
     long when=prefs.getLong("viewed_"+k,0L);
     if(when>0L){
-     TextView date=dashboardText(new java.text.SimpleDateFormat("dd MMM",new java.util.Locale("ms","MY")).format(new java.util.Date(when)),10,false);
+     TextView date=dashboardText(new java.text.SimpleDateFormat("dd MMM",new java.util.Locale("ms","MY")).format(new java.util.Date(when)),9,false);
      date.setTextColor(0xff416653);date.setGravity(Gravity.CENTER);date.setSingleLine(true);date.setTextDirection(View.TEXT_DIRECTION_LTR);
-     date.setBackground(homeGlossy(new int[]{0,1,3}[i%3],20));date.setTextColor(0xff174d37);date.setIncludeFontPadding(false);date.setMaxLines(1);date.setEllipsize(android.text.TextUtils.TruncateAt.END);
-     date.setPadding(dp(5),dp(2),dp(5),dp(2));
+     android.graphics.drawable.GradientDrawable dateFrame=homeGlossy(new int[]{0,1,3}[i%3],20);dateFrame.setStroke(Math.max(1,Math.round(getResources().getDisplayMetrics().density*0.7f)),0xffc5ae76);date.setBackground(dateFrame);date.setTextColor(0xff174d37);date.setIncludeFontPadding(false);date.setMaxLines(1);date.setEllipsize(android.text.TextUtils.TruncateAt.END);
+     date.setPadding(dp(4),dp(1),dp(4),dp(1));
      FrameLayout.LayoutParams dateParams=new FrameLayout.LayoutParams(-2,-2,Gravity.RIGHT|Gravity.CENTER_VERTICAL);
      dateParams.rightMargin=dp(8);row.addView(date,dateParams);date.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);date.setContentDescription("Dilihat pada "+new java.text.SimpleDateFormat("dd MMMM",new java.util.Locale("ms","MY")).format(new java.util.Date(when)));
     }
@@ -2520,7 +2520,7 @@ public class MainActivity extends Activity {
     int extra=pendingBlank+Math.max(0,leading-1);
     if(hasContent||extra>0){View gap=new View(this);body.addView(gap,new LinearLayout.LayoutParams(-1,dp((hasContent?16:0)+extra*size)));}
     LinearLayout headingBand=new LinearLayout(this);headingBand.setGravity(Gravity.CENTER);headingBand.setPadding(0,dp(1),0,dp(3));
-    TextView sectionTitle=text(names.get(i).trim().toUpperCase(java.util.Locale.ROOT),Math.max(12,size-1));sectionTitle.setGravity(Gravity.CENTER);sectionTitle.setTypeface(null,android.graphics.Typeface.BOLD);sectionTitle.setTextColor(0xff216e4e);sectionTitle.setPadding(dp(9),dp(3),dp(9),dp(3));sectionTitle.setBackground(rounded(0xffedf4eb,0xffc5ae76,12));headingBand.addView(sectionTitle,new LinearLayout.LayoutParams(-2,-2));body.addView(headingBand,new LinearLayout.LayoutParams(-1,-2));
+    TextView sectionTitle=text(names.get(i).trim().toUpperCase(java.util.Locale.ROOT),13);sectionTitle.setGravity(Gravity.CENTER);sectionTitle.setTypeface(null,android.graphics.Typeface.BOLD);sectionTitle.setTextColor(0xff216e4e);sectionTitle.setIncludeFontPadding(false);sectionTitle.setPadding(dp(9),dp(2),dp(9),dp(2));android.graphics.drawable.GradientDrawable sectionFrame=rounded(0xffedf4eb,0xffc5ae76,8);sectionFrame.setStroke(Math.max(1,Math.round(getResources().getDisplayMetrics().density*0.7f)),0xffc5ae76);sectionTitle.setBackground(sectionFrame);headingBand.addView(sectionTitle,new LinearLayout.LayoutParams(-2,-2));body.addView(headingBand,new LinearLayout.LayoutParams(-1,-2));
     renderBoxReading(body,content,size,key);hasContent=true;pendingBlank=Math.max(0,trailing-1);
    }
    return;
@@ -3739,7 +3739,7 @@ public class MainActivity extends Activity {
  class PagedLectureHeadingSpan extends android.text.style.ReplacementSpan {
   final String title;
   PagedLectureHeadingSpan(String title){this.title=title;}
-  android.graphics.Paint headingPaint(android.graphics.Paint p){android.graphics.Paint q=new android.graphics.Paint(p);q.setAntiAlias(true);q.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);q.setTextSize(p.getTextSize()*0.94f);return q;}
+  android.graphics.Paint headingPaint(android.graphics.Paint p){android.graphics.Paint q=new android.graphics.Paint(p);q.setAntiAlias(true);q.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);q.setTextSize(dp(13));return q;}
   @Override public int getSize(android.graphics.Paint p,CharSequence t,int a,int b,android.graphics.Paint.FontMetricsInt fm){
    android.graphics.Paint q=headingPaint(p);
    if(fm!=null){fm.ascent=(int)Math.floor(q.ascent())-dp(4);fm.descent=(int)Math.ceil(q.descent())+dp(4);fm.top=fm.ascent;fm.bottom=fm.descent;}
@@ -3749,7 +3749,7 @@ public class MainActivity extends Activity {
    android.graphics.Paint q=headingPaint(p);float right=x+getSize(p,t,a,b,null)-dp(1);
    float upper=y+q.ascent()-dp(2),lower=y+q.descent()+dp(2);
    q.setColor(0xffedf4eb);c.drawRoundRect(x+dp(1),upper,right,lower,dp(10),dp(10),q);
-   q.setColor(0xffc5ae76);q.setStyle(android.graphics.Paint.Style.STROKE);q.setStrokeWidth(dp(1));c.drawRoundRect(x+dp(1),upper,right,lower,dp(10),dp(10),q);
+   q.setColor(0xffc5ae76);q.setStyle(android.graphics.Paint.Style.STROKE);q.setStrokeWidth(dp(1)*0.7f);c.drawRoundRect(x+dp(1),upper,right,lower,dp(10),dp(10),q);
    q.setStyle(android.graphics.Paint.Style.FILL);q.setColor(0xff216e4e);q.setTextAlign(android.graphics.Paint.Align.CENTER);c.drawText(title,(x+right)/2,y,q);
   }
  }
