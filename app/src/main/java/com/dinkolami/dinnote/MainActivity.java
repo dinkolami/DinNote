@@ -1507,8 +1507,7 @@ public class MainActivity extends Activity {
     android.text.TextPaint paint=probe.getPaint();
     ArrayList<CharSequence> parts=new ArrayList<>();
     ArrayList<Integer> starts=new ArrayList<>();
-     ArrayList<Integer> repeatedPrefixLengths=new ArrayList<>();
-     int previousStop=0;
+
     int cursor=0;
     while(cursor<source.length()){
      // Limit the candidate for speed; a full page cannot contain this many
@@ -1527,24 +1526,18 @@ public class MainActivity extends Activity {
       lastLine=line+1;
      }
      int chars=lastLine>0?layout.getLineEnd(lastLine-1):Math.min(candidate.length(),1);
-      // Reserve the last rendered line as a reading overlap on the next page.
-      // Advance by at least one character so pagination always terminates.
-      int overlapStart=lastLine>1?layout.getLineStart(lastLine-1):0; // Repeat only a completely measured line, never a clipped fragment.
+
      int stop=Math.min(source.length(),cursor+Math.max(1,chars));
      // Do not append a partly visible line: the following page will render it in full.
      // Never split a surrogate pair, and preserve every character in order.
      if(stop<source.length()&&stop>cursor&&Character.isHighSurrogate(source.charAt(stop-1))&&Character.isLowSurrogate(source.charAt(stop)))stop--;
      if(stop<=cursor)stop=cursor+1;
      starts.add(cursor);parts.add(source.subSequence(cursor,stop));
-      repeatedPrefixLengths.add(Math.max(0,Math.min(stop-cursor,previousStop-cursor)));
-      previousStop=stop;
+
      cursor=stop;
-      if(lastLine>1 && overlapStart>0 && cursor<source.length()){
-       int nextCursor=cursor-(chars-overlapStart);
-       if(nextCursor>cursor-chars && nextCursor<cursor)cursor=nextCursor;
-      }
+
     }
-    if(parts.isEmpty()){starts.add(0);parts.add("");repeatedPrefixLengths.add(0);}
+    if(parts.isEmpty()){starts.add(0);parts.add("");}
     final int total=parts.size();
     final int[] position={Math.min(total-1,Math.max(0,prefs.getInt("reading_page_"+key,0)))};
     int savedOffset=prefs.getInt("reading_page_offset_"+key,-1);
@@ -1556,14 +1549,7 @@ public class MainActivity extends Activity {
      for(int i=0;i<(spread?2:1);i++){
       int pageNumber=position[0]+i;
       TextView page=text("",fontSize);page.setText(pageNumber<total?parts.get(pageNumber):"");
-       if(pageNumber<total && repeatedPrefixLengths.get(pageNumber)>0){
-        CharSequence visible=parts.get(pageNumber);
-        int repeated=Math.min(visible.length(),repeatedPrefixLengths.get(pageNumber));
-        android.text.SpannableString marked=new android.text.SpannableString(visible);
-        marked.setSpan(new android.text.style.BackgroundColorSpan(lectureDark()?0xff596044:0xfffff0bd),0,repeated,android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        marked.setSpan(new android.text.style.UnderlineSpan(),0,repeated,android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        page.setText(marked);
-       }
+
       page.setTextColor(lectureDark()?0xffe5ece7:0xff303c43);page.setGravity(Gravity.TOP);
       page.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
       if(arabic&&prefs.getBoolean("reader_arabic_clear_font",false))page.setTypeface(android.graphics.Typeface.create("serif",android.graphics.Typeface.NORMAL));
